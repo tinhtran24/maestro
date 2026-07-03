@@ -114,6 +114,60 @@ CREATE TABLE IF NOT EXISTS reviews (
   updated_at TEXT NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS skills (
+  id TEXT PRIMARY KEY,
+  project_id TEXT REFERENCES projects(id) ON DELETE CASCADE,
+  name TEXT NOT NULL,
+  path TEXT NOT NULL,
+  description TEXT NOT NULL,
+  applies_to_json TEXT NOT NULL DEFAULT '[]',
+  agents_json TEXT NOT NULL DEFAULT '[]',
+  version TEXT,
+  source TEXT NOT NULL CHECK (source IN ('project', 'global', 'builtin')),
+  required_evidence_json TEXT NOT NULL DEFAULT '[]',
+  exit_criteria_json TEXT NOT NULL DEFAULT '[]',
+  enabled INTEGER NOT NULL DEFAULT 1,
+  trusted INTEGER NOT NULL DEFAULT 0,
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL,
+  UNIQUE(project_id, name)
+);
+
+CREATE INDEX IF NOT EXISTS idx_skills_project ON skills(project_id, enabled);
+
+CREATE TABLE IF NOT EXISTS skill_runs (
+  id TEXT PRIMARY KEY,
+  task_id TEXT NOT NULL REFERENCES tasks(id) ON DELETE CASCADE,
+  skill_id TEXT NOT NULL REFERENCES skills(id) ON DELETE CASCADE,
+  agent_session_id TEXT REFERENCES agent_sessions(id) ON DELETE SET NULL,
+  status TEXT NOT NULL CHECK (status IN (
+    'discovered',
+    'matched',
+    'activated',
+    'running',
+    'evidence_pending',
+    'completed',
+    'failed'
+  )),
+  evidence_json TEXT NOT NULL DEFAULT '{}',
+  started_at TEXT NOT NULL,
+  completed_at TEXT
+);
+
+CREATE INDEX IF NOT EXISTS idx_skill_runs_task ON skill_runs(task_id, status);
+
+CREATE TABLE IF NOT EXISTS evidence (
+  id TEXT PRIMARY KEY,
+  task_id TEXT NOT NULL REFERENCES tasks(id) ON DELETE CASCADE,
+  skill_run_id TEXT REFERENCES skill_runs(id) ON DELETE SET NULL,
+  type TEXT NOT NULL,
+  content TEXT NOT NULL,
+  verified_by TEXT,
+  created_at TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_evidence_task_type ON evidence(task_id, type);
+
 CREATE TABLE IF NOT EXISTS memory_nodes (
   id TEXT PRIMARY KEY,
   project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,

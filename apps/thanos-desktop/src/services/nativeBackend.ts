@@ -8,6 +8,8 @@ import type {
     MemoryNode,
     Project,
     Review,
+    Skill,
+    SkillRun,
     Task,
     TestRun,
 } from "../domain/models";
@@ -91,6 +93,76 @@ type MemoryNodeInfo = {
     created_at: number;
 };
 
+export type AgentBridgeTool = {
+    name: string;
+    description: string;
+    inputs: string[];
+};
+
+export type BridgeTaskMessage = {
+    id: string;
+    sourceTaskId: string;
+    targetTaskId: string;
+    content: string;
+    createdAt: string;
+};
+
+export type BridgeRelatedWork = {
+    type: string;
+    id: string;
+    title: string;
+    summary: string;
+    path: string;
+};
+
+export type BridgeBranchAttachment = {
+    taskId: string;
+    branchName: string;
+    worktreePath: string;
+    attachedAt: string;
+};
+
+export type BridgeUserReviewRequest = {
+    id: string;
+    taskId: string;
+    requestedBy: string;
+    notes: string;
+    status: "pending_user_review";
+    createdAt: string;
+};
+
+type BridgeTaskMessageInfo = {
+    id: string;
+    source_task_id: string;
+    target_task_id: string;
+    content: string;
+    created_at: number;
+};
+
+type BridgeRelatedWorkInfo = {
+    item_type: string;
+    id: string;
+    title: string;
+    summary: string;
+    path: string;
+};
+
+type BridgeBranchAttachmentInfo = {
+    task_id: string;
+    branch_name: string;
+    worktree_path: string;
+    attached_at: number;
+};
+
+type BridgeUserReviewRequestInfo = {
+    id: string;
+    task_id: string;
+    requested_by: string;
+    notes: string;
+    status: "pending_user_review";
+    created_at: number;
+};
+
 type ProjectInfo = {
     id: string;
     name: string;
@@ -128,6 +200,33 @@ type TaskInfo = {
     progress: number;
 };
 
+type SkillInfo = {
+    id: string;
+    project_id?: string | null;
+    name: string;
+    path: string;
+    description: string;
+    applies_to: string[];
+    agents: Skill["agents"];
+    version?: string | null;
+    source: Skill["source"];
+    required_evidence: string[];
+    exit_criteria: string[];
+    enabled: boolean;
+    trusted: boolean;
+};
+
+type SkillRunInfo = {
+    id: string;
+    task_id: string;
+    skill_id: string;
+    agent_session_id?: string | null;
+    status: SkillRun["status"];
+    evidence_json: Record<string, string>;
+    started_at: string;
+    completed_at?: string | null;
+};
+
 export type WorkbenchSnapshot = {
     project: Project;
     features: Feature[];
@@ -136,6 +235,8 @@ export type WorkbenchSnapshot = {
     sessions: AgentSession[];
     reviews: Review[];
     memoryNodes: MemoryNode[];
+    skills: Skill[];
+    skillRuns: SkillRun[];
 };
 
 type WorkbenchSnapshotInfo = {
@@ -146,6 +247,8 @@ type WorkbenchSnapshotInfo = {
     sessions: AgentSessionInfo[];
     reviews: ReviewInfo[];
     memory_nodes: MemoryNodeInfo[];
+    skills?: SkillInfo[];
+    skill_runs?: SkillRunInfo[];
 };
 
 export class NativeBackend {
@@ -290,6 +393,72 @@ export class NativeBackend {
     return info ? info.map(fromMemoryInfo) : [];
   }
 
+  async listAgentBridgeTools() {
+    return await this.tryInvoke<AgentBridgeTool[]>("list_agent_bridge_tools", {}) ?? [];
+  }
+
+  async createAgentSubtask(parentTaskId: string, title: string, description = "", priority = "P2", agent = "") {
+    const info = await this.tryInvoke<TaskInfo>("bridge_create_subtask", {
+      request: {
+        workspace: this.workspace,
+        parent_task_id: parentTaskId,
+        title,
+        description,
+        priority,
+        agent,
+      },
+    });
+    return info ? fromTaskInfo(info) : null;
+  }
+
+  async messageSiblingTask(sourceTaskId: string, targetTaskId: string, content: string) {
+    const info = await this.tryInvoke<BridgeTaskMessageInfo>("bridge_message_sibling", {
+      request: {
+        workspace: this.workspace,
+        source_task_id: sourceTaskId,
+        target_task_id: targetTaskId,
+        content,
+      },
+    });
+    return info ? fromBridgeTaskMessageInfo(info) : null;
+  }
+
+  async inspectRelatedWork(query: string, taskId?: string, limit = 10) {
+    const info = await this.tryInvoke<BridgeRelatedWorkInfo[]>("bridge_inspect_related_work", {
+      request: {
+        workspace: this.workspace,
+        task_id: taskId,
+        query,
+        limit,
+      },
+    });
+    return info ? info.map(fromBridgeRelatedWorkInfo) : [];
+  }
+
+  async attachTaskBranch(taskId: string, branchName: string, worktreePath?: string) {
+    const info = await this.tryInvoke<BridgeBranchAttachmentInfo>("bridge_attach_branch", {
+      request: {
+        workspace: this.workspace,
+        task_id: taskId,
+        branch_name: branchName,
+        worktree_path: worktreePath,
+      },
+    });
+    return info ? fromBridgeBranchAttachmentInfo(info) : null;
+  }
+
+  async requestUserReview(taskId: string, requestedBy = "agent", notes = "") {
+    const info = await this.tryInvoke<BridgeUserReviewRequestInfo>("bridge_request_user_review", {
+      request: {
+        workspace: this.workspace,
+        task_id: taskId,
+        requested_by: requestedBy,
+        notes,
+      },
+    });
+    return info ? fromBridgeUserReviewRequestInfo(info) : null;
+  }
+
   async stopAgent() {
     await this.tryInvoke<void>("stop_agent_session", {});
   }
@@ -360,6 +529,8 @@ function fromWorkbenchSnapshotInfo(info: WorkbenchSnapshotInfo): WorkbenchSnapsh
     sessions: info.sessions.map(mapSession),
     reviews: info.reviews.map(fromReviewInfo),
     memoryNodes: info.memory_nodes.map(fromMemoryInfo),
+    skills: (info.skills ?? []).map(fromSkillInfo),
+    skillRuns: (info.skill_runs ?? []).map(fromSkillRunInfo),
   };
 }
 
@@ -492,6 +663,77 @@ function fromMemoryInfo(info: MemoryNodeInfo): MemoryNode {
     content: info.content,
     links: info.links,
     createdAt: new Date(info.created_at * 1000).toISOString(),
+  };
+}
+
+function fromBridgeTaskMessageInfo(info: BridgeTaskMessageInfo): BridgeTaskMessage {
+  return {
+    id: info.id,
+    sourceTaskId: info.source_task_id,
+    targetTaskId: info.target_task_id,
+    content: info.content,
+    createdAt: new Date(info.created_at * 1000).toISOString(),
+  };
+}
+
+function fromBridgeRelatedWorkInfo(info: BridgeRelatedWorkInfo): BridgeRelatedWork {
+  return {
+    type: info.item_type,
+    id: info.id,
+    title: info.title,
+    summary: info.summary,
+    path: info.path,
+  };
+}
+
+function fromBridgeBranchAttachmentInfo(info: BridgeBranchAttachmentInfo): BridgeBranchAttachment {
+  return {
+    taskId: info.task_id,
+    branchName: info.branch_name,
+    worktreePath: info.worktree_path,
+    attachedAt: new Date(info.attached_at * 1000).toISOString(),
+  };
+}
+
+function fromBridgeUserReviewRequestInfo(info: BridgeUserReviewRequestInfo): BridgeUserReviewRequest {
+  return {
+    id: info.id,
+    taskId: info.task_id,
+    requestedBy: info.requested_by,
+    notes: info.notes,
+    status: info.status,
+    createdAt: new Date(info.created_at * 1000).toISOString(),
+  };
+}
+
+function fromSkillInfo(info: SkillInfo): Skill {
+  return {
+    id: info.id,
+    projectId: info.project_id ?? undefined,
+    name: info.name,
+    path: info.path,
+    description: info.description,
+    appliesTo: info.applies_to,
+    agents: info.agents,
+    version: info.version ?? undefined,
+    source: info.source,
+    requiredEvidence: info.required_evidence,
+    exitCriteria: info.exit_criteria,
+    enabled: info.enabled,
+    trusted: info.trusted,
+  };
+}
+
+function fromSkillRunInfo(info: SkillRunInfo): SkillRun {
+  return {
+    id: info.id,
+    taskId: info.task_id,
+    skillId: info.skill_id,
+    agentSessionId: info.agent_session_id ?? undefined,
+    status: info.status,
+    evidence: info.evidence_json,
+    startedAt: info.started_at,
+    completedAt: info.completed_at ?? undefined,
   };
 }
 

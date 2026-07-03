@@ -79,6 +79,42 @@ export type AgentSession = {
     output: string[];
 };
 
+export type SkillRunStatus =
+    | "discovered"
+    | "matched"
+    | "activated"
+    | "running"
+    | "evidence_pending"
+    | "completed"
+    | "failed";
+
+export type Skill = {
+    id: string;
+    projectId?: string;
+    name: string;
+    path: string;
+    description: string;
+    appliesTo: string[];
+    agents: Array<AgentSession["agentType"]>;
+    version?: string;
+    source: "project" | "global" | "builtin";
+    requiredEvidence: string[];
+    exitCriteria: string[];
+    enabled: boolean;
+    trusted: boolean;
+};
+
+export type SkillRun = {
+    id: string;
+    taskId: string;
+    skillId: string;
+    agentSessionId?: string;
+    status: SkillRunStatus;
+    evidence: Record<string, string>;
+    startedAt: string;
+    completedAt?: string;
+};
+
 export type Review = {
     id: string;
     taskId: string;

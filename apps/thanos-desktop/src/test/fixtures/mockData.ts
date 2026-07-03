@@ -1,4 +1,4 @@
-import type { AgentSession, ExecutionPlan, Feature, MemoryNode, Project, Review, Task } from "../../domain/models";
+import type { AgentSession, ExecutionPlan, Feature, MemoryNode, Project, Review, Skill, SkillRun, Task } from "../../domain/models";
 
 export const project: Project = {
   id: "project-ecommerce",
@@ -75,6 +75,18 @@ export const reviews: Review[] = [
   },
 ];
 
+export const skills: Skill[] = [
+  skill("project:using-agent-skills", "using-agent-skills", "Route each task to the smallest relevant skill set.", ["planner", "coder", "reviewer", "tester"], ["selected_skills", "routing_reason"], ["Selected skills are listed.", "Routing reason is recorded."]),
+  skill("project:feature-spec", "feature-spec", "Create clear feature specs with acceptance criteria before implementation.", ["planner"], ["acceptance_criteria", "risk_notes", "files_to_touch"], ["Acceptance criteria exist.", "Risks are listed.", "Files likely to change are recorded."]),
+  skill("project:implementation-plan", "implementation-plan", "Break approved specs into ordered implementation chunks.", ["planner", "coder"], ["ordered_steps", "dependencies", "test_strategy"], ["Ordered implementation steps exist.", "Dependencies are called out.", "Test strategy is attached."]),
+];
+
+export const skillRuns: SkillRun[] = [
+  skillRun("skillrun-T-106-router", "T-106", "project:using-agent-skills", "completed", { selected_skills: "feature-spec, implementation-plan", routing_reason: "Planner task in waiting approval stage." }),
+  skillRun("skillrun-T-106-spec", "T-106", "project:feature-spec", "evidence_pending", { acceptance_criteria: "Cart add, update, remove, persistence, sync, and review-ready tests." }),
+  skillRun("skillrun-T-106-plan", "T-106", "project:implementation-plan", "matched", {}),
+];
+
 export const memoryNodes: MemoryNode[] = [
   memory("mem-1", "decision", "Cart System Design Decision", "Cart state is frontend-first with backend sync after checkout mutations."),
   memory("mem-2", "architecture", "Database Schema Guidelines", "Prefer indexed foreign keys and explicit rollback migrations."),
@@ -107,4 +119,32 @@ function step(id: string, title: string, description: string) {
 
 function memory(id: string, type: MemoryNode["type"], title: string, content: string): MemoryNode {
   return { id, projectId: project.id, type, title, content, links: [], createdAt: "2024-05-18T00:00:00Z" };
+}
+
+function skill(id: string, name: string, description: string, agents: Skill["agents"], requiredEvidence: string[], exitCriteria: string[]): Skill {
+  return {
+    id,
+    projectId: project.id,
+    name,
+    path: `.thanos/skills/${name}/SKILL.md`,
+    description,
+    appliesTo: ["planning"],
+    agents,
+    source: "project",
+    requiredEvidence,
+    exitCriteria,
+    enabled: true,
+    trusted: true,
+  };
+}
+
+function skillRun(id: string, taskId: string, skillId: string, status: SkillRun["status"], evidence: Record<string, string>): SkillRun {
+  return {
+    id,
+    taskId,
+    skillId,
+    status,
+    evidence,
+    startedAt: "2026-07-03T01:31:39Z",
+  };
 }

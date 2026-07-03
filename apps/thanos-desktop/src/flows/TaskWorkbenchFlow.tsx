@@ -3,7 +3,7 @@ import type { BottomTab, InspectorTab } from "../domain/models";
 import { EmptyState } from "../shared/ui/EmptyState";
 import { FlowTabs } from "../shared/ui/FlowTabs";
 import { StatusBadge } from "../shared/ui/StatusBadge";
-import { selectedTask, planFor, reviewFor, sessionFor, useWorkbenchStore } from "../state/workbenchStore";
+import { activeSkillsFor, selectedTask, planFor, reviewFor, sessionFor, useWorkbenchStore } from "../state/workbenchStore";
 import { useAgentSessionFlow, XtermPanel } from "./AgentSessionFlow";
 
 const detailTabs: Array<{ id: InspectorTab; label: string; icon: typeof LayoutPanelTop }> = [
@@ -143,20 +143,64 @@ export function TaskRightSidebar() {
       </aside>
     );
   }
+  const activeSkills = activeSkillsFor(task, state);
   return (
     <aside className="min-h-0 overflow-y-auto border-l border-slate-800 bg-slate-900/80">
       <FlowTabs tabs={detailTabs} active={state.inspectorTab} onChange={state.setInspectorTab} />
       <div className="grid gap-3 p-4 text-sm">
         <h3 className="text-base font-semibold">{task.title}</h3>
         <p className="text-text-muted">{task.description}</p>
+        <section className="grid gap-2">
+          <div className="flex items-center justify-between">
+            <h4 className="text-sm font-semibold">Active Skills</h4>
+            <span className="text-xs text-text-muted">{activeSkills.length}</span>
+          </div>
+          {activeSkills.length ? activeSkills.map(({ skill, run }) => (
+            <article key={run.id} className="rounded-lg border border-slate-800 bg-bg-card p-3">
+              <div className="flex items-start justify-between gap-2">
+                <div className="min-w-0">
+                  <p className="truncate font-medium">{skill.name}</p>
+                  <p className="mt-1 text-xs text-text-muted">{skill.agents.join(", ")}</p>
+                </div>
+                <span className="shrink-0 rounded-md border border-blue-info/30 bg-blue-info/10 px-2 py-1 text-[11px] text-blue-info">{run.status.replace("_", " ")}</span>
+              </div>
+              <p className="mt-2 text-xs text-text-muted">{skill.description}</p>
+              <div className="mt-3 grid gap-2">
+                <SkillList label="Evidence" values={skill.requiredEvidence} done={run.evidence} />
+                <SkillList label="Exit" values={skill.exitCriteria} />
+              </div>
+              <a href={skillHref(state.project.rootPath, skill.path)} target="_blank" className="mt-3 block w-full rounded-md border border-slate-700 px-2 py-1.5 text-center text-xs text-text-main hover:border-slate-500">
+                Open SKILL.md
+              </a>
+            </article>
+          )) : (
+            <div className="rounded-lg border border-slate-800 bg-bg-card p-3 text-xs text-text-muted">No active skills matched for this task.</div>
+          )}
+        </section>
         {state.memoryNodes.map((node) => (
-          <div key={node.id} className="rounded-xl border border-slate-800 bg-bg-card p-3">
+          <div key={node.id} className="rounded-lg border border-slate-800 bg-bg-card p-3">
             <p className="font-medium">{node.title}</p>
             <p className="mt-1 text-xs text-text-muted">{node.type}</p>
           </div>
         ))}
       </div>
     </aside>
+  );
+}
+
+function SkillList({ label, values, done }: { label: string; values: string[]; done?: Record<string, string> }) {
+  return (
+    <div>
+      <p className="text-[11px] uppercase text-text-muted">{label}</p>
+      <ul className="mt-1 grid gap-1">
+        {values.map((value) => (
+          <li key={value} className="flex items-start gap-2 text-xs text-text-muted">
+            <span className={done?.[value] ? "mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-green-success" : "mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-slate-600"} />
+            <span>{value}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 }
 
@@ -172,6 +216,11 @@ export function TaskBottomPanel() {
       </div>
     </section>
   );
+}
+
+function skillHref(rootPath: string, skillPath: string) {
+  const path = skillPath.startsWith("/") ? skillPath : `${rootPath.replace(/\/$/, "")}/${skillPath}`;
+  return `file://${path}`;
 }
 
 function Panel({ title, meta, children }: { title: string; meta: string; children: React.ReactNode }) {

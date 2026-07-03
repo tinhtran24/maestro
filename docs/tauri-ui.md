@@ -99,6 +99,20 @@ search_memory(request)
 
 Memory uses `.thanos/memory/workbench.sqlite` with FTS5 search.
 
+Phase 6 agent bridge commands:
+
+```text
+list_agent_bridge_tools()
+bridge_create_subtask(request)
+bridge_message_sibling(request)
+bridge_inspect_related_work(request)
+bridge_attach_branch(request)
+bridge_request_user_review(request)
+```
+
+Bridge commands write local `.thanos` artifacts and never approve review or
+merge code on behalf of an agent.
+
 ## Frontend Flow Pattern
 
 Route files only mount screen-level flows. The current entrypoint mounts

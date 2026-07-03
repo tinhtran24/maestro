@@ -152,6 +152,17 @@ Status:
 - Allow agents to create subtasks, message sibling tasks, inspect related work,
   attach branches, and request user review.
 
+Status:
+
+- Added `internal/mcp` as a local bridge contract with tool descriptors and
+  artifact-backed operations.
+- Agents can create subtasks, message sibling tasks, inspect related task and
+  memory artifacts, attach branch/worktree metadata, and request user review.
+- Added Tauri commands for the same bridge capabilities so native agent flows
+  can call structured local tools.
+- Review requests are stored under `.thanos/review-requests/` and do not
+  approve reviews or merge code.
+
 ## Phase 1 Acceptance
 
 - `internal/workbench` contains domain models and a SQLite schema.

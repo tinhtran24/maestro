@@ -1,6 +1,52 @@
 {
   "version": 1,
   "generated_at": "2026-07-01T01:31:18.213732Z",
-  "features": null,
-  "edges": null
+  "features": [
+    {
+      "id": "agent-skills-system",
+      "title": "Agent Skills System",
+      "summary": "Thanos supports project-level skill contracts loaded from .thanos/skills, matched by role/stage/files, validated for exit criteria, tracked through skill runs and evidence, gated in orchestrator helpers, and surfaced in the desktop task sidebar.",
+      "paths": [
+        "internal/skills",
+        "internal/workbench/model.go",
+        "internal/workbench/schema.sql",
+        "internal/orchestrator/skill_gate.go",
+        "apps/thanos-desktop/src/flows/TaskWorkbenchFlow.tsx",
+        ".thanos/skills"
+      ],
+      "decisions": [
+        "Skills are local workflow contracts, not executable scripts.",
+        "Project skills override global and builtin skills by registry precedence.",
+        "Phase 1 models execution as skill-run lifecycle and evidence validation without remote installs or script execution."
+      ],
+      "tests": [
+        "GOCACHE=/private/tmp/thanos-go-build go test ./...",
+        "npm run build"
+      ]
+    },
+    {
+      "id": "phase-6-mcp-acp-bridge",
+      "title": "Phase 6 MCP/ACP Bridge",
+      "summary": "Thanos exposes local agent bridge tools for task creation, sibling messaging, related-work inspection, branch attachment, and user review requests through internal/mcp and Tauri commands.",
+      "paths": [
+        "internal/mcp",
+        "apps/thanos-desktop/src-tauri/src/lib.rs",
+        "apps/thanos-desktop/src/services/nativeBackend.ts",
+        ".thanos/messages",
+        ".thanos/branches",
+        ".thanos/review-requests"
+      ],
+      "decisions": [
+        "Phase 6 is implemented as a local artifact-backed bridge, not a remote MCP server runtime.",
+        "Review requests are stored separately from approved review artifacts to avoid bypassing review gates.",
+        "Bridge tools never run shell commands and never auto-merge."
+      ],
+      "tests": [
+        "GOCACHE=/private/tmp/thanos-go-build go test ./...",
+        "cargo check",
+        "npm run build"
+      ]
+    }
+  ],
+  "edges": []
 }

@@ -57,10 +57,7 @@ Implemented:
 - Phase 3 persisted execution plans, plan approval gate, and coder launch guard.
 - Phase 4 git diff, test runner, review approval gate, and no-auto-merge review plumbing.
 - Phase 5 SQLite memory nodes with FTS search and approved-review memory updates.
-
-Not implemented yet:
-
-- MCP/ACP bridge.
+- Phase 6 local MCP/ACP bridge commands for agent task and memory tools.
 
 See [docs/rebuild-plan.md](docs/rebuild-plan.md) for the migration plan.
 

@@ -226,6 +226,91 @@ struct MemorySearchRequest {
     query: String,
 }
 
+#[derive(Serialize, Clone)]
+struct BridgeToolInfo {
+    name: String,
+    description: String,
+    inputs: Vec<String>,
+}
+
+#[derive(Deserialize)]
+struct BridgeCreateSubtaskRequest {
+    workspace: String,
+    parent_task_id: String,
+    title: String,
+    description: Option<String>,
+    priority: Option<String>,
+    agent: Option<String>,
+}
+
+#[derive(Deserialize)]
+struct BridgeTaskMessageRequest {
+    workspace: String,
+    source_task_id: String,
+    target_task_id: String,
+    content: String,
+}
+
+#[derive(Serialize, Clone)]
+struct BridgeTaskMessageInfo {
+    id: String,
+    source_task_id: String,
+    target_task_id: String,
+    content: String,
+    created_at: u64,
+}
+
+#[derive(Deserialize)]
+struct BridgeRelatedWorkRequest {
+    workspace: String,
+    task_id: Option<String>,
+    query: String,
+    limit: Option<usize>,
+}
+
+#[derive(Serialize, Clone)]
+struct BridgeRelatedWorkInfo {
+    item_type: String,
+    id: String,
+    title: String,
+    summary: String,
+    path: String,
+}
+
+#[derive(Deserialize)]
+struct BridgeAttachBranchRequest {
+    workspace: String,
+    task_id: String,
+    branch_name: String,
+    worktree_path: Option<String>,
+}
+
+#[derive(Serialize, Clone)]
+struct BridgeBranchAttachmentInfo {
+    task_id: String,
+    branch_name: String,
+    worktree_path: String,
+    attached_at: u64,
+}
+
+#[derive(Deserialize)]
+struct BridgeReviewRequest {
+    workspace: String,
+    task_id: String,
+    requested_by: Option<String>,
+    notes: Option<String>,
+}
+
+#[derive(Serialize, Clone)]
+struct BridgeUserReviewRequestInfo {
+    id: String,
+    task_id: String,
+    requested_by: String,
+    notes: String,
+    status: String,
+    created_at: u64,
+}
+
 #[derive(Serialize, Deserialize, Clone)]
 struct MemoryNodeInfo {
     id: String,
@@ -705,6 +790,341 @@ fn search_memory(request: MemorySearchRequest) -> Result<Vec<MemoryNodeInfo>, St
         out.push(row.map_err(|err| err.to_string())?);
     }
     Ok(out)
+}
+
+#[tauri::command]
+fn list_agent_bridge_tools() -> Vec<BridgeToolInfo> {
+    vec![
+        BridgeToolInfo {
+            name: "thanos.task.create_subtask".to_string(),
+            description: "Create a child task under an existing task.".to_string(),
+            inputs: vec![
+                "parent_task_id".to_string(),
+                "title".to_string(),
+                "description".to_string(),
+                "priority".to_string(),
+                "agent".to_string(),
+            ],
+        },
+        BridgeToolInfo {
+            name: "thanos.task.message_sibling".to_string(),
+            description: "Send a durable message from one task to a sibling task.".to_string(),
+            inputs: vec![
+                "source_task_id".to_string(),
+                "target_task_id".to_string(),
+                "content".to_string(),
+            ],
+        },
+        BridgeToolInfo {
+            name: "thanos.memory.inspect_related_work".to_string(),
+            description: "Inspect related tasks and project memory.".to_string(),
+            inputs: vec![
+                "task_id".to_string(),
+                "query".to_string(),
+                "limit".to_string(),
+            ],
+        },
+        BridgeToolInfo {
+            name: "thanos.task.attach_branch".to_string(),
+            description: "Attach branch and worktree metadata to a task.".to_string(),
+            inputs: vec![
+                "task_id".to_string(),
+                "branch_name".to_string(),
+                "worktree_path".to_string(),
+            ],
+        },
+        BridgeToolInfo {
+            name: "thanos.review.request_user_review".to_string(),
+            description: "Request human review without approving or merging.".to_string(),
+            inputs: vec![
+                "task_id".to_string(),
+                "requested_by".to_string(),
+                "notes".to_string(),
+            ],
+        },
+    ]
+}
+
+#[tauri::command]
+fn bridge_create_subtask(
+    app: AppHandle,
+    request: BridgeCreateSubtaskRequest,
+) -> Result<WorkbenchTaskInfo, String> {
+    let workspace_path = validate_workspace(&request.workspace)?;
+    let parent_id = sanitize_id(&request.parent_task_id)?;
+    let mut parent = read_task_json(&workspace_path, &parent_id)?;
+    let title = request.title.trim();
+    if title.is_empty() {
+        return Err("title is required".to_string());
+    }
+    let id = next_task_id(&workspace_path, title)?;
+    let now = now_epoch();
+    let priority = request
+        .priority
+        .as_deref()
+        .filter(|value| !value.trim().is_empty())
+        .map(|value| value.trim().to_string())
+        .or_else(|| string_field(&parent, "priority"))
+        .unwrap_or_else(|| "P2".to_string());
+    let agent = request.agent.unwrap_or_default().trim().to_string();
+    let branch_name = format!("thanos/{}-{}", id.to_lowercase(), slug_id(title));
+    let child = serde_json::json!({
+        "id": id,
+        "title": title,
+        "description": request.description.unwrap_or_default(),
+        "status": "backlog",
+        "priority": priority,
+        "parent_task_id": parent_id,
+        "assigned_agent": agent,
+        "branch_name": branch_name,
+        "worktree_path": format!(".thanos/worktrees/{}", id),
+        "created_at": now.to_string(),
+        "updated_at": now.to_string(),
+        "plan_path": format!(".thanos/plans/{}.md", id),
+        "log_path": format!(".thanos/logs/{}.md", id),
+        "review_path": format!(".thanos/reviews/{}.md", id),
+        "test_result_path": format!(".thanos/tests/{}.md", id)
+    });
+    write_task_json(&workspace_path, &id, &child)?;
+    let subtasks = parent
+        .get_mut("subtasks")
+        .and_then(|value| value.as_array_mut());
+    if let Some(list) = subtasks {
+        if !list.iter().any(|item| item.as_str() == Some(&id)) {
+            list.push(serde_json::Value::String(id.clone()));
+        }
+    } else {
+        parent["subtasks"] = serde_json::json!([id.clone()]);
+    }
+    parent["updated_at"] = serde_json::Value::String(now.to_string());
+    write_task_json(&workspace_path, &parent_id, &parent)?;
+    emit_workflow_event(
+        &app,
+        &workspace_path,
+        WorkflowEvent {
+            task_id: id.clone(),
+            event: "bridge.subtask.created".to_string(),
+            stage: "mcp".to_string(),
+            status: "backlog".to_string(),
+            artifact: format!(".thanos/tasks/{id}.json"),
+            created_at: now,
+        },
+    )?;
+    let project = WorkbenchRepository::new(workspace_path).load_project()?;
+    task_from_value(&project, &child).ok_or_else(|| "failed to map created task".to_string())
+}
+
+#[tauri::command]
+fn bridge_message_sibling(
+    app: AppHandle,
+    request: BridgeTaskMessageRequest,
+) -> Result<BridgeTaskMessageInfo, String> {
+    let workspace_path = validate_workspace(&request.workspace)?;
+    let source_id = sanitize_id(&request.source_task_id)?;
+    let target_id = sanitize_id(&request.target_task_id)?;
+    let content = request.content.trim();
+    if content.is_empty() {
+        return Err("message content is required".to_string());
+    }
+    let source = read_task_json(&workspace_path, &source_id)?;
+    let target = read_task_json(&workspace_path, &target_id)?;
+    let source_parent = string_field(&source, "parent_task_id").unwrap_or_default();
+    let target_parent = string_field(&target, "parent_task_id").unwrap_or_default();
+    if source_parent.is_empty() || source_parent != target_parent {
+        return Err(format!(
+            "tasks {source_id} and {target_id} are not siblings"
+        ));
+    }
+    let now = now_epoch();
+    let info = BridgeTaskMessageInfo {
+        id: format!("{source_id}-to-{target_id}-{now}"),
+        source_task_id: source_id.clone(),
+        target_task_id: target_id.clone(),
+        content: content.to_string(),
+        created_at: now,
+    };
+    write_json_file(
+        &workspace_path
+            .join(".thanos")
+            .join("messages")
+            .join(format!("{}.json", info.id)),
+        &info,
+    )?;
+    emit_workflow_event(
+        &app,
+        &workspace_path,
+        WorkflowEvent {
+            task_id: target_id,
+            event: "bridge.message.created".to_string(),
+            stage: "mcp".to_string(),
+            status: "message".to_string(),
+            artifact: format!(".thanos/messages/{}.json", info.id),
+            created_at: now,
+        },
+    )?;
+    Ok(info)
+}
+
+#[tauri::command]
+fn bridge_inspect_related_work(
+    request: BridgeRelatedWorkRequest,
+) -> Result<Vec<BridgeRelatedWorkInfo>, String> {
+    let workspace_path = validate_workspace(&request.workspace)?;
+    let mut query = request.query.trim().to_lowercase();
+    if query.is_empty() {
+        if let Some(task_id) = request.task_id.as_deref() {
+            let task = read_task_json(&workspace_path, &sanitize_id(task_id)?)?;
+            query = string_field(&task, "title")
+                .unwrap_or_default()
+                .to_lowercase();
+        }
+    }
+    if query.is_empty() {
+        return Err("query is required".to_string());
+    }
+    let limit = request.limit.unwrap_or(10).clamp(1, 20);
+    let mut related = Vec::new();
+    for value in read_json_values(&workspace_path.join(".thanos").join("tasks"))? {
+        let text = format!(
+            "{} {}",
+            string_field(&value, "title").unwrap_or_default(),
+            string_field(&value, "description").unwrap_or_default()
+        )
+        .to_lowercase();
+        if text.contains(&query) {
+            let id = string_field(&value, "id").unwrap_or_default();
+            related.push(BridgeRelatedWorkInfo {
+                item_type: "task".to_string(),
+                id: id.clone(),
+                title: string_field(&value, "title").unwrap_or_else(|| id.clone()),
+                summary: string_field(&value, "description").unwrap_or_default(),
+                path: format!(".thanos/tasks/{id}.json"),
+            });
+        }
+    }
+    for path in [
+        workspace_path
+            .join(".thanos")
+            .join("memory")
+            .join("feature-graph.md"),
+        workspace_path
+            .join(".thanos")
+            .join("codebase")
+            .join("summary.md"),
+    ] {
+        if let Ok(data) = fs::read_to_string(&path) {
+            if data.to_lowercase().contains(&query) {
+                let relative = path
+                    .strip_prefix(&workspace_path)
+                    .unwrap_or(&path)
+                    .display()
+                    .to_string();
+                related.push(BridgeRelatedWorkInfo {
+                    item_type: "memory".to_string(),
+                    id: path
+                        .file_name()
+                        .and_then(|name| name.to_str())
+                        .unwrap_or("memory")
+                        .to_string(),
+                    title: path
+                        .file_name()
+                        .and_then(|name| name.to_str())
+                        .unwrap_or("memory")
+                        .to_string(),
+                    summary: first_nonempty_line(&data),
+                    path: relative,
+                });
+            }
+        }
+    }
+    related.sort_by(|a, b| a.item_type.cmp(&b.item_type).then(a.id.cmp(&b.id)));
+    related.truncate(limit);
+    Ok(related)
+}
+
+#[tauri::command]
+fn bridge_attach_branch(
+    app: AppHandle,
+    request: BridgeAttachBranchRequest,
+) -> Result<BridgeBranchAttachmentInfo, String> {
+    let workspace_path = validate_workspace(&request.workspace)?;
+    let task_id = sanitize_id(&request.task_id)?;
+    let branch_name = validate_branch(&request.branch_name)?;
+    let mut task = read_task_json(&workspace_path, &task_id)?;
+    let worktree_path = request
+        .worktree_path
+        .filter(|value| !value.trim().is_empty())
+        .unwrap_or_else(|| format!(".thanos/worktrees/{task_id}"));
+    let now = now_epoch();
+    task["branch_name"] = serde_json::Value::String(branch_name.clone());
+    task["worktree_path"] = serde_json::Value::String(worktree_path.clone());
+    task["updated_at"] = serde_json::Value::String(now.to_string());
+    write_task_json(&workspace_path, &task_id, &task)?;
+    let attachment = BridgeBranchAttachmentInfo {
+        task_id: task_id.clone(),
+        branch_name,
+        worktree_path,
+        attached_at: now,
+    };
+    write_json_file(
+        &workspace_path
+            .join(".thanos")
+            .join("branches")
+            .join(format!("{task_id}.json")),
+        &attachment,
+    )?;
+    emit_workflow_event(
+        &app,
+        &workspace_path,
+        WorkflowEvent {
+            task_id,
+            event: "bridge.branch.attached".to_string(),
+            stage: "mcp".to_string(),
+            status: "attached".to_string(),
+            artifact: format!(".thanos/branches/{}.json", attachment.task_id),
+            created_at: now,
+        },
+    )?;
+    Ok(attachment)
+}
+
+#[tauri::command]
+fn bridge_request_user_review(
+    app: AppHandle,
+    request: BridgeReviewRequest,
+) -> Result<BridgeUserReviewRequestInfo, String> {
+    let workspace_path = validate_workspace(&request.workspace)?;
+    let task_id = sanitize_id(&request.task_id)?;
+    let _ = read_task_json(&workspace_path, &task_id)?;
+    let now = now_epoch();
+    let info = BridgeUserReviewRequestInfo {
+        id: format!("review-request-{task_id}-{now}"),
+        task_id: task_id.clone(),
+        requested_by: request.requested_by.unwrap_or_default(),
+        notes: request.notes.unwrap_or_default(),
+        status: "pending_user_review".to_string(),
+        created_at: now,
+    };
+    write_json_file(
+        &workspace_path
+            .join(".thanos")
+            .join("review-requests")
+            .join(format!("{}.json", info.id)),
+        &info,
+    )?;
+    emit_workflow_event(
+        &app,
+        &workspace_path,
+        WorkflowEvent {
+            task_id,
+            event: "bridge.review.requested".to_string(),
+            stage: "review".to_string(),
+            status: "pending_user_review".to_string(),
+            artifact: format!(".thanos/review-requests/{}.json", info.id),
+            created_at: now,
+        },
+    )?;
+    Ok(info)
 }
 
 #[tauri::command]
@@ -1617,6 +2037,47 @@ fn read_json_values(dir: &Path) -> Result<Vec<serde_json::Value>, String> {
     Ok(values)
 }
 
+fn read_task_json(workspace: &Path, task_id: &str) -> Result<serde_json::Value, String> {
+    let path = workspace
+        .join(".thanos")
+        .join("tasks")
+        .join(format!("{task_id}.json"));
+    let data = fs::read_to_string(&path)
+        .map_err(|err| format!("failed to read {}: {err}", path.display()))?;
+    serde_json::from_str(&data).map_err(|err| format!("failed to parse {}: {err}", path.display()))
+}
+
+fn write_task_json(
+    workspace: &Path,
+    task_id: &str,
+    value: &serde_json::Value,
+) -> Result<(), String> {
+    write_json_file(
+        &workspace
+            .join(".thanos")
+            .join("tasks")
+            .join(format!("{task_id}.json")),
+        value,
+    )
+}
+
+fn write_json_file<T: Serialize>(path: &Path, value: &T) -> Result<(), String> {
+    if let Some(parent) = path.parent() {
+        fs::create_dir_all(parent)
+            .map_err(|err| format!("failed to create {}: {err}", parent.display()))?;
+    }
+    fs::write(
+        path,
+        serde_json::to_string_pretty(value).map_err(|err| err.to_string())?,
+    )
+    .map_err(|err| format!("failed to write {}: {err}", path.display()))
+}
+
+fn next_task_id(workspace: &Path, title: &str) -> Result<String, String> {
+    let count = read_json_values(&workspace.join(".thanos").join("tasks"))?.len() + 1;
+    Ok(format!("T{:03}-{}", count, slug_id(title)))
+}
+
 fn task_from_value(
     project: &WorkbenchProjectInfo,
     value: &serde_json::Value,
@@ -1779,6 +2240,15 @@ fn title_from_task_id(task_id: &str) -> String {
 
 fn file_tag(file: &str) -> String {
     file.split('/').next().unwrap_or(file).to_string()
+}
+
+fn first_nonempty_line(value: &str) -> String {
+    value
+        .lines()
+        .map(|line| line.trim().trim_start_matches('#').trim())
+        .find(|line| !line.is_empty())
+        .unwrap_or_default()
+        .to_string()
 }
 
 fn slug_id(value: &str) -> String {
@@ -2187,6 +2657,12 @@ pub fn run() {
             approve_review,
             write_memory_node,
             search_memory,
+            list_agent_bridge_tools,
+            bridge_create_subtask,
+            bridge_message_sibling,
+            bridge_inspect_related_work,
+            bridge_attach_branch,
+            bridge_request_user_review,
             load_workbench_state,
             prepare_task_worktree,
             start_agent_session,

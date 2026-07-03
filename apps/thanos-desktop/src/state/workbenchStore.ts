@@ -9,6 +9,8 @@ import type {
     MemoryNode,
     Project,
     Review,
+    Skill,
+    SkillRun,
     Task,
     TaskStatus,
     TestRun,
@@ -24,6 +26,8 @@ type WorkbenchState = {
     reviews: Review[];
     memoryNodes: MemoryNode[];
     sessions: AgentSession[];
+    skills: Skill[];
+    skillRuns: SkillRun[];
     diffs: Record<string, GitDiff>;
     testRuns: Record<string, TestRun>;
     selectedTaskId: string;
@@ -70,6 +74,8 @@ export const useWorkbenchStore = create<WorkbenchState>((set, get) => ({
     reviews: [],
     memoryNodes: [],
     sessions: [],
+    skills: [],
+    skillRuns: [],
     diffs: {},
     testRuns: {},
     selectedTaskId: "",
@@ -89,6 +95,8 @@ export const useWorkbenchStore = create<WorkbenchState>((set, get) => ({
                 reviews: snapshot.reviews,
                 memoryNodes: snapshot.memoryNodes,
                 sessions: snapshot.sessions,
+                skills: snapshot.skills,
+                skillRuns: snapshot.skillRuns,
                 selectedTaskId: selectedExists
                     ? state.selectedTaskId
                     : snapshot.tasks[0]?.id ?? "",
@@ -273,4 +281,16 @@ export function sessionFor(task: Task, state: WorkbenchState): AgentSession {
             output: [],
         }
     );
+}
+
+export function activeSkillsFor(task: Task, state: WorkbenchState) {
+    return state.skillRuns
+        .filter((run) => run.taskId === task.id)
+        .map((run) => ({
+            run,
+            skill: state.skills.find((skill) => skill.id === run.skillId),
+        }))
+        .filter((item): item is { run: SkillRun; skill: Skill } =>
+            Boolean(item.skill),
+        );
 }

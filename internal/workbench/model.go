@@ -161,6 +161,65 @@ type TestResult struct {
 	Duration string `json:"duration,omitempty"`
 }
 
+type SkillSource string
+
+const (
+	SkillSourceProject SkillSource = "project"
+	SkillSourceGlobal  SkillSource = "global"
+	SkillSourceBuiltin SkillSource = "builtin"
+)
+
+type Skill struct {
+	ID               string      `json:"id"`
+	ProjectID        string      `json:"project_id,omitempty"`
+	Name             string      `json:"name"`
+	Path             string      `json:"path"`
+	Description      string      `json:"description"`
+	AppliesTo        []string    `json:"applies_to,omitempty"`
+	Agents           []string    `json:"agents,omitempty"`
+	Version          string      `json:"version,omitempty"`
+	Source           SkillSource `json:"source"`
+	RequiredEvidence []string    `json:"required_evidence,omitempty"`
+	ExitCriteria     []string    `json:"exit_criteria,omitempty"`
+	Enabled          bool        `json:"enabled"`
+	Trusted          bool        `json:"trusted"`
+	CreatedAt        time.Time   `json:"created_at"`
+	UpdatedAt        time.Time   `json:"updated_at"`
+}
+
+type SkillRunStatus string
+
+const (
+	SkillRunDiscovered      SkillRunStatus = "discovered"
+	SkillRunMatched         SkillRunStatus = "matched"
+	SkillRunActivated       SkillRunStatus = "activated"
+	SkillRunRunning         SkillRunStatus = "running"
+	SkillRunEvidencePending SkillRunStatus = "evidence_pending"
+	SkillRunCompleted       SkillRunStatus = "completed"
+	SkillRunFailed          SkillRunStatus = "failed"
+)
+
+type SkillRun struct {
+	ID             string         `json:"id"`
+	TaskID         string         `json:"task_id"`
+	SkillID        string         `json:"skill_id"`
+	AgentSessionID string         `json:"agent_session_id,omitempty"`
+	Status         SkillRunStatus `json:"status"`
+	Evidence       map[string]any `json:"evidence_json,omitempty"`
+	StartedAt      time.Time      `json:"started_at"`
+	CompletedAt    time.Time      `json:"completed_at,omitempty"`
+}
+
+type Evidence struct {
+	ID         string    `json:"id"`
+	TaskID     string    `json:"task_id"`
+	SkillRunID string    `json:"skill_run_id,omitempty"`
+	Type       string    `json:"type"`
+	Content    string    `json:"content"`
+	VerifiedBy string    `json:"verified_by,omitempty"`
+	CreatedAt  time.Time `json:"created_at"`
+}
+
 type MemoryNode struct {
 	ID                string    `json:"id"`
 	ProjectID         string    `json:"project_id"`
