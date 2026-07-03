@@ -2,7 +2,7 @@ import { useEffect, useRef } from "react";
 import { Terminal as XTerm } from "@xterm/xterm";
 import { FitAddon } from "@xterm/addon-fit";
 import "@xterm/xterm/css/xterm.css";
-import type { ExecutionPlan, Task } from "../domain/models";
+import type { AgentSession, ExecutionPlan, Task } from "../domain/models";
 import { NativeBackend } from "../services/nativeBackend";
 import { useWorkbenchStore } from "../state/workbenchStore";
 
@@ -24,8 +24,8 @@ export function useAgentSessionFlow() {
   }, [appendSessionOutput]);
 
   return {
-    async start(task: Task, agentType: "planner" | "coder" = "coder") {
-      if (agentType === "coder" && !task.reviewApproved) {
+    async start(task: Task, agentType: AgentSession["agentType"] = "coder") {
+      if (agentType === "coder" && !task.planApproved) {
         upsertSession({
           id: `session-${task.id}-coder`,
           taskId: task.id,
@@ -37,7 +37,7 @@ export function useAgentSessionFlow() {
         });
         return;
       }
-      const prepared = agentType === "coder" ? await backend.prepareWorktree(task) : null;
+      const prepared = agentType === "coder" || agentType === "reviewer" || agentType === "tester" ? await backend.prepareWorktree(task) : null;
       const runnable = prepared ? { ...task, branchName: prepared.branchName, worktreePath: prepared.worktreePath } : task;
       const session = agentType === "planner" || runnable.worktreePath ? await backend.startAgentRole(runnable, agentType) : null;
       if (session) {
@@ -87,6 +87,7 @@ export function useAgentSessionFlow() {
 export function XtermPanel({ output }: { output: string[] }) {
   const hostRef = useRef<HTMLDivElement | null>(null);
   const terminalRef = useRef<XTerm | null>(null);
+  const renderedRef = useRef("");
 
   useEffect(() => {
     if (!hostRef.current || terminalRef.current) return;
@@ -95,11 +96,14 @@ export function XtermPanel({ output }: { output: string[] }) {
       cursorBlink: true,
       fontFamily: "Menlo, Monaco, Consolas, monospace",
       fontSize: 12,
-      theme: { background: "#020617", foreground: "#E5E7EB" },
+      theme: { background: "#050505", foreground: "#E5E7EB", cursor: "#E5E7EB", selectionBackground: "#264F78" },
     });
     const fit = new FitAddon();
     term.loadAddon(fit);
     term.open(hostRef.current);
+    term.onData((data) => {
+      void backend.writeTerminal(data);
+    });
     fit.fit();
     terminalRef.current = term;
     return () => term.dispose();
@@ -108,9 +112,12 @@ export function XtermPanel({ output }: { output: string[] }) {
   useEffect(() => {
     const terminal = terminalRef.current;
     if (!terminal) return;
+    const text = output.length ? output.join("\r\n") : "\x1b[38;5;244mLast login: local Thanos terminal\x1b[0m\r\n\x1b[32mthanos\x1b[0m:\x1b[34m~\x1b[0m$ ";
+    if (renderedRef.current === text) return;
+    renderedRef.current = text;
     terminal.clear();
-    terminal.write(output.join("\r\n") || "waiting for native agent CLI session");
+    terminal.write(text);
   }, [output]);
 
-  return <div ref={hostRef} className="h-full min-h-0 overflow-hidden rounded-xl bg-slate-950" />;
+  return <div ref={hostRef} className="h-full min-h-0 overflow-hidden rounded-lg bg-black" />;
 }

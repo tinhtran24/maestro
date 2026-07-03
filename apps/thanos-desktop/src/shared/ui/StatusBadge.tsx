@@ -7,6 +7,7 @@ const tone: Record<TaskStatus, string> = {
   ready: "border-blue-info/30 bg-blue-info/10 text-blue-info",
   running: "border-green-success/30 bg-green-success/10 text-green-success",
   in_review: "border-orange-review/30 bg-orange-review/10 text-orange-review",
+  waiting_user: "border-yellow-warning/30 bg-yellow-warning/10 text-yellow-warning",
   blocked: "border-red-danger/30 bg-red-danger/10 text-red-danger",
   done: "border-green-success/30 bg-green-success/10 text-green-success",
   failed: "border-red-danger/30 bg-red-danger/10 text-red-danger",

@@ -4,6 +4,12 @@ CREATE TABLE IF NOT EXISTS projects (
   id TEXT PRIMARY KEY,
   name TEXT NOT NULL,
   root_path TEXT NOT NULL,
+  git_remote_url TEXT NOT NULL DEFAULT '',
+  default_branch TEXT NOT NULL DEFAULT 'main',
+  worktree_root TEXT NOT NULL DEFAULT '.thanos/worktrees',
+  package_manager TEXT NOT NULL DEFAULT '',
+  dev_command TEXT NOT NULL DEFAULT '',
+  test_command TEXT NOT NULL DEFAULT '',
   settings_json TEXT NOT NULL DEFAULT '{}',
   created_at TEXT NOT NULL,
   updated_at TEXT NOT NULL
@@ -42,6 +48,7 @@ CREATE TABLE IF NOT EXISTS tasks (
     'ready',
     'running',
     'in_review',
+    'waiting_user',
     'blocked',
     'done',
     'failed'

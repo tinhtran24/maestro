@@ -1,24 +1,84 @@
 import { create } from "zustand";
 import type {
     AgentSession,
+    AgentProvider,
     BottomTab,
     ExecutionPlan,
     Feature,
     GitDiff,
     InspectorTab,
     MemoryNode,
+    PlanningQuestion,
     Project,
     Review,
     Skill,
     SkillRun,
     Task,
+    TaskEvent,
+    TaskEventType,
     TaskStatus,
     TestRun,
+    WorkflowStepConfig,
+    WorkflowStepId,
 } from "../domain/models";
 import type { WorkbenchSnapshot } from "../services/nativeBackend";
-import { transitionTask } from "./taskMachine";
+import {
+    applyProviderOverrides,
+    loadProviderOverrides,
+    loadWorkflowSteps,
+    saveProviderOverride,
+    saveWorkflowSteps,
+} from "../features/agents/api/agentConfig";
+import { transitionEventType, transitionTask } from "./taskMachine";
+
+// --- Phase 3 — Workflow Engine helpers -----------------------------------
+
+function nowIso() {
+    return new Date().toISOString();
+}
+
+function slug(value: string) {
+    return value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+}
+
+function makeEvent(taskId: string, type: TaskEventType, patch: Partial<TaskEvent> = {}): TaskEvent {
+    const rand = Math.random().toString(36).slice(2, 6);
+    return { id: `evt-${taskId}-${Date.now().toString(36)}-${rand}`, taskId, type, at: nowIso(), ...patch };
+}
+
+function pushEvent(history: Record<string, TaskEvent[]>, event: TaskEvent): Record<string, TaskEvent[]> {
+    return { ...history, [event.taskId]: [...(history[event.taskId] ?? []), event] };
+}
+
+// Mock worktree assignment (no Git). Satisfies the `running` gate in Phase 3.
+function ensureWorktree(task: Task): Task {
+    if (task.worktreePath && task.branchName) return task;
+    const branchName = task.branchName || `thanos/${task.id.toLowerCase()}-${slug(task.title)}`;
+    const worktreePath = task.worktreePath || `.thanos/worktrees/${task.id.toLowerCase()}`;
+    return { ...task, branchName, worktreePath };
+}
+
+type TransitionOutcome = { tasks: Task[]; event: TaskEvent } | { error: string };
+
+// Validates and applies a single transition through the state machine. Assigns a
+// mock worktree before `running` so the isolation gate holds. Returns an error
+// string when the transition is invalid — invalid transitions never mutate.
+function applyTransition(tasks: Task[], taskId: string, to: TaskStatus, note?: string): TransitionOutcome {
+    const index = tasks.findIndex((task) => task.id === taskId);
+    if (index < 0) return { error: "Task not found." };
+    const current = tasks[index];
+    const prepared = to === "running" ? ensureWorktree(current) : current;
+    const result = transitionTask(prepared, to);
+    if (!result.ok) return { error: result.reason };
+    const next = tasks.slice();
+    next[index] = result.task;
+    return { tasks: next, event: makeEvent(taskId, transitionEventType(to), { from: current.status, to, note }) };
+}
+
 
 type WorkbenchState = {
+    activeView: "workbench" | "projects" | "memory" | "executors" | "workflow_steps" | "settings";
+    loadError: string;
     project: Project;
     features: Feature[];
     tasks: Task[];
@@ -26,21 +86,43 @@ type WorkbenchState = {
     reviews: Review[];
     memoryNodes: MemoryNode[];
     sessions: AgentSession[];
+    pinnedSessions: string[];
+    activeSessionByTask: Record<string, string>;
     skills: Skill[];
     skillRuns: SkillRun[];
+    agentProviders: AgentProvider[];
+    workflowSteps: WorkflowStepConfig[];
     diffs: Record<string, GitDiff>;
     testRuns: Record<string, TestRun>;
+    taskHistory: Record<string, TaskEvent[]>;
+    planningByTask: Record<string, { questions: PlanningQuestion[] }>;
     selectedTaskId: string;
     boardFilter: string;
     inspectorTab: InspectorTab;
     bottomTab: BottomTab;
+    rightCollapsed: boolean;
+    taskDialog: { mode: "create" | "edit"; taskId?: string } | null;
+    setActiveView(view: WorkbenchState["activeView"]): void;
+    toggleRightCollapsed(): void;
+    setLoadError(value: string): void;
     hydrate(snapshot: WorkbenchSnapshot): void;
+    setProject(project: Project): void;
+    setAgentProviders(providers: AgentProvider[]): void;
+    updateAgentProvider(id: string, patch: Partial<AgentProvider>): void;
+    setWorkflowSteps(steps: WorkflowStepConfig[]): void;
+    updateWorkflowStep(id: WorkflowStepId, patch: Partial<WorkflowStepConfig>): void;
     selectTask(taskId: string): void;
     setBoardFilter(value: string): void;
     setInspectorTab(tab: InspectorTab): void;
     setBottomTab(tab: BottomTab): void;
-    createTask(title: string): void;
+    openCreateTask(): void;
+    openEditTask(taskId: string): void;
+    closeTaskDialog(): void;
+    createTask(input: { title: string; description: string; priority: Task["priority"]; assignedAgent: string }): void;
+    editTask(taskId: string, input: { title: string; description: string; priority: Task["priority"]; assignedAgent: string }): void;
+    removeTask(taskId: string): void;
     moveTask(taskId: string, status: TaskStatus): void;
+    advanceTask(taskId: string, status: TaskStatus, note?: string): void;
     approvePlan(taskId: string): void;
     persistPlan(plan: ExecutionPlan): void;
     requestChanges(taskId: string): void;
@@ -50,12 +132,18 @@ type WorkbenchState = {
     persistTestRun(test: TestRun): void;
     persistReview(review: Review): void;
     persistMemory(nodes: MemoryNode[]): void;
+    setPlanningQuestions(taskId: string, questions: PlanningQuestion[]): void;
+    answerPlanningQuestion(taskId: string, questionId: string, answer: string): void;
     upsertSession(session: AgentSession): void;
     appendSessionOutput(
         taskId: string,
         sessionId: string,
         output: string,
     ): void;
+    patchSession(sessionId: string, patch: Partial<AgentSession>): void;
+    removeSession(sessionId: string): void;
+    togglePinnedSession(sessionId: string): void;
+    setActiveSession(taskId: string, sessionId: string): void;
 };
 
 const emptyProject: Project = {
@@ -66,7 +154,19 @@ const emptyProject: Project = {
     settings: {},
 };
 
+export const defaultWorkflowSteps: WorkflowStepConfig[] = [
+    step("planning", "Planning", "Claude Code", "claude", "project", true, true, ["read", "write-plans"]),
+    step("coding", "Coding", "Codex", "codex", "worktree", true, true, ["read", "write-code", "run-tests"]),
+    step("review", "Review", "Claude Code", "claude", "worktree", true, true, ["read", "inspect-diff"]),
+    step("testing", "Testing", "Shell", "npm test", "worktree", true, false, ["run-tests"]),
+    step("debugging", "Debugging", "Codex", "codex", "worktree", false, true, ["read", "write-code", "run-tests"]),
+    step("documentation", "Documentation", "Codex", "codex", "worktree", false, true, ["read", "write-docs"]),
+    step("memory_update", "Memory Update", "Shell", "thanos memory update", "project", false, false, ["write-memory"]),
+];
+
 export const useWorkbenchStore = create<WorkbenchState>((set, get) => ({
+    activeView: "workbench",
+    loadError: "",
     project: emptyProject,
     features: [],
     tasks: [],
@@ -74,19 +174,38 @@ export const useWorkbenchStore = create<WorkbenchState>((set, get) => ({
     reviews: [],
     memoryNodes: [],
     sessions: [],
+    pinnedSessions: [],
+    activeSessionByTask: {},
     skills: [],
     skillRuns: [],
+    agentProviders: [],
+    workflowSteps: loadWorkflowSteps(defaultWorkflowSteps),
     diffs: {},
     testRuns: {},
+    taskHistory: {},
+    planningByTask: {},
     selectedTaskId: "",
     boardFilter: "",
     inspectorTab: "plan",
-    bottomTab: "chat",
+    bottomTab: "terminal",
+    rightCollapsed: false,
+    taskDialog: null,
+    setActiveView: (activeView) => set({ activeView }),
+    toggleRightCollapsed: () => set((state) => ({ rightCollapsed: !state.rightCollapsed })),
+    setLoadError: (loadError) => set({ loadError }),
     hydrate: (snapshot) =>
         set((state) => {
             const selectedExists = snapshot.tasks.some(
                 (task) => task.id === state.selectedTaskId,
             );
+            // Seed a baseline history entry for any task without one, so the
+            // timeline reflects the task's current workflow position.
+            const taskHistory = { ...state.taskHistory };
+            for (const task of snapshot.tasks) {
+                if (!taskHistory[task.id]?.length) {
+                    taskHistory[task.id] = [makeEvent(task.id, "created", { to: task.status })];
+                }
+            }
             return {
                 project: snapshot.project,
                 features: snapshot.features,
@@ -97,60 +216,133 @@ export const useWorkbenchStore = create<WorkbenchState>((set, get) => ({
                 sessions: snapshot.sessions,
                 skills: snapshot.skills,
                 skillRuns: snapshot.skillRuns,
+                taskHistory,
+                loadError: "",
                 selectedTaskId: selectedExists
                     ? state.selectedTaskId
                     : snapshot.tasks[0]?.id ?? "",
             };
         }),
+    setProject: (project) => set({ project }),
+    setAgentProviders: (agentProviders) =>
+        set({ agentProviders: applyProviderOverrides(agentProviders, loadProviderOverrides()) }),
+    updateAgentProvider: (id, patch) =>
+        set((state) => {
+            if (patch.enabled !== undefined) saveProviderOverride(id, { enabled: patch.enabled });
+            return {
+                agentProviders: state.agentProviders.map((provider) =>
+                    provider.id === id ? { ...provider, ...patch } : provider,
+                ),
+            };
+        }),
+    setWorkflowSteps: (workflowSteps) => {
+        saveWorkflowSteps(workflowSteps);
+        set({ workflowSteps });
+    },
+    updateWorkflowStep: (id, patch) =>
+        set((state) => {
+            const workflowSteps = state.workflowSteps.map((step) =>
+                step.id === id ? { ...step, ...patch } : step,
+            );
+            saveWorkflowSteps(workflowSteps);
+            return { workflowSteps };
+        }),
     selectTask: (taskId) => set({ selectedTaskId: taskId }),
     setBoardFilter: (boardFilter) => set({ boardFilter }),
     setInspectorTab: (inspectorTab) => set({ inspectorTab }),
     setBottomTab: (bottomTab) => set({ bottomTab }),
-    createTask: (title) =>
+    openCreateTask: () => set({ taskDialog: { mode: "create" } }),
+    openEditTask: (taskId) => set({ taskDialog: { mode: "edit", taskId } }),
+    closeTaskDialog: () => set({ taskDialog: null }),
+    createTask: (input) =>
+        set((state) => {
+            const id = `T-${100 + state.tasks.length}`;
+            const task: Task = {
+                id,
+                featureId: state.features[0]?.id ?? "local",
+                title: input.title,
+                description: input.description,
+                status: "backlog",
+                priority: input.priority,
+                assignedAgent: input.assignedAgent || "Unassigned",
+                executorProfile: input.assignedAgent.toLowerCase().includes("claude") ? "claude-local" : "codex-local",
+                worktreePath: "",
+                branchName: "",
+                planApproved: false,
+                reviewApproved: false,
+                testsPassed: false,
+                updatedAt: nowIso(),
+                tags: ["new"],
+                progress: 0,
+            };
+            return {
+                tasks: [...state.tasks, task],
+                selectedTaskId: id,
+                taskDialog: null,
+                taskHistory: pushEvent(state.taskHistory, makeEvent(id, "created", { to: "backlog" })),
+            };
+        }),
+    editTask: (taskId, input) =>
         set((state) => ({
-            tasks: [
-                ...state.tasks,
-                {
-                    id: `T-${100 + state.tasks.length}`,
-                    featureId: "F-100",
-                    title,
-                    description: "New task created from board flow.",
-                    status: "backlog",
-                    priority: "P2",
-                    assignedAgent: "Unassigned",
-                    executorProfile: "codex-local",
-                    worktreePath: "",
-                    branchName: "",
-                    reviewApproved: false,
-                    testsPassed: false,
-                    updatedAt: "now",
-                    tags: ["new"],
-                    progress: 0,
-                },
-            ],
-        })),
-    moveTask: (taskId, status) =>
-        set((state) => ({
-            tasks: state.tasks.map((task) => {
-                if (task.id !== taskId) return task;
-                const result = transitionTask(task, status);
-                return result.ok ? result.task : task;
-            }),
-        })),
-    approvePlan: (taskId) =>
-        set((state) => ({
-            plans: state.plans.map((plan) =>
-                plan.taskId === taskId
-                    ? { ...plan, approvalStatus: "approved" }
-                    : plan,
+            tasks: state.tasks.map((task) =>
+                task.id === taskId
+                    ? {
+                          ...task,
+                          title: input.title,
+                          description: input.description,
+                          priority: input.priority,
+                          assignedAgent: input.assignedAgent || "Unassigned",
+                          updatedAt: "now",
+                      }
+                    : task,
             ),
-            tasks: state.tasks.map((task) => {
-                if (task.id !== taskId) return task;
-                const approved = { ...task, reviewApproved: true };
-                const result = transitionTask(approved, "ready");
-                return result.ok ? result.task : approved;
-            }),
+            taskDialog: null,
         })),
+    removeTask: (taskId) =>
+        set((state) => {
+            const tasks = state.tasks.filter((task) => task.id !== taskId);
+            const taskHistory = { ...state.taskHistory };
+            delete taskHistory[taskId];
+            const planningByTask = { ...state.planningByTask };
+            delete planningByTask[taskId];
+            return {
+                tasks,
+                plans: state.plans.filter((plan) => plan.taskId !== taskId),
+                reviews: state.reviews.filter((review) => review.taskId !== taskId),
+                sessions: state.sessions.filter((session) => session.taskId !== taskId),
+                skillRuns: state.skillRuns.filter((run) => run.taskId !== taskId),
+                taskHistory,
+                planningByTask,
+                selectedTaskId: state.selectedTaskId === taskId ? tasks[0]?.id ?? "" : state.selectedTaskId,
+            };
+        }),
+    // Board drag/drop. Invalid transitions are silently rejected (no mutation).
+    moveTask: (taskId, status) =>
+        set((state) => {
+            const outcome = applyTransition(state.tasks, taskId, status);
+            if ("error" in outcome) return {};
+            return { tasks: outcome.tasks, taskHistory: pushEvent(state.taskHistory, outcome.event) };
+        }),
+    // Explicit mock advance from the workflow controls; carries an optional note.
+    advanceTask: (taskId, status, note) =>
+        set((state) => {
+            const outcome = applyTransition(state.tasks, taskId, status, note);
+            if ("error" in outcome) return {};
+            return { tasks: outcome.tasks, taskHistory: pushEvent(state.taskHistory, outcome.event) };
+        }),
+    approvePlan: (taskId) =>
+        set((state) => {
+            const plans = state.plans.map((plan) =>
+                plan.taskId === taskId ? { ...plan, approvalStatus: "approved" as const } : plan,
+            );
+            // Plan approval is the gate for `ready` — it is distinct from review approval.
+            const flagged = state.tasks.map((task) =>
+                task.id === taskId ? { ...task, planApproved: true } : task,
+            );
+            const outcome = applyTransition(flagged, taskId, "ready");
+            if ("error" in outcome) return { plans, tasks: flagged };
+            return { plans, tasks: outcome.tasks, taskHistory: pushEvent(state.taskHistory, outcome.event) };
+        }),
     persistPlan: (plan) =>
         set((state) => ({
             plans: state.plans.some((item) => item.taskId === plan.taskId)
@@ -160,29 +352,28 @@ export const useWorkbenchStore = create<WorkbenchState>((set, get) => ({
                 : [...state.plans, plan],
         })),
     requestChanges: (taskId) =>
-        set((state) => ({
-            tasks: state.tasks.map((task) => {
-                if (task.id !== taskId) return task;
-                const result = transitionTask(task, "planning");
-                return result.ok ? result.task : task;
-            }),
-        })),
+        set((state) => {
+            const outcome = applyTransition(state.tasks, taskId, "planning", "Changes requested");
+            if ("error" in outcome) return {};
+            const event: TaskEvent = { ...outcome.event, type: "changes_requested" };
+            return { tasks: outcome.tasks, taskHistory: pushEvent(state.taskHistory, event) };
+        }),
     runTests: (taskId) =>
-        set((state) => ({
-            tasks: state.tasks.map((task) =>
-                task.id === taskId
-                    ? { ...task, testsPassed: true, updatedAt: "now" }
-                    : task,
-            ),
-        })),
+        set((state) => {
+            if (!state.tasks.some((task) => task.id === taskId)) return {};
+            return {
+                tasks: state.tasks.map((task) =>
+                    task.id === taskId ? { ...task, testsPassed: true, updatedAt: nowIso() } : task,
+                ),
+                taskHistory: pushEvent(state.taskHistory, makeEvent(taskId, "tests_passed", {})),
+            };
+        }),
     approveMerge: (taskId) =>
-        set((state) => ({
-            tasks: state.tasks.map((task) => {
-                if (task.id !== taskId) return task;
-                const result = transitionTask(task, "done");
-                return result.ok ? result.task : task;
-            }),
-        })),
+        set((state) => {
+            const outcome = applyTransition(state.tasks, taskId, "done");
+            if ("error" in outcome) return {};
+            return { tasks: outcome.tasks, taskHistory: pushEvent(state.taskHistory, outcome.event) };
+        }),
     persistDiff: (diff) =>
         set((state) => ({ diffs: { ...state.diffs, [diff.taskId]: diff } })),
     persistTestRun: (test) =>
@@ -195,42 +386,109 @@ export const useWorkbenchStore = create<WorkbenchState>((set, get) => ({
             ),
         })),
     persistReview: (review) =>
-        set((state) => ({
-            reviews: state.reviews.some((item) => item.taskId === review.taskId)
-                ? state.reviews.map((item) =>
-                      item.taskId === review.taskId ? review : item,
-                  )
-                : [...state.reviews, review],
-            tasks: state.tasks.map((task) =>
-                task.id === review.taskId
-                    ? { ...task, reviewApproved: review.status === "approved" }
-                    : task,
-            ),
-        })),
+        set((state) => {
+            const wasApproved = state.tasks.find((task) => task.id === review.taskId)?.reviewApproved ?? false;
+            const nowApproved = review.status === "approved";
+            const taskHistory = !wasApproved && nowApproved
+                ? pushEvent(state.taskHistory, makeEvent(review.taskId, "review_approved", {}))
+                : state.taskHistory;
+            return {
+                reviews: state.reviews.some((item) => item.taskId === review.taskId)
+                    ? state.reviews.map((item) => (item.taskId === review.taskId ? review : item))
+                    : [...state.reviews, review],
+                tasks: state.tasks.map((task) =>
+                    task.id === review.taskId ? { ...task, reviewApproved: nowApproved } : task,
+                ),
+                taskHistory,
+            };
+        }),
     persistMemory: (nodes) => set({ memoryNodes: nodes }),
+    setPlanningQuestions: (taskId, questions) =>
+        set((state) => ({ planningByTask: { ...state.planningByTask, [taskId]: { questions } } })),
+    answerPlanningQuestion: (taskId, questionId, answer) =>
+        set((state) => {
+            const existing = state.planningByTask[taskId];
+            if (!existing) return {};
+            return {
+                planningByTask: {
+                    ...state.planningByTask,
+                    [taskId]: {
+                        questions: existing.questions.map((question) =>
+                            question.id === questionId ? { ...question, answer } : question,
+                        ),
+                    },
+                },
+            };
+        }),
+    // Sessions are keyed by id so a task can own multiple terminal sessions.
     upsertSession: (session) =>
         set((state) => {
-            const index = state.sessions.findIndex(
-                (item) =>
-                    item.id === session.id || item.taskId === session.taskId,
-            );
+            const index = state.sessions.findIndex((item) => item.id === session.id);
             if (index < 0) return { sessions: [...state.sessions, session] };
             const next = [...state.sessions];
             next[index] = session;
             return { sessions: next };
         }),
-    appendSessionOutput: (taskId, sessionId, output) => {
-        const existing = get().sessions.find(
-            (session) => session.id === sessionId || session.taskId === taskId,
-        );
-        if (!existing) return;
-        get().upsertSession({
-            ...existing,
-            id: sessionId,
-            output: [...existing.output, output],
-        });
-    },
+    appendSessionOutput: (_taskId, sessionId, output) =>
+        set((state) => ({
+            sessions: state.sessions.map((session) =>
+                session.id === sessionId ? { ...session, output: [...session.output, output] } : session,
+            ),
+        })),
+    patchSession: (sessionId, patch) =>
+        set((state) => ({
+            sessions: state.sessions.map((session) =>
+                session.id === sessionId ? { ...session, ...patch } : session,
+            ),
+        })),
+    removeSession: (sessionId) =>
+        set((state) => ({
+            sessions: state.sessions.filter((session) => session.id !== sessionId),
+            pinnedSessions: state.pinnedSessions.filter((id) => id !== sessionId),
+        })),
+    togglePinnedSession: (sessionId) =>
+        set((state) => ({
+            pinnedSessions: state.pinnedSessions.includes(sessionId)
+                ? state.pinnedSessions.filter((id) => id !== sessionId)
+                : [...state.pinnedSessions, sessionId],
+        })),
+    setActiveSession: (taskId, sessionId) =>
+        set((state) => ({ activeSessionByTask: { ...state.activeSessionByTask, [taskId]: sessionId } })),
 }));
+
+function step(
+    id: WorkflowStepId,
+    label: string,
+    provider: string,
+    command: string,
+    workingDirectoryMode: WorkflowStepConfig["workingDirectoryMode"],
+    autoStartTerminal: boolean,
+    approvalRequired: boolean,
+    permissions: string[],
+): WorkflowStepConfig {
+    return {
+        id,
+        label,
+        enabled: true,
+        provider,
+        command,
+        args: [],
+        workingDirectoryMode,
+        autoStartTerminal,
+        approvalRequired,
+        env: {},
+        timeout: "30m",
+        permissions,
+    };
+}
+
+export function taskEventsFor(state: WorkbenchState, taskId: string): TaskEvent[] {
+    return state.taskHistory[taskId] ?? [];
+}
+
+export function planningFor(state: WorkbenchState, taskId: string): PlanningQuestion[] {
+    return state.planningByTask[taskId]?.questions ?? [];
+}
 
 export function selectedTask(state: WorkbenchState): Task | null {
     return (
@@ -281,6 +539,30 @@ export function sessionFor(task: Task, state: WorkbenchState): AgentSession {
             output: [],
         }
     );
+}
+
+export function workflowStepFor(state: WorkbenchState, id: WorkflowStepId) {
+    return state.workflowSteps.find((step) => step.id === id) ?? defaultWorkflowSteps.find((step) => step.id === id)!;
+}
+
+export function currentWorkflowStep(task: Task): WorkflowStepId {
+    switch (task.status) {
+        case "backlog":
+        case "planning":
+        case "waiting_approval":
+            return "planning";
+        case "ready":
+        case "running":
+            return "coding";
+        case "in_review":
+            return "review";
+        case "failed":
+        case "blocked":
+        case "waiting_user":
+            return "debugging";
+        case "done":
+            return "memory_update";
+    }
 }
 
 export function activeSkillsFor(task: Task, state: WorkbenchState) {

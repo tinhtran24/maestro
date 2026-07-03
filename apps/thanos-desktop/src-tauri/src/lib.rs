@@ -39,10 +39,16 @@ struct WorkspaceInfo {
 
 #[derive(Serialize)]
 struct AgentCandidate {
+    id: String,
     name: String,
     command: String,
     installed: bool,
     path: Option<String>,
+    status: String,
+    version: Option<String>,
+    agent_type: String,
+    enabled: bool,
+    setup_hint: String,
     default_args: Vec<String>,
     role: String,
     allowed_steps: Vec<String>,
@@ -61,6 +67,18 @@ struct ProjectConfig {
     default_runner: String,
     skills: Vec<SkillInfo>,
     mcp: Vec<String>,
+}
+
+#[derive(Deserialize)]
+struct ProjectSetupRequest {
+    root_path: String,
+    name: String,
+    git_remote_url: Option<String>,
+    default_branch: Option<String>,
+    worktree_root: Option<String>,
+    package_manager: Option<String>,
+    dev_command: Option<String>,
+    test_command: Option<String>,
 }
 
 #[derive(Serialize)]
@@ -343,6 +361,14 @@ struct WorkbenchProjectInfo {
     id: String,
     name: String,
     root_path: String,
+    git_remote_url: String,
+    default_branch: String,
+    worktree_root: String,
+    package_manager: String,
+    dev_command: String,
+    test_command: String,
+    created_at: String,
+    updated_at: String,
     repos: Vec<String>,
     settings: BTreeMap<String, String>,
 }
@@ -482,17 +508,35 @@ fn detect_agent_clis() -> Vec<AgentCandidate> {
         .into_iter()
         .map(|profile| {
             let path = find_on_path(&profile.command);
+            let version = path
+                .as_ref()
+                .and_then(|_| command_version(&profile.command));
+            let installed = path.is_some();
+            let status = if installed { "installed" } else { "not_found" }.to_string();
             AgentCandidate {
+                id: slug_id(&profile.name),
                 name: profile.name,
                 command: profile.command,
-                installed: path.is_some(),
+                installed,
                 path: path.map(|value| value.display().to_string()),
+                status,
+                version,
+                agent_type: "cli".to_string(),
+                enabled: installed,
+                setup_hint: "Install this CLI separately, then refresh detection.".to_string(),
                 default_args: profile.args,
                 role: profile.role,
                 allowed_steps: profile.allowed_steps,
             }
         })
         .collect()
+}
+
+#[tauri::command]
+fn create_or_import_project(request: ProjectSetupRequest) -> Result<WorkbenchProjectInfo, String> {
+    let root = validate_directory(&request.root_path)?;
+    write_project_files(&root, &request)?;
+    WorkbenchRepository::new(root).load_project()
 }
 
 #[tauri::command]
@@ -1898,6 +1942,20 @@ impl WorkbenchRepository {
             .map_err(|err| format!("failed to parse {}: {err}", path.display()))?;
         let project = value.get("project").unwrap_or(&serde_json::Value::Null);
         let name = string_field(project, "name").unwrap_or_else(|| "Thanos Workspace".to_string());
+        let git_remote_url = string_field(project, "git_remote_url")
+            .or_else(|| git_remote_url(&self.workspace).ok())
+            .unwrap_or_default();
+        let default_branch = string_field(project, "default_branch")
+            .or_else(|| git_default_branch(&self.workspace).ok())
+            .unwrap_or_else(|| "main".to_string());
+        let worktree_root = string_field(project, "worktree_root")
+            .unwrap_or_else(|| ".thanos/worktrees".to_string());
+        let package_manager = string_field(project, "package_manager").unwrap_or_default();
+        let dev_command = string_field(project, "dev_command").unwrap_or_default();
+        let test_command = string_field(project, "test_command").unwrap_or_default();
+        let created_at = string_field(project, "created_at")
+            .unwrap_or_else(|| "1970-01-01T00:00:00Z".to_string());
+        let updated_at = string_field(project, "updated_at").unwrap_or_else(|| created_at.clone());
         let mut settings = BTreeMap::new();
         if let Some(language) = string_field(project, "language") {
             settings.insert("language".to_string(), language);
@@ -1908,10 +1966,23 @@ impl WorkbenchRepository {
         if let Some(locale) = string_field(&value, "locale") {
             settings.insert("locale".to_string(), locale);
         }
+        settings.insert("defaultBranch".to_string(), default_branch.clone());
+        settings.insert("worktreeRoot".to_string(), worktree_root.clone());
+        settings.insert("packageManager".to_string(), package_manager.clone());
+        settings.insert("devCommand".to_string(), dev_command.clone());
+        settings.insert("testCommand".to_string(), test_command.clone());
         Ok(WorkbenchProjectInfo {
             id: slug_id(&name),
             name,
             root_path: self.workspace.display().to_string(),
+            git_remote_url,
+            default_branch,
+            worktree_root,
+            package_manager,
+            dev_command,
+            test_command,
+            created_at,
+            updated_at,
             repos: vec![self
                 .workspace
                 .file_name()
@@ -2198,6 +2269,7 @@ fn map_task_status(status: &str) -> String {
         "done" => "done",
         "blocked" => "blocked",
         "failed" => "failed",
+        "waiting_user" => "waiting_user",
         "waiting_approval" => "waiting_approval",
         "ready" => "ready",
         "running" => "running",
@@ -2227,6 +2299,7 @@ fn progress_for_status(status: &str, review_approved: bool, tests_passed: bool) 
             }
         }
         "running" => 65,
+        "waiting_user" => 60,
         "ready" => 45,
         "waiting_approval" => 30,
         "planning" => 20,
@@ -2279,6 +2352,147 @@ fn write_memory_from_review(workspace: &Path, review: &ReviewInfo) -> Result<(),
         created_at: now_epoch(),
     };
     insert_memory_node(&conn, &node)
+}
+
+fn write_project_files(root: &Path, request: &ProjectSetupRequest) -> Result<(), String> {
+    let dot = root.join(".thanos");
+    for dir in [
+        "tasks",
+        "plans",
+        "logs",
+        "reviews",
+        "tests",
+        "worktrees",
+        "memory",
+        "events",
+    ] {
+        fs::create_dir_all(dot.join(dir))
+            .map_err(|err| format!("failed to create {}: {err}", dot.join(dir).display()))?;
+    }
+    let now = chrono_like_now();
+    let name = if request.name.trim().is_empty() {
+        root.file_name()
+            .and_then(|name| name.to_str())
+            .unwrap_or("Thanos Project")
+            .to_string()
+    } else {
+        request.name.trim().to_string()
+    };
+    let default_branch = request
+        .default_branch
+        .clone()
+        .filter(|value| !value.trim().is_empty())
+        .or_else(|| git_default_branch(root).ok())
+        .unwrap_or_else(|| "main".to_string());
+    let git_remote_url = request
+        .git_remote_url
+        .clone()
+        .filter(|value| !value.trim().is_empty())
+        .or_else(|| git_remote_url(root).ok())
+        .unwrap_or_default();
+    let worktree_root = request
+        .worktree_root
+        .clone()
+        .filter(|value| !value.trim().is_empty())
+        .unwrap_or_else(|| ".thanos/worktrees".to_string());
+    let package_manager = request.package_manager.clone().unwrap_or_default();
+    let dev_command = request.dev_command.clone().unwrap_or_default();
+    let test_command = request.test_command.clone().unwrap_or_default();
+    let settings = serde_json::json!({
+        "project": {
+            "name": name,
+            "language": "",
+            "framework": "",
+            "git_remote_url": git_remote_url,
+            "default_branch": default_branch,
+            "worktree_root": worktree_root,
+            "package_manager": package_manager,
+            "dev_command": dev_command,
+            "test_command": test_command,
+            "created_at": now,
+            "updated_at": now
+        },
+        "default_runner": "codex",
+        "locale": "en"
+    });
+    write_json_file(&dot.join("settings.json"), &settings)?;
+    let config = serde_json::json!({
+        "project": settings["project"],
+        "workflow_agents": default_workflow_agent_config(),
+        "updated_at": now
+    });
+    write_json_file(&dot.join("config.json"), &config)?;
+    if !dot.join("agents.yaml").is_file() {
+        fs::write(
+            dot.join("agents.yaml"),
+            "agents:\n  - name: codex\n    command: codex\n    args: []\n    env:\n    role: implementation\n    allowed_steps: [plan, execute]\n",
+        )
+        .map_err(|err| format!("failed to write agents.yaml: {err}"))?;
+    }
+    Ok(())
+}
+
+fn default_workflow_agent_config() -> serde_json::Value {
+    serde_json::json!({
+        "planning": {"enabled": true, "provider": "Claude Code", "command": "claude", "working_directory_mode": "project", "auto_start_terminal": true, "approval_required": true, "env": {}, "timeout": "30m", "permissions": ["read", "write-plans"]},
+        "coding": {"enabled": true, "provider": "Codex", "command": "codex", "working_directory_mode": "worktree", "auto_start_terminal": true, "approval_required": true, "env": {}, "timeout": "30m", "permissions": ["read", "write-code", "run-tests"]},
+        "review": {"enabled": true, "provider": "Claude Code", "command": "claude", "working_directory_mode": "worktree", "auto_start_terminal": true, "approval_required": true, "env": {}, "timeout": "30m", "permissions": ["read", "inspect-diff"]},
+        "testing": {"enabled": true, "provider": "Shell", "command": "npm test", "working_directory_mode": "worktree", "auto_start_terminal": true, "approval_required": false, "env": {}, "timeout": "20m", "permissions": ["run-tests"]},
+        "debugging": {"enabled": true, "provider": "Codex", "command": "codex", "working_directory_mode": "worktree", "auto_start_terminal": false, "approval_required": true, "env": {}, "timeout": "30m", "permissions": ["read", "write-code", "run-tests"]},
+        "documentation": {"enabled": true, "provider": "Codex", "command": "codex", "working_directory_mode": "worktree", "auto_start_terminal": false, "approval_required": true, "env": {}, "timeout": "30m", "permissions": ["read", "write-docs"]},
+        "memory_update": {"enabled": true, "provider": "Shell", "command": "thanos memory update", "working_directory_mode": "project", "auto_start_terminal": false, "approval_required": false, "env": {}, "timeout": "10m", "permissions": ["write-memory"]}
+    })
+}
+
+fn git_default_branch(root: &Path) -> Result<String, String> {
+    let output = Command::new("git")
+        .args(["branch", "--show-current"])
+        .current_dir(root)
+        .output()
+        .map_err(|err| err.to_string())?;
+    if !output.status.success() {
+        return Err("not a git repository".to_string());
+    }
+    let branch = String::from_utf8_lossy(&output.stdout).trim().to_string();
+    if branch.is_empty() {
+        Err("no current branch".to_string())
+    } else {
+        Ok(branch)
+    }
+}
+
+fn git_remote_url(root: &Path) -> Result<String, String> {
+    let output = Command::new("git")
+        .args(["config", "--get", "remote.origin.url"])
+        .current_dir(root)
+        .output()
+        .map_err(|err| err.to_string())?;
+    if !output.status.success() {
+        return Err("no origin remote".to_string());
+    }
+    let remote = String::from_utf8_lossy(&output.stdout).trim().to_string();
+    if remote.is_empty() {
+        Err("no origin remote".to_string())
+    } else {
+        Ok(remote)
+    }
+}
+
+fn command_version(command: &str) -> Option<String> {
+    let output = Command::new(command).arg("--version").output().ok()?;
+    if !output.status.success() {
+        return None;
+    }
+    let text = String::from_utf8_lossy(&output.stdout).trim().to_string();
+    if text.is_empty() {
+        None
+    } else {
+        Some(text.lines().next().unwrap_or("").to_string())
+    }
+}
+
+fn chrono_like_now() -> String {
+    format!("{}Z", now_epoch())
 }
 
 fn append_log(path: &Path, data: &str) -> Result<(), String> {
@@ -2444,6 +2658,30 @@ fn known_agents() -> Vec<AgentProfile> {
         AgentProfile {
             name: "opencode".to_string(),
             command: "opencode".to_string(),
+            args: vec![],
+            env: BTreeMap::new(),
+            role: "implementation".to_string(),
+            allowed_steps: vec!["plan".to_string(), "execute".to_string()],
+        },
+        AgentProfile {
+            name: "cursor".to_string(),
+            command: "cursor".to_string(),
+            args: vec![],
+            env: BTreeMap::new(),
+            role: "implementation".to_string(),
+            allowed_steps: vec!["plan".to_string(), "execute".to_string()],
+        },
+        AgentProfile {
+            name: "aider".to_string(),
+            command: "aider".to_string(),
+            args: vec![],
+            env: BTreeMap::new(),
+            role: "implementation".to_string(),
+            allowed_steps: vec!["plan".to_string(), "execute".to_string()],
+        },
+        AgentProfile {
+            name: "goose".to_string(),
+            command: "goose".to_string(),
             args: vec![],
             env: BTreeMap::new(),
             role: "implementation".to_string(),
@@ -2645,6 +2883,7 @@ pub fn run() {
             current_workspace_folder,
             ensure_workspace,
             detect_agent_clis,
+            create_or_import_project,
             read_agent_profiles,
             read_project_config,
             write_agent_profile,

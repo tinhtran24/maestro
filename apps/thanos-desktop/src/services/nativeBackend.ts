@@ -2,6 +2,7 @@ import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import type {
     AgentSession,
+    AgentProvider,
     ExecutionPlan,
     Feature,
     GitDiff,
@@ -93,6 +94,30 @@ type MemoryNodeInfo = {
     created_at: number;
 };
 
+type AgentCandidateInfo = {
+    id: string;
+    name: string;
+    command: string;
+    installed: boolean;
+    path?: string | null;
+    status: "installed" | "not_found" | "needs_setup";
+    version?: string | null;
+    agent_type: "cli" | "mcp" | "acp" | "shell";
+    enabled: boolean;
+    setup_hint: string;
+};
+
+type ProjectSetupInfo = {
+    root_path: string;
+    name: string;
+    git_remote_url?: string;
+    default_branch?: string;
+    worktree_root?: string;
+    package_manager?: string;
+    dev_command?: string;
+    test_command?: string;
+};
+
 export type AgentBridgeTool = {
     name: string;
     description: string;
@@ -167,6 +192,14 @@ type ProjectInfo = {
     id: string;
     name: string;
     root_path: string;
+    git_remote_url?: string;
+    default_branch?: string;
+    worktree_root?: string;
+    package_manager?: string;
+    dev_command?: string;
+    test_command?: string;
+    created_at?: string;
+    updated_at?: string;
     repos: string[];
     settings: Record<string, string>;
 };
@@ -252,20 +285,63 @@ type WorkbenchSnapshotInfo = {
 };
 
 export class NativeBackend {
-  private readonly workspace = "/Users/tinh.tran/Tool/thanos";
+  private readonly workspaceKey = "thanos.workspace";
+  private readonly recentProjectsKey = "thanos.recentProjects";
+
+  getWorkspacePath() {
+    return localStorage.getItem(this.workspaceKey) || "";
+  }
+
+  setWorkspacePath(path: string) {
+    localStorage.setItem(this.workspaceKey, path);
+  }
+
+  getRecentProjects() {
+    try {
+      return JSON.parse(localStorage.getItem(this.recentProjectsKey) || "[]") as Project[];
+    } catch {
+      return [];
+    }
+  }
+
+  private rememberProject(project: Project) {
+    const recent = [project, ...this.getRecentProjects().filter((item) => item.rootPath !== project.rootPath)].slice(0, 8);
+    localStorage.setItem(this.recentProjectsKey, JSON.stringify(recent));
+  }
 
   async loadWorkbenchState() {
+    const workspace = this.getWorkspacePath();
+    if (!workspace) return null;
     const info = await this.tryInvoke<WorkbenchSnapshotInfo>("load_workbench_state", {
-      workspace: this.workspace,
+      workspace,
     });
     return info ? fromWorkbenchSnapshotInfo(info) : null;
   }
 
+  async selectWorkspaceFolder() {
+    return await this.tryInvoke<string | null>("select_workspace_folder", {}) ?? null;
+  }
+
+  async createOrImportProject(setup: ProjectSetupInfo) {
+    const info = await this.tryInvoke<ProjectInfo>("create_or_import_project", { request: setup });
+    if (!info) return null;
+    const project = fromProjectInfo(info);
+    this.setWorkspacePath(project.rootPath);
+    this.rememberProject(project);
+    return project;
+  }
+
+  async detectAgents() {
+    const info = await this.tryInvoke<AgentCandidateInfo[]>("detect_agent_clis", {});
+    return info ? info.map(fromAgentCandidateInfo) : [];
+  }
+
   async prepareWorktree(task: Task) {
+    const workspace = this.getWorkspacePath();
     const branchName = task.branchName || `thanos/${task.id.toLowerCase()}-${slug(task.title)}`;
     const info = await this.tryInvoke<WorktreeInfo>("prepare_task_worktree", {
       request: {
-        workspace: this.workspace,
+        workspace,
         task_id: task.id,
         branch_name: branchName,
         base_ref: "HEAD",
@@ -284,14 +360,18 @@ export class NativeBackend {
   }
 
   async startAgentRole(task: Task, agentType: AgentSession["agentType"]) {
+    const workspace = this.getWorkspacePath();
     const planner = agentType === "planner";
-    const command = planner ? "claude" : task.executorProfile.includes("claude") ? "claude" : "codex";
+    const reviewer = agentType === "reviewer";
+    const tester = agentType === "tester";
+    const command = planner || reviewer ? "claude" : tester ? (task.executorProfile || "npm test") : task.executorProfile.includes("claude") ? "claude" : "codex";
+    const provider = planner || reviewer ? "claude-code" : tester ? "shell" : task.executorProfile.includes("claude") ? "claude-code" : "codex";
     const info = await this.tryInvoke<AgentSessionInfo>("start_agent_session", {
       request: {
-        workspace: this.workspace,
+        workspace,
         task_id: task.id,
         agent_type: agentType,
-        provider: planner ? "claude-code" : task.executorProfile.includes("claude") ? "claude-code" : "codex",
+        provider,
         command,
         args: [],
         worktree_path: planner ? "." : task.worktreePath,
@@ -301,9 +381,10 @@ export class NativeBackend {
   }
 
   async saveExecutionPlan(plan: ExecutionPlan) {
+    const workspace = this.getWorkspacePath();
     const info = await this.tryInvoke<ExecutionPlanInfo>("save_execution_plan", {
       request: {
-        workspace: this.workspace,
+        workspace,
         plan: toPlanInfo(plan),
       },
     });
@@ -311,9 +392,10 @@ export class NativeBackend {
   }
 
   async approveExecutionPlan(taskId: string) {
+    const workspace = this.getWorkspacePath();
     const info = await this.tryInvoke<ExecutionPlanInfo>("approve_execution_plan", {
       request: {
-        workspace: this.workspace,
+        workspace,
         task_id: taskId,
       },
     });
@@ -321,9 +403,10 @@ export class NativeBackend {
   }
 
   async readExecutionPlan(taskId: string) {
+    const workspace = this.getWorkspacePath();
     const info = await this.tryInvoke<ExecutionPlanInfo>("read_execution_plan", {
       request: {
-        workspace: this.workspace,
+        workspace,
         task_id: taskId,
       },
     });
@@ -331,9 +414,10 @@ export class NativeBackend {
   }
 
   async collectGitDiff(task: Task) {
+    const workspace = this.getWorkspacePath();
     const info = await this.tryInvoke<GitDiffInfo>("collect_git_diff", {
       request: {
-        workspace: this.workspace,
+        workspace,
         task_id: task.id,
         worktree_path: task.worktreePath,
       },
@@ -342,9 +426,10 @@ export class NativeBackend {
   }
 
   async runTaskTests(task: Task, command = "go test ./...") {
+    const workspace = this.getWorkspacePath();
     const info = await this.tryInvoke<TestRunInfo>("run_task_tests", {
       request: {
-        workspace: this.workspace,
+        workspace,
         task_id: task.id,
         worktree_path: task.worktreePath,
         command,
@@ -354,9 +439,10 @@ export class NativeBackend {
   }
 
   async saveReview(review: Review) {
+    const workspace = this.getWorkspacePath();
     const info = await this.tryInvoke<ReviewInfo>("save_review", {
       request: {
-        workspace: this.workspace,
+        workspace,
         review: toReviewInfo(review),
       },
     });
@@ -364,9 +450,10 @@ export class NativeBackend {
   }
 
   async approveReview(taskId: string) {
+    const workspace = this.getWorkspacePath();
     const info = await this.tryInvoke<ReviewInfo>("approve_review", {
       request: {
-        workspace: this.workspace,
+        workspace,
         task_id: taskId,
       },
     });
@@ -374,9 +461,10 @@ export class NativeBackend {
   }
 
   async writeMemoryNode(node: MemoryNode) {
+    const workspace = this.getWorkspacePath();
     const info = await this.tryInvoke<MemoryNodeInfo>("write_memory_node", {
       request: {
-        workspace: this.workspace,
+        workspace,
         node: toMemoryInfo(node),
       },
     });
@@ -384,9 +472,10 @@ export class NativeBackend {
   }
 
   async searchMemory(query: string) {
+    const workspace = this.getWorkspacePath();
     const info = await this.tryInvoke<MemoryNodeInfo[]>("search_memory", {
       request: {
-        workspace: this.workspace,
+        workspace,
         query,
       },
     });
@@ -398,9 +487,10 @@ export class NativeBackend {
   }
 
   async createAgentSubtask(parentTaskId: string, title: string, description = "", priority = "P2", agent = "") {
+    const workspace = this.getWorkspacePath();
     const info = await this.tryInvoke<TaskInfo>("bridge_create_subtask", {
       request: {
-        workspace: this.workspace,
+        workspace,
         parent_task_id: parentTaskId,
         title,
         description,
@@ -412,9 +502,10 @@ export class NativeBackend {
   }
 
   async messageSiblingTask(sourceTaskId: string, targetTaskId: string, content: string) {
+    const workspace = this.getWorkspacePath();
     const info = await this.tryInvoke<BridgeTaskMessageInfo>("bridge_message_sibling", {
       request: {
-        workspace: this.workspace,
+        workspace,
         source_task_id: sourceTaskId,
         target_task_id: targetTaskId,
         content,
@@ -424,9 +515,10 @@ export class NativeBackend {
   }
 
   async inspectRelatedWork(query: string, taskId?: string, limit = 10) {
+    const workspace = this.getWorkspacePath();
     const info = await this.tryInvoke<BridgeRelatedWorkInfo[]>("bridge_inspect_related_work", {
       request: {
-        workspace: this.workspace,
+        workspace,
         task_id: taskId,
         query,
         limit,
@@ -436,9 +528,10 @@ export class NativeBackend {
   }
 
   async attachTaskBranch(taskId: string, branchName: string, worktreePath?: string) {
+    const workspace = this.getWorkspacePath();
     const info = await this.tryInvoke<BridgeBranchAttachmentInfo>("bridge_attach_branch", {
       request: {
-        workspace: this.workspace,
+        workspace,
         task_id: taskId,
         branch_name: branchName,
         worktree_path: worktreePath,
@@ -448,9 +541,10 @@ export class NativeBackend {
   }
 
   async requestUserReview(taskId: string, requestedBy = "agent", notes = "") {
+    const workspace = this.getWorkspacePath();
     const info = await this.tryInvoke<BridgeUserReviewRequestInfo>("bridge_request_user_review", {
       request: {
-        workspace: this.workspace,
+        workspace,
         task_id: taskId,
         requested_by: requestedBy,
         notes,
@@ -463,9 +557,14 @@ export class NativeBackend {
     await this.tryInvoke<void>("stop_agent_session", {});
   }
 
+  async writeTerminal(data: string) {
+    await this.tryInvoke<void>("write_terminal", { data });
+  }
+
   async resumeAgent(sessionId: string) {
+    const workspace = this.getWorkspacePath();
     const info = await this.tryInvoke<AgentSessionInfo>("resume_agent_session", {
-      workspace: this.workspace,
+      workspace,
       session_id: sessionId,
     });
     return info ? mapSession(info) : null;
@@ -500,21 +599,17 @@ function mapSession(info: AgentSessionInfo): AgentSession {
     provider: info.provider,
     command: [info.command, ...info.args].join(" "),
     status: mapSessionStatus(info.status),
+    cwd: info.worktree_path,
     ptySessionId: info.pty_session_id,
     conversationLogPath: info.conversation_log_path,
+    transcriptPath: info.conversation_log_path,
     output: [],
   };
 }
 
 function fromWorkbenchSnapshotInfo(info: WorkbenchSnapshotInfo): WorkbenchSnapshot {
   return {
-    project: {
-      id: info.project.id,
-      name: info.project.name,
-      rootPath: info.project.root_path,
-      repos: info.project.repos,
-      settings: info.project.settings,
-    },
+    project: fromProjectInfo(info.project),
     features: info.features.map((feature) => ({
       id: feature.id,
       projectId: feature.project_id,
@@ -556,13 +651,45 @@ function fromTaskInfo(info: TaskInfo): Task {
 }
 
 function mapSessionStatus(status: string): AgentSession["status"] {
-  if (status === "starting" || status === "running" || status === "stopping" || status === "stopped" || status === "failed") {
+  if (status === "starting" || status === "running" || status === "waiting_user" || status === "completed" || status === "stopping" || status === "stopped" || status === "failed") {
     return status;
   }
   if (status === "exited" || status === "complete" || status === "completed") {
     return "stopped";
   }
   return "idle";
+}
+
+function fromProjectInfo(info: ProjectInfo): Project {
+  return {
+    id: info.id,
+    name: info.name,
+    rootPath: info.root_path,
+    gitRemoteUrl: info.git_remote_url,
+    defaultBranch: info.default_branch,
+    worktreeRoot: info.worktree_root,
+    packageManager: info.package_manager,
+    devCommand: info.dev_command,
+    testCommand: info.test_command,
+    createdAt: info.created_at,
+    updatedAt: info.updated_at,
+    repos: info.repos,
+    settings: info.settings,
+  };
+}
+
+function fromAgentCandidateInfo(info: AgentCandidateInfo): AgentProvider {
+  return {
+    id: info.id,
+    name: info.name,
+    command: info.command,
+    detectedPath: info.path ?? undefined,
+    status: info.status,
+    version: info.version ?? undefined,
+    type: info.agent_type,
+    enabled: info.enabled,
+    setupHint: info.setup_hint,
+  };
 }
 
 function toPlanInfo(plan: ExecutionPlan): ExecutionPlanInfo {

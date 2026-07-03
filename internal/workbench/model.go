@@ -3,13 +3,19 @@ package workbench
 import "time"
 
 type Project struct {
-	ID        string    `json:"id"`
-	Name      string    `json:"name"`
-	RootPath  string    `json:"root_path"`
-	Repos     []Repo    `json:"repos,omitempty"`
-	Settings  Settings  `json:"settings,omitempty"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
+	ID             string    `json:"id"`
+	Name           string    `json:"name"`
+	RootPath       string    `json:"root_path"`
+	GitRemoteURL   string    `json:"git_remote_url,omitempty"`
+	DefaultBranch  string    `json:"default_branch,omitempty"`
+	WorktreeRoot   string    `json:"worktree_root,omitempty"`
+	PackageManager string    `json:"package_manager,omitempty"`
+	DevCommand     string    `json:"dev_command,omitempty"`
+	TestCommand    string    `json:"test_command,omitempty"`
+	Repos          []Repo    `json:"repos,omitempty"`
+	Settings       Settings  `json:"settings,omitempty"`
+	CreatedAt      time.Time `json:"created_at"`
+	UpdatedAt      time.Time `json:"updated_at"`
 }
 
 type Repo struct {
@@ -55,6 +61,7 @@ const (
 	TaskReady           TaskStatus = "ready"
 	TaskRunning         TaskStatus = "running"
 	TaskInReview        TaskStatus = "in_review"
+	TaskWaitingUser     TaskStatus = "waiting_user"
 	TaskBlocked         TaskStatus = "blocked"
 	TaskDone            TaskStatus = "done"
 	TaskFailed          TaskStatus = "failed"

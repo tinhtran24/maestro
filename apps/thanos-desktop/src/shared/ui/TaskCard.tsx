@@ -1,17 +1,18 @@
-import { Bot } from "lucide-react";
+import { Bot, Pencil } from "lucide-react";
 import type { DraggableAttributes } from "@dnd-kit/core";
 import type { SyntheticListenerMap } from "@dnd-kit/core/dist/hooks/utilities";
 import type { Task } from "../../domain/models";
 import { AgentAvatar } from "./AgentAvatar";
 import { PriorityBadge } from "./PriorityBadge";
 
-export function TaskCard({ task, active, dragAttributes, dragListeners, setNodeRef, style }: {
+export function TaskCard({ task, active, dragAttributes, dragListeners, setNodeRef, style, onEdit }: {
   task: Task;
   active: boolean;
   dragAttributes?: DraggableAttributes;
   dragListeners?: SyntheticListenerMap;
   setNodeRef?: (node: HTMLElement | null) => void;
   style?: React.CSSProperties;
+  onEdit?: (taskId: string) => void;
 }) {
   return (
     <article
@@ -19,8 +20,20 @@ export function TaskCard({ task, active, dragAttributes, dragListeners, setNodeR
       style={style}
       {...dragAttributes}
       {...dragListeners}
-      className={`cursor-grab rounded-xl border bg-bg-card p-3 shadow-lg shadow-black/20 ${active ? "border-purple-primary" : "border-slate-800"}`}
+      className={`group relative cursor-grab rounded-xl border bg-bg-card p-3 shadow-lg shadow-black/20 transition hover:border-blue-info/60 hover:bg-slate-900/90 ${active ? "border-purple-primary" : "border-slate-800"}`}
     >
+      {onEdit ? (
+        <button
+          onClick={(event) => {
+            event.stopPropagation();
+            onEdit(task.id);
+          }}
+          className="absolute right-2 top-2 hidden rounded-md border border-slate-700 bg-slate-950/90 p-1 text-text-muted hover:border-blue-info hover:text-blue-info group-hover:block"
+          aria-label={`Edit ${task.title}`}
+        >
+          <Pencil size={13} />
+        </button>
+      ) : null}
       <div className="flex items-center justify-between gap-2">
         <span className="text-xs text-text-muted">{task.id}</span>
         <PriorityBadge priority={task.priority} />

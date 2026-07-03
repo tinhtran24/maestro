@@ -1,0 +1,116 @@
+{
+  "project": {
+    "created_at": "1783046471Z",
+    "default_branch": "main",
+    "dev_command": "npm run dev",
+    "framework": "",
+    "git_remote_url": "git@github.com:tinhtran24/thanos.git",
+    "language": "",
+    "name": "Thanos Cli",
+    "package_manager": "npm",
+    "test_command": "npm test",
+    "updated_at": "1783046471Z",
+    "worktree_root": ".thanos/worktrees"
+  },
+  "updated_at": "1783046471Z",
+  "workflow_agents": {
+    "coding": {
+      "approval_required": true,
+      "auto_start_terminal": true,
+      "command": "codex",
+      "enabled": true,
+      "env": {},
+      "permissions": [
+        "read",
+        "write-code",
+        "run-tests"
+      ],
+      "provider": "Codex",
+      "timeout": "30m",
+      "working_directory_mode": "worktree"
+    },
+    "debugging": {
+      "approval_required": true,
+      "auto_start_terminal": false,
+      "command": "codex",
+      "enabled": true,
+      "env": {},
+      "permissions": [
+        "read",
+        "write-code",
+        "run-tests"
+      ],
+      "provider": "Codex",
+      "timeout": "30m",
+      "working_directory_mode": "worktree"
+    },
+    "documentation": {
+      "approval_required": true,
+      "auto_start_terminal": false,
+      "command": "codex",
+      "enabled": true,
+      "env": {},
+      "permissions": [
+        "read",
+        "write-docs"
+      ],
+      "provider": "Codex",
+      "timeout": "30m",
+      "working_directory_mode": "worktree"
+    },
+    "memory_update": {
+      "approval_required": false,
+      "auto_start_terminal": false,
+      "command": "thanos memory update",
+      "enabled": true,
+      "env": {},
+      "permissions": [
+        "write-memory"
+      ],
+      "provider": "Shell",
+      "timeout": "10m",
+      "working_directory_mode": "project"
+    },
+    "planning": {
+      "approval_required": true,
+      "auto_start_terminal": true,
+      "command": "claude",
+      "enabled": true,
+      "env": {},
+      "permissions": [
+        "read",
+        "write-plans"
+      ],
+      "provider": "Claude Code",
+      "timeout": "30m",
+      "working_directory_mode": "project"
+    },
+    "review": {
+      "approval_required": true,
+      "auto_start_terminal": true,
+      "command": "claude",
+      "enabled": true,
+      "env": {},
+      "permissions": [
+        "read",
+        "inspect-diff"
+      ],
+      "provider": "Claude Code",
+      "timeout": "30m",
+      "working_directory_mode": "worktree"
+    },
+    "testing": {
+      "approval_required": false,
+      "auto_start_terminal": true,
+      "command": "npm test",
+      "enabled": true,
+      "env": {},
+      "permissions": [
+        "run-tests"
+      ],
+      "provider": "Shell",
+      "timeout": "20m",
+      "working_directory_mode": "worktree"
+    }
+  }
+}

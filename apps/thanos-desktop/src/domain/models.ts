@@ -5,18 +5,30 @@ export type TaskStatus =
     | "ready"
     | "running"
     | "in_review"
+    | "waiting_user"
     | "blocked"
     | "done"
     | "failed";
 
 export type Priority = "P0" | "P1" | "P2" | "P3";
-export type InspectorTab = "overview" | "plan" | "files" | "changes" | "terminal" | "browser" | "tests" | "timeline" | "chat" | "memory";
-export type BottomTab = "chat" | "terminal" | "timeline" | "logs";
+export type InspectorTab = "overview" | "plan" | "files" | "changes" | "browser" | "tests" | "memory";
+export type BottomTab = "terminal" | "timeline" | "logs" | "chat";
 
 export type Project = {
     id: string;
     name: string;
     rootPath: string;
+    gitRemoteUrl?: string;
+    defaultBranch?: string;
+    worktreeRoot?: string;
+    packageManager?: string;
+    devCommand?: string;
+    testCommand?: string;
+    createdAt?: string;
+    updatedAt?: string;
+    lastOpenedAt?: string;
+    archived?: boolean;
+    envVars?: Record<string, string>;
     repos: string[];
     settings: Record<string, string>;
 };
@@ -43,11 +55,43 @@ export type Task = {
     executorProfile: string;
     worktreePath: string;
     branchName: string;
+    planApproved?: boolean;
     reviewApproved: boolean;
     testsPassed: boolean;
     updatedAt: string;
     tags: string[];
     progress: number;
+};
+
+// Phase 3 — Workflow Engine. A recorded workflow transition / lifecycle event.
+export type TaskEventType =
+    | "created"
+    | "moved"
+    | "plan_approved"
+    | "changes_requested"
+    | "agent_started"
+    | "tests_passed"
+    | "review_approved"
+    | "blocked"
+    | "failed"
+    | "done";
+
+export type TaskEvent = {
+    id: string;
+    taskId: string;
+    type: TaskEventType;
+    from?: TaskStatus;
+    to?: TaskStatus;
+    note?: string;
+    at: string;
+};
+
+// Phase 6 — Planner Workflow. A clarifying question posed by the planner and
+// the user's answer, captured before an execution plan is generated.
+export type PlanningQuestion = {
+    id: string;
+    prompt: string;
+    answer: string;
 };
 
 export type ExecutionPlan = {
@@ -70,13 +114,54 @@ export type ExecutionPlan = {
 export type AgentSession = {
     id: string;
     taskId: string;
+    step?: WorkflowStepId;
     agentType: "planner" | "coder" | "reviewer" | "tester" | "utility";
     provider: string;
     command: string;
-    status: "idle" | "starting" | "running" | "stopping" | "stopped" | "failed";
+    cwd?: string;
+    status: "idle" | "starting" | "running" | "waiting_user" | "completed" | "stopping" | "stopped" | "failed";
     ptySessionId?: string;
     conversationLogPath?: string;
+    transcriptPath?: string;
+    startedAt?: string;
+    endedAt?: string;
     output: string[];
+};
+
+export type AgentProvider = {
+    id: string;
+    name: string;
+    command: string;
+    detectedPath?: string;
+    status: "installed" | "not_found" | "needs_setup";
+    version?: string;
+    type: "cli" | "mcp" | "acp" | "shell";
+    enabled: boolean;
+    setupHint?: string;
+};
+
+export type WorkflowStepId =
+    | "planning"
+    | "coding"
+    | "review"
+    | "testing"
+    | "debugging"
+    | "documentation"
+    | "memory_update";
+
+export type WorkflowStepConfig = {
+    id: WorkflowStepId;
+    label: string;
+    enabled: boolean;
+    provider: string;
+    command: string;
+    args: string[];
+    workingDirectoryMode: "project" | "worktree" | "custom";
+    autoStartTerminal: boolean;
+    approvalRequired: boolean;
+    env: Record<string, string>;
+    timeout: string;
+    permissions: string[];
 };
 
 export type SkillRunStatus =

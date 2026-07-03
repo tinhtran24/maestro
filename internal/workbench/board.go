@@ -15,6 +15,7 @@ var BoardOrder = []TaskStatus{
 	TaskReady,
 	TaskRunning,
 	TaskInReview,
+	TaskWaitingUser,
 	TaskBlocked,
 	TaskDone,
 	TaskFailed,
@@ -53,6 +54,8 @@ func titleForStatus(status TaskStatus) string {
 		return "Running"
 	case TaskInReview:
 		return "In Review"
+	case TaskWaitingUser:
+		return "Waiting User"
 	case TaskBlocked:
 		return "Blocked"
 	case TaskDone:

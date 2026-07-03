@@ -1,28 +1,23 @@
-import { Check, Clock3, FlaskConical, FolderTree, GitCompare, Globe, LayoutPanelTop, MessageSquare, Play, RotateCcw, ScrollText, Square, Terminal } from "lucide-react";
-import type { BottomTab, InspectorTab } from "../domain/models";
-import { EmptyState } from "../shared/ui/EmptyState";
+import { ArrowRight, Check, Clock3, GitCompare, Inbox, MessageSquare, Play, RotateCcw, ScrollText, Send, Square, Terminal, Trash2 } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
+import type { BottomTab } from "../domain/models";
 import { FlowTabs } from "../shared/ui/FlowTabs";
 import { StatusBadge } from "../shared/ui/StatusBadge";
-import { activeSkillsFor, selectedTask, planFor, reviewFor, sessionFor, useWorkbenchStore } from "../state/workbenchStore";
+import { currentWorkflowStep, selectedTask, planFor, reviewFor, sessionFor, useWorkbenchStore, workflowStepFor } from "../state/workbenchStore";
 import { useAgentSessionFlow, XtermPanel } from "./AgentSessionFlow";
+import { PlannerFlow, isPlanningPhase } from "./planner-flow/PlannerFlow";
+import { AgentTerminalFlow } from "./agent-terminal-flow/AgentTerminalFlow";
+import { LogsPanel, TimelinePanel } from "./task-workbench-flow/BottomPanels";
+import { StartAgentButton } from "./task-workbench-flow/StartAgentButton";
+import { StepApprovalGate } from "./task-workbench-flow/StepApprovalGate";
+import { TaskStepPanel } from "./task-workbench-flow/TaskStepPanel";
 
-const detailTabs: Array<{ id: InspectorTab; label: string; icon: typeof LayoutPanelTop }> = [
-  { id: "overview", label: "Overview", icon: LayoutPanelTop },
-  { id: "plan", label: "Plan", icon: ScrollText },
-  { id: "files", label: "Files", icon: FolderTree },
-  { id: "changes", label: "Changes", icon: GitCompare },
-  { id: "terminal", label: "Terminal", icon: Terminal },
-  { id: "browser", label: "Browser", icon: Globe },
-  { id: "tests", label: "Tests", icon: FlaskConical },
-  { id: "timeline", label: "Timeline", icon: Clock3 },
-  { id: "chat", label: "Chat", icon: MessageSquare },
-];
-
-const bottomTabs: Array<{ id: BottomTab; label: string; icon: typeof MessageSquare }> = [
-  { id: "chat", label: "Chat", icon: MessageSquare },
+// Bottom panel tabs — live runtime streams for the selected task.
+const bottomTabs: Array<{ id: BottomTab; label: string; icon: LucideIcon }> = [
   { id: "terminal", label: "Terminal", icon: Terminal },
   { id: "timeline", label: "Timeline", icon: Clock3 },
   { id: "logs", label: "Logs", icon: ScrollText },
+  { id: "chat", label: "Chat", icon: MessageSquare },
 ];
 
 export function TaskWorkbenchFlow() {
@@ -35,14 +30,30 @@ export function TaskWorkbenchMain() {
   const agentFlow = useAgentSessionFlow();
   if (!task) {
     return (
-      <section className="grid h-full min-h-0 place-items-center border-t border-slate-800 bg-bg-app p-4">
-        <EmptyState label="No task selected" />
+      <section className="grid h-full min-h-0 place-items-center border-t border-slate-800 bg-bg-app p-6">
+        <div className="relative flex w-full max-w-2xl items-center justify-center">
+          <div className="grid place-items-center rounded-2xl border border-dashed border-slate-700 bg-slate-950/40 px-10 py-12 text-center">
+            <span className="grid h-14 w-14 place-items-center rounded-full border border-slate-800 bg-slate-900 text-text-muted"><Inbox size={26} /></span>
+            <p className="mt-4 text-base font-semibold text-text-main">No task selected</p>
+            <p className="mt-1 text-sm text-text-muted">Select a task from the board to see details.</p>
+          </div>
+          <ArrowRight size={80} className="pointer-events-none absolute -right-2 hidden text-slate-800 xl:block" strokeWidth={1} />
+        </div>
       </section>
     );
   }
   const plan = planFor(task, state);
   const review = reviewFor(task, state);
   const session = sessionFor(task, state);
+  const stepId = currentWorkflowStep(task);
+  const step = workflowStepFor(state, stepId);
+  const startStep = async (id: typeof stepId) => {
+    state.setBottomTab("terminal");
+    if (id === "planning") await agentFlow.start(task, "planner");
+    else if (id === "coding" && task.planApproved) await agentFlow.start(task, "coder");
+    else if (id === "review") await agentFlow.start(task, "reviewer");
+    else if (id === "testing") await runTests();
+  };
   const approvePlan = async () => {
     const saved = await agentFlow.savePlan(plan);
     if (saved) state.persistPlan(saved);
@@ -81,27 +92,39 @@ export function TaskWorkbenchMain() {
 
   return (
     <section className="grid h-full min-h-0 grid-rows-[auto_minmax(0,1fr)] border-t border-slate-800 bg-bg-app">
-      <header className="sticky top-0 z-10 flex items-center justify-between gap-3 border-b border-slate-800 bg-slate-950/80 p-4 backdrop-blur">
-        <div>
+      <header className="sticky top-0 z-10 flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 bg-slate-950/80 p-4 backdrop-blur">
+        <div className="min-w-0">
           <div className="flex items-center gap-2">
             <h2 className="text-lg font-semibold">{task.title}</h2>
             <StatusBadge status={task.status} />
           </div>
           <p className="mt-1 text-sm text-text-muted">{task.id} · {task.description}</p>
         </div>
-        <div className="flex items-center gap-2">
-          <Action icon={Play} label="Planner" onClick={() => agentFlow.start(task, "planner")} />
+        <div className="flex min-w-0 items-center gap-2 overflow-x-auto pb-1">
+          <StartAgentButton label="Start Planning Agent" step="planning" onStart={startStep} />
           <Action icon={Check} label="Approve" onClick={approvePlan} primary />
           <Action icon={RotateCcw} label="Changes" onClick={() => state.requestChanges(task.id)} />
           <Action icon={GitCompare} label="Diff" onClick={collectDiff} />
           <Action icon={Play} label="Run Tests" onClick={runTests} />
           <Action icon={Check} label="Review" onClick={approveReview} />
-          <Action icon={Play} label="Coder" onClick={() => agentFlow.start(task, "coder")} />
+          <StartAgentButton label="Start Coding Agent" step="coding" onStart={startStep} disabled={!task.planApproved} />
+          <Action icon={Trash2} label="Remove" onClick={() => state.removeTask(task.id)} danger />
           <Action icon={Square} label="Stop" onClick={() => agentFlow.stop()} danger />
         </div>
       </header>
       <div className="min-h-0 overflow-y-auto p-4">
-        <div className="grid grid-cols-3 gap-3">
+        {isPlanningPhase(task) && (
+          <div className="mb-3">
+            <PlannerFlow task={task} />
+          </div>
+        )}
+        <div className="grid grid-cols-1 gap-3 xl:grid-cols-2 2xl:grid-cols-3">
+          <Panel title="Current Step" meta={step.label}>
+            <div className="grid gap-3">
+              <TaskStepPanel task={task} step={step} session={session} onOpenTerminal={() => state.setBottomTab("terminal")} />
+              <StepApprovalGate task={task} step={step} />
+            </div>
+          </Panel>
           <Panel title="Execution Plan" meta={plan.approvalStatus}>
             <ol className="grid gap-2 text-sm">
               {plan.steps.map((step) => <li key={step.id}><span className="font-medium">{step.title}</span><p className="text-xs text-text-muted">{step.description}</p></li>)}
@@ -130,97 +153,54 @@ export function TaskWorkbenchMain() {
   );
 }
 
-export function TaskRightSidebar() {
-  const state = useWorkbenchStore();
-  const task = selectedTask(state);
-  if (!task) {
-    return (
-      <aside className="min-h-0 overflow-y-auto border-l border-slate-800 bg-slate-900/80">
-        <FlowTabs tabs={detailTabs} active={state.inspectorTab} onChange={state.setInspectorTab} />
-        <div className="p-4">
-          <EmptyState label="No task selected" />
-        </div>
-      </aside>
-    );
-  }
-  const activeSkills = activeSkillsFor(task, state);
-  return (
-    <aside className="min-h-0 overflow-y-auto border-l border-slate-800 bg-slate-900/80">
-      <FlowTabs tabs={detailTabs} active={state.inspectorTab} onChange={state.setInspectorTab} />
-      <div className="grid gap-3 p-4 text-sm">
-        <h3 className="text-base font-semibold">{task.title}</h3>
-        <p className="text-text-muted">{task.description}</p>
-        <section className="grid gap-2">
-          <div className="flex items-center justify-between">
-            <h4 className="text-sm font-semibold">Active Skills</h4>
-            <span className="text-xs text-text-muted">{activeSkills.length}</span>
-          </div>
-          {activeSkills.length ? activeSkills.map(({ skill, run }) => (
-            <article key={run.id} className="rounded-lg border border-slate-800 bg-bg-card p-3">
-              <div className="flex items-start justify-between gap-2">
-                <div className="min-w-0">
-                  <p className="truncate font-medium">{skill.name}</p>
-                  <p className="mt-1 text-xs text-text-muted">{skill.agents.join(", ")}</p>
-                </div>
-                <span className="shrink-0 rounded-md border border-blue-info/30 bg-blue-info/10 px-2 py-1 text-[11px] text-blue-info">{run.status.replace("_", " ")}</span>
-              </div>
-              <p className="mt-2 text-xs text-text-muted">{skill.description}</p>
-              <div className="mt-3 grid gap-2">
-                <SkillList label="Evidence" values={skill.requiredEvidence} done={run.evidence} />
-                <SkillList label="Exit" values={skill.exitCriteria} />
-              </div>
-              <a href={skillHref(state.project.rootPath, skill.path)} target="_blank" className="mt-3 block w-full rounded-md border border-slate-700 px-2 py-1.5 text-center text-xs text-text-main hover:border-slate-500">
-                Open SKILL.md
-              </a>
-            </article>
-          )) : (
-            <div className="rounded-lg border border-slate-800 bg-bg-card p-3 text-xs text-text-muted">No active skills matched for this task.</div>
-          )}
-        </section>
-        {state.memoryNodes.map((node) => (
-          <div key={node.id} className="rounded-lg border border-slate-800 bg-bg-card p-3">
-            <p className="font-medium">{node.title}</p>
-            <p className="mt-1 text-xs text-text-muted">{node.type}</p>
-          </div>
-        ))}
-      </div>
-    </aside>
-  );
-}
-
-function SkillList({ label, values, done }: { label: string; values: string[]; done?: Record<string, string> }) {
-  return (
-    <div>
-      <p className="text-[11px] uppercase text-text-muted">{label}</p>
-      <ul className="mt-1 grid gap-1">
-        {values.map((value) => (
-          <li key={value} className="flex items-start gap-2 text-xs text-text-muted">
-            <span className={done?.[value] ? "mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-green-success" : "mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-slate-600"} />
-            <span>{value}</span>
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
-}
-
 export function TaskBottomPanel() {
   const state = useWorkbenchStore();
   const task = selectedTask(state);
-  const session = task ? sessionFor(task, state) : null;
   return (
-    <section className="min-h-0 border-t border-slate-800 bg-slate-950/70">
+    <section className="grid min-h-0 grid-rows-[auto_minmax(0,1fr)] border-t border-slate-800 bg-slate-950/70">
       <FlowTabs tabs={bottomTabs} active={state.bottomTab} onChange={state.setBottomTab} />
-      <div className="h-[calc(100%-2.5rem)] min-h-0 p-3 text-sm text-text-muted">
-        {state.bottomTab === "terminal" && session ? <XtermPanel output={session.output} /> : <div className="rounded-xl border border-slate-800 bg-bg-card p-3">{state.bottomTab} panel</div>}
+      <div className="min-h-0 overflow-hidden p-3 text-sm text-text-muted">
+        {!task ? (
+          <BottomEmptyState />
+        ) : (
+          <>
+            {state.bottomTab === "terminal" && <AgentTerminalFlow task={task} />}
+            {state.bottomTab === "timeline" && <TimelinePanel task={task} />}
+            {state.bottomTab === "logs" && <LogsPanel task={task} />}
+            {state.bottomTab === "chat" && <ChatPanel />}
+          </>
+        )}
       </div>
     </section>
   );
 }
 
-function skillHref(rootPath: string, skillPath: string) {
-  const path = skillPath.startsWith("/") ? skillPath : `${rootPath.replace(/\/$/, "")}/${skillPath}`;
-  return `file://${path}`;
+function BottomEmptyState() {
+  return (
+    <div className="grid h-full place-items-center text-center">
+      <div className="flex flex-col items-center gap-2 text-text-muted">
+        <Inbox size={22} />
+        <p className="text-sm font-medium text-text-main">No task selected</p>
+        <p className="text-xs">Logs and terminal output will appear after an agent starts.</p>
+      </div>
+    </div>
+  );
+}
+
+function ChatPanel() {
+  return (
+    <div className="grid h-full min-h-0 grid-rows-[minmax(0,1fr)_auto] gap-2">
+      <div className="grid place-items-center rounded-lg border border-slate-800 bg-bg-card text-center text-xs text-text-muted">
+        Ask the agent about this task. Messages appear here.
+      </div>
+      <form onSubmit={(event) => event.preventDefault()} className="flex items-center gap-2">
+        <input placeholder="Message the agent…" className="h-9 min-w-0 flex-1 rounded-lg border border-slate-800 bg-slate-950 px-3 text-sm text-text-main placeholder:text-text-muted" />
+        <button type="submit" className="inline-flex items-center gap-2 rounded-lg bg-purple-primary px-3 py-2 text-sm font-medium text-white hover:bg-purple-hover">
+          <Send size={15} /> Send
+        </button>
+      </form>
+    </div>
+  );
 }
 
 function Panel({ title, meta, children }: { title: string; meta: string; children: React.ReactNode }) {
@@ -235,7 +215,7 @@ function Panel({ title, meta, children }: { title: string; meta: string; childre
   );
 }
 
-function Action({ icon: Icon, label, onClick, primary, danger }: { icon: typeof Check; label: string; onClick: () => void; primary?: boolean; danger?: boolean }) {
+function Action({ icon: Icon, label, onClick, primary, danger }: { icon: LucideIcon; label: string; onClick: () => void; primary?: boolean; danger?: boolean }) {
   return (
     <button
       onClick={onClick}
