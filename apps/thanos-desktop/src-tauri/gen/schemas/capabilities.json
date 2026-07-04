@@ -1,1 +1,1 @@
-{}
+{"default":{"identifier":"default","description":"Core permissions for the main Thanos window: enables event listen/emit (agent output/exit streams) and the other default core APIs.","local":true,"windows":["main"],"permissions":["core:default"]}}

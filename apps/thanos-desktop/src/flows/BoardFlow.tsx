@@ -92,8 +92,21 @@ function DroppableColumn({ id, children }: { id: TaskStatus; children: React.Rea
 
 function SortableTask({ task, active, onSelect, onEdit }: { task: Task; active: boolean; onSelect: (taskId: string) => void; onEdit: (taskId: string) => void }) {
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: task.id });
+  // A div wrapper (not a button) — the card contains its own edit button, and a
+  // <button> cannot legally contain another <button>.
   return (
-    <button className="text-left" onClick={() => onSelect(task.id)}>
+    <div
+      role="button"
+      tabIndex={0}
+      className="w-full text-left"
+      onClick={() => onSelect(task.id)}
+      onKeyDown={(event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          onSelect(task.id);
+        }
+      }}
+    >
       <TaskCard
         task={task}
         active={active}
@@ -103,6 +116,6 @@ function SortableTask({ task, active, onSelect, onEdit }: { task: Task; active: 
         onEdit={onEdit}
         style={{ transform: CSS.Transform.toString(transform), transition }}
       />
-    </button>
+    </div>
   );
 }

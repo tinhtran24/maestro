@@ -518,12 +518,47 @@ function step(
     };
 }
 
+// Shared stable empty references. Selector helpers must never return a freshly
+// built [] / {} when an entity is missing: with useSyncExternalStore (zustand),
+// a new reference every render triggers "getSnapshot should be cached" and an
+// infinite render loop. Returning these constants keeps the snapshot stable.
+const NO_EVENTS: TaskEvent[] = [];
+const NO_QUESTIONS: PlanningQuestion[] = [];
+
 export function taskEventsFor(state: WorkbenchState, taskId: string): TaskEvent[] {
-    return state.taskHistory[taskId] ?? [];
+    return state.taskHistory[taskId] ?? NO_EVENTS;
 }
 
 export function planningFor(state: WorkbenchState, taskId: string): PlanningQuestion[] {
-    return state.planningByTask[taskId]?.questions ?? [];
+    return state.planningByTask[taskId]?.questions ?? NO_QUESTIONS;
+}
+
+// Default entities for tasks that have no saved plan/review yet. Exported so
+// flow hooks can select the (stable) stored item and fall back outside the
+// selector, rather than building a fresh default inside it.
+export function emptyPlan(taskId: string): ExecutionPlan {
+    return {
+        id: `plan-${taskId}`,
+        taskId,
+        summary: "No execution plan has been saved for this task.",
+        steps: [],
+        risks: [],
+        filesToTouch: [],
+        testStrategy: [],
+        approvalStatus: "draft",
+    };
+}
+
+export function emptyReview(taskId: string): Review {
+    return {
+        id: `review-${taskId}`,
+        taskId,
+        diffSummary: "",
+        changedFiles: [],
+        testResults: [],
+        reviewerNotes: "",
+        status: "pending",
+    };
 }
 
 export function selectedTask(state: WorkbenchState): Task | null {
@@ -535,18 +570,7 @@ export function selectedTask(state: WorkbenchState): Task | null {
 }
 
 export function planFor(task: Task, state: WorkbenchState) {
-    return (
-        state.plans.find((plan) => plan.taskId === task.id) ?? {
-            id: `plan-${task.id}`,
-            taskId: task.id,
-            summary: "No execution plan has been saved for this task.",
-            steps: [],
-            risks: [],
-            filesToTouch: [],
-            testStrategy: [],
-            approvalStatus: "draft" as const,
-        }
-    );
+    return state.plans.find((plan) => plan.taskId === task.id) ?? emptyPlan(task.id);
 }
 
 // Builds a review draft for a task from the existing review plus any collected
@@ -571,17 +595,7 @@ function buildReviewDraft(state: WorkbenchState, taskId: string): Review {
 }
 
 export function reviewFor(task: Task, state: WorkbenchState) {
-    return (
-        state.reviews.find((review) => review.taskId === task.id) ?? {
-            id: `review-${task.id}`,
-            taskId: task.id,
-            diffSummary: "",
-            changedFiles: [],
-            testResults: [],
-            reviewerNotes: "",
-            status: "pending" as const,
-        }
-    );
+    return state.reviews.find((review) => review.taskId === task.id) ?? emptyReview(task.id);
 }
 
 export function sessionFor(task: Task, state: WorkbenchState): AgentSession {

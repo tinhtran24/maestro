@@ -3,16 +3,19 @@
 // clarifying questions → generate an execution plan → approval gate. Gates and
 // transitions run through the validated state machine; no coding before approval.
 
+import { useMemo } from "react";
 import type { Task } from "../../domain/models";
 import { generatePlan, generateQuestions } from "../../features/planner/planGenerator";
 import { startSession } from "../../features/terminal/mockRuntime";
-import { planFor, planningFor, useWorkbenchStore } from "../../state/workbenchStore";
+import { emptyPlan, planningFor, useWorkbenchStore } from "../../state/workbenchStore";
 
 export type PlannerStage = "start" | "questions" | "review" | "approved";
 
 export function usePlannerFlow(task: Task) {
   const questions = useWorkbenchStore((state) => planningFor(state, task.id));
-  const plan = useWorkbenchStore((state) => planFor(task, state));
+  // Stable stored plan + fallback outside the selector (avoids an infinite loop).
+  const savedPlan = useWorkbenchStore((state) => state.plans.find((plan) => plan.taskId === task.id));
+  const plan = useMemo(() => savedPlan ?? emptyPlan(task.id), [savedPlan, task.id]);
   const setPlanningQuestions = useWorkbenchStore((state) => state.setPlanningQuestions);
   const answerPlanningQuestion = useWorkbenchStore((state) => state.answerPlanningQuestion);
   const persistPlan = useWorkbenchStore((state) => state.persistPlan);

@@ -5,13 +5,16 @@
 // state machine enforces the same gate. On approval, a memory node is synthesized
 // (Phase 9 — "memory updates after approval"). No real diff parser or merge.
 
+import { useMemo } from "react";
 import type { Task } from "../../domain/models";
 import { buildReviewChecklist, canFinish, checklistComplete, mockTestRun } from "../../features/reviewer/reviewChecklist";
 import { memoryFromReview } from "../../features/memory/memorySearch";
-import { planFor, reviewFor, useWorkbenchStore, workflowStepFor } from "../../state/workbenchStore";
+import { emptyReview, planFor, reviewFor, useWorkbenchStore, workflowStepFor } from "../../state/workbenchStore";
 
 export function useReviewFlow(task: Task) {
-  const review = useWorkbenchStore((state) => reviewFor(task, state));
+  // Stable stored review + fallback outside the selector (avoids an infinite loop).
+  const savedReview = useWorkbenchStore((state) => state.reviews.find((review) => review.taskId === task.id));
+  const review = useMemo(() => savedReview ?? emptyReview(task.id), [savedReview, task.id]);
   const diff = useWorkbenchStore((state) => state.diffs[task.id]);
   const test = useWorkbenchStore((state) => state.testRuns[task.id]);
   const persistTestRun = useWorkbenchStore((state) => state.persistTestRun);

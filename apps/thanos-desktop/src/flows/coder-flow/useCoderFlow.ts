@@ -5,15 +5,19 @@
 // assigned on the `running` transition and coding cannot be sent to review until
 // the coding session completes. No real Git and no real agent execution.
 
+import { useMemo } from "react";
 import type { Task } from "../../domain/models";
 import { generateChangeset } from "../../features/coder/changesetGenerator";
 import { sessionIdFor, startSession } from "../../features/terminal/mockRuntime";
-import { planFor, useWorkbenchStore } from "../../state/workbenchStore";
+import { emptyPlan, useWorkbenchStore } from "../../state/workbenchStore";
 
 export type CoderStage = "blocked" | "ready" | "coding" | "review" | "done";
 
 export function useCoderFlow(task: Task) {
-  const plan = useWorkbenchStore((state) => planFor(task, state));
+  // Subscribe to the stored plan (stable ref) and fall back outside the selector —
+  // returning a fresh default inside the selector causes an infinite render loop.
+  const savedPlan = useWorkbenchStore((state) => state.plans.find((plan) => plan.taskId === task.id));
+  const plan = useMemo(() => savedPlan ?? emptyPlan(task.id), [savedPlan, task.id]);
   const diff = useWorkbenchStore((state) => state.diffs[task.id]);
   const session = useWorkbenchStore((state) =>
     state.sessions.find((item) => item.id === sessionIdFor(task.id, "coding")),
