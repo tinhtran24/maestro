@@ -126,6 +126,10 @@ type WorkbenchState = {
     approvePlan(taskId: string): void;
     persistPlan(plan: ExecutionPlan): void;
     requestChanges(taskId: string): void;
+    approveReview(taskId: string): void;
+    rejectReview(taskId: string): void;
+    requestReviewChanges(taskId: string): void;
+    appendMemory(node: MemoryNode): void;
     runTests(taskId: string): void;
     approveMerge(taskId: string): void;
     persistDiff(diff: GitDiff): void;
@@ -358,6 +362,38 @@ export const useWorkbenchStore = create<WorkbenchState>((set, get) => ({
             const event: TaskEvent = { ...outcome.event, type: "changes_requested" };
             return { tasks: outcome.tasks, taskHistory: pushEvent(state.taskHistory, event) };
         }),
+    // Phase 8 — Review. Approving persists an approved review (which flags
+    // reviewApproved + records the review_approved event via persistReview). The
+    // task is not auto-finished — Done still requires the state-machine gate.
+    approveReview: (taskId) => {
+        get().persistReview({ ...buildReviewDraft(get(), taskId), status: "approved", reviewerNotes: "Approved from the review panel." });
+    },
+    // Rejecting clears approval and sends the task to Failed.
+    rejectReview: (taskId) => {
+        get().persistReview({ ...buildReviewDraft(get(), taskId), status: "rejected", reviewerNotes: "Rejected from the review panel." });
+        set((state) => {
+            const outcome = applyTransition(state.tasks, taskId, "failed", "Review rejected");
+            if ("error" in outcome) return {};
+            return { tasks: outcome.tasks, taskHistory: pushEvent(state.taskHistory, outcome.event) };
+        });
+    },
+    // Request Changes clears approval and sends the task back to the coder (running).
+    requestReviewChanges: (taskId) => {
+        get().persistReview({ ...buildReviewDraft(get(), taskId), status: "changes_requested", reviewerNotes: "Changes requested from the review panel." });
+        set((state) => {
+            const outcome = applyTransition(state.tasks, taskId, "running", "Review changes requested");
+            if ("error" in outcome) return {};
+            const event: TaskEvent = { ...outcome.event, type: "changes_requested" };
+            return { tasks: outcome.tasks, taskHistory: pushEvent(state.taskHistory, event) };
+        });
+    },
+    // Phase 9 — Memory. Adds (or replaces) a memory node; newest first.
+    appendMemory: (node) =>
+        set((state) => ({
+            memoryNodes: state.memoryNodes.some((item) => item.id === node.id)
+                ? state.memoryNodes.map((item) => (item.id === node.id ? node : item))
+                : [node, ...state.memoryNodes],
+        })),
     runTests: (taskId) =>
         set((state) => {
             if (!state.tasks.some((task) => task.id === taskId)) return {};
@@ -511,6 +547,27 @@ export function planFor(task: Task, state: WorkbenchState) {
             approvalStatus: "draft" as const,
         }
     );
+}
+
+// Builds a review draft for a task from the existing review plus any collected
+// diff/test artifacts, so an approve/reject action carries real context.
+function buildReviewDraft(state: WorkbenchState, taskId: string): Review {
+    const existing = state.reviews.find((review) => review.taskId === taskId);
+    const diff = state.diffs[taskId];
+    const test = state.testRuns[taskId];
+    return {
+        id: existing?.id ?? `review-${taskId}`,
+        taskId,
+        diffSummary: existing?.diffSummary || diff?.summary || "",
+        changedFiles: existing?.changedFiles.length ? existing.changedFiles : diff?.changedFiles.map((file) => file.path) ?? [],
+        testResults: existing?.testResults.length
+            ? existing.testResults
+            : test
+              ? [{ command: test.command, status: test.status, output: test.stdout || test.stderr }]
+              : [],
+        reviewerNotes: existing?.reviewerNotes ?? "",
+        status: existing?.status ?? "pending",
+    };
 }
 
 export function reviewFor(task: Task, state: WorkbenchState) {

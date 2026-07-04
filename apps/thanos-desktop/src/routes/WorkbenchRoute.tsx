@@ -4,6 +4,7 @@ import { AgentSettingsFlow } from "../flows/agent-settings-flow/AgentSettingsFlo
 import { BoardFlow } from "../flows/BoardFlow";
 import { ProjectOnboardingFlow } from "../flows/project-onboarding-flow/ProjectOnboardingFlow";
 import { ProjectsFlow } from "../flows/projects-flow/ProjectsFlow";
+import { MemoryFlow } from "../flows/memory-flow/MemoryFlow";
 import { RightContextSidebar } from "../flows/project-context-flow/RightContextSidebar";
 import { TaskBottomPanel, TaskWorkbenchMain } from "../flows/TaskWorkbenchFlow";
 import { TaskDialog } from "../flows/task-workbench-flow/TaskDialog";
@@ -96,12 +97,7 @@ export function WorkbenchRoute() {
   if (activeView === "memory") {
     return (
       <AppShell project={project}>
-        <div className="grid h-full place-items-center bg-bg-app p-6">
-          <div className="w-full max-w-lg rounded-lg border border-slate-800 bg-bg-card p-5">
-            <h1 className="text-lg font-semibold">Memory</h1>
-            <p className="mt-2 text-sm text-text-muted">Project memory nodes appear in the task inspector and search results.</p>
-          </div>
-        </div>
+        <MemoryFlow />
       </AppShell>
     );
   }

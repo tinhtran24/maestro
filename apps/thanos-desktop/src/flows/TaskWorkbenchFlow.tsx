@@ -7,6 +7,7 @@ import { currentWorkflowStep, selectedTask, planFor, reviewFor, sessionFor, useW
 import { useAgentSessionFlow, XtermPanel } from "./AgentSessionFlow";
 import { PlannerFlow, isPlanningPhase } from "./planner-flow/PlannerFlow";
 import { CoderFlow, isCodingPhase } from "./coder-flow/CoderFlow";
+import { ReviewFlow, isReviewPhase } from "./review-flow/ReviewFlow";
 import { AgentTerminalFlow } from "./agent-terminal-flow/AgentTerminalFlow";
 import { LogsPanel, TimelinePanel } from "./task-workbench-flow/BottomPanels";
 import { StartAgentButton } from "./task-workbench-flow/StartAgentButton";
@@ -122,6 +123,11 @@ export function TaskWorkbenchMain() {
         {isCodingPhase(task) && (
           <div className="mb-3">
             <CoderFlow task={task} />
+          </div>
+        )}
+        {isReviewPhase(task) && (
+          <div className="mb-3">
+            <ReviewFlow task={task} />
           </div>
         )}
         <div className="grid grid-cols-1 gap-3 xl:grid-cols-2 2xl:grid-cols-3">

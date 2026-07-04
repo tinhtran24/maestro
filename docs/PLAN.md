@@ -58,12 +58,12 @@ Everything important must be visible.
 | Agent Runtime | ✅ Completed |
 | Planner Flow | ✅ Completed |
 | Coding Flow | ✅ Completed |
-| Review Flow | ⏳ Next |
-| Memory | Pending |
-| Skills | Pending |
+| Review Flow | ✅ Completed |
+| Memory | ✅ Completed |
+| Skills | ⏳ Next |
 | MCP | Pending |
 
-**Current Phase: Phase 8 — Review** (not yet started — awaiting approval).
+**Current Phase: Phase 10 — Skills** (not yet started — awaiting approval).
 
 ---
 
@@ -477,7 +477,15 @@ Task enters Review.
 
 ---
 
-# Phase 8 — Review
+# Phase 8 — Review ✅
+
+Status: Completed (mock). An in-review task exposes the Review panel: changed
+files + diff summary, a derived checklist (diff collected, tests pass, matches
+plan, no secrets, conventions), and the test run. Approve / Reject / Request
+Changes / Run Tests / Finish actions route through the state machine — Finish is
+gated on review approval + passing tests, so a task cannot reach Done without
+approval. Approving synthesizes a memory node (see Phase 9). Reviewer-helper unit
+tests added. No real diff parser or merge.
 
 Goal
 
@@ -513,7 +521,13 @@ Cannot finish without approval.
 
 ---
 
-# Phase 9 — Memory
+# Phase 9 — Memory ✅
+
+Status: Completed (mock). A full-screen Memory browser with mock full-text search,
+type filtering, a node list, and a detail view showing related memory (derived
+from explicit links + shared type). Approving a review synthesizes a linked
+decision node — "memory updates after approval". Backed by the in-memory store;
+memory search/synthesis unit tests added. No real SQLite/FTS yet.
 
 Goal
 

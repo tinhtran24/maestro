@@ -112,11 +112,22 @@ Completed phases:
   (enabled once the coding session completes) moves the task into Review. Mock
   worktree; no real Git or agent execution.
 
+- Phase 8 — Review: mock review — an in-review task shows changed files + diff,
+  a derived checklist, and the test run, with Approve / Reject / Request Changes /
+  Run Tests / Finish actions. Finish is gated on review approval + passing tests
+  (state-machine enforced), so a task cannot reach Done without approval. No real
+  diff parser or merge flow.
+
+- Phase 9 — Memory: mock project memory — a full-screen browser with mock
+  full-text search, type filters, and a detail view showing related memory
+  (explicit links + shared type). Approving a review synthesizes a linked decision
+  node ("memory updates after approval"). In-memory store; no real SQLite/FTS yet.
+
 Current / next phase:
 
-- Phase 8 — Review: review before Done — changed files, git diff, checklist,
-  tests, and Approve / Reject / Request Changes actions. Cannot finish without
-  approval. No real diff parser or merge flow.
+- Phase 10 — Skills: workflow guidance — skill registry, loader, runner, and
+  evidence; only relevant skills loaded per task. UI-first; no real skill
+  execution.
 
 Do not implement later-phase behavior unless explicitly requested:
 
