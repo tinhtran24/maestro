@@ -14,7 +14,10 @@ import { EmptyState } from "../shared/ui/EmptyState";
 import { SplitPane } from "../shared/ui/SplitPane";
 import { selectedTask, useWorkbenchStore } from "../state/workbenchStore";
 
-const eventStream = new WorkbenchEventStream("ws://127.0.0.1:1421/events");
+// Opt-in external events server. The desktop app receives events via Tauri;
+// only connect the WebSocket when VITE_THANOS_EVENTS_URL is configured (avoids a
+// failed-connection error when no standalone events server is running).
+const eventStream = new WorkbenchEventStream(import.meta.env.VITE_THANOS_EVENTS_URL ?? "");
 
 export function WorkbenchRoute() {
   const activeView = useWorkbenchStore((state) => state.activeView);
