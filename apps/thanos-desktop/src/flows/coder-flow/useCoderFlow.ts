@@ -8,7 +8,8 @@
 import { useMemo } from "react";
 import type { Task } from "../../domain/models";
 import { generateChangeset } from "../../features/coder/changesetGenerator";
-import { sessionIdFor, startSession } from "../../features/terminal/mockRuntime";
+import { sessionIdFor } from "../../features/terminal/mockRuntime";
+import { startAgentStep } from "../../features/terminal/agentRuntime";
 import { emptyPlan, useWorkbenchStore } from "../../state/workbenchStore";
 
 export type CoderStage = "blocked" | "ready" | "coding" | "review" | "done";
@@ -45,7 +46,7 @@ export function useCoderFlow(task: Task) {
     const runnable = useWorkbenchStore.getState().tasks.find((item) => item.id === task.id) ?? task;
     persistDiff(generateChangeset(runnable, plan));
     setBottomTab("terminal");
-    startSession(runnable, "coding");
+    void startAgentStep(runnable, "coding");
   }
 
   // Exit criteria: task enters Review. Gated on the coding session completing.

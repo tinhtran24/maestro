@@ -1,6 +1,7 @@
 import { useState } from "react";
 import type { AgentSession, Task } from "../../domain/models";
-import { restartSession, startSession, stopSession, type TerminalStep } from "../../features/terminal/mockRuntime";
+import type { TerminalStep } from "../../features/terminal/mockRuntime";
+import { restartAgentStep, startAgentStep, stopAgentStep } from "../../features/terminal/agentRuntime";
 import { useWorkbenchStore } from "../../state/workbenchStore";
 
 // Phase 5 — Native Terminal Runtime (mock). Owns terminal session interaction
@@ -28,7 +29,7 @@ export function useAgentTerminalFlow(task: Task | null) {
   function start(step: TerminalStep) {
     if (!task) return;
     if (step === "coding" && !task.planApproved) return;
-    startSession(task, step);
+    void startAgentStep(task, step);
   }
 
   return {
@@ -40,8 +41,8 @@ export function useAgentTerminalFlow(task: Task | null) {
     codingDisabled: !task?.planApproved,
     select: (id: string) => task && setActiveSession(task.id, id),
     start,
-    stop: (session: AgentSession | null) => session && stopSession(session.id),
-    restart: (session: AgentSession | null) => session && restartSession(session.id),
+    stop: (session: AgentSession | null) => stopAgentStep(session),
+    restart: (session: AgentSession | null) => restartAgentStep(session),
     pin: (id: string) => togglePinnedSession(id),
     close: (id: string) => removeSession(id),
     openTranscript: (id: string) => setTranscriptId(id),

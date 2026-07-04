@@ -6,7 +6,7 @@
 import { useMemo } from "react";
 import type { Task } from "../../domain/models";
 import { generatePlan, generateQuestions } from "../../features/planner/planGenerator";
-import { startSession } from "../../features/terminal/mockRuntime";
+import { startAgentStep } from "../../features/terminal/agentRuntime";
 import { emptyPlan, planningFor, useWorkbenchStore } from "../../state/workbenchStore";
 
 export type PlannerStage = "start" | "questions" | "review" | "approved";
@@ -39,7 +39,7 @@ export function usePlannerFlow(task: Task) {
       setPlanningQuestions(task.id, generateQuestions(task));
     }
     setBottomTab("terminal");
-    startSession(task, "planning");
+    void startAgentStep(task, "planning");
   }
 
   function answer(questionId: string, value: string) {

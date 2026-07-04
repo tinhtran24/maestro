@@ -4,55 +4,26 @@ import { FitAddon } from "@xterm/addon-fit";
 import "@xterm/xterm/css/xterm.css";
 import type { AgentSession, ExecutionPlan, Task } from "../domain/models";
 import { NativeBackend } from "../services/nativeBackend";
-import { useWorkbenchStore } from "../state/workbenchStore";
+import { startAgentStep } from "../features/terminal/agentRuntime";
+import type { TerminalStep } from "../features/terminal/mockRuntime";
 
 const backend = new NativeBackend();
 
+const STEP_FOR_AGENT: Record<AgentSession["agentType"], TerminalStep> = {
+  planner: "planning",
+  coder: "coding",
+  reviewer: "review",
+  tester: "testing",
+  utility: "planning",
+};
+
 export function useAgentSessionFlow() {
-  const upsertSession = useWorkbenchStore((state) => state.upsertSession);
-  const appendSessionOutput = useWorkbenchStore((state) => state.appendSessionOutput);
-
-  useEffect(() => {
-    let active = true;
-    const unsubs: Array<() => void> = [];
-    backend.onAgentOutput((taskId, sessionId, data) => active && appendSessionOutput(taskId, sessionId, data)).then((unsub) => unsubs.push(unsub));
-    backend.onAgentExit((taskId, sessionId, code) => active && appendSessionOutput(taskId, sessionId, `process exited with code ${code}`)).then((unsub) => unsubs.push(unsub));
-    return () => {
-      active = false;
-      unsubs.forEach((unsub) => unsub());
-    };
-  }, [appendSessionOutput]);
-
+  // Streaming listeners and session creation live in agentRuntime (shared by the
+  // terminal toolbar and the planner/coder cards), so the header button uses the
+  // same real path.
   return {
     async start(task: Task, agentType: AgentSession["agentType"] = "coder") {
-      if (agentType === "coder" && !task.planApproved) {
-        upsertSession({
-          id: `session-${task.id}-coder`,
-          taskId: task.id,
-          agentType: "coder",
-          provider: "codex",
-          command: "codex",
-          status: "failed",
-          output: ["coder blocked: approve the execution plan first"],
-        });
-        return;
-      }
-      const prepared = agentType === "coder" || agentType === "reviewer" || agentType === "tester" ? await backend.prepareWorktree(task) : null;
-      const runnable = prepared ? { ...task, branchName: prepared.branchName, worktreePath: prepared.worktreePath } : task;
-      const session = agentType === "planner" || runnable.worktreePath ? await backend.startAgentRole(runnable, agentType) : null;
-      if (session) {
-        upsertSession(session);
-      } else {
-        upsertSession({
-          id: `session-${task.id}-${agentType}`,
-          taskId: task.id,
-          agentType,
-          provider: agentType === "planner" ? "claude-code" : "codex",
-          command: agentType === "planner" ? "claude" : "codex",
-          status: "running",
-          output: [`${agentType} session started`],
-        });
-      }
+      await startAgentStep(task, STEP_FOR_AGENT[agentType]);
     },
     async stop() {
       await backend.stopAgent();
@@ -84,10 +55,16 @@ export function useAgentSessionFlow() {
   };
 }
 
-export function XtermPanel({ output }: { output: string[] }) {
+// Renders a live terminal. `output` is an append-only list of raw chunks (real
+// PTY bytes or simulated lines, each already carrying its own newlines); we write
+// only the newly-appended entries so ANSI/cursor sequences stream correctly.
+// `sessionId` resets the view when the active tab changes.
+export function XtermPanel({ output, sessionId }: { output: string[]; sessionId?: string }) {
   const hostRef = useRef<HTMLDivElement | null>(null);
   const terminalRef = useRef<XTerm | null>(null);
-  const renderedRef = useRef("");
+  const fitRef = useRef<FitAddon | null>(null);
+  const writtenRef = useRef(0);
+  const sessionRef = useRef<string | undefined>(undefined);
 
   useEffect(() => {
     if (!hostRef.current || terminalRef.current) return;
@@ -105,19 +82,47 @@ export function XtermPanel({ output }: { output: string[] }) {
       void backend.writeTerminal(data);
     });
     fit.fit();
+    void backend.resizeTerminal(term.rows, term.cols);
     terminalRef.current = term;
-    return () => term.dispose();
+    fitRef.current = fit;
+    const onResize = () => {
+      fit.fit();
+      void backend.resizeTerminal(term.rows, term.cols);
+    };
+    window.addEventListener("resize", onResize);
+    return () => {
+      window.removeEventListener("resize", onResize);
+      term.dispose();
+    };
   }, []);
 
   useEffect(() => {
     const terminal = terminalRef.current;
     if (!terminal) return;
-    const text = output.length ? output.join("\r\n") : "\x1b[38;5;244mLast login: local Thanos terminal\x1b[0m\r\n\x1b[32mthanos\x1b[0m:\x1b[34m~\x1b[0m$ ";
-    if (renderedRef.current === text) return;
-    renderedRef.current = text;
-    terminal.clear();
-    terminal.write(text);
-  }, [output]);
+
+    // Switched tabs (or restarted → output truncated): clear and replay.
+    if (sessionRef.current !== sessionId || output.length < writtenRef.current) {
+      sessionRef.current = sessionId;
+      writtenRef.current = 0;
+      terminal.clear();
+    }
+
+    if (output.length === 0) {
+      if (writtenRef.current === 0) {
+        terminal.write("\x1b[38;5;244mLast login: local Thanos terminal\x1b[0m\r\n\x1b[32mthanos\x1b[0m:\x1b[34m~\x1b[0m$ ");
+        writtenRef.current = -1; // sentinel: idle prompt written
+      }
+      return;
+    }
+    if (writtenRef.current < 0) {
+      terminal.clear();
+      writtenRef.current = 0;
+    }
+    for (let i = writtenRef.current; i < output.length; i += 1) {
+      terminal.write(output[i]);
+    }
+    writtenRef.current = output.length;
+  }, [output, sessionId]);
 
   return <div ref={hostRef} className="h-full min-h-0 overflow-hidden rounded-lg bg-black" />;
 }

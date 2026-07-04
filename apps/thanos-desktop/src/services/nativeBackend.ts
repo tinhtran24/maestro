@@ -386,25 +386,49 @@ export class NativeBackend {
     return this.startAgentRole(task, "coder");
   }
 
-  async startAgentRole(task: Task, agentType: AgentSession["agentType"]) {
-    const workspace = this.getWorkspacePath();
+  private startAgentRequest(task: Task, agentType: AgentSession["agentType"]) {
     const planner = agentType === "planner";
     const reviewer = agentType === "reviewer";
     const tester = agentType === "tester";
     const command = planner || reviewer ? "claude" : tester ? (task.executorProfile || "npm test") : task.executorProfile.includes("claude") ? "claude" : "codex";
     const provider = planner || reviewer ? "claude-code" : tester ? "shell" : task.executorProfile.includes("claude") ? "claude-code" : "codex";
+    return {
+      workspace: this.getWorkspacePath(),
+      task_id: task.id,
+      agent_type: agentType,
+      provider,
+      command,
+      args: [],
+      worktree_path: planner ? "." : task.worktreePath,
+    };
+  }
+
+  async startAgentRole(task: Task, agentType: AgentSession["agentType"]) {
     const info = await this.tryInvoke<AgentSessionInfo>("start_agent_session", {
-      request: {
-        workspace,
-        task_id: task.id,
-        agent_type: agentType,
-        provider,
-        command,
-        args: [],
-        worktree_path: planner ? "." : task.worktreePath,
-      },
+      request: this.startAgentRequest(task, agentType),
     });
     return info ? mapSession(info) : null;
+  }
+
+  // Like startAgentRole but surfaces the backend error (e.g. missing CLI, no
+  // worktree, plan not approved) instead of swallowing it, so the terminal can
+  // explain why a session did not start.
+  async startAgentRoleResult(
+    task: Task,
+    agentType: AgentSession["agentType"],
+  ): Promise<{ session: AgentSession } | { error: string }> {
+    try {
+      const info = await invoke<AgentSessionInfo>("start_agent_session", {
+        request: this.startAgentRequest(task, agentType),
+      });
+      return info ? { session: mapSession(info) } : { error: "no session returned" };
+    } catch (err) {
+      return { error: String(err) };
+    }
+  }
+
+  async resizeTerminal(rows: number, cols: number) {
+    await this.tryInvoke<void>("resize_terminal", { rows, cols });
   }
 
   async saveExecutionPlan(plan: ExecutionPlan) {

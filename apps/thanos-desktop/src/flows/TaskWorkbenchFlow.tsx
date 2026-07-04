@@ -150,7 +150,7 @@ export function TaskWorkbenchMain() {
             <ul className="mt-3 grid gap-2 text-sm">{(state.diffs[task.id]?.changedFiles.map((file) => file.path) || review.changedFiles).map((file) => <li key={file}><span className="text-green-success">•</span> {file}</li>)}</ul>
           </Panel>
           <Panel title="Terminal" meta={session.status}>
-            <XtermPanel output={session.output} />
+            <XtermPanel output={session.output} sessionId={session.id} />
           </Panel>
           <Panel title="Browser" meta="preview">
             <div className="rounded-xl bg-slate-950/70 p-4 text-sm"><strong>Shopping Cart</strong><p className="mt-2 text-text-muted">Preview attaches after runtime starts.</p></div>

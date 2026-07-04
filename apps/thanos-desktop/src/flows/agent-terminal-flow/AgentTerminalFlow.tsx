@@ -33,7 +33,7 @@ export function AgentTerminalFlow({ task }: { task: Task | null }) {
       />
 
       {flow.active ? (
-        <XtermPanel output={flow.active.output} />
+        <XtermPanel output={flow.active.output} sessionId={flow.active.id} />
       ) : (
         <div className="grid place-items-center p-6 text-center">
           <div className="flex flex-col items-center gap-2 text-text-muted">

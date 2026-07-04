@@ -111,7 +111,10 @@ export function startSession(task: Task, step: TerminalStep): string {
     status: "starting",
     transcriptPath: `.thanos/logs/sessions/${id}.log`,
     startedAt: new Date().toISOString(),
-    output: [`$ ${command}`],
+    output: [
+      "\x1b[38;5;244m[simulated — real agent unavailable in this environment]\x1b[0m\r\n",
+      `$ ${command}\r\n`,
+    ],
   });
   store.setActiveSession(task.id, id);
 
@@ -126,12 +129,12 @@ export function startSession(task: Task, step: TerminalStep): string {
     }
     if (current.status === "starting") state.patchSession(id, { status: "running" });
     if (index < lines.length) {
-      state.appendSessionOutput(task.id, id, lines[index]);
+      state.appendSessionOutput(task.id, id, `${lines[index]}\r\n`);
       index += 1;
       return;
     }
     clearTimer(id);
-    state.appendSessionOutput(task.id, id, "[process exited with code 0]");
+    state.appendSessionOutput(task.id, id, "[process exited with code 0]\r\n");
     state.patchSession(id, { status: "completed", endedAt: new Date().toISOString() });
   }, STREAM_MS);
   timers.set(id, timer);
@@ -143,8 +146,8 @@ export function stopSession(sessionId: string) {
   const store = useWorkbenchStore.getState();
   const session = store.sessions.find((item) => item.id === sessionId);
   if (!session || session.status === "completed" || session.status === "stopped") return;
-  store.appendSessionOutput(session.taskId, sessionId, "^C");
-  store.appendSessionOutput(session.taskId, sessionId, "[session stopped by user]");
+  store.appendSessionOutput(session.taskId, sessionId, "^C\r\n");
+  store.appendSessionOutput(session.taskId, sessionId, "[session stopped by user]\r\n");
   store.patchSession(sessionId, { status: "stopped", endedAt: new Date().toISOString() });
 }
 
