@@ -12,13 +12,15 @@ import { useWorkbenchQuery } from "../queries/useWorkbenchQuery";
 import { AppShell } from "../shared/ui/AppShell";
 import { EmptyState } from "../shared/ui/EmptyState";
 import { SplitPane } from "../shared/ui/SplitPane";
-import { useWorkbenchStore } from "../state/workbenchStore";
+import { selectedTask, useWorkbenchStore } from "../state/workbenchStore";
 
 const eventStream = new WorkbenchEventStream("ws://127.0.0.1:1421/events");
 
 export function WorkbenchRoute() {
   const activeView = useWorkbenchStore((state) => state.activeView);
   const project = useWorkbenchStore((state) => state.project);
+  // Hide the task workbench + Task Details rail until a task is selected.
+  const hasTask = useWorkbenchStore((state) => selectedTask(state) != null);
   const rightCollapsed = useWorkbenchStore((state) => state.rightCollapsed);
   const toggleRightCollapsed = useWorkbenchStore((state) => state.toggleRightCollapsed);
   const hydrate = useWorkbenchStore((state) => state.hydrate);
@@ -106,8 +108,14 @@ export function WorkbenchRoute() {
     <AppShell project={project}>
       <>
         <SplitPane
-          left={<div className="grid h-full min-h-0 grid-rows-[minmax(16rem,40%)_minmax(0,1fr)]"><BoardFlow /><TaskWorkbenchMain /></div>}
-          right={<RightContextSidebar />}
+          left={
+            hasTask ? (
+              <div className="grid h-full min-h-0 grid-rows-[minmax(16rem,40%)_minmax(0,1fr)]"><BoardFlow /><TaskWorkbenchMain /></div>
+            ) : (
+              <div className="h-full min-h-0"><BoardFlow /></div>
+            )
+          }
+          right={hasTask ? <RightContextSidebar /> : null}
           bottom={<TaskBottomPanel />}
           rightCollapsed={rightCollapsed}
           onExpandRight={toggleRightCollapsed}

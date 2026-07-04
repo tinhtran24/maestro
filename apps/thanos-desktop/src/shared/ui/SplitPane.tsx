@@ -14,11 +14,14 @@ export function SplitPane({
   rightCollapsed?: boolean;
   onExpandRight?: () => void;
 }) {
+  // A null/absent right pane means "no right rail at all" — hide the panel, its
+  // resize handle, and the collapsed expand button.
+  const showRight = right != null;
   return (
     <>
-      <div className="grid h-full min-h-0 grid-rows-[minmax(28rem,1fr)_minmax(14rem,28rem)_minmax(12rem,20rem)] lg:hidden">
+      <div className={`grid h-full min-h-0 lg:hidden ${showRight ? "grid-rows-[minmax(28rem,1fr)_minmax(14rem,28rem)_minmax(12rem,20rem)]" : "grid-rows-[minmax(28rem,1fr)_minmax(12rem,20rem)]"}`}>
         <div className="min-h-0">{left}</div>
-        <div className="min-h-0">{right}</div>
+        {showRight && <div className="min-h-0">{right}</div>}
         <div className="min-h-0">{bottom}</div>
       </div>
       <div className="hidden min-h-0 lg:flex">
@@ -34,7 +37,7 @@ export function SplitPane({
               </Panel>
             </PanelGroup>
           </Panel>
-          {!rightCollapsed && (
+          {showRight && !rightCollapsed && (
             <>
               <PanelResizeHandle className="w-1 bg-slate-800 hover:bg-purple-primary" />
               <Panel defaultSize={28} minSize={22} maxSize={40}>
@@ -43,7 +46,7 @@ export function SplitPane({
             </>
           )}
         </PanelGroup>
-        {rightCollapsed && (
+        {showRight && rightCollapsed && (
           <button
             onClick={onExpandRight}
             className="flex w-10 shrink-0 flex-col items-center gap-2 border-l border-slate-800 bg-slate-900/70 py-3 text-text-muted hover:text-text-main"
