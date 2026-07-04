@@ -336,6 +336,33 @@ export class NativeBackend {
     return info ? info.map(fromAgentCandidateInfo) : [];
   }
 
+  // Persists a task to the workbench store (SQLite) so it survives a reload.
+  async saveTask(task: Task) {
+    const workspace = this.getWorkspacePath();
+    const info = await this.tryInvoke<TaskInfo>("save_task", {
+      request: {
+        workspace,
+        task: {
+          id: task.id,
+          feature_id: task.featureId,
+          title: task.title,
+          description: task.description,
+          status: task.status,
+          priority: task.priority,
+          assigned_agent: task.assignedAgent,
+          executor_profile: task.executorProfile,
+          worktree_path: task.worktreePath,
+          branch_name: task.branchName,
+          tags: task.tags,
+          review_approved: task.reviewApproved,
+          tests_passed: task.testsPassed,
+          updated_at: task.updatedAt,
+        },
+      },
+    });
+    return info ? fromTaskInfo(info) : null;
+  }
+
   async prepareWorktree(task: Task) {
     const workspace = this.getWorkspacePath();
     const branchName = task.branchName || `thanos/${task.id.toLowerCase()}-${slug(task.title)}`;

@@ -800,6 +800,69 @@ fn approve_review(app: AppHandle, request: ApproveReviewRequest) -> Result<Revie
     Ok(review)
 }
 
+#[derive(Deserialize)]
+struct SaveTaskRequest {
+    workspace: String,
+    task: TaskPayload,
+}
+
+#[derive(Deserialize)]
+struct TaskPayload {
+    id: String,
+    feature_id: Option<String>,
+    title: String,
+    description: Option<String>,
+    status: Option<String>,
+    priority: Option<String>,
+    assigned_agent: Option<String>,
+    executor_profile: Option<String>,
+    worktree_path: Option<String>,
+    branch_name: Option<String>,
+    tags: Option<Vec<String>>,
+    review_approved: Option<bool>,
+    tests_passed: Option<bool>,
+    updated_at: Option<String>,
+}
+
+// Persists a task to the workbench store (SQLite). Upserts by id, preserving the
+// original created_at on update. Used by the board's create/edit flow so tasks
+// survive a reload.
+#[tauri::command]
+fn save_task(request: SaveTaskRequest) -> Result<WorkbenchTaskInfo, String> {
+    let workspace_path = validate_workspace(&request.workspace)?;
+    let task = request.task;
+    let id = sanitize_id(&task.id)?;
+    let title = task.title.trim().to_string();
+    if title.is_empty() {
+        return Err("task title is required".to_string());
+    }
+    let existing = read_task_json(&workspace_path, &id).ok();
+    let created_at = existing
+        .as_ref()
+        .and_then(|value| string_field(value, "created_at"))
+        .unwrap_or_else(|| now_epoch().to_string());
+    let value = serde_json::json!({
+        "id": id,
+        "feature_id": task.feature_id.unwrap_or_else(|| "local".to_string()),
+        "title": title,
+        "description": task.description.unwrap_or_default(),
+        "status": task.status.unwrap_or_else(|| "backlog".to_string()),
+        "priority": task.priority.unwrap_or_else(|| "P2".to_string()),
+        "assigned_agent": task.assigned_agent.unwrap_or_else(|| "Unassigned".to_string()),
+        "executor_profile": task.executor_profile.unwrap_or_default(),
+        "worktree_path": task.worktree_path.unwrap_or_default(),
+        "branch_name": task.branch_name.unwrap_or_default(),
+        "tags": task.tags.unwrap_or_default(),
+        "review_approved": task.review_approved.unwrap_or(false),
+        "tests_passed": task.tests_passed.unwrap_or(false),
+        "created_at": created_at,
+        "updated_at": task.updated_at.unwrap_or_else(|| now_epoch().to_string()),
+    });
+    write_task_json(&workspace_path, &id, &value)?;
+    let project = WorkbenchRepository::new(workspace_path).load_project()?;
+    task_from_value(&project, &value).ok_or_else(|| "failed to map saved task".to_string())
+}
+
 #[tauri::command]
 fn write_memory_node(request: MemoryWriteRequest) -> Result<MemoryNodeInfo, String> {
     let workspace_path = validate_workspace(&request.workspace)?;
@@ -2986,6 +3049,7 @@ pub fn run() {
             run_task_tests,
             save_review,
             approve_review,
+            save_task,
             write_memory_node,
             search_memory,
             list_agent_bridge_tools,
@@ -3239,6 +3303,48 @@ mod tests {
         assert_eq!(snapshot.reviews[0].status, "approved");
         // One task exists, so the next id is number two.
         assert!(next_task_id(&root, "another").unwrap().starts_with("T002-"));
+        let _ = std::fs::remove_dir_all(&root);
+    }
+
+    #[test]
+    fn save_task_persists_and_reloads() {
+        let root = std::env::temp_dir().join(format!("thanos-savetask-test-{}", now_epoch()));
+        let _ = std::fs::remove_dir_all(&root);
+        std::fs::create_dir_all(root.join(".thanos").join("memory")).unwrap();
+        std::fs::write(
+            root.join(".thanos").join("settings.json"),
+            r#"{"project":{"name":"Demo"}}"#,
+        )
+        .unwrap();
+
+        let saved = save_task(SaveTaskRequest {
+            workspace: root.display().to_string(),
+            task: TaskPayload {
+                id: "T-100".to_string(),
+                feature_id: Some("local".to_string()),
+                title: "Implement Shopping Cart".to_string(),
+                description: Some("from quick capture".to_string()),
+                status: Some("backlog".to_string()),
+                priority: Some("P1".to_string()),
+                assigned_agent: Some("Planner / Claude Code".to_string()),
+                executor_profile: None,
+                worktree_path: None,
+                branch_name: None,
+                tags: Some(vec!["cart".to_string()]),
+                review_approved: None,
+                tests_passed: None,
+                updated_at: None,
+            },
+        })
+        .unwrap();
+        assert_eq!(saved.id, "T-100");
+        assert_eq!(saved.priority, "P1");
+
+        // Reload from SQLite: the task survives.
+        let snapshot = WorkbenchRepository::new(root.clone()).load().unwrap();
+        let task = snapshot.tasks.iter().find(|task| task.id == "T-100").unwrap();
+        assert_eq!(task.title, "Implement Shopping Cart");
+        assert_eq!(task.tags, vec!["cart".to_string()]);
         let _ = std::fs::remove_dir_all(&root);
     }
 

@@ -12,11 +12,13 @@ import {
   type CapturedAttachment,
   type ExtractedTask,
 } from "../../features/tasks/quickCapture";
+import { NativeBackend } from "../../services/nativeBackend";
 import { useWorkbenchStore } from "../../state/workbenchStore";
 
 export type CaptureStep = "capture" | "structure" | "review" | "create";
 
 const ORDER: CaptureStep[] = ["capture", "structure", "review", "create"];
+const backend = new NativeBackend();
 
 export function useQuickCaptureFlow() {
   const createTask = useWorkbenchStore((state) => state.createTask);
@@ -117,7 +119,9 @@ export function useQuickCaptureFlow() {
 
   function create() {
     if (!draft) return;
-    createTask(toCreateInput(draft));
+    const task = createTask(toCreateInput(draft));
+    // Persist to the workbench store (SQLite) so the task survives a reload.
+    void backend.saveTask(task);
     setActiveView("workbench");
     closeTaskDialog();
   }

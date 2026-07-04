@@ -118,7 +118,7 @@ type WorkbenchState = {
     openCreateTask(): void;
     openEditTask(taskId: string): void;
     closeTaskDialog(): void;
-    createTask(input: { title: string; description: string; priority: Task["priority"]; assignedAgent: string; tags?: string[] }): void;
+    createTask(input: { title: string; description: string; priority: Task["priority"]; assignedAgent: string; tags?: string[] }): Task;
     editTask(taskId: string, input: { title: string; description: string; priority: Task["priority"]; assignedAgent: string }): void;
     removeTask(taskId: string): void;
     moveTask(taskId: string, status: TaskStatus): void;
@@ -258,34 +258,35 @@ export const useWorkbenchStore = create<WorkbenchState>((set, get) => ({
     openCreateTask: () => set({ taskDialog: { mode: "create" } }),
     openEditTask: (taskId) => set({ taskDialog: { mode: "edit", taskId } }),
     closeTaskDialog: () => set({ taskDialog: null }),
-    createTask: (input) =>
-        set((state) => {
-            const id = `T-${100 + state.tasks.length}`;
-            const task: Task = {
-                id,
-                featureId: state.features[0]?.id ?? "local",
-                title: input.title,
-                description: input.description,
-                status: "backlog",
-                priority: input.priority,
-                assignedAgent: input.assignedAgent || "Unassigned",
-                executorProfile: input.assignedAgent.toLowerCase().includes("claude") ? "claude-local" : "codex-local",
-                worktreePath: "",
-                branchName: "",
-                planApproved: false,
-                reviewApproved: false,
-                testsPassed: false,
-                updatedAt: nowIso(),
-                tags: input.tags?.length ? input.tags : ["new"],
-                progress: 0,
-            };
-            return {
-                tasks: [...state.tasks, task],
-                selectedTaskId: id,
-                taskDialog: null,
-                taskHistory: pushEvent(state.taskHistory, makeEvent(id, "created", { to: "backlog" })),
-            };
-        }),
+    createTask: (input) => {
+        const state = get();
+        const id = `T-${100 + state.tasks.length}`;
+        const task: Task = {
+            id,
+            featureId: state.features[0]?.id ?? "local",
+            title: input.title,
+            description: input.description,
+            status: "backlog",
+            priority: input.priority,
+            assignedAgent: input.assignedAgent || "Unassigned",
+            executorProfile: input.assignedAgent.toLowerCase().includes("claude") ? "claude-local" : "codex-local",
+            worktreePath: "",
+            branchName: "",
+            planApproved: false,
+            reviewApproved: false,
+            testsPassed: false,
+            updatedAt: nowIso(),
+            tags: input.tags?.length ? input.tags : ["new"],
+            progress: 0,
+        };
+        set((current) => ({
+            tasks: [...current.tasks, task],
+            selectedTaskId: id,
+            taskDialog: null,
+            taskHistory: pushEvent(current.taskHistory, makeEvent(id, "created", { to: "backlog" })),
+        }));
+        return task;
+    },
     editTask: (taskId, input) =>
         set((state) => ({
             tasks: state.tasks.map((task) =>
