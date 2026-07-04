@@ -118,7 +118,7 @@ type WorkbenchState = {
     openCreateTask(): void;
     openEditTask(taskId: string): void;
     closeTaskDialog(): void;
-    createTask(input: { title: string; description: string; priority: Task["priority"]; assignedAgent: string }): void;
+    createTask(input: { title: string; description: string; priority: Task["priority"]; assignedAgent: string; tags?: string[] }): void;
     editTask(taskId: string, input: { title: string; description: string; priority: Task["priority"]; assignedAgent: string }): void;
     removeTask(taskId: string): void;
     moveTask(taskId: string, status: TaskStatus): void;
@@ -276,7 +276,7 @@ export const useWorkbenchStore = create<WorkbenchState>((set, get) => ({
                 reviewApproved: false,
                 testsPassed: false,
                 updatedAt: nowIso(),
-                tags: ["new"],
+                tags: input.tags?.length ? input.tags : ["new"],
                 progress: 0,
             };
             return {

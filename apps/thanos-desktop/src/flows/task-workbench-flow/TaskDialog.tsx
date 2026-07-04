@@ -1,11 +1,18 @@
 import { useEffect, useMemo, useState } from "react";
 import type { Priority, Task } from "../../domain/models";
 import { useWorkbenchStore } from "../../state/workbenchStore";
+import { QuickCaptureFlow } from "../quick-capture-flow/QuickCaptureFlow";
 
 export function TaskDialog() {
   const dialog = useWorkbenchStore((state) => state.taskDialog);
+  // Create uses the AI-first Quick Capture wizard; edit keeps the simple form.
+  if (dialog?.mode === "create") return <QuickCaptureFlow />;
+  return <EditTaskDialog />;
+}
+
+function EditTaskDialog() {
+  const dialog = useWorkbenchStore((state) => state.taskDialog);
   const tasks = useWorkbenchStore((state) => state.tasks);
-  const createTask = useWorkbenchStore((state) => state.createTask);
   const editTask = useWorkbenchStore((state) => state.editTask);
   const close = useWorkbenchStore((state) => state.closeTaskDialog);
   const task = useMemo(() => tasks.find((item) => item.id === dialog?.taskId), [dialog?.taskId, tasks]);
@@ -21,7 +28,7 @@ export function TaskDialog() {
     });
   }, [dialog, task]);
 
-  if (!dialog) return null;
+  if (!dialog || dialog.mode !== "edit") return null;
 
   function submit() {
     const input = {
@@ -30,15 +37,14 @@ export function TaskDialog() {
       priority: draft.priority,
       assignedAgent: draft.assignedAgent.trim(),
     };
-    if (dialog?.mode === "edit" && task) editTask(task.id, input);
-    else createTask(input);
+    if (task) editTask(task.id, input);
   }
 
   return (
     <div className="fixed inset-0 z-50 grid place-items-center bg-black/60 p-4">
       <div className="w-full max-w-xl rounded-lg border border-slate-800 bg-bg-card p-5 shadow-2xl shadow-black/40">
         <header className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold">{dialog.mode === "edit" ? "Edit Task" : "Add Task"}</h2>
+          <h2 className="text-lg font-semibold">Edit Task</h2>
           <button onClick={close} className="rounded-md border border-slate-700 px-2 py-1 text-sm text-text-muted hover:border-slate-500 hover:text-text-main">Close</button>
         </header>
         <div className="mt-4 grid gap-3">
@@ -59,7 +65,7 @@ export function TaskDialog() {
         </div>
         <footer className="mt-5 flex justify-end gap-2">
           <button onClick={close} className="rounded-lg border border-slate-800 px-3 py-2 text-sm text-text-muted hover:border-slate-600 hover:text-text-main">Cancel</button>
-          <button onClick={submit} className="rounded-lg bg-purple-primary px-3 py-2 text-sm font-medium text-white hover:bg-purple-hover">{dialog.mode === "edit" ? "Save Task" : "Add Task"}</button>
+          <button onClick={submit} className="rounded-lg bg-purple-primary px-3 py-2 text-sm font-medium text-white hover:bg-purple-hover">Save Task</button>
         </footer>
       </div>
     </div>
