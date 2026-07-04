@@ -803,7 +803,7 @@ fn approve_review(app: AppHandle, request: ApproveReviewRequest) -> Result<Revie
 #[tauri::command]
 fn write_memory_node(request: MemoryWriteRequest) -> Result<MemoryNodeInfo, String> {
     let workspace_path = validate_workspace(&request.workspace)?;
-    let conn = open_memory_db(&workspace_path)?;
+    let conn = open_workbench_db(&workspace_path)?;
     insert_memory_node(&conn, &request.node)?;
     Ok(request.node)
 }
@@ -811,7 +811,7 @@ fn write_memory_node(request: MemoryWriteRequest) -> Result<MemoryNodeInfo, Stri
 #[tauri::command]
 fn search_memory(request: MemorySearchRequest) -> Result<Vec<MemoryNodeInfo>, String> {
     let workspace_path = validate_workspace(&request.workspace)?;
-    let conn = open_memory_db(&workspace_path)?;
+    let conn = open_workbench_db(&workspace_path)?;
     let query = request.query.trim();
     if query.is_empty() {
         return Ok(Vec::new());
@@ -1028,7 +1028,8 @@ fn bridge_inspect_related_work(
     }
     let limit = request.limit.unwrap_or(10).clamp(1, 20);
     let mut related = Vec::new();
-    for value in read_json_values(&workspace_path.join(".thanos").join("tasks"))? {
+    let conn = open_workbench_db(&workspace_path)?;
+    for value in read_all_docs(&conn, "tasks")? {
         let text = format!(
             "{} {}",
             string_field(&value, "title").unwrap_or_default(),
@@ -1681,13 +1682,6 @@ fn plan_artifact(task_id: &str) -> String {
     format!(".thanos/plans/{task_id}.md")
 }
 
-fn plan_json_path(workspace: &Path, task_id: &str) -> PathBuf {
-    workspace
-        .join(".thanos")
-        .join("plans")
-        .join(format!("{task_id}.json"))
-}
-
 fn plan_md_path(workspace: &Path, task_id: &str) -> PathBuf {
     workspace
         .join(".thanos")
@@ -1695,13 +1689,16 @@ fn plan_md_path(workspace: &Path, task_id: &str) -> PathBuf {
         .join(format!("{task_id}.md"))
 }
 
+// The execution plan is persisted in SQLite (source of truth). The `.md` render
+// is still written alongside as a human-readable artifact (AGENTS.md: "Markdown
+// for human-readable plans").
 fn write_execution_plan_files(workspace: &Path, plan: &ExecutionPlanInfo) -> Result<(), String> {
+    let conn = open_workbench_db(workspace)?;
+    let value = serde_json::to_value(plan).map_err(|err| err.to_string())?;
+    upsert_doc(&conn, "execution_plans", "task_id", &plan.task_id, &value)?;
     let plans_dir = workspace.join(".thanos").join("plans");
     fs::create_dir_all(&plans_dir)
         .map_err(|err| format!("failed to create {}: {err}", plans_dir.display()))?;
-    let json = serde_json::to_string_pretty(plan).map_err(|err| err.to_string())?;
-    fs::write(plan_json_path(workspace, &plan.task_id), json)
-        .map_err(|err| format!("failed to write execution plan json: {err}"))?;
     fs::write(
         plan_md_path(workspace, &plan.task_id),
         render_plan_markdown(plan),
@@ -1710,10 +1707,10 @@ fn write_execution_plan_files(workspace: &Path, plan: &ExecutionPlanInfo) -> Res
 }
 
 fn read_execution_plan_file(workspace: &Path, task_id: &str) -> Result<ExecutionPlanInfo, String> {
-    let path = plan_json_path(workspace, task_id);
-    let data = fs::read_to_string(&path)
-        .map_err(|err| format!("failed to read {}: {err}", path.display()))?;
-    serde_json::from_str(&data).map_err(|err| format!("failed to parse {}: {err}", path.display()))
+    let conn = open_workbench_db(workspace)?;
+    let value = read_doc(&conn, "execution_plans", "task_id", task_id)?
+        .ok_or_else(|| format!("execution plan not found: {task_id}"))?;
+    serde_json::from_value(value).map_err(|err| err.to_string())
 }
 
 fn render_plan_markdown(plan: &ExecutionPlanInfo) -> String {
@@ -1773,13 +1770,6 @@ fn normalize_review(mut review: ReviewInfo) -> Result<ReviewInfo, String> {
     Ok(review)
 }
 
-fn review_json_path(workspace: &Path, task_id: &str) -> PathBuf {
-    workspace
-        .join(".thanos")
-        .join("reviews")
-        .join(format!("{task_id}.json"))
-}
-
 fn test_json_path(workspace: &Path, task_id: &str) -> PathBuf {
     workspace
         .join(".thanos")
@@ -1787,14 +1777,14 @@ fn test_json_path(workspace: &Path, task_id: &str) -> PathBuf {
         .join(format!("{task_id}.json"))
 }
 
+// The review is persisted in SQLite (source of truth); the `.md` render is kept
+// as a human-readable artifact.
 fn write_review_files(workspace: &Path, review: &ReviewInfo) -> Result<(), String> {
+    let conn = open_workbench_db(workspace)?;
+    let value = serde_json::to_value(review).map_err(|err| err.to_string())?;
+    upsert_doc(&conn, "reviews", "task_id", &review.task_id, &value)?;
     let dir = workspace.join(".thanos").join("reviews");
     fs::create_dir_all(&dir).map_err(|err| format!("failed to create {}: {err}", dir.display()))?;
-    fs::write(
-        review_json_path(workspace, &review.task_id),
-        serde_json::to_string_pretty(review).map_err(|err| err.to_string())?,
-    )
-    .map_err(|err| err.to_string())?;
     fs::write(
         dir.join(format!("{}.md", review.task_id)),
         render_review_markdown(review),
@@ -1803,9 +1793,10 @@ fn write_review_files(workspace: &Path, review: &ReviewInfo) -> Result<(), Strin
 }
 
 fn read_review_file(workspace: &Path, task_id: &str) -> Result<ReviewInfo, String> {
-    let data =
-        fs::read_to_string(review_json_path(workspace, task_id)).map_err(|err| err.to_string())?;
-    serde_json::from_str(&data).map_err(|err| err.to_string())
+    let conn = open_workbench_db(workspace)?;
+    let value = read_doc(&conn, "reviews", "task_id", task_id)?
+        .ok_or_else(|| format!("review not found: {task_id}"))?;
+    serde_json::from_value(value).map_err(|err| err.to_string())
 }
 
 fn render_review_markdown(review: &ReviewInfo) -> String {
@@ -1850,7 +1841,13 @@ fn render_test_markdown(info: &TestRunInfo) -> String {
     )
 }
 
-fn open_memory_db(workspace: &Path) -> Result<Connection, String> {
+// The single SQLite database backing the workbench: memory (with FTS) plus the
+// document-store tables for tasks, execution plans, and reviews. Tasks/plans/
+// reviews are stored as JSON blobs keyed by id, which preserves every existing
+// serde struct and the Value-based bridge logic. Opening also performs a one-time
+// import of any legacy `.thanos/{tasks,plans,reviews}/*.json` so existing
+// workspaces behave identically on first launch.
+fn open_workbench_db(workspace: &Path) -> Result<Connection, String> {
     let dir = workspace.join(".thanos").join("memory");
     fs::create_dir_all(&dir).map_err(|err| format!("failed to create {}: {err}", dir.display()))?;
     let conn = Connection::open(dir.join("workbench.sqlite")).map_err(|err| err.to_string())?;
@@ -1874,10 +1871,104 @@ fn open_memory_db(workspace: &Path) -> Result<Connection, String> {
         CREATE TRIGGER IF NOT EXISTS memory_nodes_au AFTER UPDATE ON memory_nodes BEGIN
             INSERT INTO memory_nodes_fts(memory_nodes_fts, rowid, title, content) VALUES('delete', old.rowid, old.title, old.content);
             INSERT INTO memory_nodes_fts(rowid, title, content) VALUES (new.rowid, new.title, new.content);
-        END;",
+        END;
+        CREATE TABLE IF NOT EXISTS tasks (id TEXT PRIMARY KEY, data_json TEXT NOT NULL);
+        CREATE TABLE IF NOT EXISTS execution_plans (task_id TEXT PRIMARY KEY, data_json TEXT NOT NULL);
+        CREATE TABLE IF NOT EXISTS reviews (task_id TEXT PRIMARY KEY, data_json TEXT NOT NULL);",
     )
     .map_err(|err| err.to_string())?;
+    import_legacy_json(&conn, workspace)?;
     Ok(conn)
+}
+
+fn table_is_empty(conn: &Connection, table: &str) -> Result<bool, String> {
+    // `table` is always an internal string literal, never user input.
+    let count: i64 = conn
+        .query_row(&format!("SELECT COUNT(*) FROM {table}"), [], |row| row.get(0))
+        .map_err(|err| err.to_string())?;
+    Ok(count == 0)
+}
+
+// Upserts a JSON document blob keyed by `key_col` (id or task_id).
+fn upsert_doc(
+    conn: &Connection,
+    table: &str,
+    key_col: &str,
+    key: &str,
+    value: &serde_json::Value,
+) -> Result<(), String> {
+    let json = serde_json::to_string(value).map_err(|err| err.to_string())?;
+    conn.execute(
+        &format!(
+            "INSERT INTO {table} ({key_col}, data_json) VALUES (?1, ?2)
+             ON CONFLICT({key_col}) DO UPDATE SET data_json=excluded.data_json"
+        ),
+        params![key, json],
+    )
+    .map_err(|err| err.to_string())?;
+    Ok(())
+}
+
+fn read_doc(
+    conn: &Connection,
+    table: &str,
+    key_col: &str,
+    key: &str,
+) -> Result<Option<serde_json::Value>, String> {
+    let mut stmt = conn
+        .prepare(&format!("SELECT data_json FROM {table} WHERE {key_col} = ?1"))
+        .map_err(|err| err.to_string())?;
+    let mut rows = stmt.query(params![key]).map_err(|err| err.to_string())?;
+    match rows.next().map_err(|err| err.to_string())? {
+        Some(row) => {
+            let data: String = row.get(0).map_err(|err| err.to_string())?;
+            let value = serde_json::from_str(&data).map_err(|err| err.to_string())?;
+            Ok(Some(value))
+        }
+        None => Ok(None),
+    }
+}
+
+fn read_all_docs(conn: &Connection, table: &str) -> Result<Vec<serde_json::Value>, String> {
+    let mut stmt = conn
+        .prepare(&format!("SELECT data_json FROM {table}"))
+        .map_err(|err| err.to_string())?;
+    let rows = stmt
+        .query_map([], |row| row.get::<_, String>(0))
+        .map_err(|err| err.to_string())?;
+    let mut out = Vec::new();
+    for row in rows {
+        let data = row.map_err(|err| err.to_string())?;
+        out.push(serde_json::from_str(&data).map_err(|err| err.to_string())?);
+    }
+    Ok(out)
+}
+
+// One-time migration: seed each table from legacy `.thanos/*.json` when empty.
+// Non-destructive (the JSON files are left in place) and idempotent.
+fn import_legacy_json(conn: &Connection, workspace: &Path) -> Result<(), String> {
+    if table_is_empty(conn, "tasks")? {
+        for value in read_json_values(&workspace.join(".thanos").join("tasks"))? {
+            if let Some(id) = string_field(&value, "id") {
+                upsert_doc(conn, "tasks", "id", &id, &value)?;
+            }
+        }
+    }
+    if table_is_empty(conn, "execution_plans")? {
+        for value in read_json_values(&workspace.join(".thanos").join("plans"))? {
+            if let Some(task_id) = string_field(&value, "task_id") {
+                upsert_doc(conn, "execution_plans", "task_id", &task_id, &value)?;
+            }
+        }
+    }
+    if table_is_empty(conn, "reviews")? {
+        for value in read_json_values(&workspace.join(".thanos").join("reviews"))? {
+            if let Some(task_id) = string_field(&value, "task_id") {
+                upsert_doc(conn, "reviews", "task_id", &task_id, &value)?;
+            }
+        }
+    }
+    Ok(())
 }
 
 fn insert_memory_node(conn: &Connection, node: &MemoryNodeInfo) -> Result<(), String> {
@@ -2012,7 +2103,8 @@ impl WorkbenchRepository {
         reviews: &[ReviewInfo],
     ) -> Result<Vec<WorkbenchTaskInfo>, String> {
         let mut tasks = Vec::new();
-        for value in read_json_values(&self.workspace.join(".thanos").join("tasks"))? {
+        let conn = open_workbench_db(&self.workspace)?;
+        for value in read_all_docs(&conn, "tasks")? {
             if let Some(task) = task_from_value(project, &value) {
                 tasks.push(task);
             }
@@ -2029,16 +2121,22 @@ impl WorkbenchRepository {
     }
 
     fn load_plans(&self) -> Result<Vec<ExecutionPlanInfo>, String> {
-        let mut out =
-            read_json_files::<ExecutionPlanInfo>(&self.workspace.join(".thanos").join("plans"))?;
-        out.sort_by(|a, b| a.task_id.cmp(&b.task_id));
+        let conn = open_workbench_db(&self.workspace)?;
+        let mut out = Vec::new();
+        for value in read_all_docs(&conn, "execution_plans")? {
+            out.push(serde_json::from_value(value).map_err(|err| err.to_string())?);
+        }
+        out.sort_by(|a: &ExecutionPlanInfo, b| a.task_id.cmp(&b.task_id));
         Ok(out)
     }
 
     fn load_reviews(&self) -> Result<Vec<ReviewInfo>, String> {
-        let mut out =
-            read_json_files::<ReviewInfo>(&self.workspace.join(".thanos").join("reviews"))?;
-        out.sort_by(|a, b| a.task_id.cmp(&b.task_id));
+        let conn = open_workbench_db(&self.workspace)?;
+        let mut out = Vec::new();
+        for value in read_all_docs(&conn, "reviews")? {
+            out.push(serde_json::from_value(value).map_err(|err| err.to_string())?);
+        }
+        out.sort_by(|a: &ReviewInfo, b| a.task_id.cmp(&b.task_id));
         Ok(out)
     }
 
@@ -2051,7 +2149,7 @@ impl WorkbenchRepository {
     }
 
     fn load_memory_nodes(&self) -> Result<Vec<MemoryNodeInfo>, String> {
-        let conn = open_memory_db(&self.workspace)?;
+        let conn = open_workbench_db(&self.workspace)?;
         let mut stmt = conn
             .prepare(
                 "SELECT id, project_id, node_type, title, content, links_json, created_at
@@ -2109,13 +2207,9 @@ fn read_json_values(dir: &Path) -> Result<Vec<serde_json::Value>, String> {
 }
 
 fn read_task_json(workspace: &Path, task_id: &str) -> Result<serde_json::Value, String> {
-    let path = workspace
-        .join(".thanos")
-        .join("tasks")
-        .join(format!("{task_id}.json"));
-    let data = fs::read_to_string(&path)
-        .map_err(|err| format!("failed to read {}: {err}", path.display()))?;
-    serde_json::from_str(&data).map_err(|err| format!("failed to parse {}: {err}", path.display()))
+    let conn = open_workbench_db(workspace)?;
+    read_doc(&conn, "tasks", "id", task_id)?
+        .ok_or_else(|| format!("task not found: {task_id}"))
 }
 
 fn write_task_json(
@@ -2123,13 +2217,8 @@ fn write_task_json(
     task_id: &str,
     value: &serde_json::Value,
 ) -> Result<(), String> {
-    write_json_file(
-        &workspace
-            .join(".thanos")
-            .join("tasks")
-            .join(format!("{task_id}.json")),
-        value,
-    )
+    let conn = open_workbench_db(workspace)?;
+    upsert_doc(&conn, "tasks", "id", task_id, value)
 }
 
 fn write_json_file<T: Serialize>(path: &Path, value: &T) -> Result<(), String> {
@@ -2145,8 +2234,11 @@ fn write_json_file<T: Serialize>(path: &Path, value: &T) -> Result<(), String> {
 }
 
 fn next_task_id(workspace: &Path, title: &str) -> Result<String, String> {
-    let count = read_json_values(&workspace.join(".thanos").join("tasks"))?.len() + 1;
-    Ok(format!("T{:03}-{}", count, slug_id(title)))
+    let conn = open_workbench_db(workspace)?;
+    let count: i64 = conn
+        .query_row("SELECT COUNT(*) FROM tasks", [], |row| row.get(0))
+        .map_err(|err| err.to_string())?;
+    Ok(format!("T{:03}-{}", count + 1, slug_id(title)))
 }
 
 fn task_from_value(
@@ -2337,7 +2429,7 @@ fn slug_id(value: &str) -> String {
 }
 
 fn write_memory_from_review(workspace: &Path, review: &ReviewInfo) -> Result<(), String> {
-    let conn = open_memory_db(workspace)?;
+    let conn = open_workbench_db(workspace)?;
     let node = MemoryNodeInfo {
         id: format!("review-{}", review.task_id),
         project_id: "local".to_string(),
@@ -3023,7 +3115,7 @@ mod tests {
         let root = std::env::temp_dir().join(format!("thanos-memory-test-{}", now_epoch()));
         let _ = std::fs::remove_dir_all(&root);
         std::fs::create_dir_all(root.join(".thanos").join("memory")).unwrap();
-        let conn = open_memory_db(&root).unwrap();
+        let conn = open_workbench_db(&root).unwrap();
         insert_memory_node(
             &conn,
             &MemoryNodeInfo {
@@ -3084,6 +3176,94 @@ mod tests {
         assert_eq!(snapshot.plans.len(), 1);
         assert_eq!(snapshot.tasks[0].id, "T-900");
         assert_eq!(snapshot.tasks[0].status, "waiting_approval");
+        let _ = std::fs::remove_dir_all(&root);
+    }
+
+    #[test]
+    fn sqlite_round_trips_tasks_plans_reviews() {
+        let root = std::env::temp_dir().join(format!("thanos-sqlite-test-{}", now_epoch()));
+        let _ = std::fs::remove_dir_all(&root);
+        std::fs::create_dir_all(root.join(".thanos").join("memory")).unwrap();
+        std::fs::write(
+            root.join(".thanos").join("settings.json"),
+            r#"{"project":{"name":"Demo"}}"#,
+        )
+        .unwrap();
+
+        write_task_json(
+            &root,
+            "T-500",
+            &serde_json::json!({
+                "id": "T-500", "title": "SQLite task", "status": "backlog",
+                "priority": "P1", "description": "persisted in sqlite"
+            }),
+        )
+        .unwrap();
+        assert_eq!(
+            string_field(&read_task_json(&root, "T-500").unwrap(), "title").as_deref(),
+            Some("SQLite task")
+        );
+
+        write_execution_plan_files(
+            &root,
+            &ExecutionPlanInfo {
+                id: "plan-T-500".to_string(),
+                task_id: "T-500".to_string(),
+                summary: "sum".to_string(),
+                steps: Vec::new(),
+                risks: Vec::new(),
+                files_to_touch: Vec::new(),
+                test_strategy: Vec::new(),
+                approval_status: "pending".to_string(),
+            },
+        )
+        .unwrap();
+        write_review_files(
+            &root,
+            &ReviewInfo {
+                id: "review-T-500".to_string(),
+                task_id: "T-500".to_string(),
+                diff_summary: "d".to_string(),
+                changed_files: Vec::new(),
+                test_results: Vec::new(),
+                reviewer_notes: "ok".to_string(),
+                status: "approved".to_string(),
+            },
+        )
+        .unwrap();
+
+        let snapshot = WorkbenchRepository::new(root.clone()).load().unwrap();
+        assert!(snapshot.tasks.iter().any(|task| task.id == "T-500"));
+        assert_eq!(snapshot.plans.len(), 1);
+        assert_eq!(snapshot.reviews.len(), 1);
+        assert_eq!(snapshot.reviews[0].status, "approved");
+        // One task exists, so the next id is number two.
+        assert!(next_task_id(&root, "another").unwrap().starts_with("T002-"));
+        let _ = std::fs::remove_dir_all(&root);
+    }
+
+    #[test]
+    fn imports_legacy_task_json_on_first_open() {
+        let root = std::env::temp_dir().join(format!("thanos-legacy-test-{}", now_epoch()));
+        let _ = std::fs::remove_dir_all(&root);
+        std::fs::create_dir_all(root.join(".thanos").join("tasks")).unwrap();
+        std::fs::write(
+            root.join(".thanos").join("settings.json"),
+            r#"{"project":{"name":"Demo"}}"#,
+        )
+        .unwrap();
+        std::fs::write(
+            root.join(".thanos").join("tasks").join("T-700.json"),
+            r#"{"id":"T-700","title":"Legacy task","status":"ready"}"#,
+        )
+        .unwrap();
+
+        // The first DB open imports legacy JSON, so the task loads from SQLite.
+        let snapshot = WorkbenchRepository::new(root.clone()).load().unwrap();
+        assert!(snapshot
+            .tasks
+            .iter()
+            .any(|task| task.id == "T-700" && task.title == "Legacy task"));
         let _ = std::fs::remove_dir_all(&root);
     }
 }
