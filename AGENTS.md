@@ -106,10 +106,17 @@ Completed phases:
   execution plan is generated, and an approval gate moves the task Ready
   (Approve) or back to Planning (Request Changes). No coding before approval.
 
+- Phase 7 — Coding Workflow: mock coding — an approved task creates a (mock)
+  isolated worktree/branch, opens the coding terminal streaming output, and
+  synthesizes a deterministic changeset into the Git Changes panel. A review gate
+  (enabled once the coding session completes) moves the task into Review. Mock
+  worktree; no real Git or agent execution.
+
 Current / next phase:
 
-- Phase 7 — Coding Workflow: approved → (mock) worktree → coding terminal →
-  logs → task enters Review. Mock worktree; no real Git or execution.
+- Phase 8 — Review: review before Done — changed files, git diff, checklist,
+  tests, and Approve / Reject / Request Changes actions. Cannot finish without
+  approval. No real diff parser or merge flow.
 
 Do not implement later-phase behavior unless explicitly requested:
 

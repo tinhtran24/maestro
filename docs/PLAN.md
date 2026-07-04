@@ -57,13 +57,13 @@ Everything important must be visible.
 | Workflow Engine | ✅ Completed |
 | Agent Runtime | ✅ Completed |
 | Planner Flow | ✅ Completed |
-| Coding Flow | ⏳ Next |
-| Review Flow | Pending |
+| Coding Flow | ✅ Completed |
+| Review Flow | ⏳ Next |
 | Memory | Pending |
 | Skills | Pending |
 | MCP | Pending |
 
-**Current Phase: Phase 7 — Coding Workflow** (not yet started — awaiting approval).
+**Current Phase: Phase 8 — Review** (not yet started — awaiting approval).
 
 ---
 
@@ -423,7 +423,15 @@ No Coding before approval.
 
 ---
 
-# Phase 7 — Coding Workflow ⏳ (Current Phase — not started)
+# Phase 7 — Coding Workflow ✅
+
+Status: Completed (mock). An approved task exposes the Coder flow: "Create
+Worktree & Start Coding" mock-assigns an isolated worktree/branch (recorded as an
+`agent_started` timeline event), opens the coding (Codex) terminal streaming
+mock output, and synthesizes a deterministic changeset (changed files + diff
+summary) into the Git Changes panel. A review gate — disabled until the coding
+session completes — moves the task into Review. Changeset-generator unit tests
+added. Mock worktree only; no real Git or agent execution.
 
 Goal
 
