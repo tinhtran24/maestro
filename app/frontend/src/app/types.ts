@@ -12,7 +12,7 @@ export type ViewId =
   | "settings"
   | "docs";
 
-export type TaskStatus = "backlog" | "running" | "waiting" | "review" | "done" | "failed";
+export type TaskStatus = "backlog" | "in_progress" | "waiting" | "committing" | "done" | "failed" | "cancelled";
 
 export type NavItem = {
   id: ViewId;
@@ -21,6 +21,7 @@ export type NavItem = {
 };
 
 export type Task = {
+  schema_version: number;
   id: string;
   title: string;
   prompt: string;
@@ -31,6 +32,31 @@ export type Task = {
   worktree: string;
   updatedAt: string;
   usageUsd: number;
+  archived: boolean;
+  deleted: boolean;
+  tombstone: boolean;
+  dependencies: string[];
+  blocked: boolean;
+  promptHistory: PromptRecord[];
+  feedbackHistory: FeedbackRecord[];
+  retryHistory: RetryRecord[];
+  failureCategory: string;
+  createdAt: string;
+};
+
+export type PromptRecord = {
+  at: string;
+  prompt: string;
+};
+
+export type FeedbackRecord = {
+  at: string;
+  message: string;
+};
+
+export type RetryRecord = {
+  at: string;
+  reason: string;
 };
 
 export type SpecNode = {
@@ -85,12 +111,35 @@ export type CreateTaskRequest = {
   prompt: string;
   flow: string;
   agent: string;
+  dependencies?: string[];
 };
 
 export type UpdateTaskStatusRequest = {
   root: string;
   taskId: string;
   status: TaskStatus;
+  feedback?: string;
+  failureCategory?: string;
+};
+
+export type BatchCreateTasksRequest = {
+  root: string;
+  tasks: CreateTaskRequest[];
+};
+
+export type SearchTasksRequest = {
+  root: string;
+  query: string;
+  includeArchived: boolean;
+  includeDeleted: boolean;
+};
+
+export type UpdateTaskFlagsRequest = {
+  root: string;
+  taskId: string;
+  archived: boolean;
+  deleted: boolean;
+  tombstone: boolean;
 };
 
 export type CreateSpecRequest = {
@@ -129,20 +178,41 @@ export type ProviderInfo = {
 
 export type NativeTerminalRequest = {
   providerId?: string;
+  taskId?: string;
+  step?: string;
   command: string;
   args: string[];
   cwd: string;
   label: string;
+  rows?: number;
+  cols?: number;
+};
+
+export type NativeTerminalInputRequest = {
+  sessionId: string;
+  data: string;
+};
+
+export type NativeTerminalResizeRequest = {
+  sessionId: string;
+  rows: number;
+  cols: number;
 };
 
 export type NativeTerminalSession = {
   id: string;
   label: string;
+  providerId: string;
+  taskId: string;
+  step: string;
   command: string;
   args: string[];
   cwd: string;
   status: "running" | "completed" | "failed" | "stopped" | string;
+  ptyId: string;
+  transcriptPath: string;
   startedAt: string;
+  endedAt?: string;
 };
 
 export type DiagnosticInfo = {

@@ -56,12 +56,19 @@ func TestRealProviderPersistsWorkspacePrimitives(t *testing.T) {
 	if task.Status != "backlog" || task.ID == "" {
 		t.Fatalf("task = %#v", task)
 	}
-	moved, err := provider.UpdateTaskStatus(UpdateTaskStatusRequest{Root: root, TaskID: task.ID, Status: "waiting"})
+	moved, err := provider.UpdateTaskStatus(UpdateTaskStatusRequest{Root: root, TaskID: task.ID, Status: "in_progress"})
+	if err != nil {
+		t.Fatalf("UpdateTaskStatus to in_progress returned error: %v", err)
+	}
+	moved, err = provider.UpdateTaskStatus(UpdateTaskStatusRequest{Root: root, TaskID: task.ID, Status: "waiting", Feedback: "needs input"})
 	if err != nil {
 		t.Fatalf("UpdateTaskStatus returned error: %v", err)
 	}
 	if moved.Status != "waiting" {
 		t.Fatalf("moved status = %q", moved.Status)
+	}
+	if len(moved.FeedbackHistory) != 1 {
+		t.Fatalf("feedback history = %#v", moved.FeedbackHistory)
 	}
 	spec, err := provider.CreateSpec(CreateSpecRequest{Root: root, Title: "Plan Mode", Body: "Acceptance criteria", State: "drafted"})
 	if err != nil {
@@ -94,6 +101,76 @@ func TestRealProviderPersistsWorkspacePrimitives(t *testing.T) {
 	}
 	if !workspace.Automation.AutoImplement || !workspace.Automation.AutoTest {
 		t.Fatalf("workspace automation = %#v", workspace.Automation)
+	}
+}
+
+func TestTaskLifecycleRejectsInvalidTransitionsAndBlocksDependencies(t *testing.T) {
+	root := t.TempDir()
+	provider := NewRealProvider()
+	provider.now = func() time.Time { return time.Date(2026, 7, 6, 10, 0, 0, 0, time.UTC) }
+
+	parent, err := provider.CreateTask(CreateTaskRequest{Root: root, Title: "Parent", Prompt: "first"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	child, err := provider.CreateTask(CreateTaskRequest{Root: root, Title: "Child", Prompt: "second", Dependencies: []string{parent.ID}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := provider.UpdateTaskStatus(UpdateTaskStatusRequest{Root: root, TaskID: child.ID, Status: "in_progress"}); err == nil {
+		t.Fatal("expected blocked dependency to reject in_progress transition")
+	}
+	if _, err := provider.UpdateTaskStatus(UpdateTaskStatusRequest{Root: root, TaskID: parent.ID, Status: "done"}); err == nil {
+		t.Fatal("expected backlog -> done to be rejected")
+	}
+	for _, status := range []string{"in_progress", "committing", "done"} {
+		if _, err := provider.UpdateTaskStatus(UpdateTaskStatusRequest{Root: root, TaskID: parent.ID, Status: status}); err != nil {
+			t.Fatalf("parent transition to %s returned error: %v", status, err)
+		}
+	}
+	updatedChild, err := provider.UpdateTaskStatus(UpdateTaskStatusRequest{Root: root, TaskID: child.ID, Status: "in_progress"})
+	if err != nil {
+		t.Fatalf("child transition after dependency done returned error: %v", err)
+	}
+	if updatedChild.Blocked {
+		t.Fatalf("updated child should not be blocked: %#v", updatedChild)
+	}
+}
+
+func TestBatchSearchAndTaskFlags(t *testing.T) {
+	root := t.TempDir()
+	provider := NewRealProvider()
+	provider.now = func() time.Time { return time.Date(2026, 7, 6, 11, 0, 0, 0, time.UTC) }
+
+	created, err := provider.BatchCreateTasks(BatchCreateTasksRequest{
+		Root: root,
+		Tasks: []CreateTaskRequest{
+			{Title: "Build parser", Prompt: "parse task records"},
+			{Title: "Render board", Prompt: "show lifecycle"},
+		},
+	})
+	if err != nil {
+		t.Fatalf("BatchCreateTasks returned error: %v", err)
+	}
+	if len(created) != 2 || len(created[1].Dependencies) != 1 || created[1].Dependencies[0] != created[0].ID {
+		t.Fatalf("created batch = %#v", created)
+	}
+	if _, err := provider.UpdateTaskFlags(UpdateTaskFlagsRequest{Root: root, TaskID: created[0].ID, Archived: true}); err != nil {
+		t.Fatalf("UpdateTaskFlags archive returned error: %v", err)
+	}
+	results, err := provider.SearchTasks(SearchTasksRequest{Root: root, Query: "parser"})
+	if err != nil {
+		t.Fatalf("SearchTasks returned error: %v", err)
+	}
+	if len(results) != 0 {
+		t.Fatalf("archived task should be hidden by default: %#v", results)
+	}
+	results, err = provider.SearchTasks(SearchTasksRequest{Root: root, Query: "parser", IncludeArchived: true})
+	if err != nil {
+		t.Fatalf("SearchTasks with archived returned error: %v", err)
+	}
+	if len(results) != 1 || !results[0].Archived {
+		t.Fatalf("archived search results = %#v", results)
 	}
 }
 
@@ -156,11 +233,12 @@ func TestWorkspaceRegistryLifecycle(t *testing.T) {
 
 func TestNormalizeTaskStatus(t *testing.T) {
 	cases := map[string]string{
-		"in_progress":      "running",
+		"in_progress":      "in_progress",
+		"running":          "in_progress",
 		"waiting_approval": "waiting",
-		"in_review":        "review",
+		"commit":           "committing",
 		"complete":         "done",
-		"cancelled":        "failed",
+		"cancelled":        "cancelled",
 		"":                 "backlog",
 	}
 	for in, want := range cases {

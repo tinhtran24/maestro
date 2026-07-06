@@ -4,6 +4,8 @@ import {app} from '../models';
 
 export function ActivateWorkspace(arg1:app.ActivateWorkspaceRequest):Promise<app.WorkspaceRecordInfo>;
 
+export function BatchCreateTasks(arg1:app.BatchCreateTasksRequest):Promise<Array<app.TaskInfo>>;
+
 export function CreateSpec(arg1:app.CreateSpecRequest):Promise<app.SpecNodeInfo>;
 
 export function CreateTask(arg1:app.CreateTaskRequest):Promise<app.TaskInfo>;
@@ -24,7 +26,11 @@ export function LoadWorkspace(arg1:string):Promise<app.WorkspaceInfo>;
 
 export function Ping():Promise<string>;
 
+export function ResizeNativeTerminal(arg1:app.NativeTerminalResizeRequest):Promise<void>;
+
 export function SaveAutomation(arg1:app.SaveAutomationRequest):Promise<app.AutomationInfo>;
+
+export function SearchTasks(arg1:app.SearchTasksRequest):Promise<Array<app.TaskInfo>>;
 
 export function SelectWorkspaceFolder():Promise<any>;
 
@@ -32,8 +38,12 @@ export function StartNativeTerminal(arg1:app.NativeTerminalRequest):Promise<app.
 
 export function StopNativeTerminal(arg1:string):Promise<boolean>;
 
+export function UpdateTaskFlags(arg1:app.UpdateTaskFlagsRequest):Promise<app.TaskInfo>;
+
 export function UpdateTaskStatus(arg1:app.UpdateTaskStatusRequest):Promise<app.TaskInfo>;
 
 export function UpdateWorkspace(arg1:app.UpdateWorkspaceRequest):Promise<app.WorkspaceRecordInfo>;
 
 export function UpsertRoutine(arg1:app.UpsertRoutineRequest):Promise<app.RoutineInfo>;
+
+export function WriteNativeTerminal(arg1:app.NativeTerminalInputRequest):Promise<void>;

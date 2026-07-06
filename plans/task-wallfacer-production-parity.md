@@ -96,7 +96,7 @@ Acceptance:
 
 ### 3. Task Board Production Lifecycle
 
-Status: Next.
+Status: Done.
 
 Goal: replace simple task JSON with production task lifecycle.
 
@@ -118,6 +118,8 @@ Acceptance:
 
 ### 4. Native Terminal Runtime
 
+Status: Done.
+
 Goal: run provider commands through native terminal/PTY, not auth-token model
 runtime.
 
@@ -138,6 +140,8 @@ Acceptance:
 - No API/OAuth token is injected by Thanos.
 
 ### 5. Harness/Provider Registry
+
+Status: Next.
 
 Goal: Wallfacer-style harness routing with Thanos-native adapters.
 

@@ -52,6 +52,60 @@ export namespace app {
 	        this.autoRetry = source["autoRetry"];
 	    }
 	}
+	export class CreateTaskRequest {
+	    root: string;
+	    title: string;
+	    prompt: string;
+	    flow: string;
+	    agent: string;
+	    dependencies: string[];
+	
+	    static createFrom(source: any = {}) {
+	        return new CreateTaskRequest(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.root = source["root"];
+	        this.title = source["title"];
+	        this.prompt = source["prompt"];
+	        this.flow = source["flow"];
+	        this.agent = source["agent"];
+	        this.dependencies = source["dependencies"];
+	    }
+	}
+	export class BatchCreateTasksRequest {
+	    root: string;
+	    tasks: CreateTaskRequest[];
+	
+	    static createFrom(source: any = {}) {
+	        return new BatchCreateTasksRequest(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.root = source["root"];
+	        this.tasks = this.convertValues(source["tasks"], CreateTaskRequest);
+	    }
+	
+		convertValues(a: any, classs: any, asMap: boolean = false): any {
+		    if (!a) {
+		        return a;
+		    }
+		    if (a.slice && a.map) {
+		        return (a as any[]).map(elem => this.convertValues(elem, classs));
+		    } else if ("object" === typeof a) {
+		        if (asMap) {
+		            for (const key of Object.keys(a)) {
+		                a[key] = new classs(a[key]);
+		            }
+		            return a;
+		        }
+		        return new classs(a);
+		    }
+		    return a;
+		}
+	}
 	export class CreateSpecRequest {
 	    root: string;
 	    title: string;
@@ -70,26 +124,7 @@ export namespace app {
 	        this.state = source["state"];
 	    }
 	}
-	export class CreateTaskRequest {
-	    root: string;
-	    title: string;
-	    prompt: string;
-	    flow: string;
-	    agent: string;
 	
-	    static createFrom(source: any = {}) {
-	        return new CreateTaskRequest(source);
-	    }
-	
-	    constructor(source: any = {}) {
-	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.root = source["root"];
-	        this.title = source["title"];
-	        this.prompt = source["prompt"];
-	        this.flow = source["flow"];
-	        this.agent = source["agent"];
-	    }
-	}
 	export class WorkspaceFolderInfo {
 	    id: string;
 	    path: string;
@@ -186,6 +221,20 @@ export namespace app {
 	        this.message = source["message"];
 	    }
 	}
+	export class FeedbackRecord {
+	    at: string;
+	    message: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new FeedbackRecord(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.at = source["at"];
+	        this.message = source["message"];
+	    }
+	}
 	export class FlowInfo {
 	    id: string;
 	    name: string;
@@ -202,12 +251,30 @@ export namespace app {
 	        this.steps = source["steps"];
 	    }
 	}
+	export class NativeTerminalInputRequest {
+	    sessionId: string;
+	    data: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new NativeTerminalInputRequest(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.sessionId = source["sessionId"];
+	        this.data = source["data"];
+	    }
+	}
 	export class NativeTerminalRequest {
 	    providerId: string;
+	    taskId: string;
+	    step: string;
 	    command: string;
 	    args: string[];
 	    cwd: string;
 	    label: string;
+	    rows: number;
+	    cols: number;
 	
 	    static createFrom(source: any = {}) {
 	        return new NativeTerminalRequest(source);
@@ -216,20 +283,46 @@ export namespace app {
 	    constructor(source: any = {}) {
 	        if ('string' === typeof source) source = JSON.parse(source);
 	        this.providerId = source["providerId"];
+	        this.taskId = source["taskId"];
+	        this.step = source["step"];
 	        this.command = source["command"];
 	        this.args = source["args"];
 	        this.cwd = source["cwd"];
 	        this.label = source["label"];
+	        this.rows = source["rows"];
+	        this.cols = source["cols"];
+	    }
+	}
+	export class NativeTerminalResizeRequest {
+	    sessionId: string;
+	    rows: number;
+	    cols: number;
+	
+	    static createFrom(source: any = {}) {
+	        return new NativeTerminalResizeRequest(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.sessionId = source["sessionId"];
+	        this.rows = source["rows"];
+	        this.cols = source["cols"];
 	    }
 	}
 	export class NativeTerminalSessionInfo {
 	    id: string;
 	    label: string;
+	    providerId: string;
+	    taskId: string;
+	    step: string;
 	    command: string;
 	    args: string[];
 	    cwd: string;
 	    status: string;
+	    ptyId: string;
+	    transcriptPath: string;
 	    startedAt: string;
+	    endedAt?: string;
 	
 	    static createFrom(source: any = {}) {
 	        return new NativeTerminalSessionInfo(source);
@@ -239,11 +332,31 @@ export namespace app {
 	        if ('string' === typeof source) source = JSON.parse(source);
 	        this.id = source["id"];
 	        this.label = source["label"];
+	        this.providerId = source["providerId"];
+	        this.taskId = source["taskId"];
+	        this.step = source["step"];
 	        this.command = source["command"];
 	        this.args = source["args"];
 	        this.cwd = source["cwd"];
 	        this.status = source["status"];
+	        this.ptyId = source["ptyId"];
+	        this.transcriptPath = source["transcriptPath"];
 	        this.startedAt = source["startedAt"];
+	        this.endedAt = source["endedAt"];
+	    }
+	}
+	export class PromptRecord {
+	    at: string;
+	    prompt: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new PromptRecord(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.at = source["at"];
+	        this.prompt = source["prompt"];
 	    }
 	}
 	export class ProviderInfo {
@@ -272,6 +385,20 @@ export namespace app {
 	        this.type = source["type"];
 	        this.setupHint = source["setupHint"];
 	        this.supportsRun = source["supportsRun"];
+	    }
+	}
+	export class RetryRecord {
+	    at: string;
+	    reason: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new RetryRecord(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.at = source["at"];
+	        this.reason = source["reason"];
 	    }
 	}
 	export class RoutineInfo {
@@ -332,6 +459,24 @@ export namespace app {
 		    return a;
 		}
 	}
+	export class SearchTasksRequest {
+	    root: string;
+	    query: string;
+	    includeArchived: boolean;
+	    includeDeleted: boolean;
+	
+	    static createFrom(source: any = {}) {
+	        return new SearchTasksRequest(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.root = source["root"];
+	        this.query = source["query"];
+	        this.includeArchived = source["includeArchived"];
+	        this.includeDeleted = source["includeDeleted"];
+	    }
+	}
 	export class SpecNodeInfo {
 	    id: string;
 	    title: string;
@@ -382,6 +527,16 @@ export namespace app {
 	    worktree: string;
 	    updatedAt: string;
 	    usageUsd: number;
+	    archived: boolean;
+	    deleted: boolean;
+	    tombstone: boolean;
+	    dependencies: string[];
+	    blocked: boolean;
+	    promptHistory: PromptRecord[];
+	    feedbackHistory: FeedbackRecord[];
+	    retryHistory: RetryRecord[];
+	    failureCategory: string;
+	    createdAt: string;
 	
 	    static createFrom(source: any = {}) {
 	        return new TaskInfo(source);
@@ -400,12 +555,62 @@ export namespace app {
 	        this.worktree = source["worktree"];
 	        this.updatedAt = source["updatedAt"];
 	        this.usageUsd = source["usageUsd"];
+	        this.archived = source["archived"];
+	        this.deleted = source["deleted"];
+	        this.tombstone = source["tombstone"];
+	        this.dependencies = source["dependencies"];
+	        this.blocked = source["blocked"];
+	        this.promptHistory = this.convertValues(source["promptHistory"], PromptRecord);
+	        this.feedbackHistory = this.convertValues(source["feedbackHistory"], FeedbackRecord);
+	        this.retryHistory = this.convertValues(source["retryHistory"], RetryRecord);
+	        this.failureCategory = source["failureCategory"];
+	        this.createdAt = source["createdAt"];
+	    }
+	
+		convertValues(a: any, classs: any, asMap: boolean = false): any {
+		    if (!a) {
+		        return a;
+		    }
+		    if (a.slice && a.map) {
+		        return (a as any[]).map(elem => this.convertValues(elem, classs));
+		    } else if ("object" === typeof a) {
+		        if (asMap) {
+		            for (const key of Object.keys(a)) {
+		                a[key] = new classs(a[key]);
+		            }
+		            return a;
+		        }
+		        return new classs(a);
+		    }
+		    return a;
+		}
+	}
+	export class UpdateTaskFlagsRequest {
+	    root: string;
+	    taskId: string;
+	    archived: boolean;
+	    deleted: boolean;
+	    tombstone: boolean;
+	
+	    static createFrom(source: any = {}) {
+	        return new UpdateTaskFlagsRequest(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.root = source["root"];
+	        this.taskId = source["taskId"];
+	        this.archived = source["archived"];
+	        this.deleted = source["deleted"];
+	        this.tombstone = source["tombstone"];
 	    }
 	}
 	export class UpdateTaskStatusRequest {
 	    root: string;
 	    taskId: string;
 	    status: string;
+	    feedback: string;
+	    failureCategory: string;
 	
 	    static createFrom(source: any = {}) {
 	        return new UpdateTaskStatusRequest(source);
@@ -416,6 +621,8 @@ export namespace app {
 	        this.root = source["root"];
 	        this.taskId = source["taskId"];
 	        this.status = source["status"];
+	        this.feedback = source["feedback"];
+	        this.failureCategory = source["failureCategory"];
 	    }
 	}
 	export class UpdateWorkspaceRequest {

@@ -41,31 +41,79 @@ type WorkspaceInfo struct {
 }
 
 type TaskInfo struct {
-	SchemaVersion int     `json:"schema_version"`
-	ID            string  `json:"id"`
-	Title         string  `json:"title"`
-	Prompt        string  `json:"prompt"`
-	Status        string  `json:"status"`
-	Flow          string  `json:"flow"`
-	Agent         string  `json:"agent"`
-	Branch        string  `json:"branch"`
-	Worktree      string  `json:"worktree"`
-	UpdatedAt     string  `json:"updatedAt"`
-	UsageUSD      float64 `json:"usageUsd"`
+	SchemaVersion   int              `json:"schema_version"`
+	ID              string           `json:"id"`
+	Title           string           `json:"title"`
+	Prompt          string           `json:"prompt"`
+	Status          string           `json:"status"`
+	Flow            string           `json:"flow"`
+	Agent           string           `json:"agent"`
+	Branch          string           `json:"branch"`
+	Worktree        string           `json:"worktree"`
+	UpdatedAt       string           `json:"updatedAt"`
+	UsageUSD        float64          `json:"usageUsd"`
+	Archived        bool             `json:"archived"`
+	Deleted         bool             `json:"deleted"`
+	Tombstone       bool             `json:"tombstone"`
+	Dependencies    []string         `json:"dependencies"`
+	Blocked         bool             `json:"blocked"`
+	PromptHistory   []PromptRecord   `json:"promptHistory"`
+	FeedbackHistory []FeedbackRecord `json:"feedbackHistory"`
+	RetryHistory    []RetryRecord    `json:"retryHistory"`
+	FailureCategory string           `json:"failureCategory"`
+	CreatedAt       string           `json:"createdAt"`
+}
+
+type PromptRecord struct {
+	At     string `json:"at"`
+	Prompt string `json:"prompt"`
+}
+
+type FeedbackRecord struct {
+	At      string `json:"at"`
+	Message string `json:"message"`
+}
+
+type RetryRecord struct {
+	At     string `json:"at"`
+	Reason string `json:"reason"`
 }
 
 type CreateTaskRequest struct {
-	Root   string `json:"root"`
-	Title  string `json:"title"`
-	Prompt string `json:"prompt"`
-	Flow   string `json:"flow"`
-	Agent  string `json:"agent"`
+	Root         string   `json:"root"`
+	Title        string   `json:"title"`
+	Prompt       string   `json:"prompt"`
+	Flow         string   `json:"flow"`
+	Agent        string   `json:"agent"`
+	Dependencies []string `json:"dependencies"`
 }
 
 type UpdateTaskStatusRequest struct {
-	Root   string `json:"root"`
-	TaskID string `json:"taskId"`
-	Status string `json:"status"`
+	Root            string `json:"root"`
+	TaskID          string `json:"taskId"`
+	Status          string `json:"status"`
+	Feedback        string `json:"feedback"`
+	FailureCategory string `json:"failureCategory"`
+}
+
+type BatchCreateTasksRequest struct {
+	Root  string              `json:"root"`
+	Tasks []CreateTaskRequest `json:"tasks"`
+}
+
+type SearchTasksRequest struct {
+	Root            string `json:"root"`
+	Query           string `json:"query"`
+	IncludeArchived bool   `json:"includeArchived"`
+	IncludeDeleted  bool   `json:"includeDeleted"`
+}
+
+type UpdateTaskFlagsRequest struct {
+	Root      string `json:"root"`
+	TaskID    string `json:"taskId"`
+	Archived  bool   `json:"archived"`
+	Deleted   bool   `json:"deleted"`
+	Tombstone bool   `json:"tombstone"`
 }
 
 type SpecNodeInfo struct {
@@ -276,6 +324,9 @@ func (p *RealProvider) CreateTask(req CreateTaskRequest) (*TaskInfo, error) {
 		Branch:        fmt.Sprintf("task/%s", id),
 		Worktree:      filepath.ToSlash(filepath.Join(".thanos", "worktrees", id)),
 		UpdatedAt:     now.Format(time.RFC3339),
+		CreatedAt:     now.Format(time.RFC3339),
+		Dependencies:  normalizeTaskDependencies(req.Dependencies),
+		PromptHistory: []PromptRecord{{At: now.Format(time.RFC3339), Prompt: prompt}},
 	}
 	store := NewWorkspaceStore(root)
 	if err := store.WithLock(func() error {
@@ -287,6 +338,96 @@ func (p *RealProvider) CreateTask(req CreateTaskRequest) (*TaskInfo, error) {
 		return nil, err
 	}
 	return &task, nil
+}
+
+func (p *RealProvider) BatchCreateTasks(req BatchCreateTasksRequest) ([]TaskInfo, error) {
+	root, err := normalizeWorkspaceRoot(req.Root)
+	if err != nil {
+		return nil, err
+	}
+	if len(req.Tasks) == 0 {
+		return []TaskInfo{}, nil
+	}
+	created := make([]TaskInfo, 0, len(req.Tasks))
+	for index, item := range req.Tasks {
+		item.Root = root
+		if len(item.Dependencies) == 0 && index > 0 {
+			item.Dependencies = []string{created[index-1].ID}
+		}
+		task, err := p.CreateTask(item)
+		if err != nil {
+			return nil, err
+		}
+		created = append(created, *task)
+	}
+	return created, nil
+}
+
+func (p *RealProvider) SearchTasks(req SearchTasksRequest) ([]TaskInfo, error) {
+	root, err := normalizeWorkspaceRoot(req.Root)
+	if err != nil {
+		return nil, err
+	}
+	tasks, err := loadTasks(root)
+	if err != nil {
+		return nil, err
+	}
+	query := strings.ToLower(strings.TrimSpace(req.Query))
+	out := make([]TaskInfo, 0, len(tasks))
+	for _, task := range markBlockedTasks(tasks) {
+		if task.Archived && !req.IncludeArchived {
+			continue
+		}
+		if (task.Deleted || task.Tombstone) && !req.IncludeDeleted {
+			continue
+		}
+		if query == "" || strings.Contains(strings.ToLower(task.Title), query) || strings.Contains(strings.ToLower(task.Prompt), query) || strings.Contains(strings.ToLower(task.ID), query) {
+			out = append(out, task)
+		}
+	}
+	return out, nil
+}
+
+func (p *RealProvider) UpdateTaskFlags(req UpdateTaskFlagsRequest) (*TaskInfo, error) {
+	root, err := normalizeWorkspaceRoot(req.Root)
+	if err != nil {
+		return nil, err
+	}
+	var updated *TaskInfo
+	store := NewWorkspaceStore(root)
+	err = store.WithLock(func() error {
+		tasks, err := loadTasks(root)
+		if err != nil {
+			return err
+		}
+		for _, task := range tasks {
+			if task.ID != req.TaskID {
+				continue
+			}
+			task = hydrateTask(task)
+			task.Archived = req.Archived
+			task.Deleted = req.Deleted
+			task.Tombstone = req.Tombstone
+			task.UpdatedAt = p.now().UTC().Format(time.RFC3339)
+			if task.Tombstone {
+				task.Status = "cancelled"
+			}
+			if err := writeTask(store, task); err != nil {
+				return err
+			}
+			if err := store.AppendEvent(EventInfo{ID: "event-flags-" + stableID(task.ID+"-"+task.UpdatedAt), At: task.UpdatedAt, Kind: "TaskFlagsUpdated", Message: fmt.Sprintf("%s archived=%t deleted=%t tombstone=%t", task.Title, task.Archived, task.Deleted, task.Tombstone)}); err != nil {
+				return err
+			}
+			copied := task
+			updated = &copied
+			return nil
+		}
+		return fmt.Errorf("task not found: %s", req.TaskID)
+	})
+	if err != nil {
+		return nil, err
+	}
+	return updated, nil
 }
 
 func (p *RealProvider) UpdateTaskStatus(req UpdateTaskStatusRequest) (*TaskInfo, error) {
@@ -306,9 +447,29 @@ func (p *RealProvider) UpdateTaskStatus(req UpdateTaskStatusRequest) (*TaskInfo,
 			if task.ID != req.TaskID {
 				continue
 			}
+			task = hydrateTask(task)
+			if task.Blocked && nextStatus == "in_progress" {
+				return fmt.Errorf("task is blocked by unfinished dependencies: %s", task.ID)
+			}
+			if err := validateTaskTransition(task.Status, nextStatus); err != nil {
+				return err
+			}
 			task.SchemaVersion = SchemaVersionTask
+			previousStatus := task.Status
 			task.Status = nextStatus
 			task.UpdatedAt = p.now().UTC().Format(time.RFC3339)
+			if strings.TrimSpace(req.Feedback) != "" {
+				task.FeedbackHistory = append(task.FeedbackHistory, FeedbackRecord{At: task.UpdatedAt, Message: strings.TrimSpace(req.Feedback)})
+			}
+			if previousStatus == "failed" && nextStatus == "in_progress" {
+				task.RetryHistory = append(task.RetryHistory, RetryRecord{At: task.UpdatedAt, Reason: fallback(req.Feedback, "manual retry")})
+			}
+			if nextStatus == "failed" {
+				task.FailureCategory = fallback(req.FailureCategory, "unknown")
+			}
+			if nextStatus == "cancelled" {
+				task.Tombstone = true
+			}
 			if err := writeTask(store, task); err != nil {
 				return err
 			}
@@ -620,6 +781,7 @@ func loadTasks(root string) ([]TaskInfo, error) {
 			return nil, err
 		}
 	}
+	tasks = markBlockedTasks(tasks)
 	sort.Slice(tasks, func(i, j int) bool { return tasks[i].ID < tasks[j].ID })
 	return tasks, nil
 }
@@ -647,18 +809,29 @@ func decodeTask(path, root string) (TaskInfo, bool) {
 		title = id
 	}
 	status := normalizeTaskStatus(stringFrom(raw, "status", "Status"))
-	return TaskInfo{
-		ID:        id,
-		Title:     title,
-		Prompt:    prompt,
-		Status:    status,
-		Flow:      fallback(stringFrom(raw, "flow", "Flow"), "implement"),
-		Agent:     fallback(stringFrom(raw, "agent", "Agent", "harness", "Harness"), "unassigned"),
-		Branch:    stringFrom(raw, "branch", "Branch", "branch_name", "BranchName"),
-		Worktree:  stringFrom(raw, "worktree", "Worktree", "worktree_path", "WorktreePath"),
-		UpdatedAt: fallback(stringFrom(raw, "updated_at", "UpdatedAt", "updatedAt"), "unknown"),
-		UsageUSD:  floatFrom(raw, "usage_usd", "usageUsd", "cost_usd", "CostUSD"),
-	}, true
+	task := TaskInfo{
+		SchemaVersion:   intFrom(raw, "schema_version", "schemaVersion"),
+		ID:              id,
+		Title:           title,
+		Prompt:          prompt,
+		Status:          status,
+		Flow:            fallback(stringFrom(raw, "flow", "Flow"), "implement"),
+		Agent:           fallback(stringFrom(raw, "agent", "Agent", "harness", "Harness"), "unassigned"),
+		Branch:          stringFrom(raw, "branch", "Branch", "branch_name", "BranchName"),
+		Worktree:        stringFrom(raw, "worktree", "Worktree", "worktree_path", "WorktreePath"),
+		UpdatedAt:       fallback(stringFrom(raw, "updated_at", "UpdatedAt", "updatedAt"), "unknown"),
+		CreatedAt:       stringFrom(raw, "created_at", "CreatedAt", "createdAt"),
+		UsageUSD:        floatFrom(raw, "usage_usd", "usageUsd", "cost_usd", "CostUSD"),
+		Archived:        boolFrom(raw, "archived", "Archived"),
+		Deleted:         boolFrom(raw, "deleted", "Deleted"),
+		Tombstone:       boolFrom(raw, "tombstone", "Tombstone"),
+		Dependencies:    stringSliceFrom(raw, "dependencies", "Dependencies"),
+		PromptHistory:   promptHistoryFrom(raw, prompt),
+		FeedbackHistory: feedbackHistoryFrom(raw),
+		RetryHistory:    retryHistoryFrom(raw),
+		FailureCategory: stringFrom(raw, "failure_category", "failureCategory", "FailureCategory"),
+	}
+	return hydrateTask(task), true
 }
 
 func loadEvents(root string) ([]EventInfo, error) {
@@ -892,21 +1065,197 @@ func floatFrom(raw map[string]any, keys ...string) float64 {
 	return 0
 }
 
+func intFrom(raw map[string]any, keys ...string) int {
+	for _, key := range keys {
+		if value, ok := raw[key]; ok {
+			switch typed := value.(type) {
+			case float64:
+				return int(typed)
+			case int:
+				return typed
+			case json.Number:
+				out, _ := typed.Int64()
+				return int(out)
+			}
+		}
+	}
+	return 0
+}
+
+func boolFrom(raw map[string]any, keys ...string) bool {
+	for _, key := range keys {
+		if value, ok := raw[key]; ok {
+			switch typed := value.(type) {
+			case bool:
+				return typed
+			case string:
+				return typed == "true" || typed == "1"
+			}
+		}
+	}
+	return false
+}
+
+func stringSliceFrom(raw map[string]any, keys ...string) []string {
+	for _, key := range keys {
+		value, ok := raw[key]
+		if !ok {
+			continue
+		}
+		switch typed := value.(type) {
+		case []string:
+			return normalizeTaskDependencies(typed)
+		case []any:
+			out := make([]string, 0, len(typed))
+			for _, item := range typed {
+				if text, ok := item.(string); ok {
+					out = append(out, text)
+				}
+			}
+			return normalizeTaskDependencies(out)
+		}
+	}
+	return []string{}
+}
+
+func promptHistoryFrom(raw map[string]any, prompt string) []PromptRecord {
+	out := make([]PromptRecord, 0)
+	if records, ok := raw["promptHistory"].([]any); ok {
+		for _, item := range records {
+			if record, ok := item.(map[string]any); ok {
+				out = append(out, PromptRecord{At: stringFrom(record, "at"), Prompt: stringFrom(record, "prompt")})
+			}
+		}
+	}
+	if len(out) == 0 && strings.TrimSpace(prompt) != "" {
+		out = append(out, PromptRecord{At: stringFrom(raw, "created_at", "createdAt", "updated_at", "updatedAt"), Prompt: prompt})
+	}
+	return out
+}
+
+func feedbackHistoryFrom(raw map[string]any) []FeedbackRecord {
+	out := make([]FeedbackRecord, 0)
+	if records, ok := raw["feedbackHistory"].([]any); ok {
+		for _, item := range records {
+			if record, ok := item.(map[string]any); ok {
+				out = append(out, FeedbackRecord{At: stringFrom(record, "at"), Message: stringFrom(record, "message")})
+			}
+		}
+	}
+	return out
+}
+
+func retryHistoryFrom(raw map[string]any) []RetryRecord {
+	out := make([]RetryRecord, 0)
+	if records, ok := raw["retryHistory"].([]any); ok {
+		for _, item := range records {
+			if record, ok := item.(map[string]any); ok {
+				out = append(out, RetryRecord{At: stringFrom(record, "at"), Reason: stringFrom(record, "reason")})
+			}
+		}
+	}
+	return out
+}
+
 func normalizeTaskStatus(status string) string {
 	switch strings.ToLower(strings.TrimSpace(status)) {
-	case "in_progress", "running", "committing":
-		return "running"
+	case "in_progress", "running":
+		return "in_progress"
 	case "waiting", "waiting_user", "waiting_approval":
 		return "waiting"
-	case "in_review", "review":
-		return "review"
+	case "committing", "commit":
+		return "committing"
 	case "done", "complete", "completed":
 		return "done"
-	case "failed", "cancelled":
+	case "failed":
 		return "failed"
+	case "cancelled", "canceled":
+		return "cancelled"
 	default:
 		return "backlog"
 	}
+}
+
+func normalizeTaskDependencies(values []string) []string {
+	seen := make(map[string]bool)
+	out := make([]string, 0, len(values))
+	for _, value := range values {
+		value = strings.TrimSpace(value)
+		if value == "" || seen[value] {
+			continue
+		}
+		seen[value] = true
+		out = append(out, value)
+	}
+	return out
+}
+
+func hydrateTask(task TaskInfo) TaskInfo {
+	task.SchemaVersion = SchemaVersionTask
+	task.Status = normalizeTaskStatus(task.Status)
+	task.Dependencies = normalizeTaskDependencies(task.Dependencies)
+	if task.CreatedAt == "" {
+		task.CreatedAt = task.UpdatedAt
+	}
+	if task.UpdatedAt == "" {
+		task.UpdatedAt = task.CreatedAt
+	}
+	if task.PromptHistory == nil {
+		task.PromptHistory = []PromptRecord{}
+	}
+	if len(task.PromptHistory) == 0 && strings.TrimSpace(task.Prompt) != "" {
+		task.PromptHistory = append(task.PromptHistory, PromptRecord{At: task.CreatedAt, Prompt: task.Prompt})
+	}
+	if task.FeedbackHistory == nil {
+		task.FeedbackHistory = []FeedbackRecord{}
+	}
+	if task.RetryHistory == nil {
+		task.RetryHistory = []RetryRecord{}
+	}
+	return task
+}
+
+func markBlockedTasks(tasks []TaskInfo) []TaskInfo {
+	done := make(map[string]bool)
+	for _, task := range tasks {
+		if normalizeTaskStatus(task.Status) == "done" {
+			done[task.ID] = true
+		}
+	}
+	out := make([]TaskInfo, 0, len(tasks))
+	for _, task := range tasks {
+		task = hydrateTask(task)
+		task.Blocked = false
+		for _, dependency := range task.Dependencies {
+			if !done[dependency] {
+				task.Blocked = true
+				break
+			}
+		}
+		out = append(out, task)
+	}
+	return out
+}
+
+func validateTaskTransition(from, to string) error {
+	from = normalizeTaskStatus(from)
+	to = normalizeTaskStatus(to)
+	if from == to {
+		return nil
+	}
+	allowed := map[string]map[string]bool{
+		"backlog":     {"in_progress": true, "cancelled": true},
+		"in_progress": {"waiting": true, "committing": true, "failed": true, "cancelled": true},
+		"waiting":     {"in_progress": true, "committing": true, "failed": true, "cancelled": true},
+		"committing":  {"done": true, "failed": true, "cancelled": true},
+		"failed":      {"backlog": true, "in_progress": true, "cancelled": true},
+		"cancelled":   {"backlog": true},
+		"done":        {},
+	}
+	if allowed[from][to] {
+		return nil
+	}
+	return fmt.Errorf("invalid task transition: %s -> %s", from, to)
 }
 
 func firstLine(value string) string {

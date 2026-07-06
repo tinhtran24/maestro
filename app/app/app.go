@@ -79,6 +79,18 @@ func (a *App) CreateTask(request CreateTaskRequest) (*TaskInfo, error) {
 	return a.provider.CreateTask(request)
 }
 
+func (a *App) BatchCreateTasks(request BatchCreateTasksRequest) ([]TaskInfo, error) {
+	return a.provider.BatchCreateTasks(request)
+}
+
+func (a *App) SearchTasks(request SearchTasksRequest) ([]TaskInfo, error) {
+	return a.provider.SearchTasks(request)
+}
+
+func (a *App) UpdateTaskFlags(request UpdateTaskFlagsRequest) (*TaskInfo, error) {
+	return a.provider.UpdateTaskFlags(request)
+}
+
 func (a *App) UpdateTaskStatus(request UpdateTaskStatusRequest) (*TaskInfo, error) {
 	return a.provider.UpdateTaskStatus(request)
 }
@@ -105,6 +117,14 @@ func (a *App) StartNativeTerminal(request NativeTerminalRequest) (*NativeTermina
 		ctx = context.Background()
 	}
 	return a.terminal.Start(ctx, request)
+}
+
+func (a *App) WriteNativeTerminal(request NativeTerminalInputRequest) error {
+	return a.terminal.Write(request)
+}
+
+func (a *App) ResizeNativeTerminal(request NativeTerminalResizeRequest) error {
+	return a.terminal.Resize(request)
 }
 
 func (a *App) StopNativeTerminal(sessionID string) bool {

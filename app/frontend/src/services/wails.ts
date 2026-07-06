@@ -1,17 +1,22 @@
 import type {
   AutomationInfo,
   ActivateWorkspaceRequest,
+  BatchCreateTasksRequest,
   CreateWorkspaceRequest,
   CreateSpecRequest,
   CreateTaskRequest,
   DeleteWorkspaceRequest,
   NativeTerminalRequest,
+  NativeTerminalInputRequest,
+  NativeTerminalResizeRequest,
   NativeTerminalSession,
   ProviderInfo,
   RoutineInfo,
   SaveAutomationRequest,
+  SearchTasksRequest,
   SpecNode,
   Task,
+  UpdateTaskFlagsRequest,
   UpdateWorkspaceRequest,
   UpdateTaskStatusRequest,
   UpsertRoutineRequest,
@@ -35,11 +40,16 @@ type WailsApp = {
   LoadActiveWorkspace?: () => Promise<Workspace>;
   LoadWorkspace?: (root: string) => Promise<Workspace>;
   CreateTask?: (request: CreateTaskRequest) => Promise<Task>;
+  BatchCreateTasks?: (request: BatchCreateTasksRequest) => Promise<Task[]>;
+  SearchTasks?: (request: SearchTasksRequest) => Promise<Task[]>;
+  UpdateTaskFlags?: (request: UpdateTaskFlagsRequest) => Promise<Task>;
   UpdateTaskStatus?: (request: UpdateTaskStatusRequest) => Promise<Task>;
   CreateSpec?: (request: CreateSpecRequest) => Promise<SpecNode>;
   UpsertRoutine?: (request: UpsertRoutineRequest) => Promise<RoutineInfo>;
   SaveAutomation?: (request: SaveAutomationRequest) => Promise<AutomationInfo>;
   StartNativeTerminal?: (request: NativeTerminalRequest) => Promise<NativeTerminalSession>;
+  WriteNativeTerminal?: (request: NativeTerminalInputRequest) => Promise<void>;
+  ResizeNativeTerminal?: (request: NativeTerminalResizeRequest) => Promise<void>;
   StopNativeTerminal?: (sessionId: string) => Promise<boolean>;
 };
 
@@ -108,6 +118,18 @@ export async function createTask(request: CreateTaskRequest): Promise<Task | nul
   return (await app().CreateTask?.(request)) ?? null;
 }
 
+export async function batchCreateTasks(request: BatchCreateTasksRequest): Promise<Task[]> {
+  return (await app().BatchCreateTasks?.(request)) ?? [];
+}
+
+export async function searchTasks(request: SearchTasksRequest): Promise<Task[]> {
+  return (await app().SearchTasks?.(request)) ?? [];
+}
+
+export async function updateTaskFlags(request: UpdateTaskFlagsRequest): Promise<Task | null> {
+  return (await app().UpdateTaskFlags?.(request)) ?? null;
+}
+
 export async function updateTaskStatus(request: UpdateTaskStatusRequest): Promise<Task | null> {
   return (await app().UpdateTaskStatus?.(request)) ?? null;
 }
@@ -126,6 +148,14 @@ export async function saveAutomation(request: SaveAutomationRequest): Promise<Au
 
 export async function startNativeTerminal(request: NativeTerminalRequest): Promise<NativeTerminalSession | null> {
   return (await app().StartNativeTerminal?.(request)) ?? null;
+}
+
+export async function writeNativeTerminal(request: NativeTerminalInputRequest): Promise<void> {
+  await app().WriteNativeTerminal?.(request);
+}
+
+export async function resizeNativeTerminal(request: NativeTerminalResizeRequest): Promise<void> {
+  await app().ResizeNativeTerminal?.(request);
 }
 
 export async function stopNativeTerminal(sessionId: string): Promise<boolean> {

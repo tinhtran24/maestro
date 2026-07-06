@@ -1,12 +1,13 @@
-import { ArrowRight, Play, Square } from "lucide-react";
+import { ArrowRight, Maximize2, Play, Send, Square } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import type { NativeTerminalSession, Workspace } from "../app/types";
-import { onWailsEvent, startNativeTerminal, stopNativeTerminal } from "../services/wails";
+import { onWailsEvent, resizeNativeTerminal, startNativeTerminal, stopNativeTerminal, writeNativeTerminal } from "../services/wails";
 import { Panel } from "../shared/Panel";
 
 export function AgentGraphView({ workspace }: { workspace: Workspace }) {
   const [session, setSession] = useState<NativeTerminalSession | null>(null);
   const [output, setOutput] = useState<string[]>([]);
+  const [input, setInput] = useState("");
   const installed = useMemo(() => workspace.providers.filter((provider) => provider.status === "installed" && provider.supportsRun), [workspace.providers]);
 
   useEffect(() => {
@@ -27,10 +28,14 @@ export function AgentGraphView({ workspace }: { workspace: Workspace }) {
     setOutput([]);
     const next = await startNativeTerminal({
       providerId,
+      taskId: "",
+      step: "Provider Check",
       command,
       args: ["--version"],
       cwd: workspace.path,
       label: `${name} --version`,
+      rows: 24,
+      cols: 100,
     });
     if (next) setSession(next);
   }
@@ -38,6 +43,18 @@ export function AgentGraphView({ workspace }: { workspace: Workspace }) {
   async function stopSession() {
     if (!session) return;
     await stopNativeTerminal(session.id);
+  }
+
+  async function sendInput(event: React.FormEvent) {
+    event.preventDefault();
+    if (!session || session.status !== "running" || !input) return;
+    await writeNativeTerminal({ sessionId: session.id, data: `${input}\n` });
+    setInput("");
+  }
+
+  async function resizeSession() {
+    if (!session || session.status !== "running") return;
+    await resizeNativeTerminal({ sessionId: session.id, rows: 32, cols: 120 });
   }
 
   return (
@@ -86,8 +103,22 @@ export function AgentGraphView({ workspace }: { workspace: Workspace }) {
             <button disabled={!session || session.status !== "running"} onClick={stopSession}>
               <Square size={15} /> Stop
             </button>
+            <button disabled={!session || session.status !== "running"} onClick={resizeSession}>
+              <Maximize2 size={15} /> 120x32
+            </button>
           </div>
+          {session ? (
+            <div className="terminal-session-meta">
+              <span>{session.status}</span>
+              <span>{session.ptyId}</span>
+              <code>{session.transcriptPath}</code>
+            </div>
+          ) : null}
           <pre className="terminal-output">{output.length ? output.join("") : "Run an installed provider to stream native terminal output here. No auth token is injected by Thanos."}</pre>
+          <form className="terminal-input" onSubmit={sendInput}>
+            <input value={input} onChange={(event) => setInput(event.target.value)} placeholder="Send input to the running PTY" />
+            <button disabled={!session || session.status !== "running" || !input}><Send size={15} /> Send</button>
+          </form>
         </div>
       </Panel>
     </div>

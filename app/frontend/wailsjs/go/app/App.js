@@ -6,6 +6,10 @@ export function ActivateWorkspace(arg1) {
   return window['go']['app']['App']['ActivateWorkspace'](arg1);
 }
 
+export function BatchCreateTasks(arg1) {
+  return window['go']['app']['App']['BatchCreateTasks'](arg1);
+}
+
 export function CreateSpec(arg1) {
   return window['go']['app']['App']['CreateSpec'](arg1);
 }
@@ -46,8 +50,16 @@ export function Ping() {
   return window['go']['app']['App']['Ping']();
 }
 
+export function ResizeNativeTerminal(arg1) {
+  return window['go']['app']['App']['ResizeNativeTerminal'](arg1);
+}
+
 export function SaveAutomation(arg1) {
   return window['go']['app']['App']['SaveAutomation'](arg1);
+}
+
+export function SearchTasks(arg1) {
+  return window['go']['app']['App']['SearchTasks'](arg1);
 }
 
 export function SelectWorkspaceFolder() {
@@ -62,6 +74,10 @@ export function StopNativeTerminal(arg1) {
   return window['go']['app']['App']['StopNativeTerminal'](arg1);
 }
 
+export function UpdateTaskFlags(arg1) {
+  return window['go']['app']['App']['UpdateTaskFlags'](arg1);
+}
+
 export function UpdateTaskStatus(arg1) {
   return window['go']['app']['App']['UpdateTaskStatus'](arg1);
 }
@@ -72,4 +88,8 @@ export function UpdateWorkspace(arg1) {
 
 export function UpsertRoutine(arg1) {
   return window['go']['app']['App']['UpsertRoutine'](arg1);
+}
+
+export function WriteNativeTerminal(arg1) {
+  return window['go']['app']['App']['WriteNativeTerminal'](arg1);
 }

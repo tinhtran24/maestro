@@ -236,8 +236,50 @@ button {
 
 .board {
   display: grid;
-  grid-template-columns: repeat(5, minmax(210px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
   gap: 12px;
+}
+
+.board-tools {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.board-tools label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 260px;
+  border: 1px solid #273449;
+  border-radius: 10px;
+  background: #0f172a;
+  padding: 8px 10px;
+}
+
+.board-tools input {
+  min-width: 0;
+  flex: 1;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: #e5e7eb;
+}
+
+.board-tools button,
+.board-tools span {
+  border: 1px solid #273449;
+  border-radius: 10px;
+  background: #111827;
+  color: #cbd5e1;
+  padding: 8px 10px;
+  font-size: 12px;
+}
+
+.board-tools button.enabled {
+  border-color: #7c3aed;
+  color: #ddd6fe;
 }
 
 .panel {
@@ -278,6 +320,11 @@ button {
   border-radius: 12px;
   background: #0f172a;
   padding: 12px;
+}
+
+.task-card.blocked {
+  border-color: #eab308;
+  background: rgb(113 63 18 / 28%);
 }
 
 .task-card-head {
@@ -346,6 +393,54 @@ button {
   margin: 0;
   padding: 12px;
   white-space: pre-wrap;
+}
+
+.terminal-session-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  color: #94a3b8;
+  font-size: 12px;
+}
+
+.terminal-session-meta code {
+  max-width: 100%;
+  overflow: hidden;
+  color: #cbd5e1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.terminal-input {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+}
+
+.terminal-input input {
+  min-width: 0;
+  border: 1px solid #273449;
+  border-radius: 10px;
+  background: #0f172a;
+  color: #e5e7eb;
+  padding: 9px 11px;
+}
+
+.terminal-input button {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid #7c3aed;
+  border-radius: 10px;
+  background: #7c3aed;
+  color: white;
+  padding: 9px 11px;
+}
+
+.terminal-input button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
 }
 
 .provider-table article {
