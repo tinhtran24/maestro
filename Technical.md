@@ -144,17 +144,14 @@ auditable and editable on disk.
 
 ## Install
 
-Requires Go 1.20 or newer.
-
-```bash
-go install github.com/tinhtran/thanos/cmd/thanos@latest
-```
+Requires Go, Node.js, and Wails.
 
 For local development:
 
 ```bash
 make check
-./bin/thanos help
+cd app/frontend
+npm run wails:dev
 ```
 
 ## Quick start

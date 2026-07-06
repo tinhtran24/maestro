@@ -78,7 +78,8 @@ brew install tinhtran24/tap/thanos
 Yêu cầu Go 1.20 trở lên.
 
 ```bash
-go install github.com/tinhtran/thanos/cmd/thanos@latest
+cd app/frontend
+npm run wails:dev
 ```
 
 Build từ source:

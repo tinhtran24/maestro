@@ -26,64 +26,16 @@ jobs:
       - name: Test
         run: go test -race ./...
 
-  cli-build:
-    name: CLI build (${{ matrix.goos }}/${{ matrix.goarch }})
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - goos: linux
-            goarch: amd64
-            ext: ""
-          - goos: linux
-            goarch: arm64
-            ext: ""
-          - goos: darwin
-            goarch: amd64
-            ext: ""
-          - goos: darwin
-            goarch: arm64
-            ext: ""
-          - goos: windows
-            goarch: amd64
-            ext: ".exe"
-          - goos: windows
-            goarch: arm64
-            ext: ".exe"
-    steps:
-      - uses: actions/checkout@v6
-
-      - uses: actions/setup-go@v6
-        with:
-          go-version-file: go.mod
-
-      - name: Build CLI
-        env:
-          CGO_ENABLED: "0"
-          GOOS: ${{ matrix.goos }}
-          GOARCH: ${{ matrix.goarch }}
-        run: go build -o "${RUNNER_TEMP}/thanos-${GOOS}-${GOARCH}${{ matrix.ext }}" ./cmd/thanos
-
   desktop-build:
-    name: Desktop build (${{ matrix.platform }} ${{ matrix.args }})
+    name: Wails desktop build (${{ matrix.platform }})
     runs-on: ${{ matrix.platform }}
     strategy:
       fail-fast: false
       matrix:
         include:
           - platform: macos-latest
-            args: --target aarch64-apple-darwin
-            rust_target: aarch64-apple-darwin
-          - platform: macos-latest
-            args: --target x86_64-apple-darwin
-            rust_target: x86_64-apple-darwin
           - platform: ubuntu-22.04
-            args: ""
-            rust_target: ""
           - platform: windows-latest
-            args: ""
-            rust_target: ""
     steps:
       - uses: actions/checkout@v6
 
@@ -91,13 +43,11 @@ jobs:
         with:
           node-version: lts/*
           cache: npm
-          cache-dependency-path: apps/thanos-desktop/package-lock.json
+          cache-dependency-path: app/frontend/package-lock.json
 
-      - uses: dtolnay/rust-toolchain@stable
-
-      - name: Install Rust target
-        if: matrix.rust_target != ''
-        run: rustup target add ${{ matrix.rust_target }}
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: app/go.mod
 
       - name: Install Linux dependencies
         if: matrix.platform == 'ubuntu-22.04'
@@ -105,10 +55,21 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf xdg-utils
 
+      - name: Install Wails
+        run: go install github.com/wailsapp/wails/v2/cmd/wails@latest
+
       - name: Install frontend dependencies
-        working-directory: apps/thanos-desktop
+        working-directory: app/frontend
         run: npm ci
 
+      - name: Test frontend
+        working-directory: app/frontend
+        run: npm run test
+
+      - name: Test Wails backend
+        working-directory: app
+        run: go test ./...
+
       - name: Build desktop app
-        working-directory: apps/thanos-desktop
-        run: npm run tauri build -- ${{ matrix.args }} --no-bundle
+        working-directory: app
+        run: wails build -nopackage

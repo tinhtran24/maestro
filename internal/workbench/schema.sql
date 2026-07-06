@@ -109,6 +109,57 @@ CREATE TABLE IF NOT EXISTS agent_sessions (
   ended_at TEXT
 );
 
+CREATE TABLE IF NOT EXISTS runtime_session_facts (
+  session_id TEXT PRIMARY KEY REFERENCES agent_sessions(id) ON DELETE CASCADE,
+  project_id TEXT REFERENCES projects(id) ON DELETE CASCADE,
+  task_id TEXT NOT NULL REFERENCES tasks(id) ON DELETE CASCADE,
+  step TEXT NOT NULL,
+  provider TEXT NOT NULL DEFAULT '',
+  command TEXT NOT NULL DEFAULT '',
+  args_json TEXT NOT NULL DEFAULT '[]',
+  cwd TEXT NOT NULL DEFAULT '',
+  runtime_handle_id TEXT NOT NULL DEFAULT '',
+  agent_native_session_id TEXT NOT NULL DEFAULT '',
+  transcript_path TEXT NOT NULL DEFAULT '',
+  activity_state TEXT NOT NULL DEFAULT '',
+  is_terminated INTEGER NOT NULL DEFAULT 0,
+  exit_code INTEGER,
+  display_status TEXT NOT NULL DEFAULT 'idle',
+  started_at TEXT,
+  last_output_at TEXT,
+  ended_at TEXT,
+  updated_at TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_runtime_session_facts_task ON runtime_session_facts(task_id, step);
+CREATE INDEX IF NOT EXISTS idx_runtime_session_facts_status ON runtime_session_facts(display_status);
+
+CREATE TABLE IF NOT EXISTS runtime_workspace_facts (
+  id TEXT PRIMARY KEY,
+  project_id TEXT REFERENCES projects(id) ON DELETE CASCADE,
+  task_id TEXT NOT NULL REFERENCES tasks(id) ON DELETE CASCADE,
+  session_id TEXT REFERENCES agent_sessions(id) ON DELETE SET NULL,
+  step TEXT NOT NULL DEFAULT '',
+  branch_name TEXT NOT NULL DEFAULT '',
+  worktree_path TEXT NOT NULL DEFAULT '',
+  prepared INTEGER NOT NULL DEFAULT 0,
+  prepared_at TEXT
+);
+
+CREATE INDEX IF NOT EXISTS idx_runtime_workspace_facts_task ON runtime_workspace_facts(task_id, session_id);
+
+CREATE TABLE IF NOT EXISTS runtime_terminal_facts (
+  runtime_handle_id TEXT PRIMARY KEY,
+  session_id TEXT NOT NULL REFERENCES agent_sessions(id) ON DELETE CASCADE,
+  attached INTEGER NOT NULL DEFAULT 0,
+  rows INTEGER NOT NULL DEFAULT 0,
+  cols INTEGER NOT NULL DEFAULT 0,
+  attached_at TEXT,
+  detached_at TEXT
+);
+
+CREATE INDEX IF NOT EXISTS idx_runtime_terminal_facts_session ON runtime_terminal_facts(session_id);
+
 CREATE TABLE IF NOT EXISTS reviews (
   id TEXT PRIMARY KEY,
   task_id TEXT NOT NULL REFERENCES tasks(id) ON DELETE CASCADE,
@@ -221,3 +272,176 @@ CREATE TABLE IF NOT EXISTS events (
 );
 
 CREATE INDEX IF NOT EXISTS idx_events_task ON events(task_id, id);
+
+CREATE TABLE IF NOT EXISTS change_log (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  project_id TEXT REFERENCES projects(id) ON DELETE CASCADE,
+  task_id TEXT REFERENCES tasks(id) ON DELETE CASCADE,
+  session_id TEXT REFERENCES agent_sessions(id) ON DELETE CASCADE,
+  aggregate_type TEXT NOT NULL CHECK (aggregate_type IN ('task', 'gate', 'runtime', 'skill_run', 'read_model')),
+  aggregate_id TEXT NOT NULL,
+  change_type TEXT NOT NULL CHECK (change_type IN (
+    'task_state_changed',
+    'gate_state_changed',
+    'runtime_fact_changed',
+    'skill_run_changed',
+    'derived_status_refresh_requested'
+  )),
+  payload_json TEXT NOT NULL DEFAULT '{}',
+  derived_status TEXT,
+  created_at TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_change_log_project ON change_log(project_id, id);
+CREATE INDEX IF NOT EXISTS idx_change_log_task ON change_log(task_id, id);
+CREATE INDEX IF NOT EXISTS idx_change_log_session ON change_log(session_id, id);
+CREATE INDEX IF NOT EXISTS idx_change_log_type ON change_log(change_type, id);
+
+CREATE TABLE IF NOT EXISTS runtime_events (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  project_id TEXT REFERENCES projects(id) ON DELETE CASCADE,
+  task_id TEXT REFERENCES tasks(id) ON DELETE CASCADE,
+  session_id TEXT REFERENCES agent_sessions(id) ON DELETE CASCADE,
+  event_type TEXT NOT NULL,
+  payload_json TEXT NOT NULL DEFAULT '{}',
+  created_at TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_runtime_events_project ON runtime_events(project_id, id);
+CREATE INDEX IF NOT EXISTS idx_runtime_events_task ON runtime_events(task_id, id);
+CREATE INDEX IF NOT EXISTS idx_runtime_events_session ON runtime_events(session_id, id);
+
+CREATE TRIGGER IF NOT EXISTS tasks_state_change_log_update
+AFTER UPDATE OF status ON tasks
+WHEN OLD.status <> NEW.status
+BEGIN
+  INSERT INTO change_log (task_id, aggregate_type, aggregate_id, change_type, payload_json, created_at)
+  VALUES (
+    NEW.id,
+    'task',
+    NEW.id,
+    'task_state_changed',
+    json_object('from', OLD.status, 'to', NEW.status),
+    NEW.updated_at
+  );
+END;
+
+CREATE TRIGGER IF NOT EXISTS tasks_gate_change_log_update
+AFTER UPDATE OF review_approved, tests_passed ON tasks
+WHEN OLD.review_approved <> NEW.review_approved OR OLD.tests_passed <> NEW.tests_passed
+BEGIN
+  INSERT INTO change_log (task_id, aggregate_type, aggregate_id, change_type, payload_json, created_at)
+  VALUES (
+    NEW.id,
+    'gate',
+    NEW.id,
+    'gate_state_changed',
+    json_object(
+      'review_approved', json(CASE WHEN NEW.review_approved THEN 'true' ELSE 'false' END),
+      'tests_passed', json(CASE WHEN NEW.tests_passed THEN 'true' ELSE 'false' END)
+    ),
+    NEW.updated_at
+  );
+END;
+
+CREATE TRIGGER IF NOT EXISTS execution_plans_gate_change_log_update
+AFTER UPDATE OF approval_status ON execution_plans
+WHEN OLD.approval_status <> NEW.approval_status
+BEGIN
+  INSERT INTO change_log (task_id, aggregate_type, aggregate_id, change_type, payload_json, created_at)
+  VALUES (
+    NEW.task_id,
+    'gate',
+    NEW.id,
+    'gate_state_changed',
+    json_object('gate', 'plan_approval', 'from', OLD.approval_status, 'to', NEW.approval_status),
+    NEW.updated_at
+  );
+END;
+
+CREATE TRIGGER IF NOT EXISTS skill_runs_change_log_insert
+AFTER INSERT ON skill_runs
+BEGIN
+  INSERT INTO change_log (task_id, session_id, aggregate_type, aggregate_id, change_type, payload_json, created_at)
+  VALUES (
+    NEW.task_id,
+    NEW.agent_session_id,
+    'skill_run',
+    NEW.id,
+    'skill_run_changed',
+    json_object('status', NEW.status, 'skill_id', NEW.skill_id),
+    NEW.started_at
+  );
+END;
+
+CREATE TRIGGER IF NOT EXISTS skill_runs_change_log_update
+AFTER UPDATE OF status, evidence_json ON skill_runs
+WHEN OLD.status <> NEW.status OR OLD.evidence_json <> NEW.evidence_json
+BEGIN
+  INSERT INTO change_log (task_id, session_id, aggregate_type, aggregate_id, change_type, payload_json, created_at)
+  VALUES (
+    NEW.task_id,
+    NEW.agent_session_id,
+    'skill_run',
+    NEW.id,
+    'skill_run_changed',
+    json_object('from', OLD.status, 'to', NEW.status, 'skill_id', NEW.skill_id),
+    COALESCE(NEW.completed_at, NEW.started_at)
+  );
+END;
+
+CREATE TRIGGER IF NOT EXISTS runtime_session_facts_change_log_insert
+AFTER INSERT ON runtime_session_facts
+BEGIN
+  INSERT INTO change_log (project_id, task_id, session_id, aggregate_type, aggregate_id, change_type, payload_json, derived_status, created_at)
+  VALUES (
+    NEW.project_id,
+    NEW.task_id,
+    NEW.session_id,
+    'runtime',
+    NEW.session_id,
+    'runtime_fact_changed',
+    json_object('step', NEW.step, 'activity_state', NEW.activity_state, 'runtime_handle_id', NEW.runtime_handle_id),
+    NEW.display_status,
+    NEW.updated_at
+  );
+END;
+
+CREATE TRIGGER IF NOT EXISTS runtime_session_facts_change_log_update
+AFTER UPDATE ON runtime_session_facts
+WHEN OLD.activity_state <> NEW.activity_state
+  OR OLD.is_terminated <> NEW.is_terminated
+  OR OLD.exit_code IS NOT NEW.exit_code
+  OR OLD.runtime_handle_id <> NEW.runtime_handle_id
+  OR OLD.display_status <> NEW.display_status
+BEGIN
+  INSERT INTO change_log (project_id, task_id, session_id, aggregate_type, aggregate_id, change_type, payload_json, derived_status, created_at)
+  VALUES (
+    NEW.project_id,
+    NEW.task_id,
+    NEW.session_id,
+    'runtime',
+    NEW.session_id,
+    'runtime_fact_changed',
+    json_object('activity_state', NEW.activity_state, 'is_terminated', json(CASE WHEN NEW.is_terminated THEN 'true' ELSE 'false' END), 'exit_code', NEW.exit_code),
+    NEW.display_status,
+    NEW.updated_at
+  );
+END;
+
+CREATE TRIGGER IF NOT EXISTS runtime_session_facts_status_refresh_log_update
+AFTER UPDATE OF activity_state, is_terminated, exit_code, runtime_handle_id, started_at, last_output_at, ended_at ON runtime_session_facts
+BEGIN
+  INSERT INTO change_log (project_id, task_id, session_id, aggregate_type, aggregate_id, change_type, payload_json, derived_status, created_at)
+  VALUES (
+    NEW.project_id,
+    NEW.task_id,
+    NEW.session_id,
+    'read_model',
+    NEW.session_id,
+    'derived_status_refresh_requested',
+    json_object('source', 'runtime_session_facts'),
+    NEW.display_status,
+    NEW.updated_at
+  );
+END;

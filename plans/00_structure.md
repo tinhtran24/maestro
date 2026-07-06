@@ -55,10 +55,10 @@ thanos/
 │       ├── config.go            # config loading
 │       └── defaults.go
 │
-├── apps/
-│   └── thanos-desktop/
-│       ├── src/                 # Tauri frontend only
-│       └── src-tauri/           # calls thanos CLI/sidecar only
+├── app/
+│   ├── app/                     # Wails bindings and desktop adapter
+│   ├── frontend/                # React workbench UI
+│   └── main.go                  # Wails shell entrypoint
 │
 ├── docs/
 │   ├── workflows.md
@@ -88,7 +88,8 @@ thanos/
 * `internal/runner/` owns shell, git, test, lint, and worktree execution.
 * `internal/agent/` owns AI planning, execution, and review prompts.
 * `internal/events/` owns streaming updates for CLI/TUI/Tauri.
-* `apps/thanos-desktop/` must not duplicate workflow logic.
+* `app/frontend/` must not duplicate workflow logic.
+* `app/app/` must stay a thin Wails adapter over internal services.
 
 ## Dependency Direction
 
@@ -162,7 +163,7 @@ internal/tui/**
 internal/prompts/**
 internal/codegraph/**
 internal/featuregraph/**
-apps/thanos-desktop/**
+app/frontend/**
 ```
 
 unless the change directly touches those areas.

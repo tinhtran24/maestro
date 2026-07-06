@@ -42,7 +42,7 @@ func TestMatchSkillsUsesAgentStageAndFileSignals(t *testing.T) {
 		TaskType:      "frontend",
 		WorkflowStage: "planning",
 		AgentRole:     "coder",
-		Files:         []string{"apps/thanos-desktop/src/flows/TaskWorkbenchFlow.tsx"},
+		Files:         []string{"app/frontend/src/flows/TaskWorkbenchFlow.tsx"},
 	})
 	if len(matches) == 0 {
 		t.Fatal("expected matches")
