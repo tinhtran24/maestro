@@ -1,8 +1,12 @@
+@import "./styles/tokens.css";
+@import "./styles/shell.css";
+@import "./styles/views.css";
+
 :root {
   color-scheme: dark;
-  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  background: #070a12;
-  color: #e5e7eb;
+  font-family: var(--font-sans);
+  background: var(--bg);
+  color: var(--ink);
 }
 
 * {

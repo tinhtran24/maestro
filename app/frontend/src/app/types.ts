@@ -20,6 +20,11 @@ export type NavItem = {
   icon: LucideIcon;
 };
 
+export type NavGroup = {
+  label: string;
+  items: NavItem[];
+};
+
 export type Task = {
   schema_version: number;
   id: string;
