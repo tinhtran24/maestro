@@ -548,6 +548,8 @@ export namespace app {
 	    turns: TaskTurnInfo[];
 	    lastTurn?: TaskTurnInfo;
 	    lastOutput?: string;
+	    testsPassed: boolean;
+	    lastTestResult?: TestResultInfo;
 	    failureCategory: string;
 	    createdAt: string;
 	
@@ -579,6 +581,8 @@ export namespace app {
 	        this.turns = this.convertValues(source["turns"], TaskTurnInfo);
 	        this.lastTurn = this.convertValues(source["lastTurn"], TaskTurnInfo);
 	        this.lastOutput = source["lastOutput"];
+	        this.testsPassed = source["testsPassed"];
+	        this.lastTestResult = this.convertValues(source["lastTestResult"], TestResultInfo);
 	        this.failureCategory = source["failureCategory"];
 	        this.createdAt = source["createdAt"];
 	    }
@@ -709,6 +713,64 @@ export namespace app {
 	        this.root = source["root"];
 	        this.taskId = source["taskId"];
 	        this.feedback = source["feedback"];
+	    }
+	}
+	export class TestResultInfo {
+	    id: string;
+	    taskId: string;
+	    providerId?: string;
+	    command: string;
+	    status: string;
+	    passed: boolean;
+	    outputPath: string;
+	    output: string;
+	    exitCode: number;
+	    passPattern?: string;
+	    failPattern?: string;
+	    startedAt: string;
+	    endedAt: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new TestResultInfo(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.id = source["id"];
+	        this.taskId = source["taskId"];
+	        this.providerId = source["providerId"];
+	        this.command = source["command"];
+	        this.status = source["status"];
+	        this.passed = source["passed"];
+	        this.outputPath = source["outputPath"];
+	        this.output = source["output"];
+	        this.exitCode = source["exitCode"];
+	        this.passPattern = source["passPattern"];
+	        this.failPattern = source["failPattern"];
+	        this.startedAt = source["startedAt"];
+	        this.endedAt = source["endedAt"];
+	    }
+	}
+	export class RunTaskVerificationRequest {
+	    root: string;
+	    taskId: string;
+	    command: string;
+	    providerId: string;
+	    passPattern: string;
+	    failPattern: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new RunTaskVerificationRequest(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.root = source["root"];
+	        this.taskId = source["taskId"];
+	        this.command = source["command"];
+	        this.providerId = source["providerId"];
+	        this.passPattern = source["passPattern"];
+	        this.failPattern = source["failPattern"];
 	    }
 	}
 	export class UpdateTaskFlagsRequest {

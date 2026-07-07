@@ -1,6 +1,7 @@
 package app
 
 import (
+	"context"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -252,6 +253,82 @@ func TestTaskTurnLoopClassifiesFailuresAndAutoContinue(t *testing.T) {
 	}
 	if failed.Status != "failed" || failed.FailureCategory != "permissions" || failed.LastTurn.FailureCategory != "permissions" {
 		t.Fatalf("failed task = %#v", failed)
+	}
+}
+
+func TestTaskVerificationStoresResultAndGatesDone(t *testing.T) {
+	root := t.TempDir()
+	provider := NewRealProvider()
+	provider.now = func() time.Time { return time.Date(2026, 7, 7, 12, 0, 0, 0, time.UTC) }
+	task, err := provider.CreateTask(CreateTaskRequest{Root: root, Title: "Verify task", Prompt: "Run tests", Agent: "codex"})
+	if err != nil {
+		t.Fatalf("CreateTask returned error: %v", err)
+	}
+	if err := os.MkdirAll(filepath.Join(root, filepath.FromSlash(task.Worktree)), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := provider.UpdateTaskStatus(UpdateTaskStatusRequest{Root: root, TaskID: task.ID, Status: "in_progress"}); err != nil {
+		t.Fatalf("move in_progress: %v", err)
+	}
+	if _, err := provider.UpdateTaskStatus(UpdateTaskStatusRequest{Root: root, TaskID: task.ID, Status: "waiting"}); err != nil {
+		t.Fatalf("move waiting: %v", err)
+	}
+	if _, err := provider.SaveAutomation(SaveAutomationRequest{Root: root, Automation: AutomationInfo{AutoTest: true}}); err != nil {
+		t.Fatalf("SaveAutomation returned error: %v", err)
+	}
+	if _, err := provider.UpdateTaskStatus(UpdateTaskStatusRequest{Root: root, TaskID: task.ID, Status: "committing"}); err != nil {
+		t.Fatalf("move committing before failed verification: %v", err)
+	}
+	if _, err := provider.UpdateTaskStatus(UpdateTaskStatusRequest{Root: root, TaskID: task.ID, Status: "done"}); err == nil || !strings.Contains(err.Error(), "passing verification") {
+		t.Fatalf("expected done gate before verification, got %v", err)
+	}
+	if _, err := provider.UpdateTaskStatus(UpdateTaskStatusRequest{Root: root, TaskID: task.ID, Status: "failed", FailureCategory: "reset"}); err != nil {
+		t.Fatalf("move failed for retry: %v", err)
+	}
+	if _, err := provider.UpdateTaskStatus(UpdateTaskStatusRequest{Root: root, TaskID: task.ID, Status: "in_progress"}); err != nil {
+		t.Fatalf("retry in_progress: %v", err)
+	}
+	if _, err := provider.UpdateTaskStatus(UpdateTaskStatusRequest{Root: root, TaskID: task.ID, Status: "waiting"}); err != nil {
+		t.Fatalf("retry waiting: %v", err)
+	}
+
+	failed, err := provider.RunTaskVerification(context.Background(), RunTaskVerificationRequest{
+		Root:        root,
+		TaskID:      task.ID,
+		Command:     "printf 'FAIL unit test'",
+		FailPattern: "FAIL",
+	})
+	if err != nil {
+		t.Fatalf("RunTaskVerification failed run returned error: %v", err)
+	}
+	if failed.TestsPassed || failed.LastTestResult == nil || failed.LastTestResult.Status != "failed" || failed.Status != "waiting" {
+		t.Fatalf("failed verification task = %#v", failed)
+	}
+	if _, err := os.ReadFile(filepath.Join(root, filepath.FromSlash(failed.LastTestResult.OutputPath))); err != nil {
+		t.Fatalf("test output was not persisted separately: %v", err)
+	}
+
+	passed, err := provider.RunTaskVerification(context.Background(), RunTaskVerificationRequest{
+		Root:        root,
+		TaskID:      task.ID,
+		Command:     "printf 'PASS unit test'",
+		PassPattern: "PASS",
+	})
+	if err != nil {
+		t.Fatalf("RunTaskVerification pass returned error: %v", err)
+	}
+	if !passed.TestsPassed || passed.LastTestResult == nil || passed.LastTestResult.Status != "passed" || passed.FailureCategory != "" {
+		t.Fatalf("passed verification task = %#v", passed)
+	}
+	if _, err := provider.UpdateTaskStatus(UpdateTaskStatusRequest{Root: root, TaskID: task.ID, Status: "committing"}); err != nil {
+		t.Fatalf("move committing after pass: %v", err)
+	}
+	done, err := provider.UpdateTaskStatus(UpdateTaskStatusRequest{Root: root, TaskID: task.ID, Status: "done"})
+	if err != nil {
+		t.Fatalf("move done after pass: %v", err)
+	}
+	if done.Status != "done" {
+		t.Fatalf("done task = %#v", done)
 	}
 }
 

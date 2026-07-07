@@ -62,6 +62,10 @@ export function ResumeTaskTurn(arg1) {
   return window['go']['app']['App']['ResumeTaskTurn'](arg1);
 }
 
+export function RunTaskVerification(arg1) {
+  return window['go']['app']['App']['RunTaskVerification'](arg1);
+}
+
 export function SaveAutomation(arg1) {
   return window['go']['app']['App']['SaveAutomation'](arg1);
 }

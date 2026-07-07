@@ -43,6 +43,8 @@ export type Task = {
   turns: TaskTurn[];
   lastTurn?: TaskTurn;
   lastOutput?: string;
+  testsPassed: boolean;
+  lastTestResult?: TestResultInfo;
   failureCategory: string;
   createdAt: string;
 };
@@ -79,6 +81,22 @@ export type TaskTurn = {
   usageUsd: number;
   failureCategory?: string;
   autoContinue: boolean;
+};
+
+export type TestResultInfo = {
+  id: string;
+  taskId: string;
+  providerId?: string;
+  command: string;
+  status: "passed" | "failed" | string;
+  passed: boolean;
+  outputPath: string;
+  output: string;
+  exitCode: number;
+  passPattern?: string;
+  failPattern?: string;
+  startedAt: string;
+  endedAt: string;
 };
 
 export type SpecNode = {
@@ -175,6 +193,15 @@ export type ResumeTaskTurnRequest = {
   root: string;
   taskId: string;
   feedback: string;
+};
+
+export type RunTaskVerificationRequest = {
+  root: string;
+  taskId: string;
+  command: string;
+  providerId?: string;
+  passPattern?: string;
+  failPattern?: string;
 };
 
 export type BatchCreateTasksRequest = {

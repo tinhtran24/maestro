@@ -230,7 +230,7 @@ Acceptance:
 
 ### 9. Test Verification
 
-Status: Next.
+Status: Done.
 
 Goal: add test-agent verification behavior.
 
@@ -249,6 +249,8 @@ Acceptance:
 - Test output is separated from implementation output.
 
 ### 10. Commit and Submit Pipeline
+
+Status: Next.
 
 Goal: safely finish task output.
 

@@ -47,6 +47,18 @@ Wails-native provider.
 
 ## Development
 
+Usage guide:
+
+```text
+usage.md
+```
+
+Development guide:
+
+```text
+development.md
+```
+
 Run Go tests:
 
 ```sh

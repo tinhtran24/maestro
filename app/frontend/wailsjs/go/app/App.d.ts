@@ -32,6 +32,8 @@ export function ResizeNativeTerminal(arg1:app.NativeTerminalResizeRequest):Promi
 
 export function ResumeTaskTurn(arg1:app.ResumeTaskTurnRequest):Promise<app.TaskInfo>;
 
+export function RunTaskVerification(arg1:app.RunTaskVerificationRequest):Promise<app.TaskInfo>;
+
 export function SaveAutomation(arg1:app.SaveAutomationRequest):Promise<app.AutomationInfo>;
 
 export function SearchTasks(arg1:app.SearchTasksRequest):Promise<Array<app.TaskInfo>>;

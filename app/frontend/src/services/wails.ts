@@ -13,6 +13,7 @@ import type {
   ProviderInfo,
   FinishTaskTurnRequest,
   ResumeTaskTurnRequest,
+  RunTaskVerificationRequest,
   RoutineInfo,
   SaveAutomationRequest,
   SearchTasksRequest,
@@ -50,6 +51,7 @@ type WailsApp = {
   StartTaskTurn?: (request: StartTaskTurnRequest) => Promise<Task>;
   FinishTaskTurn?: (request: FinishTaskTurnRequest) => Promise<Task>;
   ResumeTaskTurn?: (request: ResumeTaskTurnRequest) => Promise<Task>;
+  RunTaskVerification?: (request: RunTaskVerificationRequest) => Promise<Task>;
   CreateSpec?: (request: CreateSpecRequest) => Promise<SpecNode>;
   UpsertRoutine?: (request: UpsertRoutineRequest) => Promise<RoutineInfo>;
   SaveAutomation?: (request: SaveAutomationRequest) => Promise<AutomationInfo>;
@@ -150,6 +152,10 @@ export async function finishTaskTurn(request: FinishTaskTurnRequest): Promise<Ta
 
 export async function resumeTaskTurn(request: ResumeTaskTurnRequest): Promise<Task | null> {
   return (await app().ResumeTaskTurn?.(request)) ?? null;
+}
+
+export async function runTaskVerification(request: RunTaskVerificationRequest): Promise<Task | null> {
+  return (await app().RunTaskVerification?.(request)) ?? null;
 }
 
 export async function createSpec(request: CreateSpecRequest): Promise<SpecNode | null> {

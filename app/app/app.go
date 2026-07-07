@@ -107,6 +107,14 @@ func (a *App) ResumeTaskTurn(request ResumeTaskTurnRequest) (*TaskInfo, error) {
 	return a.provider.ResumeTaskTurn(request)
 }
 
+func (a *App) RunTaskVerification(request RunTaskVerificationRequest) (*TaskInfo, error) {
+	ctx := a.ctx
+	if ctx == nil {
+		ctx = context.Background()
+	}
+	return a.provider.RunTaskVerification(ctx, request)
+}
+
 func (a *App) CreateSpec(request CreateSpecRequest) (*SpecNodeInfo, error) {
 	return a.provider.CreateSpec(request)
 }

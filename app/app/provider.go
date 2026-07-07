@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"sort"
 	"strings"
 	"time"
@@ -63,6 +64,8 @@ type TaskInfo struct {
 	Turns           []TaskTurnInfo   `json:"turns"`
 	LastTurn        *TaskTurnInfo    `json:"lastTurn,omitempty"`
 	LastOutput      string           `json:"lastOutput,omitempty"`
+	TestsPassed     bool             `json:"testsPassed"`
+	LastTestResult  *TestResultInfo  `json:"lastTestResult,omitempty"`
 	FailureCategory string           `json:"failureCategory"`
 	CreatedAt       string           `json:"createdAt"`
 }
@@ -99,6 +102,22 @@ type TaskTurnInfo struct {
 	UsageUSD        float64 `json:"usageUsd"`
 	FailureCategory string  `json:"failureCategory,omitempty"`
 	AutoContinue    bool    `json:"autoContinue"`
+}
+
+type TestResultInfo struct {
+	ID          string `json:"id"`
+	TaskID      string `json:"taskId"`
+	ProviderID  string `json:"providerId,omitempty"`
+	Command     string `json:"command"`
+	Status      string `json:"status"`
+	Passed      bool   `json:"passed"`
+	OutputPath  string `json:"outputPath"`
+	Output      string `json:"output"`
+	ExitCode    int    `json:"exitCode"`
+	PassPattern string `json:"passPattern,omitempty"`
+	FailPattern string `json:"failPattern,omitempty"`
+	StartedAt   string `json:"startedAt"`
+	EndedAt     string `json:"endedAt"`
 }
 
 type CreateTaskRequest struct {
@@ -144,6 +163,15 @@ type ResumeTaskTurnRequest struct {
 	Root     string `json:"root"`
 	TaskID   string `json:"taskId"`
 	Feedback string `json:"feedback"`
+}
+
+type RunTaskVerificationRequest struct {
+	Root        string `json:"root"`
+	TaskID      string `json:"taskId"`
+	Command     string `json:"command"`
+	ProviderID  string `json:"providerId"`
+	PassPattern string `json:"passPattern"`
+	FailPattern string `json:"failPattern"`
 }
 
 type BatchCreateTasksRequest struct {
@@ -521,6 +549,15 @@ func (p *RealProvider) UpdateTaskStatus(req UpdateTaskStatusRequest) (*TaskInfo,
 			if err := validateTaskTransition(task.Status, nextStatus); err != nil {
 				return err
 			}
+			if nextStatus == "done" {
+				automation, err := loadAutomation(root)
+				if err != nil {
+					return err
+				}
+				if automation.AutoTest && !task.TestsPassed {
+					return fmt.Errorf("task %s cannot be done before passing verification", task.ID)
+				}
+			}
 			task.SchemaVersion = SchemaVersionTask
 			previousStatus := task.Status
 			task.Status = nextStatus
@@ -722,6 +759,88 @@ func (p *RealProvider) ResumeTaskTurn(req ResumeTaskTurnRequest) (*TaskInfo, err
 				return err
 			}
 			if err := store.AppendEvent(EventInfo{ID: "event-turn-resume-" + stableID(task.ID+"-"+now), At: now, Kind: "TaskTurnResumed", Message: fmt.Sprintf("%s resumed with feedback", task.Title)}); err != nil {
+				return err
+			}
+			copied := task
+			updated = &copied
+			return nil
+		}
+		return fmt.Errorf("task not found: %s", req.TaskID)
+	})
+	if err != nil {
+		return nil, err
+	}
+	return updated, nil
+}
+
+func (p *RealProvider) RunTaskVerification(ctx context.Context, req RunTaskVerificationRequest) (*TaskInfo, error) {
+	root, err := normalizeWorkspaceRoot(req.Root)
+	if err != nil {
+		return nil, err
+	}
+	command := strings.TrimSpace(req.Command)
+	if command == "" {
+		return nil, fmt.Errorf("verification command is required")
+	}
+	var updated *TaskInfo
+	startedAt := p.now().UTC().Format(time.RFC3339)
+	store := NewWorkspaceStore(root)
+	err = store.WithLock(func() error {
+		tasks, err := loadTasks(root)
+		if err != nil {
+			return err
+		}
+		for _, task := range tasks {
+			if task.ID != req.TaskID {
+				continue
+			}
+			task = hydrateTask(task)
+			if task.Status != "waiting" && task.Status != "in_progress" && task.Status != "committing" {
+				return fmt.Errorf("task %s cannot run verification from %s", task.ID, task.Status)
+			}
+			worktree := resolveTaskWorktree(root, task)
+			if worktree == "" {
+				return fmt.Errorf("task %s cannot run verification without an isolated worktree", task.ID)
+			}
+			output, exitCode := runVerificationCommand(ctx, worktree, command)
+			endedAt := p.now().UTC().Format(time.RFC3339)
+			passed, verdictErr := verificationPassed(output, exitCode, req.PassPattern, req.FailPattern)
+			if verdictErr != nil {
+				return verdictErr
+			}
+			resultID := fmt.Sprintf("test-%03d", countExistingTests(task)+1)
+			outputPath, err := writeTestOutput(root, task.ID, resultID, output)
+			if err != nil {
+				return err
+			}
+			result := TestResultInfo{
+				ID:          resultID,
+				TaskID:      task.ID,
+				ProviderID:  fallback(req.ProviderID, "shell"),
+				Command:     command,
+				Status:      mapTestStatus(passed),
+				Passed:      passed,
+				OutputPath:  outputPath,
+				Output:      compactTurnOutput(output, ""),
+				ExitCode:    exitCode,
+				PassPattern: strings.TrimSpace(req.PassPattern),
+				FailPattern: strings.TrimSpace(req.FailPattern),
+				StartedAt:   startedAt,
+				EndedAt:     endedAt,
+			}
+			task.LastTestResult = &result
+			task.TestsPassed = passed
+			task.UpdatedAt = endedAt
+			if !passed {
+				task.Status = "waiting"
+				task.FailureCategory = "test_failed"
+			} else if task.FailureCategory == "test_failed" {
+				task.FailureCategory = ""
+			}
+			if err := writeTask(store, task); err != nil {
+				return err
+			}
+			if err := store.AppendEvent(EventInfo{ID: "event-test-" + stableID(task.ID+"-"+result.ID+"-"+endedAt), At: endedAt, Kind: "TaskVerificationFinished", Message: fmt.Sprintf("%s verification %s", task.Title, result.Status)}); err != nil {
 				return err
 			}
 			copied := task
@@ -1082,7 +1201,9 @@ func decodeTask(path, root string) (TaskInfo, bool) {
 		RetryHistory:    retryHistoryFrom(raw),
 		Turns:           taskTurnsFrom(raw),
 		LastOutput:      stringFrom(raw, "lastOutput", "last_output"),
+		LastTestResult:  testResultFrom(raw),
 		FailureCategory: stringFrom(raw, "failure_category", "failureCategory", "FailureCategory"),
+		TestsPassed:     boolFrom(raw, "testsPassed", "tests_passed"),
 	}
 	return hydrateTask(task), true
 }
@@ -1515,6 +1636,94 @@ func compactTurnOutput(stdout, stderr string) string {
 	return output[len(output)-4000:]
 }
 
+func resolveTaskWorktree(root string, task TaskInfo) string {
+	worktree := strings.TrimSpace(task.Worktree)
+	if worktree == "" {
+		return ""
+	}
+	if filepath.IsAbs(worktree) {
+		if stat, err := os.Stat(worktree); err == nil && stat.IsDir() {
+			return worktree
+		}
+		return ""
+	}
+	path := filepath.Join(root, filepath.FromSlash(worktree))
+	if stat, err := os.Stat(path); err == nil && stat.IsDir() {
+		return path
+	}
+	return ""
+}
+
+func runVerificationCommand(ctx context.Context, cwd, command string) (string, int) {
+	if ctx == nil {
+		ctx = context.Background()
+	}
+	cmd := exec.CommandContext(ctx, "sh", "-c", command)
+	cmd.Dir = cwd
+	cmd.Env = scrubAuthEnv(os.Environ())
+	output, err := cmd.CombinedOutput()
+	if err == nil {
+		return string(output), 0
+	}
+	if cmd.ProcessState != nil {
+		return string(output), cmd.ProcessState.ExitCode()
+	}
+	return string(output) + "\n" + err.Error(), 1
+}
+
+func verificationPassed(output string, exitCode int, passPattern, failPattern string) (bool, error) {
+	if strings.TrimSpace(failPattern) != "" {
+		matched, err := regexp.MatchString(failPattern, output)
+		if err != nil {
+			return false, fmt.Errorf("invalid fail pattern: %w", err)
+		}
+		if matched {
+			return false, nil
+		}
+	}
+	if strings.TrimSpace(passPattern) != "" {
+		matched, err := regexp.MatchString(passPattern, output)
+		if err != nil {
+			return false, fmt.Errorf("invalid pass pattern: %w", err)
+		}
+		return matched, nil
+	}
+	upper := strings.ToUpper(output)
+	if strings.Contains(upper, "FAIL") || strings.Contains(upper, "FAILED") {
+		return false, nil
+	}
+	if strings.Contains(upper, "PASS") || strings.Contains(upper, "PASSED") || strings.Contains(upper, "OK") {
+		return exitCode == 0, nil
+	}
+	return exitCode == 0, nil
+}
+
+func mapTestStatus(passed bool) string {
+	if passed {
+		return "passed"
+	}
+	return "failed"
+}
+
+func writeTestOutput(root, taskID, resultID, output string) (string, error) {
+	rel := filepath.ToSlash(filepath.Join(".thanos", "tests", taskID, resultID+".log"))
+	path := filepath.Join(root, filepath.FromSlash(rel))
+	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+		return "", err
+	}
+	if err := os.WriteFile(path, []byte(output), 0o644); err != nil {
+		return "", err
+	}
+	return rel, nil
+}
+
+func countExistingTests(task TaskInfo) int {
+	if task.LastTestResult == nil {
+		return 0
+	}
+	return 1
+}
+
 func appendEvent(root string, event EventInfo) error {
 	path := filepath.Join(root, ".thanos", "events.jsonl")
 	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
@@ -1794,6 +2003,31 @@ func taskTurnsFrom(raw map[string]any) []TaskTurnInfo {
 	return out
 }
 
+func testResultFrom(raw map[string]any) *TestResultInfo {
+	record, ok := raw["lastTestResult"].(map[string]any)
+	if !ok {
+		record, ok = raw["last_test_result"].(map[string]any)
+	}
+	if !ok {
+		return nil
+	}
+	return &TestResultInfo{
+		ID:          stringFrom(record, "id"),
+		TaskID:      stringFrom(record, "taskId", "task_id"),
+		ProviderID:  stringFrom(record, "providerId", "provider_id"),
+		Command:     stringFrom(record, "command"),
+		Status:      stringFrom(record, "status"),
+		Passed:      boolFrom(record, "passed"),
+		OutputPath:  stringFrom(record, "outputPath", "output_path"),
+		Output:      stringFrom(record, "output"),
+		ExitCode:    intFrom(record, "exitCode", "exit_code"),
+		PassPattern: stringFrom(record, "passPattern", "pass_pattern"),
+		FailPattern: stringFrom(record, "failPattern", "fail_pattern"),
+		StartedAt:   stringFrom(record, "startedAt", "started_at"),
+		EndedAt:     stringFrom(record, "endedAt", "ended_at"),
+	}
+}
+
 func normalizeTaskStatus(status string) string {
 	switch strings.ToLower(strings.TrimSpace(status)) {
 	case "in_progress", "running":
@@ -1864,6 +2098,9 @@ func hydrateTask(task TaskInfo) TaskInfo {
 		task.LastTurn = &task.Turns[len(task.Turns)-1]
 	} else {
 		task.LastTurn = nil
+	}
+	if task.LastTestResult != nil && task.LastTestResult.TaskID == "" {
+		task.LastTestResult.TaskID = task.ID
 	}
 	return task
 }
