@@ -1,9 +1,15 @@
 import type { Workspace } from "../app/types";
 import { regenerateOversight } from "../services/wails";
 import { Panel } from "../shared/Panel";
+import { buildMissionGraph } from "./missionGraph";
 
 export function MissionView({ workspace, onReload }: { workspace: Workspace; onReload: () => Promise<void> }) {
   const oversightTasks = workspace.tasks.filter((task) => task.oversight);
+  const graph = buildMissionGraph(workspace);
+  const nodesByKind = graph.nodes.reduce<Record<string, number>>((acc, node) => {
+    acc[node.kind] = (acc[node.kind] ?? 0) + 1;
+    return acc;
+  }, {});
 
   async function handleRegenerate(taskId: string) {
     if (!workspace.path) return;
@@ -13,14 +19,60 @@ export function MissionView({ workspace, onReload }: { workspace: Workspace; onR
 
   return (
     <div className="mission">
-      <Panel title="Pipeline Map" meta="specs to tasks">
+      <Panel title="Mission Graph" meta={`${graph.nodes.length} nodes · ${graph.edges.length} edges`}>
+        <div className="mission-graph-summary">
+          {Object.entries(nodesByKind).map(([kind, count]) => (
+            <span key={kind}><strong>{count}</strong>{titleCase(kind)}</span>
+          ))}
+        </div>
+        <div className="mission-graph">
+          <section>
+            <h3>Nodes</h3>
+            <div className="mission-node-list">
+              {graph.nodes.map((node) => (
+                <article key={node.id} className={node.kind}>
+                  <strong>{node.title}</strong>
+                  <span>{titleCase(node.kind)} · {node.status}</span>
+                  <small>{node.detail}</small>
+                </article>
+              ))}
+            </div>
+          </section>
+          <section>
+            <h3>Edges</h3>
+            <div className="mission-edge-list">
+              {graph.edges.map((edge) => (
+                <article key={edge.id}>
+                  <strong>{titleCase(edge.kind)}</strong>
+                  <span>{edge.from}</span>
+                  <span>{edge.to}</span>
+                </article>
+              ))}
+            </div>
+          </section>
+        </div>
+      </Panel>
+      <Panel title="Blocked Work" meta={`${graph.blockedTaskIds.length} tasks`}>
+        <div className="mission-path">
+          {graph.blockedTaskIds.length === 0 ? <p className="empty">No blocked tasks.</p> : null}
+          {graph.blockedTaskIds.map((taskId) => {
+            const task = workspace.tasks.find((item) => item.id === taskId);
+            return (
+              <article key={taskId}>
+                <strong>{task?.title ?? taskId}</strong>
+                <span>{task?.dependencies.length ?? 0} dependencies · {task?.status ?? "unknown"}</span>
+              </article>
+            );
+          })}
+        </div>
+      </Panel>
+      <Panel title="Critical Path" meta={`${graph.criticalPath.length} tasks`}>
         <div className="pipeline">
-          <span>Idea</span>
-          <span>Spec</span>
-          <span>Task</span>
-          <span>Agent Run</span>
-          <span>Review</span>
-          <span>Merge</span>
+          {graph.criticalPath.length === 0 ? <span>No Tasks</span> : null}
+          {graph.criticalPath.map((taskId) => {
+            const task = workspace.tasks.find((item) => item.id === taskId);
+            return <span key={taskId}>{task?.title ?? taskId}</span>;
+          })}
         </div>
       </Panel>
       <Panel title="Oversight Summaries" meta={`${oversightTasks.length} artifacts`}>
@@ -58,4 +110,8 @@ export function MissionView({ workspace, onReload }: { workspace: Workspace; onR
       </Panel>
     </div>
   );
+}
+
+function titleCase(value: string) {
+  return value.replace(/_/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
 }

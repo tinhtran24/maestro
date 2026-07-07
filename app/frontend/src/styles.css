@@ -1276,6 +1276,74 @@ button {
     text-align: center;
 }
 
+.mission-graph-summary {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.mission-graph-summary span {
+    display: grid;
+    gap: 4px;
+    border: 1px solid #273449;
+    border-radius: 10px;
+    background: #0f172a;
+    color: #94a3b8;
+    padding: 10px;
+}
+
+.mission-graph-summary strong {
+    color: #f8fafc;
+    font-size: 20px;
+}
+
+.mission-graph {
+    display: grid;
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+    gap: 12px;
+}
+
+.mission-graph h3 {
+    margin: 0 0 8px;
+    font-size: 14px;
+}
+
+.mission-node-list,
+.mission-edge-list,
+.mission-path {
+    display: grid;
+    gap: 8px;
+}
+
+.mission-node-list article,
+.mission-edge-list article,
+.mission-path article {
+    display: grid;
+    gap: 4px;
+    border: 1px solid #273449;
+    border-radius: 10px;
+    background: #0f172a;
+    padding: 10px;
+}
+
+.mission-node-list article.spec { border-color: #7c3aed; }
+.mission-node-list article.task { border-color: #0ea5e9; }
+.mission-node-list article.routine { border-color: #f59e0b; }
+.mission-node-list article.provider { border-color: #10b981; }
+.mission-node-list article.flow { border-color: #64748b; }
+
+.mission-node-list span,
+.mission-edge-list span,
+.mission-path span,
+.mission-node-list small {
+    overflow: hidden;
+    color: #94a3b8;
+    font-size: 12px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
 .oversight-list {
     display: grid;
     gap: 10px;

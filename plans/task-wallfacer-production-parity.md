@@ -350,7 +350,7 @@ Acceptance:
 
 ### 15. Mission Control
 
-Status: Next.
+Status: Done.
 
 Goal: unified spec/task graph.
 
@@ -367,6 +367,8 @@ Acceptance:
 - Graph links to task/spec details.
 
 ### 16. Usage and Analytics
+
+Status: Next.
 
 Goal: track cost, time, and provider activity.
 
