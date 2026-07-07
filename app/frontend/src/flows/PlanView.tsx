@@ -1,71 +1,145 @@
-import { GitPullRequest, Send } from "lucide-react";
-import { useState } from "react";
+import { GitPullRequest, RotateCcw, Save, Send } from "lucide-react";
+import { type FormEvent, useEffect, useMemo, useState } from "react";
 import type { SpecNode, Workspace } from "../app/types";
-import { createSpec } from "../services/wails";
+import { createSpec, dispatchSpecs, undoPlanningChange, updateSpec } from "../services/wails";
 import { Panel } from "../shared/Panel";
 
+const specStates: SpecNode["state"][] = ["vague", "drafted", "validated", "testing", "complete", "stale", "archived"];
+
 export function PlanView({ workspace, onReload }: { workspace: Workspace; onReload: () => Promise<void> }) {
+  const flatSpecs = useMemo(() => flattenSpecs(workspace.specs), [workspace.specs]);
+  const [selectedPath, setSelectedPath] = useState("");
+  const selected = flatSpecs.find((spec) => spec.path === selectedPath) ?? flatSpecs[0];
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
+  const [state, setState] = useState<SpecNode["state"]>("drafted");
+  const [command, setCommand] = useState("/create ");
 
-  async function submitSpec(event: React.FormEvent) {
+  useEffect(() => {
+    if (!selected) return;
+    setSelectedPath(selected.path);
+    setTitle(selected.title);
+    setBody(selected.body);
+    setState(selected.state);
+  }, [selected?.path]);
+
+  async function submitSpec(event: FormEvent) {
     event.preventDefault();
     if (!workspace.path || !title.trim()) return;
-    await createSpec({ root: workspace.path, title, body, state: "drafted" });
-    setTitle("");
-    setBody("");
+    await createSpec({ root: workspace.path, title, body, state, parentPath: selectedPath });
+    setCommand("/create ");
     await onReload();
+  }
+
+  async function saveSpec(nextState = state) {
+    if (!workspace.path || !selected) return;
+    await updateSpec({ root: workspace.path, path: selected.path, title, body, state: nextState });
+    setState(nextState);
+    await onReload();
+  }
+
+  async function dispatchSelected() {
+    if (!workspace.path) return;
+    await dispatchSpecs({ root: workspace.path, path: selected?.path });
+    await onReload();
+  }
+
+  async function undoLastChange() {
+    if (!workspace.path) return;
+    await undoPlanningChange({ root: workspace.path });
+    await onReload();
+  }
+
+  async function runCommand(event: FormEvent) {
+    event.preventDefault();
+    const trimmed = command.trim();
+    if (trimmed.startsWith("/create")) {
+      const nextTitle = trimmed.replace(/^\/create\s*/, "").trim();
+      if (nextTitle) {
+        await createSpec({ root: workspace.path, title: nextTitle, body: "", state: "drafted", parentPath: selectedPath });
+        setCommand("/create ");
+        await onReload();
+      }
+      return;
+    }
+    if (trimmed === "/validate") await saveSpec("validated");
+    if (trimmed === "/refine") await saveSpec("drafted");
+    if (trimmed === "/break-down") await createSpec({ root: workspace.path, title: `${title || "Spec"} Follow Up`, body: "Break this spec into a dispatchable leaf task.", state: "drafted", parentPath: selected?.path });
+    if (trimmed === "/dispatch") await dispatchSelected();
   }
 
   return (
     <div className="three-pane">
-      <Panel title="Spec Explorer" meta="recursive">
+      <Panel title="Spec Explorer" meta={`${flatSpecs.length} specs`}>
         <div className="spec-tree">
           {workspace.specs.length === 0 ? <p className="empty">No specs directory found in this workspace.</p> : null}
-          {workspace.specs.map((node) => <SpecItem key={node.id} node={node} />)}
+          {workspace.specs.map((node) => <SpecItem key={node.id} node={node} selectedPath={selected?.path ?? ""} onSelect={setSelectedPath} />)}
         </div>
       </Panel>
-      <Panel title="Focused Spec" meta="versioned markdown">
-        <article className="document">
-          <h2>Local AI development workbench</h2>
-          <p>
-            Thanos turns conversations into specs, specs into tasks, and task output into reviewable evidence.
-            Specs are intentionally inspectable before any agent writes code.
-          </p>
-          <h3>Exit Criteria</h3>
-          <ul>
-            <li>Human can inspect task state, worktree, logs, diff, and usage.</li>
-            <li>Agents run through named flows instead of hidden automation.</li>
-            <li>Review remains a hard pause before merge.</li>
-          </ul>
-        </article>
+      <Panel title="Focused Spec" meta={selected?.path ?? "No Spec"}>
+        {selected ? (
+          <div className="spec-editor">
+            <input value={title} onChange={(event) => setTitle(event.target.value)} placeholder="Spec Title" />
+            <select value={state} onChange={(event) => setState(event.target.value as SpecNode["state"])}>
+              {specStates.map((item) => <option key={item} value={item}>{titleCase(item)}</option>)}
+            </select>
+            <textarea value={body} onChange={(event) => setBody(event.target.value)} placeholder="Spec body, acceptance criteria, dependencies..." />
+            <div className="task-actions">
+              <button onClick={() => saveSpec()} type="button"><Save size={15} /> Save Spec</button>
+              <button onClick={() => saveSpec("validated")} type="button">Validate</button>
+              <button onClick={() => saveSpec("stale")} type="button">Mark Stale</button>
+              <button onClick={() => saveSpec("archived")} type="button">Archive</button>
+            </div>
+          </div>
+        ) : (
+          <article className="document">
+            <h2>Plan Mode</h2>
+            <p>Create a spec to start planning from local markdown.</p>
+          </article>
+        )}
       </Panel>
-      <Panel title="Planning Chat" meta="slash commands">
+      <Panel title="Planning Commands" meta="slash commands">
         <div className="chat-log">
-          <p><strong>Planner</strong> Use /create to turn this conversation into a spec node.</p>
-          <p><strong>User</strong> Keep it local and Wails based.</p>
-          <p><strong>Planner</strong> I will dispatch only leaf specs after validation.</p>
+          <p><strong>Planner</strong> /create, /refine, /validate, /break-down, and /dispatch update local spec files.</p>
+          <p><strong>Planner</strong> Leaf specs dispatch to board tasks with dependency wiring.</p>
+          <p><strong>Planner</strong> Undo restores the latest saved spec snapshot.</p>
         </div>
-        <form className="composer" onSubmit={submitSpec}>
-          <input value={title} onChange={(event) => setTitle(event.target.value)} placeholder="/create spec title..." />
+        <form className="composer" onSubmit={runCommand}>
+          <input value={command} onChange={(event) => setCommand(event.target.value)} placeholder="/create Spec Title" />
           <button disabled={!workspace.path} type="submit"><Send size={15} /></button>
         </form>
-        <textarea className="spec-body" value={body} onChange={(event) => setBody(event.target.value)} placeholder="Spec body, acceptance criteria, dependencies..." />
-        <button className="wide-action"><GitPullRequest size={16} /> Dispatch leaf specs to board</button>
+        <form className="routine-form plan-create-form" onSubmit={submitSpec}>
+          <input value={title} onChange={(event) => setTitle(event.target.value)} placeholder="New Spec Title" />
+          <select value={state} onChange={(event) => setState(event.target.value as SpecNode["state"])}>
+            {specStates.map((item) => <option key={item} value={item}>{titleCase(item)}</option>)}
+          </select>
+          <button disabled={!workspace.path || !title.trim()} type="submit">Create Spec</button>
+          <textarea value={body} onChange={(event) => setBody(event.target.value)} placeholder="Spec body, acceptance criteria, dependencies..." />
+        </form>
+        <button className="wide-action" onClick={dispatchSelected} type="button"><GitPullRequest size={16} /> Dispatch Leaf Specs To Board</button>
+        <button className="wide-action secondary-action" onClick={undoLastChange} type="button"><RotateCcw size={16} /> Undo Planning Change</button>
       </Panel>
     </div>
   );
 }
 
-function SpecItem({ node }: { node: SpecNode }) {
+function SpecItem({ node, selectedPath, onSelect }: { node: SpecNode; selectedPath: string; onSelect: (path: string) => void }) {
   return (
-    <div className="spec-item">
-      <div>
+    <div className={`spec-item ${node.path === selectedPath ? "active" : ""}`}>
+      <button onClick={() => onSelect(node.path)} type="button">
         <strong>{node.title}</strong>
         <span>{node.path}</span>
-      </div>
-      <em>{node.state}</em>
-      {node.children.length ? <div className="spec-children">{node.children.map((child) => <SpecItem key={child.id} node={child} />)}</div> : null}
+        <em>{titleCase(node.state)}</em>
+      </button>
+      {node.children.length ? <div className="spec-children">{node.children.map((child) => <SpecItem key={child.id} node={child} selectedPath={selectedPath} onSelect={onSelect} />)}</div> : null}
     </div>
   );
+}
+
+function flattenSpecs(nodes: SpecNode[]): SpecNode[] {
+  return nodes.flatMap((node) => [node, ...flattenSpecs(node.children)]);
+}
+
+function titleCase(value: string) {
+  return value.replace(/_/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
 }

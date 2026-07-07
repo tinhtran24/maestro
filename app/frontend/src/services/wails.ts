@@ -7,6 +7,7 @@ import type {
   CreateSpecRequest,
   CreateTaskRequest,
   DeleteWorkspaceRequest,
+  DispatchSpecsRequest,
   NativeTerminalRequest,
   NativeTerminalInputRequest,
   NativeTerminalResizeRequest,
@@ -23,8 +24,10 @@ import type {
   SpecNode,
   StartTaskTurnRequest,
   Task,
+  UndoPlanningChangeRequest,
   UpdateTaskFlagsRequest,
   UpdateWorkspaceRequest,
+  UpdateSpecRequest,
   UpdateTaskStatusRequest,
   UpsertRoutineRequest,
   Workspace,
@@ -59,6 +62,9 @@ type WailsApp = {
   RegenerateOversight?: (request: RegenerateOversightRequest) => Promise<Task>;
   CommitTaskChanges?: (request: CommitTaskChangesRequest) => Promise<Task>;
   CreateSpec?: (request: CreateSpecRequest) => Promise<SpecNode>;
+  UpdateSpec?: (request: UpdateSpecRequest) => Promise<SpecNode>;
+  DispatchSpecs?: (request: DispatchSpecsRequest) => Promise<Task[]>;
+  UndoPlanningChange?: (request: UndoPlanningChangeRequest) => Promise<SpecNode>;
   UpsertRoutine?: (request: UpsertRoutineRequest) => Promise<RoutineInfo>;
   SaveAutomation?: (request: SaveAutomationRequest) => Promise<AutomationInfo>;
   StartNativeTerminal?: (request: NativeTerminalRequest) => Promise<NativeTerminalSession>;
@@ -178,6 +184,18 @@ export async function commitTaskChanges(request: CommitTaskChangesRequest): Prom
 
 export async function createSpec(request: CreateSpecRequest): Promise<SpecNode | null> {
   return (await app().CreateSpec?.(request)) ?? null;
+}
+
+export async function updateSpec(request: UpdateSpecRequest): Promise<SpecNode | null> {
+  return (await app().UpdateSpec?.(request)) ?? null;
+}
+
+export async function dispatchSpecs(request: DispatchSpecsRequest): Promise<Task[]> {
+  return (await app().DispatchSpecs?.(request)) ?? [];
+}
+
+export async function undoPlanningChange(request: UndoPlanningChangeRequest): Promise<SpecNode | null> {
+  return (await app().UndoPlanningChange?.(request)) ?? null;
 }
 
 export async function upsertRoutine(request: UpsertRoutineRequest): Promise<RoutineInfo | null> {

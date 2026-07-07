@@ -287,6 +287,8 @@ Acceptance:
 
 ### 12. Plan/Spec Mode
 
+Status: Done.
+
 Goal: recursive spec tree and planning workflow.
 
 Tasks:
@@ -307,6 +309,8 @@ Acceptance:
 
 ### 13. Chat Sessions
 
+Status: Pending.
+
 Goal: dedicated workspace chat and task-mode chat.
 
 Tasks:
@@ -324,6 +328,8 @@ Acceptance:
 - Task-mode chat can update a task prompt with reviewable events.
 
 ### 14. Routines and Automation
+
+Status: Next.
 
 Goal: scheduled recurring task generation and guarded automation.
 

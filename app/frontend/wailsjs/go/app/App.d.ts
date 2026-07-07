@@ -20,6 +20,8 @@ export function DeleteWorkspace(arg1:app.DeleteWorkspaceRequest):Promise<app.Wor
 
 export function DetectAgentCLIs():Promise<Array<app.ProviderInfo>>;
 
+export function DispatchSpecs(arg1:app.DispatchSpecsRequest):Promise<Array<app.TaskInfo>>;
+
 export function FinishTaskTurn(arg1:app.FinishTaskTurnRequest):Promise<app.TaskInfo>;
 
 export function ListWorkspaces():Promise<app.WorkspaceRegistryInfo>;
@@ -53,6 +55,10 @@ export function StartTaskTurn(arg1:app.StartTaskTurnRequest):Promise<app.TaskInf
 export function StopNativeTerminal(arg1:string):Promise<boolean>;
 
 export function UpdateTaskFlags(arg1:app.UpdateTaskFlagsRequest):Promise<app.TaskInfo>;
+
+export function UndoPlanningChange(arg1:app.UndoPlanningChangeRequest):Promise<app.SpecNodeInfo>;
+
+export function UpdateSpec(arg1:app.UpdateSpecRequest):Promise<app.SpecNodeInfo>;
 
 export function UpdateTaskStatus(arg1:app.UpdateTaskStatusRequest):Promise<app.TaskInfo>;
 

@@ -139,6 +139,18 @@ func (a *App) CreateSpec(request CreateSpecRequest) (*SpecNodeInfo, error) {
 	return a.provider.CreateSpec(request)
 }
 
+func (a *App) UpdateSpec(request UpdateSpecRequest) (*SpecNodeInfo, error) {
+	return a.provider.UpdateSpec(request)
+}
+
+func (a *App) DispatchSpecs(request DispatchSpecsRequest) ([]TaskInfo, error) {
+	return a.provider.DispatchSpecs(request)
+}
+
+func (a *App) UndoPlanningChange(request UndoPlanningChangeRequest) (*SpecNodeInfo, error) {
+	return a.provider.UndoPlanningChange(request)
+}
+
 func (a *App) UpsertRoutine(request UpsertRoutineRequest) (*RoutineInfo, error) {
 	return a.provider.UpsertRoutine(request)
 }

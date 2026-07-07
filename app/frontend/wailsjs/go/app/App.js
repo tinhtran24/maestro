@@ -38,6 +38,10 @@ export function DetectAgentCLIs() {
   return window['go']['app']['App']['DetectAgentCLIs']();
 }
 
+export function DispatchSpecs(arg1) {
+  return window['go']['app']['App']['DispatchSpecs'](arg1);
+}
+
 export function FinishTaskTurn(arg1) {
   return window['go']['app']['App']['FinishTaskTurn'](arg1);
 }
@@ -104,6 +108,14 @@ export function StopNativeTerminal(arg1) {
 
 export function UpdateTaskFlags(arg1) {
   return window['go']['app']['App']['UpdateTaskFlags'](arg1);
+}
+
+export function UndoPlanningChange(arg1) {
+  return window['go']['app']['App']['UndoPlanningChange'](arg1);
+}
+
+export function UpdateSpec(arg1) {
+  return window['go']['app']['App']['UpdateSpec'](arg1);
 }
 
 export function UpdateTaskStatus(arg1) {

@@ -540,6 +540,20 @@ button {
     padding: 10px;
 }
 
+.spec-item.active {
+    outline: 1px solid #7c3aed;
+    background: #111827;
+}
+
+.spec-item button {
+    width: 100%;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    padding: 0;
+    text-align: left;
+}
+
 .spec-item strong,
 .spec-item span {
     display: block;
@@ -550,6 +564,28 @@ button {
     color: #9ca3af;
     font-size: 12px;
     font-style: normal;
+}
+
+.spec-editor {
+    display: grid;
+    gap: 10px;
+}
+
+.spec-editor input,
+.spec-editor select,
+.spec-editor textarea,
+.plan-create-form select {
+    border: 1px solid #273449;
+    border-radius: 10px;
+    background: #070a12;
+    color: #e5e7eb;
+    padding: 10px;
+}
+
+.spec-editor textarea {
+    min-height: 360px;
+    resize: vertical;
+    line-height: 1.6;
 }
 
 .document {
@@ -1192,6 +1228,11 @@ button {
 .wide-action {
     width: 100%;
     margin-top: 10px;
+}
+
+.secondary-action {
+    border-color: #273449;
+    background: #111827;
 }
 
 .pipeline {

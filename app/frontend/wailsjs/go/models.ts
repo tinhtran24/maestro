@@ -213,6 +213,7 @@ export namespace app {
 	    title: string;
 	    body: string;
 	    state: string;
+	    parentPath: string;
 	
 	    static createFrom(source: any = {}) {
 	        return new CreateSpecRequest(source);
@@ -224,6 +225,53 @@ export namespace app {
 	        this.title = source["title"];
 	        this.body = source["body"];
 	        this.state = source["state"];
+	        this.parentPath = source["parentPath"];
+	    }
+	}
+	export class UpdateSpecRequest {
+	    root: string;
+	    path: string;
+	    title: string;
+	    body: string;
+	    state: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new UpdateSpecRequest(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.root = source["root"];
+	        this.path = source["path"];
+	        this.title = source["title"];
+	        this.body = source["body"];
+	        this.state = source["state"];
+	    }
+	}
+	export class DispatchSpecsRequest {
+	    root: string;
+	    path: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new DispatchSpecsRequest(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.root = source["root"];
+	        this.path = source["path"];
+	    }
+	}
+	export class UndoPlanningChangeRequest {
+	    root: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new UndoPlanningChangeRequest(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.root = source["root"];
 	    }
 	}
 	
@@ -674,6 +722,8 @@ export namespace app {
 	    title: string;
 	    state: string;
 	    path: string;
+	    body: string;
+	    updatedAt: string;
 	    children: SpecNodeInfo[];
 	
 	    static createFrom(source: any = {}) {
@@ -686,6 +736,8 @@ export namespace app {
 	        this.title = source["title"];
 	        this.state = source["state"];
 	        this.path = source["path"];
+	        this.body = source["body"];
+	        this.updatedAt = source["updatedAt"];
 	        this.children = this.convertValues(source["children"], SpecNodeInfo);
 	    }
 	

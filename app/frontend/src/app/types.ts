@@ -137,8 +137,10 @@ export type OversightInfo = {
 export type SpecNode = {
   id: string;
   title: string;
-  state: "vague" | "drafted" | "validated" | "testing" | "complete" | "stale";
+  state: "vague" | "drafted" | "validated" | "testing" | "complete" | "stale" | "archived";
   path: string;
+  body: string;
+  updatedAt: string;
   children: SpecNode[];
 };
 
@@ -283,6 +285,24 @@ export type CreateSpecRequest = {
   title: string;
   body: string;
   state: SpecNode["state"];
+  parentPath?: string;
+};
+
+export type UpdateSpecRequest = {
+  root: string;
+  path: string;
+  title: string;
+  body: string;
+  state: SpecNode["state"];
+};
+
+export type DispatchSpecsRequest = {
+  root: string;
+  path?: string;
+};
+
+export type UndoPlanningChangeRequest = {
+  root: string;
 };
 
 export type UpsertRoutineRequest = {

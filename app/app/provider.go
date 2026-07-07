@@ -244,18 +244,38 @@ type UpdateTaskFlagsRequest struct {
 }
 
 type SpecNodeInfo struct {
-	ID       string         `json:"id"`
-	Title    string         `json:"title"`
-	State    string         `json:"state"`
-	Path     string         `json:"path"`
-	Children []SpecNodeInfo `json:"children"`
+	ID        string         `json:"id"`
+	Title     string         `json:"title"`
+	State     string         `json:"state"`
+	Path      string         `json:"path"`
+	Body      string         `json:"body"`
+	UpdatedAt string         `json:"updatedAt"`
+	Children  []SpecNodeInfo `json:"children"`
 }
 
 type CreateSpecRequest struct {
+	Root       string `json:"root"`
+	Title      string `json:"title"`
+	Body       string `json:"body"`
+	State      string `json:"state"`
+	ParentPath string `json:"parentPath"`
+}
+
+type UpdateSpecRequest struct {
 	Root  string `json:"root"`
+	Path  string `json:"path"`
 	Title string `json:"title"`
 	Body  string `json:"body"`
 	State string `json:"state"`
+}
+
+type DispatchSpecsRequest struct {
+	Root string `json:"root"`
+	Path string `json:"path"`
+}
+
+type UndoPlanningChangeRequest struct {
+	Root string `json:"root"`
 }
 
 type RoutineInfo struct {
@@ -1111,14 +1131,14 @@ func (p *RealProvider) CreateSpec(req CreateSpecRequest) (*SpecNodeInfo, error) 
 	if title == "" {
 		return nil, fmt.Errorf("spec title is required")
 	}
-	state := fallback(req.State, "drafted")
+	state := normalizeSpecState(fallback(req.State, "drafted"))
 	body := strings.TrimSpace(req.Body)
 	if body == "" {
 		body = "Describe the goal, constraints, acceptance criteria, and dispatch plan."
 	}
-	rel := filepath.Join("specs", stableID(title)+".md")
+	rel := specCreatePath(req.ParentPath, title)
 	path := filepath.Join(root, rel)
-	content := fmt.Sprintf("# %s\n\nstate: %s\n\n%s\n", title, state, body)
+	content := renderSpecMarkdown(title, state, body)
 	store := NewWorkspaceStore(root)
 	if err := store.WithLock(func() error {
 		if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
@@ -1138,8 +1158,120 @@ func (p *RealProvider) CreateSpec(req CreateSpecRequest) (*SpecNodeInfo, error) 
 	}); err != nil {
 		return nil, err
 	}
-	node := SpecNodeInfo{ID: stableID(rel), Title: title, State: state, Path: filepath.ToSlash(rel), Children: []SpecNodeInfo{}}
+	node := SpecNodeInfo{ID: stableID(rel), Title: title, State: state, Path: filepath.ToSlash(rel), Body: body, UpdatedAt: p.now().UTC().Format(time.RFC3339), Children: []SpecNodeInfo{}}
 	return &node, nil
+}
+
+func (p *RealProvider) UpdateSpec(req UpdateSpecRequest) (*SpecNodeInfo, error) {
+	root, err := normalizeWorkspaceRoot(req.Root)
+	if err != nil {
+		return nil, err
+	}
+	rel, path, err := resolveSpecPath(root, req.Path)
+	if err != nil {
+		return nil, err
+	}
+	title := strings.TrimSpace(req.Title)
+	if title == "" {
+		title = markdownTitle(path)
+	}
+	if title == "" {
+		title = strings.TrimSuffix(filepath.Base(path), filepath.Ext(path))
+	}
+	state := normalizeSpecState(req.State)
+	if state == "" {
+		state = inferSpecState(path)
+	}
+	body := strings.TrimSpace(req.Body)
+	if body == "" {
+		body = specBody(path)
+	}
+	now := p.now().UTC().Format(time.RFC3339)
+	store := NewWorkspaceStore(root)
+	if err := store.WithLock(func() error {
+		if err := snapshotSpec(root, rel, p.now().UTC()); err != nil {
+			return err
+		}
+		if err := os.WriteFile(path+".tmp", []byte(renderSpecMarkdown(title, state, body)), 0o644); err != nil {
+			return err
+		}
+		if err := os.Rename(path+".tmp", path); err != nil {
+			return err
+		}
+		return store.AppendEvent(EventInfo{ID: "event-spec-update-" + stableID(rel+"-"+now), At: now, Kind: "SpecUpdated", Message: fmt.Sprintf("%s -> %s", title, state)})
+	}); err != nil {
+		return nil, err
+	}
+	return &SpecNodeInfo{ID: stableID(rel), Title: title, State: state, Path: filepath.ToSlash(rel), Body: body, UpdatedAt: now, Children: []SpecNodeInfo{}}, nil
+}
+
+func (p *RealProvider) DispatchSpecs(req DispatchSpecsRequest) ([]TaskInfo, error) {
+	root, err := normalizeWorkspaceRoot(req.Root)
+	if err != nil {
+		return nil, err
+	}
+	specs, err := loadSpecs(root)
+	if err != nil {
+		return nil, err
+	}
+	leaves := collectDispatchableSpecs(specs, filepath.ToSlash(strings.TrimSpace(req.Path)))
+	created := make([]TaskInfo, 0, len(leaves))
+	for _, spec := range leaves {
+		prompt := strings.TrimSpace(spec.Body)
+		if prompt == "" {
+			prompt = "Implement spec " + spec.Path
+		}
+		deps := []string{}
+		if len(created) > 0 {
+			deps = []string{created[len(created)-1].ID}
+		}
+		task, err := p.CreateTask(CreateTaskRequest{Root: root, Title: spec.Title, Prompt: prompt, Flow: "implement", Agent: "auto", Dependencies: deps})
+		if err != nil {
+			return nil, err
+		}
+		created = append(created, *task)
+	}
+	store := NewWorkspaceStore(root)
+	_ = store.WithLock(func() error {
+		return store.AppendEvent(EventInfo{ID: "event-spec-dispatch-" + stableID(req.Path+p.now().String()), At: p.now().UTC().Format(time.RFC3339), Kind: "SpecsDispatched", Message: fmt.Sprintf("Dispatched %d leaf specs", len(created))})
+	})
+	return created, nil
+}
+
+func (p *RealProvider) UndoPlanningChange(req UndoPlanningChangeRequest) (*SpecNodeInfo, error) {
+	root, err := normalizeWorkspaceRoot(req.Root)
+	if err != nil {
+		return nil, err
+	}
+	snapshot, err := latestSpecSnapshot(root)
+	if err != nil {
+		return nil, err
+	}
+	_, path, err := resolveSpecPath(root, snapshot.Path)
+	if err != nil {
+		return nil, err
+	}
+	store := NewWorkspaceStore(root)
+	now := p.now().UTC().Format(time.RFC3339)
+	if err := store.WithLock(func() error {
+		if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+			return err
+		}
+		if err := os.WriteFile(path+".tmp", []byte(snapshot.Body), 0o644); err != nil {
+			return err
+		}
+		if err := os.Rename(path+".tmp", path); err != nil {
+			return err
+		}
+		if err := os.Remove(snapshot.File); err != nil && !errors.Is(err, os.ErrNotExist) {
+			return err
+		}
+		return store.AppendEvent(EventInfo{ID: "event-spec-undo-" + stableID(snapshot.Path+"-"+now), At: now, Kind: "SpecUndo", Message: "Restored " + snapshot.Path})
+	}); err != nil {
+		return nil, err
+	}
+	title, state, body := parseSpecMarkdown(path)
+	return &SpecNodeInfo{ID: stableID(snapshot.Path), Title: title, State: state, Path: filepath.ToSlash(snapshot.Path), Body: body, UpdatedAt: now, Children: []SpecNodeInfo{}}, nil
 }
 
 func (p *RealProvider) UpsertRoutine(req UpsertRoutineRequest) (*RoutineInfo, error) {
@@ -1309,16 +1441,22 @@ func loadSpecs(root string) ([]SpecNodeInfo, error) {
 			return nil
 		}
 		rel, _ := filepath.Rel(root, path)
-		title := markdownTitle(path)
+		title, state, body := parseSpecMarkdown(path)
 		if title == "" {
 			title = strings.TrimSuffix(entry.Name(), filepath.Ext(entry.Name()))
 		}
+		updatedAt := ""
+		if info, err := entry.Info(); err == nil {
+			updatedAt = info.ModTime().UTC().Format(time.RFC3339)
+		}
 		nodes = append(nodes, SpecNodeInfo{
-			ID:       stableID(rel),
-			Title:    title,
-			State:    inferSpecState(path),
-			Path:     filepath.ToSlash(rel),
-			Children: []SpecNodeInfo{},
+			ID:        stableID(rel),
+			Title:     title,
+			State:     state,
+			Path:      filepath.ToSlash(rel),
+			Body:      body,
+			UpdatedAt: updatedAt,
+			Children:  []SpecNodeInfo{},
 		})
 		return nil
 	})
@@ -1326,7 +1464,7 @@ func loadSpecs(root string) ([]SpecNodeInfo, error) {
 		return nil, err
 	}
 	sort.Slice(nodes, func(i, j int) bool { return nodes[i].Path < nodes[j].Path })
-	return nodes, nil
+	return buildSpecTree(nodes), nil
 }
 
 func markdownTitle(path string) string {
@@ -1344,12 +1482,56 @@ func markdownTitle(path string) string {
 }
 
 func inferSpecState(path string) string {
+	_, state, _ := parseSpecMarkdown(path)
+	return state
+}
+
+func parseSpecMarkdown(path string) (string, string, string) {
 	data, err := os.ReadFile(path)
 	if err != nil {
-		return "drafted"
+		return "", "drafted", ""
 	}
-	text := strings.ToLower(string(data))
+	text := string(data)
+	title := ""
+	bodyLines := make([]string, 0)
+	frontmatter := map[string]string{}
+	lines := strings.Split(text, "\n")
+	index := 0
+	if len(lines) > 0 && strings.TrimSpace(lines[0]) == "---" {
+		index = 1
+		for index < len(lines) && strings.TrimSpace(lines[index]) != "---" {
+			if key, value, ok := strings.Cut(lines[index], ":"); ok {
+				frontmatter[strings.ToLower(strings.TrimSpace(key))] = strings.Trim(strings.TrimSpace(value), `"'`)
+			}
+			index++
+		}
+		if index < len(lines) {
+			index++
+		}
+	}
+	for ; index < len(lines); index++ {
+		line := lines[index]
+		if title == "" && strings.HasPrefix(strings.TrimSpace(line), "# ") {
+			title = strings.TrimSpace(strings.TrimPrefix(strings.TrimSpace(line), "# "))
+			continue
+		}
+		bodyLines = append(bodyLines, line)
+	}
+	if title == "" {
+		title = frontmatter["title"]
+	}
+	state := normalizeSpecState(firstNonEmpty(frontmatter["state"], frontmatter["status"], inferSpecStateFromText(text)))
+	if state == "" {
+		state = "drafted"
+	}
+	return title, state, strings.TrimSpace(strings.Join(bodyLines, "\n"))
+}
+
+func inferSpecStateFromText(value string) string {
+	text := strings.ToLower(value)
 	switch {
+	case strings.Contains(text, "state: archived"), strings.Contains(text, "status: archived"):
+		return "archived"
 	case strings.Contains(text, "state: complete"), strings.Contains(text, "status: complete"):
 		return "complete"
 	case strings.Contains(text, "state: validated"), strings.Contains(text, "status: validated"):
@@ -1363,6 +1545,181 @@ func inferSpecState(path string) string {
 	default:
 		return "drafted"
 	}
+}
+
+func specBody(path string) string {
+	_, _, body := parseSpecMarkdown(path)
+	return body
+}
+
+func renderSpecMarkdown(title, state, body string) string {
+	return fmt.Sprintf("---\ntitle: %s\nstate: %s\n---\n\n# %s\n\n%s\n", title, normalizeSpecState(state), title, strings.TrimSpace(body))
+}
+
+func normalizeSpecState(state string) string {
+	switch strings.ToLower(strings.TrimSpace(state)) {
+	case "vague", "drafted", "validated", "testing", "complete", "stale", "archived":
+		return strings.ToLower(strings.TrimSpace(state))
+	case "done", "completed":
+		return "complete"
+	case "draft", "todo":
+		return "drafted"
+	default:
+		return ""
+	}
+}
+
+func specCreatePath(parentPath, title string) string {
+	slug := stableID(title) + ".md"
+	parentPath = filepath.ToSlash(strings.TrimSpace(parentPath))
+	if parentPath == "" {
+		return filepath.ToSlash(filepath.Join("specs", slug))
+	}
+	parentPath = strings.TrimPrefix(parentPath, "/")
+	parentPath = strings.TrimSuffix(parentPath, ".md")
+	if !strings.HasPrefix(parentPath, "specs/") && parentPath != "specs" {
+		parentPath = filepath.ToSlash(filepath.Join("specs", parentPath))
+	}
+	return filepath.ToSlash(filepath.Join(parentPath, slug))
+}
+
+func resolveSpecPath(root, rel string) (string, string, error) {
+	rel = filepath.ToSlash(strings.TrimSpace(rel))
+	rel = strings.TrimPrefix(rel, "/")
+	if rel == "" {
+		return "", "", fmt.Errorf("spec path is required")
+	}
+	if !strings.HasPrefix(rel, "specs/") {
+		rel = filepath.ToSlash(filepath.Join("specs", rel))
+	}
+	path := filepath.Join(root, filepath.FromSlash(rel))
+	cleanRoot := filepath.Clean(filepath.Join(root, "specs"))
+	cleanPath := filepath.Clean(path)
+	if cleanPath != cleanRoot && !strings.HasPrefix(cleanPath, cleanRoot+string(filepath.Separator)) {
+		return "", "", fmt.Errorf("spec path must stay under specs: %s", rel)
+	}
+	return filepath.ToSlash(rel), cleanPath, nil
+}
+
+func buildSpecTree(nodes []SpecNodeInfo) []SpecNodeInfo {
+	byPath := make(map[string]*SpecNodeInfo, len(nodes))
+	for index := range nodes {
+		nodes[index].Children = []SpecNodeInfo{}
+		byPath[nodes[index].Path] = &nodes[index]
+	}
+	childrenByParent := make(map[string][]string)
+	rootPaths := make([]string, 0)
+	for _, original := range nodes {
+		node := byPath[original.Path]
+		parentPath := nearestSpecParent(node.Path, byPath)
+		if parentPath == "" {
+			rootPaths = append(rootPaths, node.Path)
+			continue
+		}
+		childrenByParent[parentPath] = append(childrenByParent[parentPath], node.Path)
+	}
+	roots := make([]SpecNodeInfo, 0, len(rootPaths))
+	for _, path := range rootPaths {
+		roots = append(roots, buildSpecSubtree(path, byPath, childrenByParent))
+	}
+	sortSpecTree(roots)
+	return roots
+}
+
+func buildSpecSubtree(path string, nodes map[string]*SpecNodeInfo, childrenByParent map[string][]string) SpecNodeInfo {
+	node := *nodes[path]
+	node.Children = make([]SpecNodeInfo, 0, len(childrenByParent[path]))
+	sort.Strings(childrenByParent[path])
+	for _, childPath := range childrenByParent[path] {
+		node.Children = append(node.Children, buildSpecSubtree(childPath, nodes, childrenByParent))
+	}
+	return node
+}
+
+func nearestSpecParent(path string, nodes map[string]*SpecNodeInfo) string {
+	best := ""
+	for candidate := range nodes {
+		if candidate == path {
+			continue
+		}
+		prefix := strings.TrimSuffix(candidate, ".md") + "/"
+		if strings.HasPrefix(path, prefix) && len(candidate) > len(best) {
+			best = candidate
+		}
+	}
+	return best
+}
+
+func sortSpecTree(nodes []SpecNodeInfo) {
+	sort.Slice(nodes, func(i, j int) bool { return nodes[i].Path < nodes[j].Path })
+	for index := range nodes {
+		sortSpecTree(nodes[index].Children)
+	}
+}
+
+func collectDispatchableSpecs(nodes []SpecNodeInfo, selected string) []SpecNodeInfo {
+	out := make([]SpecNodeInfo, 0)
+	for _, node := range nodes {
+		if selected != "" && node.Path != selected && !strings.HasPrefix(node.Path, strings.TrimSuffix(selected, ".md")+"/") {
+			continue
+		}
+		if len(node.Children) > 0 {
+			out = append(out, collectDispatchableSpecs(node.Children, "")...)
+			continue
+		}
+		switch node.State {
+		case "validated", "testing", "drafted":
+			out = append(out, node)
+		}
+	}
+	return out
+}
+
+type specSnapshot struct {
+	File string `json:"-"`
+	Path string `json:"path"`
+	Body string `json:"body"`
+	At   string `json:"at"`
+}
+
+func snapshotSpec(root, rel string, at time.Time) error {
+	_, path, err := resolveSpecPath(root, rel)
+	if err != nil {
+		return err
+	}
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return err
+	}
+	snapshot := specSnapshot{Path: rel, Body: string(data), At: at.UTC().Format(time.RFC3339)}
+	name := at.UTC().Format("20060102T150405.000000000") + "-" + stableID(rel) + ".json"
+	return writeJSON(filepath.Join(root, ".thanos", "spec-history", name), snapshot)
+}
+
+func latestSpecSnapshot(root string) (specSnapshot, error) {
+	dir := filepath.Join(root, ".thanos", "spec-history")
+	entries, err := os.ReadDir(dir)
+	if err != nil {
+		return specSnapshot{}, err
+	}
+	sort.Slice(entries, func(i, j int) bool { return entries[i].Name() > entries[j].Name() })
+	for _, entry := range entries {
+		if entry.IsDir() || filepath.Ext(entry.Name()) != ".json" {
+			continue
+		}
+		path := filepath.Join(dir, entry.Name())
+		data, err := os.ReadFile(path)
+		if err != nil {
+			return specSnapshot{}, err
+		}
+		var snapshot specSnapshot
+		if err := json.Unmarshal(data, &snapshot); err != nil {
+			return specSnapshot{}, err
+		}
+		snapshot.File = path
+		return snapshot, nil
+	}
+	return specSnapshot{}, fmt.Errorf("no planning change snapshot found")
 }
 
 func loadTasks(root string) ([]TaskInfo, error) {

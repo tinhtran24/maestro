@@ -156,6 +156,55 @@ func TestTaskFlowFallsBackToImplementWhenMissing(t *testing.T) {
 	}
 }
 
+func TestPlanSpecModeParsesDispatchesAndUndoes(t *testing.T) {
+	root := t.TempDir()
+	provider := NewRealProvider()
+	provider.now = func() time.Time { return time.Date(2026, 7, 8, 9, 0, 0, 0, time.UTC) }
+	parent, err := provider.CreateSpec(CreateSpecRequest{Root: root, Title: "Checkout", Body: "Parent body", State: "validated"})
+	if err != nil {
+		t.Fatalf("CreateSpec parent returned error: %v", err)
+	}
+	child, err := provider.CreateSpec(CreateSpecRequest{Root: root, Title: "Payment Form", Body: "Build payment form", State: "validated", ParentPath: parent.Path})
+	if err != nil {
+		t.Fatalf("CreateSpec child returned error: %v", err)
+	}
+	if child.Path != "specs/checkout/payment-form.md" {
+		t.Fatalf("child path = %q", child.Path)
+	}
+
+	workspace, err := provider.LoadWorkspace(root)
+	if err != nil {
+		t.Fatalf("LoadWorkspace returned error: %v", err)
+	}
+	if len(workspace.Specs) != 1 || len(workspace.Specs[0].Children) != 1 || workspace.Specs[0].Children[0].State != "validated" {
+		t.Fatalf("recursive specs = %#v", workspace.Specs)
+	}
+
+	provider.now = func() time.Time { return time.Date(2026, 7, 8, 9, 5, 0, 0, time.UTC) }
+	updated, err := provider.UpdateSpec(UpdateSpecRequest{Root: root, Path: child.Path, Title: child.Title, Body: "Refined body", State: "testing"})
+	if err != nil {
+		t.Fatalf("UpdateSpec returned error: %v", err)
+	}
+	if updated.State != "testing" || updated.Body != "Refined body" {
+		t.Fatalf("updated spec = %#v", updated)
+	}
+	dispatched, err := provider.DispatchSpecs(DispatchSpecsRequest{Root: root, Path: parent.Path})
+	if err != nil {
+		t.Fatalf("DispatchSpecs returned error: %v", err)
+	}
+	if len(dispatched) != 1 || dispatched[0].Title != "Payment Form" || !strings.Contains(dispatched[0].Prompt, "Refined body") {
+		t.Fatalf("dispatched tasks = %#v", dispatched)
+	}
+
+	restored, err := provider.UndoPlanningChange(UndoPlanningChangeRequest{Root: root})
+	if err != nil {
+		t.Fatalf("UndoPlanningChange returned error: %v", err)
+	}
+	if restored.State != "validated" || !strings.Contains(restored.Body, "Build payment form") {
+		t.Fatalf("restored spec = %#v", restored)
+	}
+}
+
 func TestTaskTurnLoopPersistsOutputUsageAndResume(t *testing.T) {
 	root := t.TempDir()
 	provider := NewRealProvider()
