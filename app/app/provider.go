@@ -171,12 +171,17 @@ type AgentRoleInfo struct {
 	Harness      string   `json:"harness"`
 	Model        string   `json:"model"`
 	Capabilities []string `json:"capabilities"`
+	ReadOnly     bool     `json:"readOnly"`
+	Source       string   `json:"source,omitempty"`
 }
 
 type FlowInfo struct {
-	ID    string   `json:"id"`
-	Name  string   `json:"name"`
-	Steps []string `json:"steps"`
+	ID             string     `json:"id"`
+	Name           string     `json:"name"`
+	Steps          []string   `json:"steps"`
+	ParallelGroups [][]string `json:"parallelGroups,omitempty"`
+	ReadOnly       bool       `json:"readOnly"`
+	Source         string     `json:"source,omitempty"`
 }
 
 type EventInfo struct {
@@ -272,6 +277,17 @@ func (p *RealProvider) LoadWorkspace(root string) (*WorkspaceInfo, error) {
 	if err != nil {
 		diagnostics = append(diagnostics, DiagnosticInfo{Kind: "automation", Message: err.Error()})
 	}
+	agents, err := loadAgentRoles(abs, providers)
+	if err != nil {
+		diagnostics = append(diagnostics, DiagnosticInfo{Kind: "agents", Message: err.Error()})
+		agents = builtinAgentRoles(providers)
+	}
+	flows, err := loadFlows(abs)
+	if err != nil {
+		diagnostics = append(diagnostics, DiagnosticInfo{Kind: "flows", Message: err.Error()})
+		flows = builtinFlows()
+	}
+	tasks = normalizeTaskFlows(tasks, flows)
 	if len(events) == 0 {
 		events = append(events, EventInfo{
 			ID:      "workspace-loaded",
@@ -290,8 +306,8 @@ func (p *RealProvider) LoadWorkspace(root string) (*WorkspaceInfo, error) {
 		Specs:         specs,
 		Routines:      routines,
 		Automation:    automation,
-		Agents:        builtinAgentRoles(providers),
-		Flows:         builtinFlows(),
+		Agents:        agents,
+		Flows:         flows,
 		Events:        events,
 		Providers:     providers,
 		Diagnostics:   diagnostics,
@@ -313,13 +329,14 @@ func (p *RealProvider) CreateTask(req CreateTaskRequest) (*TaskInfo, error) {
 	}
 	now := p.now().UTC()
 	id := fmt.Sprintf("task-%s", stableID(fmt.Sprintf("%d-%s", now.UnixNano(), title)))
+	flows, _ := loadFlows(root)
 	task := TaskInfo{
 		SchemaVersion: SchemaVersionTask,
 		ID:            id,
 		Title:         title,
 		Prompt:        prompt,
 		Status:        "backlog",
-		Flow:          fallback(req.Flow, "implement"),
+		Flow:          normalizeFlowID(req.Flow, flows),
 		Agent:         fallback(req.Agent, "unassigned"),
 		Branch:        fmt.Sprintf("task/%s", id),
 		Worktree:      filepath.ToSlash(filepath.Join(".thanos", "worktrees", id)),
@@ -909,6 +926,220 @@ func loadAutomation(root string) (AutomationInfo, error) {
 	return automation, nil
 }
 
+func loadAgentRoles(root string, providers []ProviderInfo) ([]AgentRoleInfo, error) {
+	agents := builtinAgentRoles(providers)
+	userAgents, err := readAgentRoleFiles(filepath.Join(root, ".thanos", "agents"), root)
+	if err != nil {
+		return nil, err
+	}
+	return mergeAgents(agents, userAgents), nil
+}
+
+func readAgentRoleFiles(dir, root string) ([]AgentRoleInfo, error) {
+	entries, err := os.ReadDir(dir)
+	if err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	var out []AgentRoleInfo
+	for _, entry := range entries {
+		if entry.IsDir() || filepath.Ext(entry.Name()) != ".json" {
+			continue
+		}
+		path := filepath.Join(dir, entry.Name())
+		data, err := os.ReadFile(path)
+		if err != nil {
+			return nil, err
+		}
+		rel, _ := filepath.Rel(root, path)
+		agents, err := decodeAgentRoleFile(data, filepath.ToSlash(rel))
+		if err != nil {
+			return nil, fmt.Errorf("%s: %w", path, err)
+		}
+		out = append(out, agents...)
+	}
+	sort.Slice(out, func(i, j int) bool { return out[i].ID < out[j].ID })
+	return out, nil
+}
+
+func decodeAgentRoleFile(data []byte, source string) ([]AgentRoleInfo, error) {
+	var raw any
+	if err := json.Unmarshal(data, &raw); err != nil {
+		return nil, err
+	}
+	var records []any
+	switch value := raw.(type) {
+	case []any:
+		records = value
+	case map[string]any:
+		if nested, ok := value["agents"].([]any); ok {
+			records = nested
+		} else {
+			records = []any{value}
+		}
+	default:
+		return nil, fmt.Errorf("agent file must contain an object, array, or agents array")
+	}
+	out := make([]AgentRoleInfo, 0, len(records))
+	for _, record := range records {
+		rawAgent, ok := record.(map[string]any)
+		if !ok {
+			return nil, fmt.Errorf("agent record must be an object")
+		}
+		agent := AgentRoleInfo{
+			ID:           stringFrom(rawAgent, "id", "ID"),
+			Role:         stringFrom(rawAgent, "role", "Role", "name", "Name"),
+			Harness:      fallback(stringFrom(rawAgent, "harness", "Harness", "provider", "Provider"), "Codex"),
+			Model:        fallback(stringFrom(rawAgent, "model", "Model"), "provider default"),
+			Capabilities: stringSliceFrom(rawAgent, "capabilities", "Capabilities"),
+			Source:       source,
+		}
+		if agent.ID == "" {
+			agent.ID = stableID(agent.Role)
+		}
+		if agent.Role == "" {
+			agent.Role = agent.ID
+		}
+		out = append(out, agent)
+	}
+	return out, nil
+}
+
+func mergeAgents(builtins, userAgents []AgentRoleInfo) []AgentRoleInfo {
+	out := append([]AgentRoleInfo(nil), builtins...)
+	builtinIDs := make(map[string]bool, len(builtins))
+	for _, agent := range builtins {
+		builtinIDs[agent.ID] = true
+	}
+	for _, agent := range userAgents {
+		if builtinIDs[agent.ID] {
+			agent.ID = "user-" + agent.ID
+		}
+		out = append(out, agent)
+	}
+	return out
+}
+
+func loadFlows(root string) ([]FlowInfo, error) {
+	flows := builtinFlows()
+	userFlows, err := readFlowFiles(filepath.Join(root, ".thanos", "flows"), root)
+	if err != nil {
+		return nil, err
+	}
+	return mergeFlows(flows, userFlows), nil
+}
+
+func readFlowFiles(dir, root string) ([]FlowInfo, error) {
+	entries, err := os.ReadDir(dir)
+	if err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	var out []FlowInfo
+	for _, entry := range entries {
+		if entry.IsDir() || filepath.Ext(entry.Name()) != ".json" {
+			continue
+		}
+		path := filepath.Join(dir, entry.Name())
+		data, err := os.ReadFile(path)
+		if err != nil {
+			return nil, err
+		}
+		rel, _ := filepath.Rel(root, path)
+		flows, err := decodeFlowFile(data, filepath.ToSlash(rel))
+		if err != nil {
+			return nil, fmt.Errorf("%s: %w", path, err)
+		}
+		out = append(out, flows...)
+	}
+	sort.Slice(out, func(i, j int) bool { return out[i].ID < out[j].ID })
+	return out, nil
+}
+
+func decodeFlowFile(data []byte, source string) ([]FlowInfo, error) {
+	var raw any
+	if err := json.Unmarshal(data, &raw); err != nil {
+		return nil, err
+	}
+	var records []any
+	switch value := raw.(type) {
+	case []any:
+		records = value
+	case map[string]any:
+		if nested, ok := value["flows"].([]any); ok {
+			records = nested
+		} else {
+			records = []any{value}
+		}
+	default:
+		return nil, fmt.Errorf("flow file must contain an object, array, or flows array")
+	}
+	out := make([]FlowInfo, 0, len(records))
+	for _, record := range records {
+		rawFlow, ok := record.(map[string]any)
+		if !ok {
+			return nil, fmt.Errorf("flow record must be an object")
+		}
+		flow := FlowInfo{
+			ID:             stringFrom(rawFlow, "id", "ID"),
+			Name:           stringFrom(rawFlow, "name", "Name", "title", "Title"),
+			Steps:          stringSliceFrom(rawFlow, "steps", "Steps"),
+			ParallelGroups: stringSlicesFrom(rawFlow, "parallelGroups", "parallel_groups", "parallel", "ParallelGroups"),
+			Source:         source,
+		}
+		if flow.ID == "" {
+			flow.ID = stableID(flow.Name)
+		}
+		if flow.Name == "" {
+			flow.Name = flow.ID
+		}
+		if len(flow.Steps) == 0 {
+			return nil, fmt.Errorf("flow %q must include at least one step", flow.ID)
+		}
+		out = append(out, flow)
+	}
+	return out, nil
+}
+
+func mergeFlows(builtins, userFlows []FlowInfo) []FlowInfo {
+	out := append([]FlowInfo(nil), builtins...)
+	builtinIDs := make(map[string]bool, len(builtins))
+	for _, flow := range builtins {
+		builtinIDs[flow.ID] = true
+	}
+	for _, flow := range userFlows {
+		if builtinIDs[flow.ID] {
+			flow.ID = "user-" + flow.ID
+		}
+		out = append(out, flow)
+	}
+	return out
+}
+
+func normalizeTaskFlows(tasks []TaskInfo, flows []FlowInfo) []TaskInfo {
+	for index := range tasks {
+		tasks[index].Flow = normalizeFlowID(tasks[index].Flow, flows)
+	}
+	return tasks
+}
+
+func normalizeFlowID(id string, flows []FlowInfo) string {
+	id = strings.TrimSpace(id)
+	if id == "" {
+		return "implement"
+	}
+	for _, flow := range flows {
+		if flow.ID == id {
+			return id
+		}
+	}
+	return "implement"
+}
+
 func normalizeWorkspaceRoot(root string) (string, error) {
 	if strings.TrimSpace(root) == "" {
 		return "", fmt.Errorf("workspace root is required")
@@ -975,19 +1206,19 @@ func builtinAgentRoles(providers []ProviderInfo) []AgentRoleInfo {
 		defaultHarness = "codex"
 	}
 	return []AgentRoleInfo{
-		{ID: "impl", Role: "Implementation", Harness: displayHarness(defaultHarness), Model: "provider default", Capabilities: []string{"workspace.read", "workspace.write", "board.context"}},
-		{ID: "test", Role: "Testing", Harness: displayHarness(firstNonEmpty(firstInstalled(providers, "claude-code", "claude", "codex"), defaultHarness)), Model: "provider default", Capabilities: []string{"workspace.read", "commands.run"}},
-		{ID: "oversight", Role: "Oversight", Harness: displayHarness(firstNonEmpty(firstInstalled(providers, "claude-code", "claude", "codex"), defaultHarness)), Model: "provider default", Capabilities: []string{"diff.read", "timeline.read", "risk.review"}},
-		{ID: "title", Role: "Title", Harness: "Shell", Model: "none", Capabilities: []string{"metadata.write"}},
-		{ID: "commit-msg", Role: "Commit Message", Harness: displayHarness(defaultHarness), Model: "provider default", Capabilities: []string{"diff.read", "metadata.write"}},
+		{ID: "impl", Role: "Implementation", Harness: displayHarness(defaultHarness), Model: "provider default", Capabilities: []string{"workspace.read", "workspace.write", "board.context"}, ReadOnly: true, Source: "builtin"},
+		{ID: "test", Role: "Testing", Harness: displayHarness(firstNonEmpty(firstInstalled(providers, "claude-code", "claude", "codex"), defaultHarness)), Model: "provider default", Capabilities: []string{"workspace.read", "commands.run"}, ReadOnly: true, Source: "builtin"},
+		{ID: "oversight", Role: "Oversight", Harness: displayHarness(firstNonEmpty(firstInstalled(providers, "claude-code", "claude", "codex"), defaultHarness)), Model: "provider default", Capabilities: []string{"diff.read", "timeline.read", "risk.review"}, ReadOnly: true, Source: "builtin"},
+		{ID: "title", Role: "Title", Harness: "Shell", Model: "none", Capabilities: []string{"metadata.write"}, ReadOnly: true, Source: "builtin"},
+		{ID: "commit-msg", Role: "Commit Message", Harness: displayHarness(defaultHarness), Model: "provider default", Capabilities: []string{"diff.read", "metadata.write"}, ReadOnly: true, Source: "builtin"},
 	}
 }
 
 func builtinFlows() []FlowInfo {
 	return []FlowInfo{
-		{ID: "implement", Name: "Implement", Steps: []string{"Implementation", "Testing", "Commit Message", "Title", "Oversight"}},
-		{ID: "plan-first", Name: "Plan First", Steps: []string{"Planning", "Implementation", "Testing", "Oversight"}},
-		{ID: "oversight-only", Name: "Oversight Only", Steps: []string{"Oversight"}},
+		{ID: "implement", Name: "Implement", Steps: []string{"Implementation", "Testing", "Commit Message", "Title", "Oversight"}, ReadOnly: true, Source: "builtin"},
+		{ID: "plan-first", Name: "Plan First", Steps: []string{"Planning", "Implementation", "Testing", "Oversight"}, ParallelGroups: [][]string{{"Testing", "Oversight"}}, ReadOnly: true, Source: "builtin"},
+		{ID: "oversight-only", Name: "Oversight Only", Steps: []string{"Oversight"}, ReadOnly: true, Source: "builtin"},
 	}
 }
 
@@ -1119,6 +1350,41 @@ func stringSliceFrom(raw map[string]any, keys ...string) []string {
 		}
 	}
 	return []string{}
+}
+
+func stringSlicesFrom(raw map[string]any, keys ...string) [][]string {
+	for _, key := range keys {
+		value, ok := raw[key]
+		if !ok {
+			continue
+		}
+		groups, ok := value.([]any)
+		if !ok {
+			continue
+		}
+		out := make([][]string, 0, len(groups))
+		for _, group := range groups {
+			switch typed := group.(type) {
+			case []any:
+				items := make([]string, 0, len(typed))
+				for _, item := range typed {
+					if text, ok := item.(string); ok && strings.TrimSpace(text) != "" {
+						items = append(items, strings.TrimSpace(text))
+					}
+				}
+				if len(items) > 0 {
+					out = append(out, items)
+				}
+			case string:
+				items := stringSliceFrom(map[string]any{"items": strings.Split(typed, "+")}, "items")
+				if len(items) > 0 {
+					out = append(out, items)
+				}
+			}
+		}
+		return out
+	}
+	return nil
 }
 
 func promptHistoryFrom(raw map[string]any, prompt string) []PromptRecord {

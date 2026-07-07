@@ -18,6 +18,8 @@ export namespace app {
 	    harness: string;
 	    model: string;
 	    capabilities: string[];
+	    readOnly: boolean;
+	    source?: string;
 	
 	    static createFrom(source: any = {}) {
 	        return new AgentRoleInfo(source);
@@ -30,6 +32,8 @@ export namespace app {
 	        this.harness = source["harness"];
 	        this.model = source["model"];
 	        this.capabilities = source["capabilities"];
+	        this.readOnly = source["readOnly"];
+	        this.source = source["source"];
 	    }
 	}
 	export class AutomationInfo {
@@ -239,6 +243,9 @@ export namespace app {
 	    id: string;
 	    name: string;
 	    steps: string[];
+	    parallelGroups?: string[][];
+	    readOnly: boolean;
+	    source?: string;
 	
 	    static createFrom(source: any = {}) {
 	        return new FlowInfo(source);
@@ -249,6 +256,9 @@ export namespace app {
 	        this.id = source["id"];
 	        this.name = source["name"];
 	        this.steps = source["steps"];
+	        this.parallelGroups = source["parallelGroups"];
+	        this.readOnly = source["readOnly"];
+	        this.source = source["source"];
 	    }
 	}
 	export class NativeTerminalInputRequest {
@@ -824,4 +834,3 @@ export namespace app {
 	}
 
 }
-

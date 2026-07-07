@@ -73,12 +73,17 @@ export type AgentNode = {
   harness: "Claude" | "Codex" | "Cursor" | "OpenCode" | "Gemini" | "Shell";
   model: string;
   capabilities: string[];
+  readOnly: boolean;
+  source?: string;
 };
 
 export type FlowNode = {
   id: string;
   name: string;
   steps: string[];
+  parallelGroups?: string[][];
+  readOnly: boolean;
+  source?: string;
 };
 
 export type EventRecord = {

@@ -60,6 +60,130 @@ func TestProviderCatalogContainsMilestoneFiveProviders(t *testing.T) {
 	}
 }
 
+func TestLoadWorkspaceMergesUserAgentsAndFlowsFromDisk(t *testing.T) {
+	root := t.TempDir()
+	if err := os.MkdirAll(filepath.Join(root, ".thanos", "agents"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.MkdirAll(filepath.Join(root, ".thanos", "flows"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	agentJSON := `{"id":"security-review","role":"Security Review","harness":"Codex","model":"gpt-5","capabilities":["diff.read","risk.review"]}`
+	if err := os.WriteFile(filepath.Join(root, ".thanos", "agents", "security-review.json"), []byte(agentJSON), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	flowJSON := `{"id":"security-pass","name":"Security Pass","steps":["Implementation","Security Review","Testing"],"parallelGroups":[["Security Review","Testing"]]}`
+	if err := os.WriteFile(filepath.Join(root, ".thanos", "flows", "security-pass.json"), []byte(flowJSON), 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	provider := NewRealProvider()
+	workspace, err := provider.LoadWorkspace(root)
+	if err != nil {
+		t.Fatalf("LoadWorkspace returned error: %v", err)
+	}
+	if !hasAgent(workspace.Agents, "impl", true) {
+		t.Fatalf("built-in agent missing or writable: %#v", workspace.Agents)
+	}
+	if !hasAgent(workspace.Agents, "security-review", false) {
+		t.Fatalf("user agent missing: %#v", workspace.Agents)
+	}
+	if !hasFlow(workspace.Flows, "implement", true) {
+		t.Fatalf("built-in flow missing or writable: %#v", workspace.Flows)
+	}
+	if !hasFlow(workspace.Flows, "security-pass", false) {
+		t.Fatalf("user flow missing: %#v", workspace.Flows)
+	}
+	if !hasParallelGroup(workspace.Flows, "security-pass", []string{"Security Review", "Testing"}) {
+		t.Fatalf("user flow parallel group missing: %#v", workspace.Flows)
+	}
+
+	updatedFlowJSON := `{"id":"security-pass","name":"Security Pass","steps":["Security Review","Oversight"]}`
+	if err := os.WriteFile(filepath.Join(root, ".thanos", "flows", "security-pass.json"), []byte(updatedFlowJSON), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	reloaded, err := provider.LoadWorkspace(root)
+	if err != nil {
+		t.Fatalf("LoadWorkspace after flow edit returned error: %v", err)
+	}
+	for _, flow := range reloaded.Flows {
+		if flow.ID == "security-pass" && !reflect.DeepEqual(flow.Steps, []string{"Security Review", "Oversight"}) {
+			t.Fatalf("flow did not hot-reload from disk: %#v", flow)
+		}
+	}
+}
+
+func TestTaskFlowFallsBackToImplementWhenMissing(t *testing.T) {
+	root := t.TempDir()
+	if err := os.MkdirAll(filepath.Join(root, ".thanos", "tasks"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	taskJSON := `{"id":"T-unknown-flow","title":"Unknown flow","prompt":"Run","status":"backlog","flow":"deleted-flow"}`
+	if err := os.WriteFile(filepath.Join(root, ".thanos", "tasks", "unknown.json"), []byte(taskJSON), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	provider := NewRealProvider()
+	workspace, err := provider.LoadWorkspace(root)
+	if err != nil {
+		t.Fatalf("LoadWorkspace returned error: %v", err)
+	}
+	if len(workspace.Tasks) != 1 || workspace.Tasks[0].Flow != "implement" {
+		t.Fatalf("task flow fallback = %#v", workspace.Tasks)
+	}
+	created, err := provider.CreateTask(CreateTaskRequest{Root: root, Title: "Create with missing flow", Prompt: "Run", Flow: "missing-flow"})
+	if err != nil {
+		t.Fatalf("CreateTask returned error: %v", err)
+	}
+	if created.Flow != "implement" {
+		t.Fatalf("created flow = %q", created.Flow)
+	}
+	if err := os.MkdirAll(filepath.Join(root, ".thanos", "flows"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(root, ".thanos", "flows", "custom.json"), []byte(`{"id":"custom-flow","name":"Custom Flow","steps":["Implementation"]}`), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	custom, err := provider.CreateTask(CreateTaskRequest{Root: root, Title: "Create with custom flow", Prompt: "Run", Flow: "custom-flow"})
+	if err != nil {
+		t.Fatalf("CreateTask with custom flow returned error: %v", err)
+	}
+	if custom.Flow != "custom-flow" {
+		t.Fatalf("custom flow = %q", custom.Flow)
+	}
+}
+
+func hasAgent(agents []AgentRoleInfo, id string, readOnly bool) bool {
+	for _, agent := range agents {
+		if agent.ID == id && agent.ReadOnly == readOnly {
+			return true
+		}
+	}
+	return false
+}
+
+func hasFlow(flows []FlowInfo, id string, readOnly bool) bool {
+	for _, flow := range flows {
+		if flow.ID == id && flow.ReadOnly == readOnly {
+			return true
+		}
+	}
+	return false
+}
+
+func hasParallelGroup(flows []FlowInfo, id string, group []string) bool {
+	for _, flow := range flows {
+		if flow.ID != id {
+			continue
+		}
+		for _, candidate := range flow.ParallelGroups {
+			if reflect.DeepEqual(candidate, group) {
+				return true
+			}
+		}
+	}
+	return false
+}
+
 func TestRealProviderPersistsWorkspacePrimitives(t *testing.T) {
 	root := t.TempDir()
 	provider := NewRealProvider()

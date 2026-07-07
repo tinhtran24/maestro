@@ -141,7 +141,7 @@ Acceptance:
 
 ### 5. Harness/Provider Registry
 
-Status: Next.
+Status: Done.
 
 Goal: Wallfacer-style harness routing with Thanos-native adapters.
 
@@ -162,6 +162,8 @@ Acceptance:
 
 ### 6. Git Worktree Execution
 
+Status: Done.
+
 Goal: safe per-task execution isolation.
 
 Tasks:
@@ -181,6 +183,8 @@ Acceptance:
 
 ### 7. Agent Roles and Flow Engine
 
+Status: Done.
+
 Goal: implement Wallfacer Agent Graph behavior.
 
 Tasks:
@@ -192,7 +196,9 @@ Tasks:
 - Support fixed sequence flows.
 - Support parallel fan-out groups.
 - Add flow fallback to `implement`.
-- Add UI for clone/edit/delete user agents and flows.
+- Add UI for clone/edit/delete user agents and flows. Deferred to the Agent
+  Graph editing surface; backend now loads read-only built-ins and hot-loads
+  user-authored definitions from disk.
 
 Acceptance:
 
@@ -201,6 +207,8 @@ Acceptance:
 - A task selects one flow and execution follows that flow.
 
 ### 8. Runner Turn Loop
+
+Status: Next.
 
 Goal: production task execution semantics.
 
