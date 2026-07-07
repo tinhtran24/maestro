@@ -476,11 +476,11 @@ func TestRealProviderPersistsWorkspacePrimitives(t *testing.T) {
 	provider := NewRealProvider()
 	provider.now = func() time.Time { return time.Date(2026, 7, 6, 9, 30, 0, 0, time.UTC) }
 
-	task, err := provider.CreateTask(CreateTaskRequest{Root: root, Title: "Build board", Prompt: "Create a local task", Flow: "implement", Agent: "codex"})
+	task, err := provider.CreateTask(CreateTaskRequest{Root: root, Title: "Build board", Prompt: "Create a local task", Flow: "implement", Agent: "codex", Status: "waiting"})
 	if err != nil {
 		t.Fatalf("CreateTask returned error: %v", err)
 	}
-	if task.Status != "backlog" || task.ID == "" {
+	if task.Status != "waiting" || task.ID == "" {
 		t.Fatalf("task = %#v", task)
 	}
 	moved, err := provider.UpdateTaskStatus(UpdateTaskStatusRequest{Root: root, TaskID: task.ID, Status: "in_progress"})

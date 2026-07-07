@@ -173,6 +173,7 @@ export type CreateTaskRequest = {
   prompt: string;
   flow: string;
   agent: string;
+  status?: TaskStatus;
   dependencies?: string[];
 };
 

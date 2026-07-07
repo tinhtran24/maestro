@@ -138,6 +138,7 @@ type CreateTaskRequest struct {
 	Prompt       string   `json:"prompt"`
 	Flow         string   `json:"flow"`
 	Agent        string   `json:"agent"`
+	Status       string   `json:"status"`
 	Dependencies []string `json:"dependencies"`
 }
 
@@ -438,7 +439,7 @@ func (p *RealProvider) CreateTask(req CreateTaskRequest) (*TaskInfo, error) {
 		ID:            id,
 		Title:         title,
 		Prompt:        prompt,
-		Status:        "backlog",
+		Status:        normalizeTaskStatus(req.Status),
 		Flow:          normalizeFlowID(req.Flow, flows),
 		Agent:         fallback(req.Agent, "unassigned"),
 		Branch:        fmt.Sprintf("task/%s", id),

@@ -62,6 +62,7 @@ export namespace app {
 	    prompt: string;
 	    flow: string;
 	    agent: string;
+	    status: string;
 	    dependencies: string[];
 	
 	    static createFrom(source: any = {}) {
@@ -75,6 +76,7 @@ export namespace app {
 	        this.prompt = source["prompt"];
 	        this.flow = source["flow"];
 	        this.agent = source["agent"];
+	        this.status = source["status"];
 	        this.dependencies = source["dependencies"];
 	    }
 	}
@@ -1076,4 +1078,3 @@ export namespace app {
 	}
 
 }
-
