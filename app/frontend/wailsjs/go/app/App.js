@@ -82,6 +82,10 @@ export function RunTaskVerification(arg1) {
   return window['go']['app']['App']['RunTaskVerification'](arg1);
 }
 
+export function RunRoutineScheduler(arg1) {
+  return window['go']['app']['App']['RunRoutineScheduler'](arg1);
+}
+
 export function SaveAutomation(arg1) {
   return window['go']['app']['App']['SaveAutomation'](arg1);
 }
@@ -104,6 +108,10 @@ export function StartTaskTurn(arg1) {
 
 export function StopNativeTerminal(arg1) {
   return window['go']['app']['App']['StopNativeTerminal'](arg1);
+}
+
+export function TriggerRoutine(arg1) {
+  return window['go']['app']['App']['TriggerRoutine'](arg1);
 }
 
 export function UpdateTaskFlags(arg1) {

@@ -177,6 +177,11 @@ export type RoutineInfo = {
   flow: string;
   schedule: string;
   enabled: boolean;
+  lastRunAt?: string;
+  nextRunAt?: string;
+  runCount: number;
+  failureCount: number;
+  disabledReason?: string;
   updatedAt: string;
 };
 
@@ -185,6 +190,8 @@ export type AutomationInfo = {
   autoTest: boolean;
   autoSubmit: boolean;
   autoRetry: boolean;
+  maxConcurrentRoutineTasks: number;
+  circuitBreakerFailureLimit: number;
 };
 
 export type CreateTaskRequest = {
@@ -318,6 +325,15 @@ export type UpsertRoutineRequest = {
 export type SaveAutomationRequest = {
   root: string;
   automation: AutomationInfo;
+};
+
+export type TriggerRoutineRequest = {
+  root: string;
+  routineId: string;
+};
+
+export type RunRoutineSchedulerRequest = {
+  root: string;
 };
 
 export type ProviderInfo = {

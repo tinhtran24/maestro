@@ -1187,7 +1187,8 @@ button {
 }
 
 .task-actions,
-.automation-toggles {
+.automation-toggles,
+.automation-limits {
     display: flex;
     flex-wrap: wrap;
     gap: 6px;
@@ -1196,6 +1197,7 @@ button {
 
 .task-actions button,
 .automation-toggles button,
+.automation-limits button,
 .routine-form button {
     border: 1px solid #273449;
     border-radius: 9px;
@@ -1208,6 +1210,31 @@ button {
 .automation-toggles button.enabled {
     border-color: #22c55e;
     color: #bbf7d0;
+}
+
+.automation-limits label {
+    display: grid;
+    gap: 5px;
+    color: #94a3b8;
+    font-size: 12px;
+}
+
+.automation-limits input {
+    width: 180px;
+    border: 1px solid #273449;
+    border-radius: 9px;
+    background: #070a12;
+    color: #e5e7eb;
+    padding: 8px 10px;
+}
+
+.routine-list button {
+    justify-self: start;
+    border: 1px solid #273449;
+    border-radius: 9px;
+    background: #111827;
+    color: #e5e7eb;
+    padding: 8px 10px;
 }
 
 .composer input,

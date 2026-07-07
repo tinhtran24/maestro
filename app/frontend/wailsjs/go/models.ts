@@ -42,6 +42,8 @@ export namespace app {
 	    autoTest: boolean;
 	    autoSubmit: boolean;
 	    autoRetry: boolean;
+	    maxConcurrentRoutineTasks: number;
+	    circuitBreakerFailureLimit: number;
 	
 	    static createFrom(source: any = {}) {
 	        return new AutomationInfo(source);
@@ -54,6 +56,8 @@ export namespace app {
 	        this.autoTest = source["autoTest"];
 	        this.autoSubmit = source["autoSubmit"];
 	        this.autoRetry = source["autoRetry"];
+	        this.maxConcurrentRoutineTasks = source["maxConcurrentRoutineTasks"];
+	        this.circuitBreakerFailureLimit = source["circuitBreakerFailureLimit"];
 	    }
 	}
 	export class CreateTaskRequest {
@@ -627,6 +631,11 @@ export namespace app {
 	    flow: string;
 	    schedule: string;
 	    enabled: boolean;
+	    lastRunAt?: string;
+	    nextRunAt?: string;
+	    runCount: number;
+	    failureCount: number;
+	    disabledReason?: string;
 	    updatedAt: string;
 	
 	    static createFrom(source: any = {}) {
@@ -642,6 +651,11 @@ export namespace app {
 	        this.flow = source["flow"];
 	        this.schedule = source["schedule"];
 	        this.enabled = source["enabled"];
+	        this.lastRunAt = source["lastRunAt"];
+	        this.nextRunAt = source["nextRunAt"];
+	        this.runCount = source["runCount"];
+	        this.failureCount = source["failureCount"];
+	        this.disabledReason = source["disabledReason"];
 	        this.updatedAt = source["updatedAt"];
 	    }
 	}
@@ -665,6 +679,32 @@ export namespace app {
 	        this.providerId = source["providerId"];
 	        this.passPattern = source["passPattern"];
 	        this.failPattern = source["failPattern"];
+	    }
+	}
+	export class TriggerRoutineRequest {
+	    root: string;
+	    routineId: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new TriggerRoutineRequest(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.root = source["root"];
+	        this.routineId = source["routineId"];
+	    }
+	}
+	export class RunRoutineSchedulerRequest {
+	    root: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new RunRoutineSchedulerRequest(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.root = source["root"];
 	    }
 	}
 	export class SaveAutomationRequest {

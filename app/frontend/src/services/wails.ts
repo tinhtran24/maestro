@@ -18,12 +18,14 @@ import type {
   FinishTaskTurnRequest,
   ResumeTaskTurnRequest,
   RunTaskVerificationRequest,
+  RunRoutineSchedulerRequest,
   RoutineInfo,
   SaveAutomationRequest,
   SearchTasksRequest,
   SpecNode,
   StartTaskTurnRequest,
   Task,
+  TriggerRoutineRequest,
   UndoPlanningChangeRequest,
   UpdateTaskFlagsRequest,
   UpdateWorkspaceRequest,
@@ -66,6 +68,8 @@ type WailsApp = {
   DispatchSpecs?: (request: DispatchSpecsRequest) => Promise<Task[]>;
   UndoPlanningChange?: (request: UndoPlanningChangeRequest) => Promise<SpecNode>;
   UpsertRoutine?: (request: UpsertRoutineRequest) => Promise<RoutineInfo>;
+  TriggerRoutine?: (request: TriggerRoutineRequest) => Promise<Task>;
+  RunRoutineScheduler?: (request: RunRoutineSchedulerRequest) => Promise<Task[]>;
   SaveAutomation?: (request: SaveAutomationRequest) => Promise<AutomationInfo>;
   StartNativeTerminal?: (request: NativeTerminalRequest) => Promise<NativeTerminalSession>;
   WriteNativeTerminal?: (request: NativeTerminalInputRequest) => Promise<void>;
@@ -200,6 +204,14 @@ export async function undoPlanningChange(request: UndoPlanningChangeRequest): Pr
 
 export async function upsertRoutine(request: UpsertRoutineRequest): Promise<RoutineInfo | null> {
   return (await app().UpsertRoutine?.(request)) ?? null;
+}
+
+export async function triggerRoutine(request: TriggerRoutineRequest): Promise<Task | null> {
+  return (await app().TriggerRoutine?.(request)) ?? null;
+}
+
+export async function runRoutineScheduler(request: RunRoutineSchedulerRequest): Promise<Task[]> {
+  return (await app().RunRoutineScheduler?.(request)) ?? [];
 }
 
 export async function saveAutomation(request: SaveAutomationRequest): Promise<AutomationInfo | null> {

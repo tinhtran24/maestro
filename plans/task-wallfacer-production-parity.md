@@ -329,7 +329,7 @@ Acceptance:
 
 ### 14. Routines and Automation
 
-Status: Next.
+Status: Done.
 
 Goal: scheduled recurring task generation and guarded automation.
 
@@ -349,6 +349,8 @@ Acceptance:
 - Circuit breaker stops runaway loops.
 
 ### 15. Mission Control
+
+Status: Next.
 
 Goal: unified spec/task graph.
 

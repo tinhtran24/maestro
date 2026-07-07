@@ -155,6 +155,14 @@ func (a *App) UpsertRoutine(request UpsertRoutineRequest) (*RoutineInfo, error) 
 	return a.provider.UpsertRoutine(request)
 }
 
+func (a *App) TriggerRoutine(request TriggerRoutineRequest) (*TaskInfo, error) {
+	return a.provider.TriggerRoutine(request)
+}
+
+func (a *App) RunRoutineScheduler(request RunRoutineSchedulerRequest) ([]TaskInfo, error) {
+	return a.provider.RunRoutineScheduler(request)
+}
+
 func (a *App) SaveAutomation(request SaveAutomationRequest) (*AutomationInfo, error) {
 	return a.provider.SaveAutomation(request)
 }

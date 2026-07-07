@@ -279,14 +279,19 @@ type UndoPlanningChangeRequest struct {
 }
 
 type RoutineInfo struct {
-	SchemaVersion int    `json:"schema_version"`
-	ID            string `json:"id"`
-	Name          string `json:"name"`
-	Prompt        string `json:"prompt"`
-	Flow          string `json:"flow"`
-	Schedule      string `json:"schedule"`
-	Enabled       bool   `json:"enabled"`
-	UpdatedAt     string `json:"updatedAt"`
+	SchemaVersion  int    `json:"schema_version"`
+	ID             string `json:"id"`
+	Name           string `json:"name"`
+	Prompt         string `json:"prompt"`
+	Flow           string `json:"flow"`
+	Schedule       string `json:"schedule"`
+	Enabled        bool   `json:"enabled"`
+	LastRunAt      string `json:"lastRunAt,omitempty"`
+	NextRunAt      string `json:"nextRunAt,omitempty"`
+	RunCount       int    `json:"runCount"`
+	FailureCount   int    `json:"failureCount"`
+	DisabledReason string `json:"disabledReason,omitempty"`
+	UpdatedAt      string `json:"updatedAt"`
 }
 
 type UpsertRoutineRequest struct {
@@ -300,16 +305,27 @@ type UpsertRoutineRequest struct {
 }
 
 type AutomationInfo struct {
-	SchemaVersion int  `json:"schema_version"`
-	AutoImplement bool `json:"autoImplement"`
-	AutoTest      bool `json:"autoTest"`
-	AutoSubmit    bool `json:"autoSubmit"`
-	AutoRetry     bool `json:"autoRetry"`
+	SchemaVersion              int  `json:"schema_version"`
+	AutoImplement              bool `json:"autoImplement"`
+	AutoTest                   bool `json:"autoTest"`
+	AutoSubmit                 bool `json:"autoSubmit"`
+	AutoRetry                  bool `json:"autoRetry"`
+	MaxConcurrentRoutineTasks  int  `json:"maxConcurrentRoutineTasks"`
+	CircuitBreakerFailureLimit int  `json:"circuitBreakerFailureLimit"`
 }
 
 type SaveAutomationRequest struct {
 	Root       string         `json:"root"`
 	Automation AutomationInfo `json:"automation"`
+}
+
+type TriggerRoutineRequest struct {
+	Root      string `json:"root"`
+	RoutineID string `json:"routineId"`
+}
+
+type RunRoutineSchedulerRequest struct {
+	Root string `json:"root"`
 }
 
 type AgentRoleInfo struct {
@@ -1297,11 +1313,17 @@ func (p *RealProvider) UpsertRoutine(req UpsertRoutineRequest) (*RoutineInfo, er
 		Enabled:       req.Enabled,
 		UpdatedAt:     p.now().UTC().Format(time.RFC3339),
 	}
+	routine.NextRunAt = nextRoutineRun(routine.Schedule, p.now().UTC(), routine.LastRunAt)
 	store := NewWorkspaceStore(root)
 	if err := store.WithLock(func() error {
 		replaced := false
 		for index := range routines {
 			if routines[index].ID == id {
+				routine.LastRunAt = routines[index].LastRunAt
+				routine.RunCount = routines[index].RunCount
+				routine.FailureCount = routines[index].FailureCount
+				routine.DisabledReason = routines[index].DisabledReason
+				routine.NextRunAt = nextRoutineRun(routine.Schedule, p.now().UTC(), routine.LastRunAt)
 				routines[index] = routine
 				replaced = true
 				break
@@ -1320,13 +1342,92 @@ func (p *RealProvider) UpsertRoutine(req UpsertRoutineRequest) (*RoutineInfo, er
 	return &routine, nil
 }
 
+func (p *RealProvider) TriggerRoutine(req TriggerRoutineRequest) (*TaskInfo, error) {
+	root, err := normalizeWorkspaceRoot(req.Root)
+	if err != nil {
+		return nil, err
+	}
+	var created *TaskInfo
+	store := NewWorkspaceStore(root)
+	err = store.WithLock(func() error {
+		routines, err := loadRoutines(root)
+		if err != nil {
+			return err
+		}
+		automation, err := loadAutomation(root)
+		if err != nil {
+			return err
+		}
+		tasks, err := loadTasks(root)
+		if err != nil {
+			return err
+		}
+		index := findRoutineIndex(routines, req.RoutineID)
+		if index < 0 {
+			return fmt.Errorf("routine not found: %s", req.RoutineID)
+		}
+		task, err := p.spawnRoutineTask(root, store, routines, index, automation, tasks, "manual")
+		if err != nil {
+			return err
+		}
+		created = task
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	return created, nil
+}
+
+func (p *RealProvider) RunRoutineScheduler(req RunRoutineSchedulerRequest) ([]TaskInfo, error) {
+	root, err := normalizeWorkspaceRoot(req.Root)
+	if err != nil {
+		return nil, err
+	}
+	created := make([]TaskInfo, 0)
+	now := p.now().UTC()
+	store := NewWorkspaceStore(root)
+	err = store.WithLock(func() error {
+		routines, err := loadRoutines(root)
+		if err != nil {
+			return err
+		}
+		automation, err := loadAutomation(root)
+		if err != nil {
+			return err
+		}
+		tasks, err := loadTasks(root)
+		if err != nil {
+			return err
+		}
+		for index := range routines {
+			if !routineDue(routines[index], now) {
+				continue
+			}
+			task, err := p.spawnRoutineTask(root, store, routines, index, automation, tasks, "schedule")
+			if err != nil {
+				if writeErr := persistRoutineFailure(store, routines, index, automation, err.Error(), now); writeErr != nil {
+					return writeErr
+				}
+				continue
+			}
+			created = append(created, *task)
+			tasks = append(tasks, *task)
+		}
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	return created, nil
+}
+
 func (p *RealProvider) SaveAutomation(req SaveAutomationRequest) (*AutomationInfo, error) {
 	root, err := normalizeWorkspaceRoot(req.Root)
 	if err != nil {
 		return nil, err
 	}
-	automation := req.Automation
-	automation.SchemaVersion = SchemaVersionAutomation
+	automation := hydrateAutomation(req.Automation)
 	store := NewWorkspaceStore(root)
 	if err := store.WithLock(func() error {
 		if err := store.WriteJSON(store.Path("automation.json"), automation); err != nil {
@@ -1866,6 +1967,10 @@ func loadRoutines(root string) ([]RoutineInfo, error) {
 	if err := json.Unmarshal(data, &routines); err != nil {
 		return nil, err
 	}
+	now := time.Now().UTC()
+	for index := range routines {
+		routines[index] = hydrateRoutine(routines[index], now)
+	}
 	sort.Slice(routines, func(i, j int) bool { return routines[i].ID < routines[j].ID })
 	return routines, nil
 }
@@ -1875,7 +1980,7 @@ func loadAutomation(root string) (AutomationInfo, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {
-			return AutomationInfo{}, nil
+			return hydrateAutomation(AutomationInfo{}), nil
 		}
 		return AutomationInfo{}, err
 	}
@@ -1883,7 +1988,180 @@ func loadAutomation(root string) (AutomationInfo, error) {
 	if err := json.Unmarshal(data, &automation); err != nil {
 		return AutomationInfo{}, err
 	}
-	return automation, nil
+	return hydrateAutomation(automation), nil
+}
+
+func hydrateAutomation(automation AutomationInfo) AutomationInfo {
+	automation.SchemaVersion = SchemaVersionAutomation
+	if automation.MaxConcurrentRoutineTasks <= 0 {
+		automation.MaxConcurrentRoutineTasks = 3
+	}
+	if automation.CircuitBreakerFailureLimit <= 0 {
+		automation.CircuitBreakerFailureLimit = 3
+	}
+	return automation
+}
+
+func hydrateRoutine(routine RoutineInfo, now time.Time) RoutineInfo {
+	routine.SchemaVersion = SchemaVersionRoutine
+	routine.Schedule = fallback(routine.Schedule, "manual")
+	routine.Flow = fallback(routine.Flow, "implement")
+	if routine.NextRunAt == "" {
+		routine.NextRunAt = nextRoutineRun(routine.Schedule, now, routine.LastRunAt)
+	}
+	return routine
+}
+
+func findRoutineIndex(routines []RoutineInfo, id string) int {
+	id = strings.TrimSpace(id)
+	for index := range routines {
+		if routines[index].ID == id {
+			return index
+		}
+	}
+	return -1
+}
+
+func (p *RealProvider) spawnRoutineTask(root string, store *WorkspaceStore, routines []RoutineInfo, index int, automation AutomationInfo, tasks []TaskInfo, reason string) (*TaskInfo, error) {
+	now := p.now().UTC()
+	routine := hydrateRoutine(routines[index], now)
+	if !routine.Enabled {
+		return nil, fmt.Errorf("routine %s is disabled", routine.ID)
+	}
+	if routine.FailureCount >= automation.CircuitBreakerFailureLimit {
+		routine.Enabled = false
+		routine.DisabledReason = "circuit breaker"
+		routines[index] = routine
+		_ = store.WriteJSON(store.Path("routines.json"), routines)
+		return nil, fmt.Errorf("routine %s stopped by circuit breaker", routine.ID)
+	}
+	if activeRoutineTaskCount(tasks) >= automation.MaxConcurrentRoutineTasks {
+		return nil, fmt.Errorf("routine concurrency limit reached: %d", automation.MaxConcurrentRoutineTasks)
+	}
+	title := routine.Name
+	if title == "" {
+		title = routine.ID
+	}
+	prompt := strings.TrimSpace(routine.Prompt)
+	if prompt == "" {
+		prompt = "Run routine " + title
+	}
+	taskID := fmt.Sprintf("task-%s", stableID(fmt.Sprintf("%d-%s", now.UnixNano(), routine.ID)))
+	flows, _ := loadFlows(root)
+	task := TaskInfo{
+		SchemaVersion: SchemaVersionTask,
+		ID:            taskID,
+		Title:         title,
+		Prompt:        fmt.Sprintf("%s\n\nRoutine: %s\nTrigger: %s", prompt, routine.ID, reason),
+		Status:        "backlog",
+		Flow:          normalizeFlowID(routine.Flow, flows),
+		Agent:         "auto",
+		Branch:        fmt.Sprintf("task/%s", taskID),
+		Worktree:      filepath.ToSlash(filepath.Join(".thanos", "worktrees", taskID)),
+		UpdatedAt:     now.Format(time.RFC3339),
+		CreatedAt:     now.Format(time.RFC3339),
+		PromptHistory: []PromptRecord{{At: now.Format(time.RFC3339), Prompt: prompt}},
+	}
+	if err := writeTask(store, task); err != nil {
+		routine.FailureCount++
+		routines[index] = routine
+		_ = store.WriteJSON(store.Path("routines.json"), routines)
+		return nil, err
+	}
+	routine.LastRunAt = now.Format(time.RFC3339)
+	routine.NextRunAt = nextRoutineRun(routine.Schedule, now, routine.LastRunAt)
+	routine.RunCount++
+	routine.FailureCount = 0
+	routine.DisabledReason = ""
+	routine.UpdatedAt = now.Format(time.RFC3339)
+	routines[index] = routine
+	if err := store.WriteJSON(store.Path("routines.json"), routines); err != nil {
+		return nil, err
+	}
+	if err := store.AppendEvent(EventInfo{ID: "event-routine-trigger-" + stableID(routine.ID+"-"+task.ID), At: now.Format(time.RFC3339), Kind: "RoutineTriggered", Message: fmt.Sprintf("%s spawned %s", routine.Name, task.ID)}); err != nil {
+		return nil, err
+	}
+	return &task, nil
+}
+
+func persistRoutineFailure(store *WorkspaceStore, routines []RoutineInfo, index int, automation AutomationInfo, reason string, now time.Time) error {
+	routine := routines[index]
+	routine.FailureCount++
+	routine.DisabledReason = reason
+	if routine.FailureCount >= automation.CircuitBreakerFailureLimit {
+		routine.Enabled = false
+		routine.DisabledReason = "circuit breaker: " + reason
+	}
+	routine.UpdatedAt = now.Format(time.RFC3339)
+	routines[index] = routine
+	if err := store.WriteJSON(store.Path("routines.json"), routines); err != nil {
+		return err
+	}
+	return store.AppendEvent(EventInfo{ID: "event-routine-failed-" + stableID(routine.ID+"-"+now.String()), At: now.Format(time.RFC3339), Kind: "RoutineSkipped", Message: routine.DisabledReason})
+}
+
+func activeRoutineTaskCount(tasks []TaskInfo) int {
+	count := 0
+	for _, task := range tasks {
+		if task.Archived || task.Deleted || task.Tombstone {
+			continue
+		}
+		switch normalizeTaskStatus(task.Status) {
+		case "done", "failed", "cancelled":
+			continue
+		default:
+			count++
+		}
+	}
+	return count
+}
+
+func routineDue(routine RoutineInfo, now time.Time) bool {
+	routine = hydrateRoutine(routine, now)
+	if !routine.Enabled || routine.Schedule == "manual" {
+		return false
+	}
+	if strings.TrimSpace(routine.NextRunAt) == "" {
+		return false
+	}
+	next, err := time.Parse(time.RFC3339, routine.NextRunAt)
+	if err != nil {
+		return true
+	}
+	return !next.After(now)
+}
+
+func nextRoutineRun(schedule string, now time.Time, lastRunAt string) string {
+	schedule = strings.ToLower(strings.TrimSpace(schedule))
+	if schedule == "" || schedule == "manual" {
+		return ""
+	}
+	base := now
+	if lastRunAt != "" {
+		if parsed, err := time.Parse(time.RFC3339, lastRunAt); err == nil {
+			base = parsed
+		}
+	}
+	switch schedule {
+	case "hourly":
+		return base.Add(time.Hour).UTC().Format(time.RFC3339)
+	case "daily":
+		return base.AddDate(0, 0, 1).UTC().Format(time.RFC3339)
+	case "weekly":
+		return base.AddDate(0, 0, 7).UTC().Format(time.RFC3339)
+	case "now":
+		if lastRunAt != "" {
+			return ""
+		}
+		return now.UTC().Format(time.RFC3339)
+	default:
+		if strings.HasPrefix(schedule, "every ") {
+			if duration, err := time.ParseDuration(strings.TrimSpace(strings.TrimPrefix(schedule, "every "))); err == nil {
+				return base.Add(duration).UTC().Format(time.RFC3339)
+			}
+		}
+		return ""
+	}
 }
 
 func loadAgentRoles(root string, providers []ProviderInfo) ([]AgentRoleInfo, error) {

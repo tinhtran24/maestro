@@ -1,8 +1,10 @@
 import { CalendarClock, MessageSquare, PenTool, Settings } from "lucide-react";
 import { useState } from "react";
 import type { Workspace } from "../app/types";
-import { saveAutomation, upsertRoutine } from "../services/wails";
+import { runRoutineScheduler, saveAutomation, triggerRoutine, upsertRoutine } from "../services/wails";
 import { Panel } from "../shared/Panel";
+
+type AutomationToggle = "autoImplement" | "autoTest" | "autoSubmit" | "autoRetry";
 
 export function ChatView() {
   return (
@@ -29,6 +31,18 @@ export function RoutinesView({ workspace, onReload }: { workspace: Workspace; on
     await onReload();
   }
 
+  async function runScheduler() {
+    if (!workspace.path) return;
+    await runRoutineScheduler({ root: workspace.path });
+    await onReload();
+  }
+
+  async function runRoutine(routineId: string) {
+    if (!workspace.path) return;
+    await triggerRoutine({ root: workspace.path, routineId });
+    await onReload();
+  }
+
   return (
     <Panel title="Routines" meta="scheduled prompts">
       <form className="routine-form" onSubmit={submitRoutine}>
@@ -43,10 +57,14 @@ export function RoutinesView({ workspace, onReload }: { workspace: Workspace; on
           <article key={routine.id}>
             <strong>{routine.name}</strong>
             <span>{routine.schedule} · {routine.enabled ? "enabled" : "disabled"} · {routine.flow}</span>
+            <span>runs {routine.runCount ?? 0} · failures {routine.failureCount ?? 0}{routine.nextRunAt ? ` · next ${routine.nextRunAt}` : ""}</span>
             <p>{routine.prompt}</p>
+            {routine.disabledReason ? <p className="diagnostic">Stopped: {routine.disabledReason}</p> : null}
+            <button onClick={() => runRoutine(routine.id)} disabled={!workspace.path || !routine.enabled} type="button">Trigger Routine</button>
           </article>
         ))}
       </div>
+      <button className="wide-action" onClick={runScheduler} disabled={!workspace.path} type="button"><CalendarClock size={16} /> Run Scheduler Tick</button>
     </Panel>
   );
 }
@@ -72,9 +90,23 @@ export function AnalyticsView({ workspace }: { workspace: Workspace }) {
 
 export function SettingsView({ runtime, workspace, onReload }: { runtime: string; workspace: Workspace; onReload: () => Promise<void> }) {
   const installed = workspace.providers.filter((provider) => provider.status === "installed");
-  async function toggle(key: keyof Workspace["automation"]) {
+  const [maxConcurrent, setMaxConcurrent] = useState(String(workspace.automation.maxConcurrentRoutineTasks || 3));
+  const [failureLimit, setFailureLimit] = useState(String(workspace.automation.circuitBreakerFailureLimit || 3));
+  async function toggle(key: AutomationToggle) {
     if (!workspace.path) return;
     await saveAutomation({ root: workspace.path, automation: { ...workspace.automation, [key]: !workspace.automation[key] } });
+    await onReload();
+  }
+  async function saveLimits() {
+    if (!workspace.path) return;
+    await saveAutomation({
+      root: workspace.path,
+      automation: {
+        ...workspace.automation,
+        maxConcurrentRoutineTasks: Number(maxConcurrent) || 3,
+        circuitBreakerFailureLimit: Number(failureLimit) || 3,
+      },
+    });
     await onReload();
   }
   return (
@@ -88,6 +120,11 @@ export function SettingsView({ runtime, workspace, onReload }: { runtime: string
               {key}: {workspace.automation[key] ? "on" : "off"}
             </button>
           ))}
+        </div>
+        <div className="automation-limits">
+          <label>Max Concurrent Routine Tasks<input value={maxConcurrent} onChange={(event) => setMaxConcurrent(event.target.value)} type="number" min="1" /></label>
+          <label>Circuit Breaker Failure Limit<input value={failureLimit} onChange={(event) => setFailureLimit(event.target.value)} type="number" min="1" /></label>
+          <button onClick={saveLimits} type="button">Save Limits</button>
         </div>
         <div className="provider-table">
           {workspace.providers.map((provider) => (

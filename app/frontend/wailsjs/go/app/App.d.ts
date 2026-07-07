@@ -42,6 +42,8 @@ export function ResumeTaskTurn(arg1:app.ResumeTaskTurnRequest):Promise<app.TaskI
 
 export function RunTaskVerification(arg1:app.RunTaskVerificationRequest):Promise<app.TaskInfo>;
 
+export function RunRoutineScheduler(arg1:app.RunRoutineSchedulerRequest):Promise<Array<app.TaskInfo>>;
+
 export function SaveAutomation(arg1:app.SaveAutomationRequest):Promise<app.AutomationInfo>;
 
 export function SearchTasks(arg1:app.SearchTasksRequest):Promise<Array<app.TaskInfo>>;
@@ -53,6 +55,8 @@ export function StartNativeTerminal(arg1:app.NativeTerminalRequest):Promise<app.
 export function StartTaskTurn(arg1:app.StartTaskTurnRequest):Promise<app.TaskInfo>;
 
 export function StopNativeTerminal(arg1:string):Promise<boolean>;
+
+export function TriggerRoutine(arg1:app.TriggerRoutineRequest):Promise<app.TaskInfo>;
 
 export function UpdateTaskFlags(arg1:app.UpdateTaskFlagsRequest):Promise<app.TaskInfo>;
 

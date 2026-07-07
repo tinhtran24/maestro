@@ -635,6 +635,68 @@ func TestRealProviderPersistsWorkspacePrimitives(t *testing.T) {
 	}
 }
 
+func TestRoutineTriggerSchedulerAndCircuitBreaker(t *testing.T) {
+	root := t.TempDir()
+	provider := NewRealProvider()
+	provider.now = func() time.Time { return time.Date(2026, 7, 8, 10, 0, 0, 0, time.UTC) }
+
+	routine, err := provider.UpsertRoutine(UpsertRoutineRequest{Root: root, Name: "Morning Review", Prompt: "Find stale specs", Schedule: "now", Flow: "implement", Enabled: true})
+	if err != nil {
+		t.Fatalf("UpsertRoutine returned error: %v", err)
+	}
+	task, err := provider.TriggerRoutine(TriggerRoutineRequest{Root: root, RoutineID: routine.ID})
+	if err != nil {
+		t.Fatalf("TriggerRoutine returned error: %v", err)
+	}
+	if task.Title != "Morning Review" || !strings.Contains(task.Prompt, "Routine: "+routine.ID) {
+		t.Fatalf("triggered task = %#v", task)
+	}
+	loaded, err := provider.LoadWorkspace(root)
+	if err != nil {
+		t.Fatalf("LoadWorkspace returned error: %v", err)
+	}
+	if len(loaded.Routines) != 1 || loaded.Routines[0].RunCount != 1 || loaded.Routines[0].LastRunAt == "" {
+		t.Fatalf("routine run state = %#v", loaded.Routines)
+	}
+
+	provider.now = func() time.Time { return time.Date(2026, 7, 8, 10, 5, 0, 0, time.UTC) }
+	due, err := provider.UpsertRoutine(UpsertRoutineRequest{Root: root, Name: "Due Routine", Prompt: "Spawn from scheduler", Schedule: "now", Flow: "implement", Enabled: true})
+	if err != nil {
+		t.Fatalf("UpsertRoutine due returned error: %v", err)
+	}
+	scheduled, err := provider.RunRoutineScheduler(RunRoutineSchedulerRequest{Root: root})
+	if err != nil {
+		t.Fatalf("RunRoutineScheduler returned error: %v", err)
+	}
+	if len(scheduled) != 1 || scheduled[0].Title != due.Name {
+		t.Fatalf("scheduled tasks = %#v", scheduled)
+	}
+
+	if _, err := provider.SaveAutomation(SaveAutomationRequest{Root: root, Automation: AutomationInfo{MaxConcurrentRoutineTasks: 1, CircuitBreakerFailureLimit: 2}}); err != nil {
+		t.Fatalf("SaveAutomation returned error: %v", err)
+	}
+	provider.now = func() time.Time { return time.Date(2026, 7, 8, 10, 10, 0, 0, time.UTC) }
+	blocked, err := provider.UpsertRoutine(UpsertRoutineRequest{Root: root, Name: "Blocked Routine", Prompt: "Should trip", Schedule: "now", Flow: "implement", Enabled: true})
+	if err != nil {
+		t.Fatalf("UpsertRoutine blocked returned error: %v", err)
+	}
+	if _, err := provider.RunRoutineScheduler(RunRoutineSchedulerRequest{Root: root}); err != nil {
+		t.Fatalf("RunRoutineScheduler first blocked returned error: %v", err)
+	}
+	if _, err := provider.RunRoutineScheduler(RunRoutineSchedulerRequest{Root: root}); err != nil {
+		t.Fatalf("RunRoutineScheduler second blocked returned error: %v", err)
+	}
+	loaded, err = provider.LoadWorkspace(root)
+	if err != nil {
+		t.Fatalf("LoadWorkspace after circuit breaker returned error: %v", err)
+	}
+	for _, item := range loaded.Routines {
+		if item.ID == blocked.ID && (item.Enabled || !strings.Contains(item.DisabledReason, "circuit breaker")) {
+			t.Fatalf("circuit breaker routine = %#v", item)
+		}
+	}
+}
+
 func TestTaskLifecycleRejectsInvalidTransitionsAndBlocksDependencies(t *testing.T) {
 	root := t.TempDir()
 	provider := NewRealProvider()
