@@ -1,6 +1,22 @@
 # Thanos Board UI Spec
 
 ## Goal
+Users should be able to paste anything.
+
+Examples:
+
+- Plain text
+- Screenshot
+- UI mockup
+- Figma link
+- GitHub issue
+- Jira URL
+- Markdown
+- Requirements document
+- Multiple images
+- Mixed text + images
+
+The AI should automatically convert the input into a structured engineering task.
 
 Improve the Board screen into a focused AI task execution board with a
 lightweight New Task sidebar.
@@ -84,9 +100,10 @@ Placeholder:
 
 > Enter a clear, concise title...
 
-### Prompt / Description
+###  User Requirements / Description / Prompt
 
-Large textarea or markdown editor.
+Markdown editor.
+Image Input
 
 Placeholder:
 
@@ -114,7 +131,7 @@ Cancel                Create task
 
 ## Validation
 
-Required: - Title - Prompt / Description
+Required: - Title - User Requirements / Description / Prompt
 
 ## Keyboard Shortcuts
 
