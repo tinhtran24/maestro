@@ -96,6 +96,7 @@ export function BoardView({ workspace, onReload }: { workspace: Workspace; onRel
           <span>${task.usageUsd.toFixed(2)}</span>
           {task.lastTurn ? <span>{task.lastTurn.step}: {task.lastTurn.status}</span> : null}
           {task.lastTestResult ? <span>tests: {task.lastTestResult.status}</span> : null}
+          {task.commit?.hash ? <span>commit: {task.commit.hash.slice(0, 12)}</span> : task.commit ? <span>commit ready</span> : null}
           {task.dependencies.length ? <span>{task.dependencies.length} deps</span> : null}
           {task.blocked ? <span>blocked</span> : null}
           {task.failureCategory ? <span>{task.failureCategory}</span> : null}

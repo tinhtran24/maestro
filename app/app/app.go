@@ -115,6 +115,22 @@ func (a *App) RunTaskVerification(request RunTaskVerificationRequest) (*TaskInfo
 	return a.provider.RunTaskVerification(ctx, request)
 }
 
+func (a *App) PrepareTaskCommit(request PrepareTaskCommitRequest) (*TaskInfo, error) {
+	ctx := a.ctx
+	if ctx == nil {
+		ctx = context.Background()
+	}
+	return a.provider.PrepareTaskCommit(ctx, request)
+}
+
+func (a *App) CommitTaskChanges(request CommitTaskChangesRequest) (*TaskInfo, error) {
+	ctx := a.ctx
+	if ctx == nil {
+		ctx = context.Background()
+	}
+	return a.provider.CommitTaskChanges(ctx, request)
+}
+
 func (a *App) CreateSpec(request CreateSpecRequest) (*SpecNodeInfo, error) {
 	return a.provider.CreateSpec(request)
 }

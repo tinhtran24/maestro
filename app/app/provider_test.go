@@ -2,7 +2,9 @@ package app
 
 import (
 	"context"
+	"encoding/json"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"reflect"
 	"strings"
@@ -323,12 +325,117 @@ func TestTaskVerificationStoresResultAndGatesDone(t *testing.T) {
 	if _, err := provider.UpdateTaskStatus(UpdateTaskStatusRequest{Root: root, TaskID: task.ID, Status: "committing"}); err != nil {
 		t.Fatalf("move committing after pass: %v", err)
 	}
+	if _, err := provider.UpdateTaskStatus(UpdateTaskStatusRequest{Root: root, TaskID: task.ID, Status: "done"}); err == nil || !strings.Contains(err.Error(), "committing task worktree") {
+		t.Fatalf("expected commit gate after passing verification, got %v", err)
+	}
+}
+
+func TestCommitPipelineRequiresApprovalAndRecordsCommit(t *testing.T) {
+	root := t.TempDir()
+	provider := NewRealProvider()
+	provider.now = func() time.Time { return time.Date(2026, 7, 7, 13, 0, 0, 0, time.UTC) }
+	task, err := provider.CreateTask(CreateTaskRequest{Root: root, Title: "Commit task", Prompt: "Change file", Agent: "codex"})
+	if err != nil {
+		t.Fatalf("CreateTask returned error: %v", err)
+	}
+	worktree := filepath.Join(root, filepath.FromSlash(task.Worktree))
+	initGitRepo(t, worktree)
+	if err := os.WriteFile(filepath.Join(worktree, "app.txt"), []byte("after\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(worktree, "new.txt"), []byte("new\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	for _, status := range []string{"in_progress", "waiting", "committing"} {
+		if _, err := provider.UpdateTaskStatus(UpdateTaskStatusRequest{Root: root, TaskID: task.ID, Status: status}); err != nil {
+			t.Fatalf("move %s: %v", status, err)
+		}
+	}
+	if _, err := provider.UpdateTaskStatus(UpdateTaskStatusRequest{Root: root, TaskID: task.ID, Status: "done"}); err == nil || !strings.Contains(err.Error(), "committing task worktree") {
+		t.Fatalf("expected done gate before commit, got %v", err)
+	}
+
+	preview, err := provider.PrepareTaskCommit(context.Background(), PrepareTaskCommitRequest{
+		Root:    root,
+		TaskID:  task.ID,
+		Message: "task: commit worktree output",
+	})
+	if err != nil {
+		t.Fatalf("PrepareTaskCommit returned error: %v", err)
+	}
+	if preview.Commit == nil || preview.Commit.Approved || preview.Commit.Committed || !strings.Contains(preview.Commit.Diff, "after") || !strings.Contains(preview.Commit.DiffStat, "new.txt") {
+		t.Fatalf("preview commit = %#v", preview.Commit)
+	}
+	if _, err := provider.CommitTaskChanges(context.Background(), CommitTaskChangesRequest{Root: root, TaskID: task.ID, Message: preview.Commit.Message}); err == nil || !strings.Contains(err.Error(), "approval") {
+		t.Fatalf("expected approval error, got %v", err)
+	}
+
+	committed, err := provider.CommitTaskChanges(context.Background(), CommitTaskChangesRequest{
+		Root:     root,
+		TaskID:   task.ID,
+		Message:  preview.Commit.Message,
+		Approved: true,
+	})
+	if err != nil {
+		t.Fatalf("CommitTaskChanges returned error: %v", err)
+	}
+	if committed.Commit == nil || !committed.Commit.Committed || !committed.Commit.Approved || committed.Commit.Hash == "" || committed.Commit.Summary != "task: commit worktree output" {
+		t.Fatalf("committed task = %#v", committed.Commit)
+	}
 	done, err := provider.UpdateTaskStatus(UpdateTaskStatusRequest{Root: root, TaskID: task.ID, Status: "done"})
 	if err != nil {
-		t.Fatalf("move done after pass: %v", err)
+		t.Fatalf("done after commit returned error: %v", err)
 	}
-	if done.Status != "done" {
+	if done.Status != "done" || done.Commit == nil || done.Commit.Hash == "" {
 		t.Fatalf("done task = %#v", done)
+	}
+}
+
+func initGitRepo(t *testing.T, dir string) {
+	t.Helper()
+	if err := os.MkdirAll(dir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	runGit(t, dir, "init")
+	runGit(t, dir, "config", "user.email", "test@example.com")
+	runGit(t, dir, "config", "user.name", "Test User")
+	if err := os.WriteFile(filepath.Join(dir, "app.txt"), []byte("before\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	runGit(t, dir, "add", "app.txt")
+	runGit(t, dir, "commit", "-m", "initial")
+}
+
+func runGit(t *testing.T, dir string, args ...string) {
+	t.Helper()
+	cmd := exec.Command("git", args...)
+	cmd.Dir = dir
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		t.Fatalf("git %s failed: %v\n%s", strings.Join(args, " "), err, string(output))
+	}
+}
+
+func markTaskCommitted(t *testing.T, root, taskID string) {
+	t.Helper()
+	path := filepath.Join(root, ".thanos", "tasks", taskID+".json")
+	data, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var raw map[string]any
+	if err := json.Unmarshal(data, &raw); err != nil {
+		t.Fatal(err)
+	}
+	raw["commit"] = map[string]any{
+		"hash":      "abc123",
+		"summary":   "task: test commit",
+		"message":   "task: test commit",
+		"approved":  true,
+		"committed": true,
+	}
+	if err := writeJSON(path, raw); err != nil {
+		t.Fatal(err)
 	}
 }
 
@@ -443,10 +550,14 @@ func TestTaskLifecycleRejectsInvalidTransitionsAndBlocksDependencies(t *testing.
 	if _, err := provider.UpdateTaskStatus(UpdateTaskStatusRequest{Root: root, TaskID: parent.ID, Status: "done"}); err == nil {
 		t.Fatal("expected backlog -> done to be rejected")
 	}
-	for _, status := range []string{"in_progress", "committing", "done"} {
+	for _, status := range []string{"in_progress", "committing"} {
 		if _, err := provider.UpdateTaskStatus(UpdateTaskStatusRequest{Root: root, TaskID: parent.ID, Status: status}); err != nil {
 			t.Fatalf("parent transition to %s returned error: %v", status, err)
 		}
+	}
+	markTaskCommitted(t, root, parent.ID)
+	if _, err := provider.UpdateTaskStatus(UpdateTaskStatusRequest{Root: root, TaskID: parent.ID, Status: "done"}); err != nil {
+		t.Fatalf("parent transition to done returned error: %v", err)
 	}
 	updatedChild, err := provider.UpdateTaskStatus(UpdateTaskStatusRequest{Root: root, TaskID: child.ID, Status: "in_progress"})
 	if err != nil {

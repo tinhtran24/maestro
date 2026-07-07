@@ -550,6 +550,7 @@ export namespace app {
 	    lastOutput?: string;
 	    testsPassed: boolean;
 	    lastTestResult?: TestResultInfo;
+	    commit?: CommitInfo;
 	    failureCategory: string;
 	    createdAt: string;
 	
@@ -583,6 +584,7 @@ export namespace app {
 	        this.lastOutput = source["lastOutput"];
 	        this.testsPassed = source["testsPassed"];
 	        this.lastTestResult = this.convertValues(source["lastTestResult"], TestResultInfo);
+	        this.commit = this.convertValues(source["commit"], CommitInfo);
 	        this.failureCategory = source["failureCategory"];
 	        this.createdAt = source["createdAt"];
 	    }
@@ -713,6 +715,66 @@ export namespace app {
 	        this.root = source["root"];
 	        this.taskId = source["taskId"];
 	        this.feedback = source["feedback"];
+	    }
+	}
+	export class CommitInfo {
+	    hash?: string;
+	    summary: string;
+	    message: string;
+	    diff: string;
+	    diffStat: string;
+	    approved: boolean;
+	    committed: boolean;
+	    committedAt?: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new CommitInfo(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.hash = source["hash"];
+	        this.summary = source["summary"];
+	        this.message = source["message"];
+	        this.diff = source["diff"];
+	        this.diffStat = source["diffStat"];
+	        this.approved = source["approved"];
+	        this.committed = source["committed"];
+	        this.committedAt = source["committedAt"];
+	    }
+	}
+	export class PrepareTaskCommitRequest {
+	    root: string;
+	    taskId: string;
+	    message: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new PrepareTaskCommitRequest(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.root = source["root"];
+	        this.taskId = source["taskId"];
+	        this.message = source["message"];
+	    }
+	}
+	export class CommitTaskChangesRequest {
+	    root: string;
+	    taskId: string;
+	    message: string;
+	    approved: boolean;
+	
+	    static createFrom(source: any = {}) {
+	        return new CommitTaskChangesRequest(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.root = source["root"];
+	        this.taskId = source["taskId"];
+	        this.message = source["message"];
+	        this.approved = source["approved"];
 	    }
 	}
 	export class TestResultInfo {

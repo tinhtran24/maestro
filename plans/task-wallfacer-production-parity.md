@@ -250,7 +250,7 @@ Acceptance:
 
 ### 10. Commit and Submit Pipeline
 
-Status: Next.
+Status: Done.
 
 Goal: safely finish task output.
 
@@ -268,6 +268,8 @@ Acceptance:
 - Done task records commit hash and summary.
 
 ### 11. Oversight
+
+Status: Next.
 
 Goal: Wallfacer-style review visibility.
 

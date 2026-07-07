@@ -86,6 +86,24 @@ separately from implementation logs:
 Pass and fail patterns can override the default verdict parser. When automation
 requires tests, `done` is blocked until the latest verification passes.
 
+## Commit Pipeline
+
+Task completion requires committed worktree output. The commit pipeline prepares
+a diff and commit message preview before any commit is created. The actual
+commit requires explicit approval and runs inside the task worktree.
+
+Commit metadata is stored on the task record:
+
+```text
+commit.hash
+commit.summary
+commit.message
+commit.diffStat
+```
+
+Merge and cherry-pick operations remain separate from task completion and
+require a later explicit approval flow.
+
 ## Local Files
 
 Important workspace paths:

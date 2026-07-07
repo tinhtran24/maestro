@@ -12,6 +12,8 @@ export function CreateTask(arg1:app.CreateTaskRequest):Promise<app.TaskInfo>;
 
 export function CreateWorkspace(arg1:app.CreateWorkspaceRequest):Promise<app.WorkspaceRecordInfo>;
 
+export function CommitTaskChanges(arg1:app.CommitTaskChangesRequest):Promise<app.TaskInfo>;
+
 export function CurrentWorkspaceFolder():Promise<string>;
 
 export function DeleteWorkspace(arg1:app.DeleteWorkspaceRequest):Promise<app.WorkspaceRegistryInfo>;
@@ -27,6 +29,8 @@ export function LoadActiveWorkspace():Promise<app.WorkspaceInfo>;
 export function LoadWorkspace(arg1:string):Promise<app.WorkspaceInfo>;
 
 export function Ping():Promise<string>;
+
+export function PrepareTaskCommit(arg1:app.PrepareTaskCommitRequest):Promise<app.TaskInfo>;
 
 export function ResizeNativeTerminal(arg1:app.NativeTerminalResizeRequest):Promise<void>;
 

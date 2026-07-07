@@ -45,6 +45,7 @@ export type Task = {
   lastOutput?: string;
   testsPassed: boolean;
   lastTestResult?: TestResultInfo;
+  commit?: CommitInfo;
   failureCategory: string;
   createdAt: string;
 };
@@ -97,6 +98,17 @@ export type TestResultInfo = {
   failPattern?: string;
   startedAt: string;
   endedAt: string;
+};
+
+export type CommitInfo = {
+  hash?: string;
+  summary: string;
+  message: string;
+  diff: string;
+  diffStat: string;
+  approved: boolean;
+  committed: boolean;
+  committedAt?: string;
 };
 
 export type SpecNode = {
@@ -202,6 +214,19 @@ export type RunTaskVerificationRequest = {
   providerId?: string;
   passPattern?: string;
   failPattern?: string;
+};
+
+export type PrepareTaskCommitRequest = {
+  root: string;
+  taskId: string;
+  message?: string;
+};
+
+export type CommitTaskChangesRequest = {
+  root: string;
+  taskId: string;
+  message?: string;
+  approved: boolean;
 };
 
 export type BatchCreateTasksRequest = {

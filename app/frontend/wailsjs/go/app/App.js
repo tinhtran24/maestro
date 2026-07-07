@@ -22,6 +22,10 @@ export function CreateWorkspace(arg1) {
   return window['go']['app']['App']['CreateWorkspace'](arg1);
 }
 
+export function CommitTaskChanges(arg1) {
+  return window['go']['app']['App']['CommitTaskChanges'](arg1);
+}
+
 export function CurrentWorkspaceFolder() {
   return window['go']['app']['App']['CurrentWorkspaceFolder']();
 }
@@ -52,6 +56,10 @@ export function LoadWorkspace(arg1) {
 
 export function Ping() {
   return window['go']['app']['App']['Ping']();
+}
+
+export function PrepareTaskCommit(arg1) {
+  return window['go']['app']['App']['PrepareTaskCommit'](arg1);
 }
 
 export function ResizeNativeTerminal(arg1) {

@@ -2,6 +2,7 @@ import type {
   AutomationInfo,
   ActivateWorkspaceRequest,
   BatchCreateTasksRequest,
+  CommitTaskChangesRequest,
   CreateWorkspaceRequest,
   CreateSpecRequest,
   CreateTaskRequest,
@@ -11,6 +12,7 @@ import type {
   NativeTerminalResizeRequest,
   NativeTerminalSession,
   ProviderInfo,
+  PrepareTaskCommitRequest,
   FinishTaskTurnRequest,
   ResumeTaskTurnRequest,
   RunTaskVerificationRequest,
@@ -52,6 +54,8 @@ type WailsApp = {
   FinishTaskTurn?: (request: FinishTaskTurnRequest) => Promise<Task>;
   ResumeTaskTurn?: (request: ResumeTaskTurnRequest) => Promise<Task>;
   RunTaskVerification?: (request: RunTaskVerificationRequest) => Promise<Task>;
+  PrepareTaskCommit?: (request: PrepareTaskCommitRequest) => Promise<Task>;
+  CommitTaskChanges?: (request: CommitTaskChangesRequest) => Promise<Task>;
   CreateSpec?: (request: CreateSpecRequest) => Promise<SpecNode>;
   UpsertRoutine?: (request: UpsertRoutineRequest) => Promise<RoutineInfo>;
   SaveAutomation?: (request: SaveAutomationRequest) => Promise<AutomationInfo>;
@@ -156,6 +160,14 @@ export async function resumeTaskTurn(request: ResumeTaskTurnRequest): Promise<Ta
 
 export async function runTaskVerification(request: RunTaskVerificationRequest): Promise<Task | null> {
   return (await app().RunTaskVerification?.(request)) ?? null;
+}
+
+export async function prepareTaskCommit(request: PrepareTaskCommitRequest): Promise<Task | null> {
+  return (await app().PrepareTaskCommit?.(request)) ?? null;
+}
+
+export async function commitTaskChanges(request: CommitTaskChangesRequest): Promise<Task | null> {
+  return (await app().CommitTaskChanges?.(request)) ?? null;
 }
 
 export async function createSpec(request: CreateSpecRequest): Promise<SpecNode | null> {

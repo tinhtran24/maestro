@@ -66,6 +66,7 @@ type TaskInfo struct {
 	LastOutput      string           `json:"lastOutput,omitempty"`
 	TestsPassed     bool             `json:"testsPassed"`
 	LastTestResult  *TestResultInfo  `json:"lastTestResult,omitempty"`
+	Commit          *CommitInfo      `json:"commit,omitempty"`
 	FailureCategory string           `json:"failureCategory"`
 	CreatedAt       string           `json:"createdAt"`
 }
@@ -120,6 +121,17 @@ type TestResultInfo struct {
 	EndedAt     string `json:"endedAt"`
 }
 
+type CommitInfo struct {
+	Hash        string `json:"hash,omitempty"`
+	Summary     string `json:"summary"`
+	Message     string `json:"message"`
+	Diff        string `json:"diff"`
+	DiffStat    string `json:"diffStat"`
+	Approved    bool   `json:"approved"`
+	Committed   bool   `json:"committed"`
+	CommittedAt string `json:"committedAt,omitempty"`
+}
+
 type CreateTaskRequest struct {
 	Root         string   `json:"root"`
 	Title        string   `json:"title"`
@@ -172,6 +184,19 @@ type RunTaskVerificationRequest struct {
 	ProviderID  string `json:"providerId"`
 	PassPattern string `json:"passPattern"`
 	FailPattern string `json:"failPattern"`
+}
+
+type PrepareTaskCommitRequest struct {
+	Root    string `json:"root"`
+	TaskID  string `json:"taskId"`
+	Message string `json:"message"`
+}
+
+type CommitTaskChangesRequest struct {
+	Root     string `json:"root"`
+	TaskID   string `json:"taskId"`
+	Message  string `json:"message"`
+	Approved bool   `json:"approved"`
 }
 
 type BatchCreateTasksRequest struct {
@@ -557,6 +582,9 @@ func (p *RealProvider) UpdateTaskStatus(req UpdateTaskStatusRequest) (*TaskInfo,
 				if automation.AutoTest && !task.TestsPassed {
 					return fmt.Errorf("task %s cannot be done before passing verification", task.ID)
 				}
+				if task.Commit == nil || !task.Commit.Committed || task.Commit.Hash == "" {
+					return fmt.Errorf("task %s cannot be done before committing task worktree changes", task.ID)
+				}
 			}
 			task.SchemaVersion = SchemaVersionTask
 			previousStatus := task.Status
@@ -841,6 +869,130 @@ func (p *RealProvider) RunTaskVerification(ctx context.Context, req RunTaskVerif
 				return err
 			}
 			if err := store.AppendEvent(EventInfo{ID: "event-test-" + stableID(task.ID+"-"+result.ID+"-"+endedAt), At: endedAt, Kind: "TaskVerificationFinished", Message: fmt.Sprintf("%s verification %s", task.Title, result.Status)}); err != nil {
+				return err
+			}
+			copied := task
+			updated = &copied
+			return nil
+		}
+		return fmt.Errorf("task not found: %s", req.TaskID)
+	})
+	if err != nil {
+		return nil, err
+	}
+	return updated, nil
+}
+
+func (p *RealProvider) PrepareTaskCommit(ctx context.Context, req PrepareTaskCommitRequest) (*TaskInfo, error) {
+	root, err := normalizeWorkspaceRoot(req.Root)
+	if err != nil {
+		return nil, err
+	}
+	var updated *TaskInfo
+	store := NewWorkspaceStore(root)
+	err = store.WithLock(func() error {
+		tasks, err := loadTasks(root)
+		if err != nil {
+			return err
+		}
+		for _, task := range tasks {
+			if task.ID != req.TaskID {
+				continue
+			}
+			task = hydrateTask(task)
+			worktree := resolveTaskWorktree(root, task)
+			if worktree == "" {
+				return fmt.Errorf("task %s cannot prepare commit without an isolated worktree", task.ID)
+			}
+			diff, diffStat, err := taskGitDiff(ctx, worktree)
+			if err != nil {
+				return err
+			}
+			message := normalizeCommitMessage(req.Message, task)
+			task.Commit = &CommitInfo{
+				Summary:  firstLine(message),
+				Message:  message,
+				Diff:     diff,
+				DiffStat: diffStat,
+				Approved: false,
+			}
+			task.UpdatedAt = p.now().UTC().Format(time.RFC3339)
+			if err := writeTask(store, task); err != nil {
+				return err
+			}
+			if err := store.AppendEvent(EventInfo{ID: "event-commit-preview-" + stableID(task.ID+"-"+task.UpdatedAt), At: task.UpdatedAt, Kind: "TaskCommitPrepared", Message: task.Commit.Summary}); err != nil {
+				return err
+			}
+			copied := task
+			updated = &copied
+			return nil
+		}
+		return fmt.Errorf("task not found: %s", req.TaskID)
+	})
+	if err != nil {
+		return nil, err
+	}
+	return updated, nil
+}
+
+func (p *RealProvider) CommitTaskChanges(ctx context.Context, req CommitTaskChangesRequest) (*TaskInfo, error) {
+	root, err := normalizeWorkspaceRoot(req.Root)
+	if err != nil {
+		return nil, err
+	}
+	if !req.Approved {
+		return nil, fmt.Errorf("explicit approval is required before committing task changes")
+	}
+	var updated *TaskInfo
+	store := NewWorkspaceStore(root)
+	err = store.WithLock(func() error {
+		tasks, err := loadTasks(root)
+		if err != nil {
+			return err
+		}
+		for _, task := range tasks {
+			if task.ID != req.TaskID {
+				continue
+			}
+			task = hydrateTask(task)
+			worktree := resolveTaskWorktree(root, task)
+			if worktree == "" {
+				return fmt.Errorf("task %s cannot commit without an isolated worktree", task.ID)
+			}
+			diff, diffStat, err := taskGitDiff(ctx, worktree)
+			if err != nil {
+				return err
+			}
+			if strings.TrimSpace(diff) == "" && strings.TrimSpace(diffStat) == "" {
+				return fmt.Errorf("task %s has no worktree changes to commit", task.ID)
+			}
+			message := normalizeCommitMessage(req.Message, task)
+			if _, err := gitOutput(ctx, worktree, "add", "-A"); err != nil {
+				return err
+			}
+			if _, err := gitOutput(ctx, worktree, "commit", "-m", message); err != nil {
+				return err
+			}
+			hash, err := gitOutput(ctx, worktree, "rev-parse", "HEAD")
+			if err != nil {
+				return err
+			}
+			now := p.now().UTC().Format(time.RFC3339)
+			task.Commit = &CommitInfo{
+				Hash:        strings.TrimSpace(hash),
+				Summary:     firstLine(message),
+				Message:     message,
+				Diff:        diff,
+				DiffStat:    diffStat,
+				Approved:    true,
+				Committed:   true,
+				CommittedAt: now,
+			}
+			task.UpdatedAt = now
+			if err := writeTask(store, task); err != nil {
+				return err
+			}
+			if err := store.AppendEvent(EventInfo{ID: "event-commit-" + stableID(task.ID+"-"+task.Commit.Hash), At: now, Kind: "TaskCommitted", Message: fmt.Sprintf("%s committed %s", task.Title, shortHash(task.Commit.Hash))}); err != nil {
 				return err
 			}
 			copied := task
@@ -1204,6 +1356,7 @@ func decodeTask(path, root string) (TaskInfo, bool) {
 		LastTestResult:  testResultFrom(raw),
 		FailureCategory: stringFrom(raw, "failure_category", "failureCategory", "FailureCategory"),
 		TestsPassed:     boolFrom(raw, "testsPassed", "tests_passed"),
+		Commit:          commitInfoFrom(raw),
 	}
 	return hydrateTask(task), true
 }
@@ -1724,6 +1877,64 @@ func countExistingTests(task TaskInfo) int {
 	return 1
 }
 
+func taskGitDiff(ctx context.Context, worktree string) (string, string, error) {
+	diff, err := gitOutput(ctx, worktree, "diff", "--")
+	if err != nil {
+		return "", "", err
+	}
+	staged, err := gitOutput(ctx, worktree, "diff", "--cached", "--")
+	if err != nil {
+		return "", "", err
+	}
+	stat, err := gitOutput(ctx, worktree, "diff", "--stat", "HEAD", "--")
+	if err != nil {
+		return "", "", err
+	}
+	status, err := gitOutput(ctx, worktree, "status", "--short")
+	if err != nil {
+		return "", "", err
+	}
+	diff = strings.TrimSpace(strings.TrimSpace(diff) + "\n" + strings.TrimSpace(staged))
+	diffStat := strings.TrimSpace(stat)
+	if strings.TrimSpace(status) != "" {
+		diffStat = strings.TrimSpace(strings.TrimSpace(diffStat) + "\n" + strings.TrimSpace(status))
+	}
+	return diff, diffStat, nil
+}
+
+func gitOutput(ctx context.Context, dir string, args ...string) (string, error) {
+	if ctx == nil {
+		ctx = context.Background()
+	}
+	cmd := exec.CommandContext(ctx, "git", args...)
+	cmd.Dir = dir
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		return string(output), fmt.Errorf("git %s: %w: %s", strings.Join(args, " "), err, strings.TrimSpace(string(output)))
+	}
+	return string(output), nil
+}
+
+func normalizeCommitMessage(message string, task TaskInfo) string {
+	message = strings.TrimSpace(message)
+	if message != "" {
+		return message
+	}
+	title := strings.TrimSpace(task.Title)
+	if title == "" {
+		title = task.ID
+	}
+	return "task: " + title
+}
+
+func shortHash(hash string) string {
+	hash = strings.TrimSpace(hash)
+	if len(hash) <= 12 {
+		return hash
+	}
+	return hash[:12]
+}
+
 func appendEvent(root string, event EventInfo) error {
 	path := filepath.Join(root, ".thanos", "events.jsonl")
 	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
@@ -2025,6 +2236,23 @@ func testResultFrom(raw map[string]any) *TestResultInfo {
 		FailPattern: stringFrom(record, "failPattern", "fail_pattern"),
 		StartedAt:   stringFrom(record, "startedAt", "started_at"),
 		EndedAt:     stringFrom(record, "endedAt", "ended_at"),
+	}
+}
+
+func commitInfoFrom(raw map[string]any) *CommitInfo {
+	record, ok := raw["commit"].(map[string]any)
+	if !ok {
+		return nil
+	}
+	return &CommitInfo{
+		Hash:        stringFrom(record, "hash"),
+		Summary:     stringFrom(record, "summary"),
+		Message:     stringFrom(record, "message"),
+		Diff:        stringFrom(record, "diff"),
+		DiffStat:    stringFrom(record, "diffStat", "diff_stat"),
+		Approved:    boolFrom(record, "approved"),
+		Committed:   boolFrom(record, "committed"),
+		CommittedAt: stringFrom(record, "committedAt", "committed_at"),
 	}
 }
 
