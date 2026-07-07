@@ -3,5 +3,7 @@
   "autoImplement": true,
   "autoTest": false,
   "autoSubmit": false,
-  "autoRetry": true
+  "autoRetry": false,
+  "maxConcurrentRoutineTasks": 3,
+  "circuitBreakerFailureLimit": 3
 }

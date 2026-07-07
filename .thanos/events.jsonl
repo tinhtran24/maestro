@@ -8,3 +8,12 @@
 {"schema_version":1,"id":"event-task-1783394062133191000-implement-milestone-1-waiting-2026-07-07t03-14-48z","at":"2026-07-07T03:14:48Z","kind":"TaskMoved","message":"Implement Milestone 1 -\u003e waiting"}
 {"schema_version":1,"id":"event-task-1783394062133191000-implement-milestone-1-in-progress-2026-07-07t03-14-52z","at":"2026-07-07T03:14:52Z","kind":"TaskMoved","message":"Implement Milestone 1 -\u003e in_progress"}
 {"schema_version":1,"id":"event-flags-task-1783394062133191000-implement-milestone-1-2026-07-07t03-16-31z","at":"2026-07-07T03:16:31Z","kind":"TaskFlagsUpdated","message":"Implement Milestone 1 archived=false deleted=true tombstone=true"}
+{"schema_version":1,"id":"event-automation-2026-07-07-14-55-31-436175--0700--07-m--67","at":"2026-07-07T07:55:31Z","kind":"AutomationSaved","message":"Automation toggles updated"}
+{"schema_version":1,"id":"event-automation-2026-07-07-14-55-31-814772--0700--07-m--67","at":"2026-07-07T07:55:31Z","kind":"AutomationSaved","message":"Automation toggles updated"}
+{"schema_version":1,"id":"event-automation-2026-07-07-14-55-33-275029--0700--07-m--68","at":"2026-07-07T07:55:33Z","kind":"AutomationSaved","message":"Automation toggles updated"}
+{"schema_version":1,"id":"event-automation-2026-07-07-14-55-34-761397--0700--07-m--70","at":"2026-07-07T07:55:34Z","kind":"AutomationSaved","message":"Automation toggles updated"}
+{"schema_version":1,"id":"event-spec-dispatch-2026-07-07-14-57-00-475024--0700--07-m--156","at":"2026-07-07T07:57:00Z","kind":"SpecsDispatched","message":"Dispatched 0 leaf specs"}
+{"schema_version":1,"id":"event-spec-specs-typography-rules","at":"2026-07-07T07:57:05Z","kind":"SpecCreated","message":"Typography Rules"}
+{"schema_version":1,"id":"event-task-1783411033694975000-typography-rules","at":"2026-07-07T07:57:13Z","kind":"TaskCreated","message":"Typography Rules"}
+{"schema_version":1,"id":"event-spec-dispatch-specs-typography-rules-md2026-07-07-14-57-13-741543--0700--07-m--169","at":"2026-07-07T07:57:13Z","kind":"SpecsDispatched","message":"Dispatched 1 leaf specs"}
+{"schema_version":1,"id":"event-task-1783411033694975000-typography-rules-in-progress-2026-07-07t07-57-21z","at":"2026-07-07T07:57:21Z","kind":"TaskMoved","message":"Typography Rules -\u003e in_progress"}
