@@ -13,6 +13,7 @@ import type {
   NativeTerminalSession,
   ProviderInfo,
   PrepareTaskCommitRequest,
+  RegenerateOversightRequest,
   FinishTaskTurnRequest,
   ResumeTaskTurnRequest,
   RunTaskVerificationRequest,
@@ -55,6 +56,7 @@ type WailsApp = {
   ResumeTaskTurn?: (request: ResumeTaskTurnRequest) => Promise<Task>;
   RunTaskVerification?: (request: RunTaskVerificationRequest) => Promise<Task>;
   PrepareTaskCommit?: (request: PrepareTaskCommitRequest) => Promise<Task>;
+  RegenerateOversight?: (request: RegenerateOversightRequest) => Promise<Task>;
   CommitTaskChanges?: (request: CommitTaskChangesRequest) => Promise<Task>;
   CreateSpec?: (request: CreateSpecRequest) => Promise<SpecNode>;
   UpsertRoutine?: (request: UpsertRoutineRequest) => Promise<RoutineInfo>;
@@ -164,6 +166,10 @@ export async function runTaskVerification(request: RunTaskVerificationRequest): 
 
 export async function prepareTaskCommit(request: PrepareTaskCommitRequest): Promise<Task | null> {
   return (await app().PrepareTaskCommit?.(request)) ?? null;
+}
+
+export async function regenerateOversight(request: RegenerateOversightRequest): Promise<Task | null> {
+  return (await app().RegenerateOversight?.(request)) ?? null;
 }
 
 export async function commitTaskChanges(request: CommitTaskChangesRequest): Promise<Task | null> {

@@ -51,6 +51,7 @@ export type Task = {
   testsPassed: boolean;
   lastTestResult?: TestResultInfo;
   commit?: CommitInfo;
+  oversight?: OversightInfo;
   failureCategory: string;
   createdAt: string;
 };
@@ -114,6 +115,23 @@ export type CommitInfo = {
   approved: boolean;
   committed: boolean;
   committedAt?: string;
+};
+
+export type OversightInfo = {
+  schema_version: number;
+  id: string;
+  taskId: string;
+  status: string;
+  summary: string;
+  phases: string[];
+  risks: string[];
+  changedFiles: string[];
+  commands: string[];
+  testResult: string;
+  usageUsd: number;
+  generatedAt: string;
+  path: string;
+  testPath?: string;
 };
 
 export type SpecNode = {
@@ -233,6 +251,11 @@ export type CommitTaskChangesRequest = {
   taskId: string;
   message?: string;
   approved: boolean;
+};
+
+export type RegenerateOversightRequest = {
+  root: string;
+  taskId: string;
 };
 
 export type BatchCreateTasksRequest = {

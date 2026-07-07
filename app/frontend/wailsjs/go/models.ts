@@ -156,6 +156,58 @@ export namespace app {
 	        this.approved = source["approved"];
 	    }
 	}
+	export class RegenerateOversightRequest {
+	    root: string;
+	    taskId: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new RegenerateOversightRequest(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.root = source["root"];
+	        this.taskId = source["taskId"];
+	    }
+	}
+	export class OversightInfo {
+	    schema_version: number;
+	    id: string;
+	    taskId: string;
+	    status: string;
+	    summary: string;
+	    phases: string[];
+	    risks: string[];
+	    changedFiles: string[];
+	    commands: string[];
+	    testResult: string;
+	    usageUsd: number;
+	    generatedAt: string;
+	    path: string;
+	    testPath?: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new OversightInfo(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.schema_version = source["schema_version"];
+	        this.id = source["id"];
+	        this.taskId = source["taskId"];
+	        this.status = source["status"];
+	        this.summary = source["summary"];
+	        this.phases = source["phases"];
+	        this.risks = source["risks"];
+	        this.changedFiles = source["changedFiles"];
+	        this.commands = source["commands"];
+	        this.testResult = source["testResult"];
+	        this.usageUsd = source["usageUsd"];
+	        this.generatedAt = source["generatedAt"];
+	        this.path = source["path"];
+	        this.testPath = source["testPath"];
+	    }
+	}
 	export class CreateSpecRequest {
 	    root: string;
 	    title: string;
@@ -781,6 +833,7 @@ export namespace app {
 	    testsPassed: boolean;
 	    lastTestResult?: TestResultInfo;
 	    commit?: CommitInfo;
+	    oversight?: OversightInfo;
 	    failureCategory: string;
 	    createdAt: string;
 	
@@ -815,6 +868,7 @@ export namespace app {
 	        this.testsPassed = source["testsPassed"];
 	        this.lastTestResult = this.convertValues(source["lastTestResult"], TestResultInfo);
 	        this.commit = this.convertValues(source["commit"], CommitInfo);
+	        this.oversight = this.convertValues(source["oversight"], OversightInfo);
 	        this.failureCategory = source["failureCategory"];
 	        this.createdAt = source["createdAt"];
 	    }

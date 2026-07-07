@@ -32,6 +32,8 @@ export function Ping():Promise<string>;
 
 export function PrepareTaskCommit(arg1:app.PrepareTaskCommitRequest):Promise<app.TaskInfo>;
 
+export function RegenerateOversight(arg1:app.RegenerateOversightRequest):Promise<app.TaskInfo>;
+
 export function ResizeNativeTerminal(arg1:app.NativeTerminalResizeRequest):Promise<void>;
 
 export function ResumeTaskTurn(arg1:app.ResumeTaskTurnRequest):Promise<app.TaskInfo>;

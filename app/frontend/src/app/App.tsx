@@ -41,7 +41,7 @@ export function App() {
       {loadError ? <div className="error-banner">{loadError}</div> : null}
       {activeView === "board" ? <BoardView workspace={workspace} onReload={refreshWorkspace} /> : null}
       {activeView === "plan" ? <PlanView workspace={workspace} onReload={refreshWorkspace} /> : null}
-      {activeView === "mission" ? <MissionView workspace={workspace} /> : null}
+      {activeView === "mission" ? <MissionView workspace={workspace} onReload={refreshWorkspace} /> : null}
       {activeView === "agent-graph" ? <AgentGraphView workspace={workspace} /> : null}
       {activeView === "chat" ? <ChatView /> : null}
       {activeView === "routines" ? <RoutinesView workspace={workspace} onReload={refreshWorkspace} /> : null}

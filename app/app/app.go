@@ -131,6 +131,10 @@ func (a *App) CommitTaskChanges(request CommitTaskChangesRequest) (*TaskInfo, er
 	return a.provider.CommitTaskChanges(ctx, request)
 }
 
+func (a *App) RegenerateOversight(request RegenerateOversightRequest) (*TaskInfo, error) {
+	return a.provider.RegenerateOversight(request)
+}
+
 func (a *App) CreateSpec(request CreateSpecRequest) (*SpecNodeInfo, error) {
 	return a.provider.CreateSpec(request)
 }

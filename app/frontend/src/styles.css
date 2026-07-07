@@ -1208,6 +1208,79 @@ button {
     text-align: center;
 }
 
+.oversight-list {
+    display: grid;
+    gap: 10px;
+}
+
+.oversight-list article {
+    display: grid;
+    gap: 10px;
+    border: 1px solid #273449;
+    border-radius: 12px;
+    background: #0f172a;
+    padding: 12px;
+}
+
+.oversight-list article > div:first-child {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.oversight-list p {
+    margin: 0;
+    color: #cbd5e1;
+    line-height: 1.5;
+}
+
+.oversight-list span,
+.oversight-list small {
+    color: #94a3b8;
+    font-size: 12px;
+}
+
+.oversight-list dl {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 8px;
+    margin: 0;
+}
+
+.oversight-list dl div {
+    border: 1px solid #1f2937;
+    border-radius: 8px;
+    background: #0b1020;
+    padding: 8px;
+}
+
+.oversight-list dt,
+.oversight-list dd {
+    margin: 0;
+}
+
+.oversight-list dt {
+    color: #94a3b8;
+    font-size: 11px;
+}
+
+.oversight-list dd {
+    margin-top: 4px;
+    color: #f8fafc;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.oversight-list button {
+    justify-self: start;
+    border: 1px solid #7c3aed;
+    border-radius: 8px;
+    background: #111827;
+    color: #ddd6fe;
+    padding: 8px 10px;
+}
+
 .timeline article {
     display: grid;
     grid-template-columns: 54px 160px minmax(0, 1fr);

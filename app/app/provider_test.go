@@ -214,6 +214,61 @@ func TestTaskTurnLoopPersistsOutputUsageAndResume(t *testing.T) {
 	}
 }
 
+func TestOversightArtifactsGeneratedAndReloadable(t *testing.T) {
+	root := t.TempDir()
+	provider := NewRealProvider()
+	provider.now = func() time.Time { return time.Date(2026, 7, 7, 12, 0, 0, 0, time.UTC) }
+	task, err := provider.CreateTask(CreateTaskRequest{Root: root, Title: "Review run", Prompt: "Implement and review", Agent: "codex"})
+	if err != nil {
+		t.Fatalf("CreateTask returned error: %v", err)
+	}
+	if err := os.MkdirAll(filepath.Join(root, filepath.FromSlash(task.Worktree)), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := provider.StartTaskTurn(StartTaskTurnRequest{Root: root, TaskID: task.ID, Step: "Implementation", ProviderID: "codex"}); err != nil {
+		t.Fatalf("StartTaskTurn returned error: %v", err)
+	}
+
+	provider.now = func() time.Time { return time.Date(2026, 7, 7, 12, 5, 0, 0, time.UTC) }
+	finished, err := provider.FinishTaskTurn(FinishTaskTurnRequest{
+		Root:     root,
+		TaskID:   task.ID,
+		TurnID:   "turn-001",
+		Status:   "completed",
+		Stdout:   "implemented changes",
+		UsageUSD: 0.75,
+	})
+	if err != nil {
+		t.Fatalf("FinishTaskTurn returned error: %v", err)
+	}
+	if finished.Oversight == nil || finished.Oversight.Path == "" || !strings.Contains(finished.Oversight.Summary, "Review run") {
+		t.Fatalf("missing oversight after turn finish: %#v", finished.Oversight)
+	}
+	if _, err := os.Stat(filepath.Join(root, filepath.FromSlash(finished.Oversight.Path))); err != nil {
+		t.Fatalf("oversight artifact missing: %v", err)
+	}
+
+	provider.now = func() time.Time { return time.Date(2026, 7, 7, 12, 10, 0, 0, time.UTC) }
+	verified, err := provider.RunTaskVerification(context.Background(), RunTaskVerificationRequest{Root: root, TaskID: task.ID, Command: "printf PASS"})
+	if err != nil {
+		t.Fatalf("RunTaskVerification returned error: %v", err)
+	}
+	if verified.Oversight == nil || verified.Oversight.TestPath == "" || verified.Oversight.TestResult != "passed" {
+		t.Fatalf("missing test oversight: %#v", verified.Oversight)
+	}
+	if _, err := os.Stat(filepath.Join(root, filepath.FromSlash(verified.Oversight.TestPath))); err != nil {
+		t.Fatalf("oversight test artifact missing: %v", err)
+	}
+
+	loaded, err := provider.LoadWorkspace(root)
+	if err != nil {
+		t.Fatalf("LoadWorkspace returned error: %v", err)
+	}
+	if len(loaded.Tasks) != 1 || loaded.Tasks[0].Oversight == nil || loaded.Tasks[0].Oversight.TestResult != "passed" {
+		t.Fatalf("loaded oversight = %#v", loaded.Tasks)
+	}
+}
+
 func TestTaskTurnLoopClassifiesFailuresAndAutoContinue(t *testing.T) {
 	root := t.TempDir()
 	provider := NewRealProvider()

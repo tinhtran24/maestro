@@ -62,6 +62,10 @@ export function PrepareTaskCommit(arg1) {
   return window['go']['app']['App']['PrepareTaskCommit'](arg1);
 }
 
+export function RegenerateOversight(arg1) {
+  return window['go']['app']['App']['RegenerateOversight'](arg1);
+}
+
 export function ResizeNativeTerminal(arg1) {
   return window['go']['app']['App']['ResizeNativeTerminal'](arg1);
 }

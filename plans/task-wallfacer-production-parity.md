@@ -269,7 +269,7 @@ Acceptance:
 
 ### 11. Oversight
 
-Status: Next.
+Status: Done.
 
 Goal: Wallfacer-style review visibility.
 

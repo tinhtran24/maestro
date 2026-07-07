@@ -67,6 +67,7 @@ type TaskInfo struct {
 	TestsPassed     bool             `json:"testsPassed"`
 	LastTestResult  *TestResultInfo  `json:"lastTestResult,omitempty"`
 	Commit          *CommitInfo      `json:"commit,omitempty"`
+	Oversight       *OversightInfo   `json:"oversight,omitempty"`
 	FailureCategory string           `json:"failureCategory"`
 	CreatedAt       string           `json:"createdAt"`
 }
@@ -130,6 +131,23 @@ type CommitInfo struct {
 	Approved    bool   `json:"approved"`
 	Committed   bool   `json:"committed"`
 	CommittedAt string `json:"committedAt,omitempty"`
+}
+
+type OversightInfo struct {
+	SchemaVersion int      `json:"schema_version"`
+	ID            string   `json:"id"`
+	TaskID        string   `json:"taskId"`
+	Status        string   `json:"status"`
+	Summary       string   `json:"summary"`
+	Phases        []string `json:"phases"`
+	Risks         []string `json:"risks"`
+	ChangedFiles  []string `json:"changedFiles"`
+	Commands      []string `json:"commands"`
+	TestResult    string   `json:"testResult"`
+	UsageUSD      float64  `json:"usageUsd"`
+	GeneratedAt   string   `json:"generatedAt"`
+	Path          string   `json:"path"`
+	TestPath      string   `json:"testPath,omitempty"`
 }
 
 type CreateTaskRequest struct {
@@ -198,6 +216,11 @@ type CommitTaskChangesRequest struct {
 	TaskID   string `json:"taskId"`
 	Message  string `json:"message"`
 	Approved bool   `json:"approved"`
+}
+
+type RegenerateOversightRequest struct {
+	Root   string `json:"root"`
+	TaskID string `json:"taskId"`
 }
 
 type BatchCreateTasksRequest struct {
@@ -603,6 +626,13 @@ func (p *RealProvider) UpdateTaskStatus(req UpdateTaskStatusRequest) (*TaskInfo,
 			if nextStatus == "cancelled" {
 				task.Tombstone = true
 			}
+			if shouldGenerateOversight(task.Status) {
+				oversight, err := writeOversightArtifacts(root, task, p.now().UTC())
+				if err != nil {
+					return err
+				}
+				task.Oversight = &oversight
+			}
 			if err := writeTask(store, task); err != nil {
 				return err
 			}
@@ -738,6 +768,17 @@ func (p *RealProvider) FinishTaskTurn(req FinishTaskTurnRequest) (*TaskInfo, err
 			task.Turns[index] = turn
 			task.LastTurn = &task.Turns[index]
 			task.UpdatedAt = now
+			if shouldGenerateOversight(task.Status) {
+				generatedAt, err := time.Parse(time.RFC3339, now)
+				if err != nil {
+					generatedAt = p.now().UTC()
+				}
+				oversight, err := writeOversightArtifacts(root, task, generatedAt)
+				if err != nil {
+					return err
+				}
+				task.Oversight = &oversight
+			}
 			if err := writeTask(store, task); err != nil {
 				return err
 			}
@@ -865,6 +906,17 @@ func (p *RealProvider) RunTaskVerification(ctx context.Context, req RunTaskVerif
 				task.FailureCategory = "test_failed"
 			} else if task.FailureCategory == "test_failed" {
 				task.FailureCategory = ""
+			}
+			if shouldGenerateOversight(task.Status) {
+				generatedAt, err := time.Parse(time.RFC3339, endedAt)
+				if err != nil {
+					generatedAt = p.now().UTC()
+				}
+				oversight, err := writeOversightArtifacts(root, task, generatedAt)
+				if err != nil {
+					return err
+				}
+				task.Oversight = &oversight
 			}
 			if err := writeTask(store, task); err != nil {
 				return err
@@ -994,6 +1046,48 @@ func (p *RealProvider) CommitTaskChanges(ctx context.Context, req CommitTaskChan
 				return err
 			}
 			if err := store.AppendEvent(EventInfo{ID: "event-commit-" + stableID(task.ID+"-"+task.Commit.Hash), At: now, Kind: "TaskCommitted", Message: fmt.Sprintf("%s committed %s", task.Title, shortHash(task.Commit.Hash))}); err != nil {
+				return err
+			}
+			copied := task
+			updated = &copied
+			return nil
+		}
+		return fmt.Errorf("task not found: %s", req.TaskID)
+	})
+	if err != nil {
+		return nil, err
+	}
+	return updated, nil
+}
+
+func (p *RealProvider) RegenerateOversight(req RegenerateOversightRequest) (*TaskInfo, error) {
+	root, err := normalizeWorkspaceRoot(req.Root)
+	if err != nil {
+		return nil, err
+	}
+	var updated *TaskInfo
+	now := p.now().UTC()
+	store := NewWorkspaceStore(root)
+	err = store.WithLock(func() error {
+		tasks, err := loadTasks(root)
+		if err != nil {
+			return err
+		}
+		for _, task := range tasks {
+			if task.ID != req.TaskID {
+				continue
+			}
+			task = hydrateTask(task)
+			oversight, err := writeOversightArtifacts(root, task, now)
+			if err != nil {
+				return err
+			}
+			task.Oversight = &oversight
+			task.UpdatedAt = now.Format(time.RFC3339)
+			if err := writeTask(store, task); err != nil {
+				return err
+			}
+			if err := store.AppendEvent(EventInfo{ID: "event-oversight-" + stableID(task.ID+"-"+task.Oversight.GeneratedAt), At: task.Oversight.GeneratedAt, Kind: "TaskOversightGenerated", Message: task.Oversight.Summary}); err != nil {
 				return err
 			}
 			copied := task
@@ -1358,6 +1452,7 @@ func decodeTask(path, root string) (TaskInfo, bool) {
 		FailureCategory: stringFrom(raw, "failure_category", "failureCategory", "FailureCategory"),
 		TestsPassed:     boolFrom(raw, "testsPassed", "tests_passed"),
 		Commit:          commitInfoFrom(raw),
+		Oversight:       oversightInfoFrom(raw),
 	}
 	return hydrateTask(task), true
 }
@@ -1871,6 +1966,209 @@ func writeTestOutput(root, taskID, resultID, output string) (string, error) {
 	return rel, nil
 }
 
+func shouldGenerateOversight(status string) bool {
+	switch normalizeTaskStatus(status) {
+	case "waiting", "done", "failed":
+		return true
+	default:
+		return false
+	}
+}
+
+func writeOversightArtifacts(root string, task TaskInfo, generatedAt time.Time) (OversightInfo, error) {
+	task = hydrateTask(task)
+	oversight := buildOversight(task, generatedAt)
+	dir := filepath.Join(root, ".thanos", "oversight", task.ID)
+	oversight.Path = filepath.ToSlash(filepath.Join(".thanos", "oversight", task.ID, "oversight.json"))
+	if task.LastTestResult != nil {
+		oversight.TestPath = filepath.ToSlash(filepath.Join(".thanos", "oversight", task.ID, "oversight-test.json"))
+	}
+	if err := writeJSON(filepath.Join(dir, "oversight.json"), oversight); err != nil {
+		return OversightInfo{}, err
+	}
+	if task.LastTestResult != nil {
+		testArtifact := map[string]any{
+			"schema_version": 1,
+			"id":             oversight.ID + "-test",
+			"taskId":         task.ID,
+			"status":         task.LastTestResult.Status,
+			"passed":         task.LastTestResult.Passed,
+			"command":        task.LastTestResult.Command,
+			"exitCode":       task.LastTestResult.ExitCode,
+			"outputPath":     task.LastTestResult.OutputPath,
+			"output":         task.LastTestResult.Output,
+			"generatedAt":    oversight.GeneratedAt,
+		}
+		if err := writeJSON(filepath.Join(dir, "oversight-test.json"), testArtifact); err != nil {
+			return OversightInfo{}, err
+		}
+	}
+	return oversight, nil
+}
+
+func buildOversight(task TaskInfo, generatedAt time.Time) OversightInfo {
+	testResult := "not_run"
+	if task.LastTestResult != nil {
+		testResult = task.LastTestResult.Status
+	}
+	risks := oversightRisks(task)
+	return OversightInfo{
+		SchemaVersion: 1,
+		ID:            "oversight-" + task.ID,
+		TaskID:        task.ID,
+		Status:        task.Status,
+		Summary:       oversightSummary(task, testResult, risks),
+		Phases:        oversightPhases(task),
+		Risks:         risks,
+		ChangedFiles:  oversightChangedFiles(task),
+		Commands:      oversightCommands(task),
+		TestResult:    testResult,
+		UsageUSD:      task.UsageUSD,
+		GeneratedAt:   generatedAt.UTC().Format(time.RFC3339),
+	}
+}
+
+func oversightSummary(task TaskInfo, testResult string, risks []string) string {
+	title := strings.TrimSpace(task.Title)
+	if title == "" {
+		title = task.ID
+	}
+	if len(risks) == 0 {
+		return fmt.Sprintf("%s is %s with %s verification and $%.2f usage.", title, task.Status, testResult, task.UsageUSD)
+	}
+	return fmt.Sprintf("%s is %s with %s verification, $%.2f usage, and %d review risk(s).", title, task.Status, testResult, task.UsageUSD, len(risks))
+}
+
+func oversightPhases(task TaskInfo) []string {
+	phases := make([]string, 0, len(task.Turns)+2)
+	for _, turn := range task.Turns {
+		phase := strings.TrimSpace(turn.Step)
+		if phase == "" {
+			phase = "Implementation"
+		}
+		parts := []string{phase}
+		if turn.ProviderID != "" {
+			parts = append(parts, turn.ProviderID)
+		}
+		if turn.Status != "" {
+			parts = append(parts, turn.Status)
+		}
+		if turn.StopReason != "" {
+			parts = append(parts, turn.StopReason)
+		}
+		phases = append(phases, strings.Join(parts, " / "))
+	}
+	if task.LastTestResult != nil {
+		phases = append(phases, "Testing / "+task.LastTestResult.Status)
+	}
+	if task.Commit != nil {
+		if task.Commit.Committed {
+			phases = append(phases, "Commit / committed")
+		} else {
+			phases = append(phases, "Commit / prepared")
+		}
+	}
+	return uniqueStrings(phases)
+}
+
+func oversightCommands(task TaskInfo) []string {
+	commands := make([]string, 0, len(task.Turns)+1)
+	for _, turn := range task.Turns {
+		command := strings.TrimSpace(turn.ProviderID)
+		if command == "" {
+			command = strings.TrimSpace(task.Agent)
+		}
+		if command != "" {
+			commands = append(commands, command+" "+strings.TrimSpace(turn.Step))
+		}
+	}
+	if task.LastTestResult != nil && strings.TrimSpace(task.LastTestResult.Command) != "" {
+		commands = append(commands, task.LastTestResult.Command)
+	}
+	return uniqueStrings(commands)
+}
+
+func oversightChangedFiles(task TaskInfo) []string {
+	values := make([]string, 0)
+	if task.Commit != nil {
+		values = append(values, parseChangedFiles(task.Commit.DiffStat)...)
+		values = append(values, parseDiffFiles(task.Commit.Diff)...)
+	}
+	return uniqueStrings(values)
+}
+
+func parseChangedFiles(diffStat string) []string {
+	out := make([]string, 0)
+	for _, line := range strings.Split(diffStat, "\n") {
+		line = strings.TrimSpace(line)
+		if line == "" || strings.Contains(line, " file changed") || strings.Contains(line, " files changed") {
+			continue
+		}
+		if strings.HasPrefix(line, "?? ") || strings.HasPrefix(line, "M ") || strings.HasPrefix(line, "A ") || strings.HasPrefix(line, "D ") {
+			out = append(out, strings.TrimSpace(line[2:]))
+			continue
+		}
+		if before, _, ok := strings.Cut(line, "|"); ok {
+			out = append(out, strings.TrimSpace(before))
+		}
+	}
+	return out
+}
+
+func parseDiffFiles(diff string) []string {
+	out := make([]string, 0)
+	for _, line := range strings.Split(diff, "\n") {
+		line = strings.TrimSpace(line)
+		if !strings.HasPrefix(line, "diff --git ") {
+			continue
+		}
+		fields := strings.Fields(line)
+		if len(fields) >= 4 {
+			out = append(out, strings.TrimPrefix(fields[3], "b/"))
+		}
+	}
+	return out
+}
+
+func oversightRisks(task TaskInfo) []string {
+	risks := make([]string, 0)
+	if task.Status == "failed" {
+		risks = append(risks, "Task is failed.")
+	}
+	if task.Blocked {
+		risks = append(risks, "Task has unfinished dependencies.")
+	}
+	if strings.TrimSpace(task.FailureCategory) != "" {
+		risks = append(risks, "Failure category: "+task.FailureCategory+".")
+	}
+	if task.LastTurn != nil && task.LastTurn.Status == "failed" {
+		risks = append(risks, "Last provider turn failed.")
+	}
+	if task.LastTestResult == nil {
+		risks = append(risks, "No verification result is recorded.")
+	} else if !task.LastTestResult.Passed {
+		risks = append(risks, "Last verification failed.")
+	}
+	if task.Status == "done" && (task.Commit == nil || !task.Commit.Committed) {
+		risks = append(risks, "Task is done without a committed change artifact.")
+	}
+	return uniqueStrings(risks)
+}
+
+func uniqueStrings(values []string) []string {
+	seen := make(map[string]bool, len(values))
+	out := make([]string, 0, len(values))
+	for _, value := range values {
+		value = strings.TrimSpace(value)
+		if value == "" || seen[value] {
+			continue
+		}
+		seen[value] = true
+		out = append(out, value)
+	}
+	return out
+}
+
 func countExistingTests(task TaskInfo) int {
 	if task.LastTestResult == nil {
 		return 0
@@ -2257,6 +2555,29 @@ func commitInfoFrom(raw map[string]any) *CommitInfo {
 	}
 }
 
+func oversightInfoFrom(raw map[string]any) *OversightInfo {
+	record, ok := raw["oversight"].(map[string]any)
+	if !ok {
+		return nil
+	}
+	return &OversightInfo{
+		SchemaVersion: intFrom(record, "schema_version", "schemaVersion"),
+		ID:            stringFrom(record, "id"),
+		TaskID:        stringFrom(record, "taskId", "task_id"),
+		Status:        stringFrom(record, "status"),
+		Summary:       stringFrom(record, "summary"),
+		Phases:        stringSliceFrom(record, "phases"),
+		Risks:         stringSliceFrom(record, "risks"),
+		ChangedFiles:  stringSliceFrom(record, "changedFiles", "changed_files"),
+		Commands:      stringSliceFrom(record, "commands"),
+		TestResult:    stringFrom(record, "testResult", "test_result"),
+		UsageUSD:      floatFrom(record, "usageUsd", "usage_usd"),
+		GeneratedAt:   stringFrom(record, "generatedAt", "generated_at"),
+		Path:          stringFrom(record, "path"),
+		TestPath:      stringFrom(record, "testPath", "test_path"),
+	}
+}
+
 func normalizeTaskStatus(status string) string {
 	switch strings.ToLower(strings.TrimSpace(status)) {
 	case "in_progress", "running":
@@ -2330,6 +2651,14 @@ func hydrateTask(task TaskInfo) TaskInfo {
 	}
 	if task.LastTestResult != nil && task.LastTestResult.TaskID == "" {
 		task.LastTestResult.TaskID = task.ID
+	}
+	if task.Oversight != nil {
+		if task.Oversight.SchemaVersion == 0 {
+			task.Oversight.SchemaVersion = 1
+		}
+		if task.Oversight.TaskID == "" {
+			task.Oversight.TaskID = task.ID
+		}
 	}
 	return task
 }
