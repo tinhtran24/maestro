@@ -1516,53 +1516,59 @@ func workspaceName(root string) string {
 	return base
 }
 
-func loadSpecs(root string) ([]SpecNodeInfo, error) {
-	specRoot := filepath.Join(root, "specs")
-	if stat, err := os.Stat(specRoot); err != nil {
-		if errors.Is(err, os.ErrNotExist) {
-			return []SpecNodeInfo{}, nil
-		}
-		return nil, err
-	} else if !stat.IsDir() {
-		return []SpecNodeInfo{}, nil
-	}
+const (
+	primarySpecRootRel = ".thanos/specs"
+	legacySpecRootRel  = "specs"
+)
 
+func loadSpecs(root string) ([]SpecNodeInfo, error) {
 	nodes := make([]SpecNodeInfo, 0)
-	err := filepath.WalkDir(specRoot, func(path string, entry fs.DirEntry, err error) error {
-		if err != nil {
-			return err
-		}
-		if entry.IsDir() {
-			if entry.Name() == "node_modules" || strings.HasPrefix(entry.Name(), ".") {
-				return filepath.SkipDir
+	for _, specRoot := range []string{filepath.Join(root, ".thanos", "specs"), filepath.Join(root, "specs")} {
+		if stat, err := os.Stat(specRoot); err != nil {
+			if errors.Is(err, os.ErrNotExist) {
+				continue
 			}
+			return nil, err
+		} else if !stat.IsDir() {
+			continue
+		}
+
+		err := filepath.WalkDir(specRoot, func(path string, entry fs.DirEntry, err error) error {
+			if err != nil {
+				return err
+			}
+			if entry.IsDir() {
+				if entry.Name() == "node_modules" || strings.HasPrefix(entry.Name(), ".") {
+					return filepath.SkipDir
+				}
+				return nil
+			}
+			if filepath.Ext(entry.Name()) != ".md" {
+				return nil
+			}
+			rel, _ := filepath.Rel(root, path)
+			title, state, body := parseSpecMarkdown(path)
+			if title == "" {
+				title = strings.TrimSuffix(entry.Name(), filepath.Ext(entry.Name()))
+			}
+			updatedAt := ""
+			if info, err := entry.Info(); err == nil {
+				updatedAt = info.ModTime().UTC().Format(time.RFC3339)
+			}
+			nodes = append(nodes, SpecNodeInfo{
+				ID:        stableID(rel),
+				Title:     title,
+				State:     state,
+				Path:      filepath.ToSlash(rel),
+				Body:      body,
+				UpdatedAt: updatedAt,
+				Children:  []SpecNodeInfo{},
+			})
 			return nil
-		}
-		if filepath.Ext(entry.Name()) != ".md" {
-			return nil
-		}
-		rel, _ := filepath.Rel(root, path)
-		title, state, body := parseSpecMarkdown(path)
-		if title == "" {
-			title = strings.TrimSuffix(entry.Name(), filepath.Ext(entry.Name()))
-		}
-		updatedAt := ""
-		if info, err := entry.Info(); err == nil {
-			updatedAt = info.ModTime().UTC().Format(time.RFC3339)
-		}
-		nodes = append(nodes, SpecNodeInfo{
-			ID:        stableID(rel),
-			Title:     title,
-			State:     state,
-			Path:      filepath.ToSlash(rel),
-			Body:      body,
-			UpdatedAt: updatedAt,
-			Children:  []SpecNodeInfo{},
 		})
-		return nil
-	})
-	if err != nil {
-		return nil, err
+		if err != nil {
+			return nil, err
+		}
 	}
 	sort.Slice(nodes, func(i, j int) bool { return nodes[i].Path < nodes[j].Path })
 	return buildSpecTree(nodes), nil
@@ -1672,34 +1678,84 @@ func normalizeSpecState(state string) string {
 
 func specCreatePath(parentPath, title string) string {
 	slug := stableID(title) + ".md"
-	parentPath = filepath.ToSlash(strings.TrimSpace(parentPath))
+	parentPath = canonicalSpecRel(parentPath)
 	if parentPath == "" {
-		return filepath.ToSlash(filepath.Join("specs", slug))
+		return filepath.ToSlash(filepath.Join(primarySpecRootRel, slug))
 	}
-	parentPath = strings.TrimPrefix(parentPath, "/")
 	parentPath = strings.TrimSuffix(parentPath, ".md")
-	if !strings.HasPrefix(parentPath, "specs/") && parentPath != "specs" {
-		parentPath = filepath.ToSlash(filepath.Join("specs", parentPath))
-	}
 	return filepath.ToSlash(filepath.Join(parentPath, slug))
 }
 
 func resolveSpecPath(root, rel string) (string, string, error) {
-	rel = filepath.ToSlash(strings.TrimSpace(rel))
-	rel = strings.TrimPrefix(rel, "/")
+	rel = resolveSpecRel(rel)
 	if rel == "" {
 		return "", "", fmt.Errorf("spec path is required")
 	}
-	if !strings.HasPrefix(rel, "specs/") {
-		rel = filepath.ToSlash(filepath.Join("specs", rel))
-	}
 	path := filepath.Join(root, filepath.FromSlash(rel))
-	cleanRoot := filepath.Clean(filepath.Join(root, "specs"))
+	specRootRel, ok := specRootForRel(rel)
+	if !ok {
+		return "", "", fmt.Errorf("spec path must stay under %s: %s", primarySpecRootRel, rel)
+	}
+	cleanRoot := filepath.Clean(filepath.Join(root, filepath.FromSlash(specRootRel)))
 	cleanPath := filepath.Clean(path)
 	if cleanPath != cleanRoot && !strings.HasPrefix(cleanPath, cleanRoot+string(filepath.Separator)) {
-		return "", "", fmt.Errorf("spec path must stay under specs: %s", rel)
+		return "", "", fmt.Errorf("spec path must stay under %s: %s", specRootRel, rel)
 	}
 	return filepath.ToSlash(rel), cleanPath, nil
+}
+
+func canonicalSpecRel(rel string) string {
+	rel = cleanSpecRel(rel)
+	if rel == "" {
+		return ""
+	}
+	if rel == legacySpecRootRel {
+		return primarySpecRootRel
+	}
+	if strings.HasPrefix(rel, legacySpecRootRel+"/") {
+		return filepath.ToSlash(filepath.Join(primarySpecRootRel, strings.TrimPrefix(rel, legacySpecRootRel+"/")))
+	}
+	if rel == primarySpecRootRel || strings.HasPrefix(rel, primarySpecRootRel+"/") {
+		return rel
+	}
+	return filepath.ToSlash(filepath.Join(primarySpecRootRel, rel))
+}
+
+func resolveSpecRel(rel string) string {
+	rel = cleanSpecRel(rel)
+	if rel == "" {
+		return ""
+	}
+	if rel == primarySpecRootRel || strings.HasPrefix(rel, primarySpecRootRel+"/") || rel == legacySpecRootRel || strings.HasPrefix(rel, legacySpecRootRel+"/") {
+		return rel
+	}
+	return filepath.ToSlash(filepath.Join(primarySpecRootRel, rel))
+}
+
+func cleanSpecRel(rel string) string {
+	rel = filepath.ToSlash(strings.TrimSpace(rel))
+	rel = strings.TrimPrefix(rel, "/")
+	if rel == "" {
+		return ""
+	}
+	rel = filepath.ToSlash(filepath.Clean(filepath.FromSlash(rel)))
+	switch {
+	case rel == ".":
+		return ""
+	default:
+		return rel
+	}
+}
+
+func specRootForRel(rel string) (string, bool) {
+	switch {
+	case rel == primarySpecRootRel || strings.HasPrefix(rel, primarySpecRootRel+"/"):
+		return primarySpecRootRel, true
+	case rel == legacySpecRootRel || strings.HasPrefix(rel, legacySpecRootRel+"/"):
+		return legacySpecRootRel, true
+	default:
+		return "", false
+	}
 }
 
 func buildSpecTree(nodes []SpecNodeInfo) []SpecNodeInfo {

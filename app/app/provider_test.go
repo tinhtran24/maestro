@@ -14,10 +14,10 @@ import (
 
 func TestRealProviderLoadWorkspaceReadsRealSpecsAndTasks(t *testing.T) {
 	root := t.TempDir()
-	if err := os.MkdirAll(filepath.Join(root, "specs", "local"), 0o755); err != nil {
+	if err := os.MkdirAll(filepath.Join(root, ".thanos", "specs", "local"), 0o755); err != nil {
 		t.Fatal(err)
 	}
-	if err := os.WriteFile(filepath.Join(root, "specs", "local", "workbench.md"), []byte("# Workbench\n\nstate: validated\n"), 0o644); err != nil {
+	if err := os.WriteFile(filepath.Join(root, ".thanos", "specs", "local", "workbench.md"), []byte("# Workbench\n\nstate: validated\n"), 0o644); err != nil {
 		t.Fatal(err)
 	}
 	if err := os.MkdirAll(filepath.Join(root, ".thanos", "tasks"), 0o755); err != nil {
@@ -168,7 +168,7 @@ func TestPlanSpecModeParsesDispatchesAndUndoes(t *testing.T) {
 	if err != nil {
 		t.Fatalf("CreateSpec child returned error: %v", err)
 	}
-	if child.Path != "specs/checkout/payment-form.md" {
+	if child.Path != ".thanos/specs/checkout/payment-form.md" {
 		t.Fatalf("child path = %q", child.Path)
 	}
 
@@ -605,7 +605,7 @@ func TestRealProviderPersistsWorkspacePrimitives(t *testing.T) {
 	if err != nil {
 		t.Fatalf("CreateSpec returned error: %v", err)
 	}
-	if spec.Path != "specs/plan-mode.md" {
+	if spec.Path != ".thanos/specs/plan-mode.md" {
 		t.Fatalf("spec path = %q", spec.Path)
 	}
 	routine, err := provider.UpsertRoutine(UpsertRoutineRequest{Root: root, Name: "Nightly ideas", Prompt: "Find improvements", Enabled: true})

@@ -34,7 +34,7 @@ describe("mission graph", () => {
           id: "checkout",
           title: "Checkout",
           state: "validated",
-          path: "specs/checkout.md",
+          path: ".thanos/specs/checkout.md",
           body: "",
           updatedAt: "",
           children: [],
@@ -52,9 +52,9 @@ describe("mission graph", () => {
 
     const graph = buildMissionGraph(workspace);
 
-    expect(graph.nodes.map((node) => node.id)).toContain("spec:specs/checkout.md");
+    expect(graph.nodes.map((node) => node.id)).toContain("spec:.thanos/specs/checkout.md");
     expect(graph.edges).toEqual(expect.arrayContaining([
-      expect.objectContaining({ from: "spec:specs/checkout.md", to: "task:T-1", kind: "dispatches" }),
+      expect.objectContaining({ from: "spec:.thanos/specs/checkout.md", to: "task:T-1", kind: "dispatches" }),
       expect.objectContaining({ from: "task:T-3", to: "task:T-2", kind: "blocked_by" }),
       expect.objectContaining({ from: "routine:routine-nightly", to: "task:T-3", kind: "produced" }),
     ]));

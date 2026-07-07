@@ -1,7 +1,8 @@
 import { ChevronDown, Grid2X2, List, MoreVertical, Plus, Search, X } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { Task, TaskStatus, Workspace } from "../app/types";
-import { createTask, updateTaskFlags, updateTaskStatus } from "../services/wails";
+import { createTask, startTaskTurn, updateTaskFlags, updateTaskStatus } from "../services/wails";
+import { taskMoveActionForStatus } from "./boardActions";
 
 const columns: Array<{ id: TaskStatus; title: string; tone: string }> = [
   { id: "backlog", title: "Backlog", tone: "blue" },
@@ -128,7 +129,11 @@ export function BoardView({ workspace, onReload }: { workspace: Workspace; onRel
     if (!workspace.path) return;
     setError("");
     try {
-      await updateTaskStatus({ root: workspace.path, taskId, status });
+      if (taskMoveActionForStatus(status) === "start-turn") {
+        await startTaskTurn({ root: workspace.path, taskId, step: "Implementation" });
+      } else {
+        await updateTaskStatus({ root: workspace.path, taskId, status });
+      }
       await onReload();
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : String(reason));
