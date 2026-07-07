@@ -6,13 +6,13 @@ export function ActivateWorkspace(arg1:app.ActivateWorkspaceRequest):Promise<app
 
 export function BatchCreateTasks(arg1:app.BatchCreateTasksRequest):Promise<Array<app.TaskInfo>>;
 
+export function CommitTaskChanges(arg1:app.CommitTaskChangesRequest):Promise<app.TaskInfo>;
+
 export function CreateSpec(arg1:app.CreateSpecRequest):Promise<app.SpecNodeInfo>;
 
 export function CreateTask(arg1:app.CreateTaskRequest):Promise<app.TaskInfo>;
 
 export function CreateWorkspace(arg1:app.CreateWorkspaceRequest):Promise<app.WorkspaceRecordInfo>;
-
-export function CommitTaskChanges(arg1:app.CommitTaskChangesRequest):Promise<app.TaskInfo>;
 
 export function CurrentWorkspaceFolder():Promise<string>;
 

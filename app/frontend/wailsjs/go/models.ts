@@ -110,6 +110,50 @@ export namespace app {
 		    return a;
 		}
 	}
+	export class CommitInfo {
+	    hash?: string;
+	    summary: string;
+	    message: string;
+	    diff: string;
+	    diffStat: string;
+	    approved: boolean;
+	    committed: boolean;
+	    committedAt?: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new CommitInfo(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.hash = source["hash"];
+	        this.summary = source["summary"];
+	        this.message = source["message"];
+	        this.diff = source["diff"];
+	        this.diffStat = source["diffStat"];
+	        this.approved = source["approved"];
+	        this.committed = source["committed"];
+	        this.committedAt = source["committedAt"];
+	    }
+	}
+	export class CommitTaskChangesRequest {
+	    root: string;
+	    taskId: string;
+	    message: string;
+	    approved: boolean;
+	
+	    static createFrom(source: any = {}) {
+	        return new CommitTaskChangesRequest(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.root = source["root"];
+	        this.taskId = source["taskId"];
+	        this.message = source["message"];
+	        this.approved = source["approved"];
+	    }
+	}
 	export class CreateSpecRequest {
 	    root: string;
 	    title: string;
@@ -239,6 +283,36 @@ export namespace app {
 	        this.message = source["message"];
 	    }
 	}
+	export class FinishTaskTurnRequest {
+	    root: string;
+	    taskId: string;
+	    turnId: string;
+	    status: string;
+	    stdout: string;
+	    stderr: string;
+	    stopReason: string;
+	    usageUsd: number;
+	    exitCode: number;
+	    autoContinue: boolean;
+	
+	    static createFrom(source: any = {}) {
+	        return new FinishTaskTurnRequest(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.root = source["root"];
+	        this.taskId = source["taskId"];
+	        this.turnId = source["turnId"];
+	        this.status = source["status"];
+	        this.stdout = source["stdout"];
+	        this.stderr = source["stderr"];
+	        this.stopReason = source["stopReason"];
+	        this.usageUsd = source["usageUsd"];
+	        this.exitCode = source["exitCode"];
+	        this.autoContinue = source["autoContinue"];
+	    }
+	}
 	export class FlowInfo {
 	    id: string;
 	    name: string;
@@ -355,6 +429,22 @@ export namespace app {
 	        this.endedAt = source["endedAt"];
 	    }
 	}
+	export class PrepareTaskCommitRequest {
+	    root: string;
+	    taskId: string;
+	    message: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new PrepareTaskCommitRequest(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.root = source["root"];
+	        this.taskId = source["taskId"];
+	        this.message = source["message"];
+	    }
+	}
 	export class PromptRecord {
 	    at: string;
 	    prompt: string;
@@ -397,6 +487,22 @@ export namespace app {
 	        this.supportsRun = source["supportsRun"];
 	    }
 	}
+	export class ResumeTaskTurnRequest {
+	    root: string;
+	    taskId: string;
+	    feedback: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new ResumeTaskTurnRequest(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.root = source["root"];
+	        this.taskId = source["taskId"];
+	        this.feedback = source["feedback"];
+	    }
+	}
 	export class RetryRecord {
 	    at: string;
 	    reason: string;
@@ -435,6 +541,28 @@ export namespace app {
 	        this.schedule = source["schedule"];
 	        this.enabled = source["enabled"];
 	        this.updatedAt = source["updatedAt"];
+	    }
+	}
+	export class RunTaskVerificationRequest {
+	    root: string;
+	    taskId: string;
+	    command: string;
+	    providerId: string;
+	    passPattern: string;
+	    failPattern: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new RunTaskVerificationRequest(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.root = source["root"];
+	        this.taskId = source["taskId"];
+	        this.command = source["command"];
+	        this.providerId = source["providerId"];
+	        this.passPattern = source["passPattern"];
+	        this.failPattern = source["failPattern"];
 	    }
 	}
 	export class SaveAutomationRequest {
@@ -525,6 +653,106 @@ export namespace app {
 		    return a;
 		}
 	}
+	export class StartTaskTurnRequest {
+	    root: string;
+	    taskId: string;
+	    step: string;
+	    providerId: string;
+	    sessionId: string;
+	    transcriptPath: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new StartTaskTurnRequest(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.root = source["root"];
+	        this.taskId = source["taskId"];
+	        this.step = source["step"];
+	        this.providerId = source["providerId"];
+	        this.sessionId = source["sessionId"];
+	        this.transcriptPath = source["transcriptPath"];
+	    }
+	}
+	export class TestResultInfo {
+	    id: string;
+	    taskId: string;
+	    providerId?: string;
+	    command: string;
+	    status: string;
+	    passed: boolean;
+	    outputPath: string;
+	    output: string;
+	    exitCode: number;
+	    passPattern?: string;
+	    failPattern?: string;
+	    startedAt: string;
+	    endedAt: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new TestResultInfo(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.id = source["id"];
+	        this.taskId = source["taskId"];
+	        this.providerId = source["providerId"];
+	        this.command = source["command"];
+	        this.status = source["status"];
+	        this.passed = source["passed"];
+	        this.outputPath = source["outputPath"];
+	        this.output = source["output"];
+	        this.exitCode = source["exitCode"];
+	        this.passPattern = source["passPattern"];
+	        this.failPattern = source["failPattern"];
+	        this.startedAt = source["startedAt"];
+	        this.endedAt = source["endedAt"];
+	    }
+	}
+	export class TaskTurnInfo {
+	    id: string;
+	    taskId: string;
+	    step: string;
+	    providerId: string;
+	    sessionId?: string;
+	    status: string;
+	    worktree: string;
+	    startedAt: string;
+	    endedAt?: string;
+	    stdoutPath?: string;
+	    stderrPath?: string;
+	    transcriptPath?: string;
+	    stopReason?: string;
+	    usageUsd: number;
+	    failureCategory?: string;
+	    autoContinue: boolean;
+	
+	    static createFrom(source: any = {}) {
+	        return new TaskTurnInfo(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.id = source["id"];
+	        this.taskId = source["taskId"];
+	        this.step = source["step"];
+	        this.providerId = source["providerId"];
+	        this.sessionId = source["sessionId"];
+	        this.status = source["status"];
+	        this.worktree = source["worktree"];
+	        this.startedAt = source["startedAt"];
+	        this.endedAt = source["endedAt"];
+	        this.stdoutPath = source["stdoutPath"];
+	        this.stderrPath = source["stderrPath"];
+	        this.transcriptPath = source["transcriptPath"];
+	        this.stopReason = source["stopReason"];
+	        this.usageUsd = source["usageUsd"];
+	        this.failureCategory = source["failureCategory"];
+	        this.autoContinue = source["autoContinue"];
+	    }
+	}
 	export class TaskInfo {
 	    schema_version: number;
 	    id: string;
@@ -607,234 +835,8 @@ export namespace app {
 		    return a;
 		}
 	}
-	export class TaskTurnInfo {
-	    id: string;
-	    taskId: string;
-	    step: string;
-	    providerId: string;
-	    sessionId?: string;
-	    status: string;
-	    worktree: string;
-	    startedAt: string;
-	    endedAt?: string;
-	    stdoutPath?: string;
-	    stderrPath?: string;
-	    transcriptPath?: string;
-	    stopReason?: string;
-	    usageUsd: number;
-	    failureCategory?: string;
-	    autoContinue: boolean;
 	
-	    static createFrom(source: any = {}) {
-	        return new TaskTurnInfo(source);
-	    }
 	
-	    constructor(source: any = {}) {
-	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.id = source["id"];
-	        this.taskId = source["taskId"];
-	        this.step = source["step"];
-	        this.providerId = source["providerId"];
-	        this.sessionId = source["sessionId"];
-	        this.status = source["status"];
-	        this.worktree = source["worktree"];
-	        this.startedAt = source["startedAt"];
-	        this.endedAt = source["endedAt"];
-	        this.stdoutPath = source["stdoutPath"];
-	        this.stderrPath = source["stderrPath"];
-	        this.transcriptPath = source["transcriptPath"];
-	        this.stopReason = source["stopReason"];
-	        this.usageUsd = source["usageUsd"];
-	        this.failureCategory = source["failureCategory"];
-	        this.autoContinue = source["autoContinue"];
-	    }
-	}
-	export class StartTaskTurnRequest {
-	    root: string;
-	    taskId: string;
-	    step: string;
-	    providerId: string;
-	    sessionId: string;
-	    transcriptPath: string;
-	
-	    static createFrom(source: any = {}) {
-	        return new StartTaskTurnRequest(source);
-	    }
-	
-	    constructor(source: any = {}) {
-	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.root = source["root"];
-	        this.taskId = source["taskId"];
-	        this.step = source["step"];
-	        this.providerId = source["providerId"];
-	        this.sessionId = source["sessionId"];
-	        this.transcriptPath = source["transcriptPath"];
-	    }
-	}
-	export class FinishTaskTurnRequest {
-	    root: string;
-	    taskId: string;
-	    turnId: string;
-	    status: string;
-	    stdout: string;
-	    stderr: string;
-	    stopReason: string;
-	    usageUsd: number;
-	    exitCode: number;
-	    autoContinue: boolean;
-	
-	    static createFrom(source: any = {}) {
-	        return new FinishTaskTurnRequest(source);
-	    }
-	
-	    constructor(source: any = {}) {
-	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.root = source["root"];
-	        this.taskId = source["taskId"];
-	        this.turnId = source["turnId"];
-	        this.status = source["status"];
-	        this.stdout = source["stdout"];
-	        this.stderr = source["stderr"];
-	        this.stopReason = source["stopReason"];
-	        this.usageUsd = source["usageUsd"];
-	        this.exitCode = source["exitCode"];
-	        this.autoContinue = source["autoContinue"];
-	    }
-	}
-	export class ResumeTaskTurnRequest {
-	    root: string;
-	    taskId: string;
-	    feedback: string;
-	
-	    static createFrom(source: any = {}) {
-	        return new ResumeTaskTurnRequest(source);
-	    }
-	
-	    constructor(source: any = {}) {
-	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.root = source["root"];
-	        this.taskId = source["taskId"];
-	        this.feedback = source["feedback"];
-	    }
-	}
-	export class CommitInfo {
-	    hash?: string;
-	    summary: string;
-	    message: string;
-	    diff: string;
-	    diffStat: string;
-	    approved: boolean;
-	    committed: boolean;
-	    committedAt?: string;
-	
-	    static createFrom(source: any = {}) {
-	        return new CommitInfo(source);
-	    }
-	
-	    constructor(source: any = {}) {
-	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.hash = source["hash"];
-	        this.summary = source["summary"];
-	        this.message = source["message"];
-	        this.diff = source["diff"];
-	        this.diffStat = source["diffStat"];
-	        this.approved = source["approved"];
-	        this.committed = source["committed"];
-	        this.committedAt = source["committedAt"];
-	    }
-	}
-	export class PrepareTaskCommitRequest {
-	    root: string;
-	    taskId: string;
-	    message: string;
-	
-	    static createFrom(source: any = {}) {
-	        return new PrepareTaskCommitRequest(source);
-	    }
-	
-	    constructor(source: any = {}) {
-	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.root = source["root"];
-	        this.taskId = source["taskId"];
-	        this.message = source["message"];
-	    }
-	}
-	export class CommitTaskChangesRequest {
-	    root: string;
-	    taskId: string;
-	    message: string;
-	    approved: boolean;
-	
-	    static createFrom(source: any = {}) {
-	        return new CommitTaskChangesRequest(source);
-	    }
-	
-	    constructor(source: any = {}) {
-	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.root = source["root"];
-	        this.taskId = source["taskId"];
-	        this.message = source["message"];
-	        this.approved = source["approved"];
-	    }
-	}
-	export class TestResultInfo {
-	    id: string;
-	    taskId: string;
-	    providerId?: string;
-	    command: string;
-	    status: string;
-	    passed: boolean;
-	    outputPath: string;
-	    output: string;
-	    exitCode: number;
-	    passPattern?: string;
-	    failPattern?: string;
-	    startedAt: string;
-	    endedAt: string;
-	
-	    static createFrom(source: any = {}) {
-	        return new TestResultInfo(source);
-	    }
-	
-	    constructor(source: any = {}) {
-	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.id = source["id"];
-	        this.taskId = source["taskId"];
-	        this.providerId = source["providerId"];
-	        this.command = source["command"];
-	        this.status = source["status"];
-	        this.passed = source["passed"];
-	        this.outputPath = source["outputPath"];
-	        this.output = source["output"];
-	        this.exitCode = source["exitCode"];
-	        this.passPattern = source["passPattern"];
-	        this.failPattern = source["failPattern"];
-	        this.startedAt = source["startedAt"];
-	        this.endedAt = source["endedAt"];
-	    }
-	}
-	export class RunTaskVerificationRequest {
-	    root: string;
-	    taskId: string;
-	    command: string;
-	    providerId: string;
-	    passPattern: string;
-	    failPattern: string;
-	
-	    static createFrom(source: any = {}) {
-	        return new RunTaskVerificationRequest(source);
-	    }
-	
-	    constructor(source: any = {}) {
-	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.root = source["root"];
-	        this.taskId = source["taskId"];
-	        this.command = source["command"];
-	        this.providerId = source["providerId"];
-	        this.passPattern = source["passPattern"];
-	        this.failPattern = source["failPattern"];
-	    }
-	}
 	export class UpdateTaskFlagsRequest {
 	    root: string;
 	    taskId: string;
@@ -1074,3 +1076,4 @@ export namespace app {
 	}
 
 }
+

@@ -1,0 +1,7 @@
+{
+  "schema_version": 1,
+  "autoImplement": true,
+  "autoTest": false,
+  "autoSubmit": false,
+  "autoRetry": true
+}

@@ -1,0 +1,10 @@
+{"schema_version":1,"id":"event-spec-specs-create-do-milestone-11","at":"2026-07-07T03:10:39Z","kind":"SpecCreated","message":"/create Do milestone 11"}
+{"schema_version":1,"id":"event-automation-2026-07-07-10-11-40-993298--0700--07-m--100","at":"2026-07-07T03:11:40Z","kind":"AutomationSaved","message":"Automation toggles updated"}
+{"schema_version":1,"id":"event-automation-2026-07-07-10-11-42-161642--0700--07-m--102","at":"2026-07-07T03:11:42Z","kind":"AutomationSaved","message":"Automation toggles updated"}
+{"schema_version":1,"id":"event-automation-2026-07-07-10-11-43-376345--0700--07-m--103","at":"2026-07-07T03:11:43Z","kind":"AutomationSaved","message":"Automation toggles updated"}
+{"schema_version":1,"id":"event-automation-2026-07-07-10-11-48-408128--0700--07-m--108","at":"2026-07-07T03:11:48Z","kind":"AutomationSaved","message":"Automation toggles updated"}
+{"schema_version":1,"id":"event-task-1783394062133191000-implement-milestone-1","at":"2026-07-07T03:14:22Z","kind":"TaskCreated","message":"Implement Milestone 1"}
+{"schema_version":1,"id":"event-task-1783394062133191000-implement-milestone-1-in-progress-2026-07-07t03-14-28z","at":"2026-07-07T03:14:28Z","kind":"TaskMoved","message":"Implement Milestone 1 -\u003e in_progress"}
+{"schema_version":1,"id":"event-task-1783394062133191000-implement-milestone-1-waiting-2026-07-07t03-14-48z","at":"2026-07-07T03:14:48Z","kind":"TaskMoved","message":"Implement Milestone 1 -\u003e waiting"}
+{"schema_version":1,"id":"event-task-1783394062133191000-implement-milestone-1-in-progress-2026-07-07t03-14-52z","at":"2026-07-07T03:14:52Z","kind":"TaskMoved","message":"Implement Milestone 1 -\u003e in_progress"}
+{"schema_version":1,"id":"event-flags-task-1783394062133191000-implement-milestone-1-2026-07-07t03-16-31z","at":"2026-07-07T03:16:31Z","kind":"TaskFlagsUpdated","message":"Implement Milestone 1 archived=false deleted=true tombstone=true"}
