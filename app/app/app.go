@@ -95,6 +95,18 @@ func (a *App) UpdateTaskStatus(request UpdateTaskStatusRequest) (*TaskInfo, erro
 	return a.provider.UpdateTaskStatus(request)
 }
 
+func (a *App) StartTaskTurn(request StartTaskTurnRequest) (*TaskInfo, error) {
+	return a.provider.StartTaskTurn(request)
+}
+
+func (a *App) FinishTaskTurn(request FinishTaskTurnRequest) (*TaskInfo, error) {
+	return a.provider.FinishTaskTurn(request)
+}
+
+func (a *App) ResumeTaskTurn(request ResumeTaskTurnRequest) (*TaskInfo, error) {
+	return a.provider.ResumeTaskTurn(request)
+}
+
 func (a *App) CreateSpec(request CreateSpecRequest) (*SpecNodeInfo, error) {
 	return a.provider.CreateSpec(request)
 }

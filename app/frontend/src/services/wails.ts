@@ -11,10 +11,13 @@ import type {
   NativeTerminalResizeRequest,
   NativeTerminalSession,
   ProviderInfo,
+  FinishTaskTurnRequest,
+  ResumeTaskTurnRequest,
   RoutineInfo,
   SaveAutomationRequest,
   SearchTasksRequest,
   SpecNode,
+  StartTaskTurnRequest,
   Task,
   UpdateTaskFlagsRequest,
   UpdateWorkspaceRequest,
@@ -44,6 +47,9 @@ type WailsApp = {
   SearchTasks?: (request: SearchTasksRequest) => Promise<Task[]>;
   UpdateTaskFlags?: (request: UpdateTaskFlagsRequest) => Promise<Task>;
   UpdateTaskStatus?: (request: UpdateTaskStatusRequest) => Promise<Task>;
+  StartTaskTurn?: (request: StartTaskTurnRequest) => Promise<Task>;
+  FinishTaskTurn?: (request: FinishTaskTurnRequest) => Promise<Task>;
+  ResumeTaskTurn?: (request: ResumeTaskTurnRequest) => Promise<Task>;
   CreateSpec?: (request: CreateSpecRequest) => Promise<SpecNode>;
   UpsertRoutine?: (request: UpsertRoutineRequest) => Promise<RoutineInfo>;
   SaveAutomation?: (request: SaveAutomationRequest) => Promise<AutomationInfo>;
@@ -132,6 +138,18 @@ export async function updateTaskFlags(request: UpdateTaskFlagsRequest): Promise<
 
 export async function updateTaskStatus(request: UpdateTaskStatusRequest): Promise<Task | null> {
   return (await app().UpdateTaskStatus?.(request)) ?? null;
+}
+
+export async function startTaskTurn(request: StartTaskTurnRequest): Promise<Task | null> {
+  return (await app().StartTaskTurn?.(request)) ?? null;
+}
+
+export async function finishTaskTurn(request: FinishTaskTurnRequest): Promise<Task | null> {
+  return (await app().FinishTaskTurn?.(request)) ?? null;
+}
+
+export async function resumeTaskTurn(request: ResumeTaskTurnRequest): Promise<Task | null> {
+  return (await app().ResumeTaskTurn?.(request)) ?? null;
 }
 
 export async function createSpec(request: CreateSpecRequest): Promise<SpecNode | null> {

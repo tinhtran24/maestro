@@ -208,7 +208,7 @@ Acceptance:
 
 ### 8. Runner Turn Loop
 
-Status: Next.
+Status: Done.
 
 Goal: production task execution semantics.
 
@@ -229,6 +229,8 @@ Acceptance:
 - Outputs and usage are visible in task detail.
 
 ### 9. Test Verification
+
+Status: Next.
 
 Goal: add test-agent verification behavior.
 

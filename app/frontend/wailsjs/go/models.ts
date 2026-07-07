@@ -545,6 +545,9 @@ export namespace app {
 	    promptHistory: PromptRecord[];
 	    feedbackHistory: FeedbackRecord[];
 	    retryHistory: RetryRecord[];
+	    turns: TaskTurnInfo[];
+	    lastTurn?: TaskTurnInfo;
+	    lastOutput?: string;
 	    failureCategory: string;
 	    createdAt: string;
 	
@@ -573,6 +576,9 @@ export namespace app {
 	        this.promptHistory = this.convertValues(source["promptHistory"], PromptRecord);
 	        this.feedbackHistory = this.convertValues(source["feedbackHistory"], FeedbackRecord);
 	        this.retryHistory = this.convertValues(source["retryHistory"], RetryRecord);
+	        this.turns = this.convertValues(source["turns"], TaskTurnInfo);
+	        this.lastTurn = this.convertValues(source["lastTurn"], TaskTurnInfo);
+	        this.lastOutput = source["lastOutput"];
 	        this.failureCategory = source["failureCategory"];
 	        this.createdAt = source["createdAt"];
 	    }
@@ -594,6 +600,116 @@ export namespace app {
 		    }
 		    return a;
 		}
+	}
+	export class TaskTurnInfo {
+	    id: string;
+	    taskId: string;
+	    step: string;
+	    providerId: string;
+	    sessionId?: string;
+	    status: string;
+	    worktree: string;
+	    startedAt: string;
+	    endedAt?: string;
+	    stdoutPath?: string;
+	    stderrPath?: string;
+	    transcriptPath?: string;
+	    stopReason?: string;
+	    usageUsd: number;
+	    failureCategory?: string;
+	    autoContinue: boolean;
+	
+	    static createFrom(source: any = {}) {
+	        return new TaskTurnInfo(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.id = source["id"];
+	        this.taskId = source["taskId"];
+	        this.step = source["step"];
+	        this.providerId = source["providerId"];
+	        this.sessionId = source["sessionId"];
+	        this.status = source["status"];
+	        this.worktree = source["worktree"];
+	        this.startedAt = source["startedAt"];
+	        this.endedAt = source["endedAt"];
+	        this.stdoutPath = source["stdoutPath"];
+	        this.stderrPath = source["stderrPath"];
+	        this.transcriptPath = source["transcriptPath"];
+	        this.stopReason = source["stopReason"];
+	        this.usageUsd = source["usageUsd"];
+	        this.failureCategory = source["failureCategory"];
+	        this.autoContinue = source["autoContinue"];
+	    }
+	}
+	export class StartTaskTurnRequest {
+	    root: string;
+	    taskId: string;
+	    step: string;
+	    providerId: string;
+	    sessionId: string;
+	    transcriptPath: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new StartTaskTurnRequest(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.root = source["root"];
+	        this.taskId = source["taskId"];
+	        this.step = source["step"];
+	        this.providerId = source["providerId"];
+	        this.sessionId = source["sessionId"];
+	        this.transcriptPath = source["transcriptPath"];
+	    }
+	}
+	export class FinishTaskTurnRequest {
+	    root: string;
+	    taskId: string;
+	    turnId: string;
+	    status: string;
+	    stdout: string;
+	    stderr: string;
+	    stopReason: string;
+	    usageUsd: number;
+	    exitCode: number;
+	    autoContinue: boolean;
+	
+	    static createFrom(source: any = {}) {
+	        return new FinishTaskTurnRequest(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.root = source["root"];
+	        this.taskId = source["taskId"];
+	        this.turnId = source["turnId"];
+	        this.status = source["status"];
+	        this.stdout = source["stdout"];
+	        this.stderr = source["stderr"];
+	        this.stopReason = source["stopReason"];
+	        this.usageUsd = source["usageUsd"];
+	        this.exitCode = source["exitCode"];
+	        this.autoContinue = source["autoContinue"];
+	    }
+	}
+	export class ResumeTaskTurnRequest {
+	    root: string;
+	    taskId: string;
+	    feedback: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new ResumeTaskTurnRequest(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.root = source["root"];
+	        this.taskId = source["taskId"];
+	        this.feedback = source["feedback"];
+	    }
 	}
 	export class UpdateTaskFlagsRequest {
 	    root: string;

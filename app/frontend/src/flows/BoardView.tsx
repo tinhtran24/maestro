@@ -94,10 +94,12 @@ export function BoardView({ workspace, onReload }: { workspace: Workspace; onRel
           <span>{task.agent}</span>
           <span>{task.flow}</span>
           <span>${task.usageUsd.toFixed(2)}</span>
+          {task.lastTurn ? <span>{task.lastTurn.step}: {task.lastTurn.status}</span> : null}
           {task.dependencies.length ? <span>{task.dependencies.length} deps</span> : null}
           {task.blocked ? <span>blocked</span> : null}
           {task.failureCategory ? <span>{task.failureCategory}</span> : null}
         </div>
+        {task.lastOutput ? <pre className="task-output">{task.lastOutput}</pre> : null}
         <div className="task-actions">
           {transitions[task.status].map((target) => (
             <button key={target} disabled={task.blocked && target === "in_progress"} onClick={() => moveTask(task.id, target)}>

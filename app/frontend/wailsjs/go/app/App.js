@@ -34,6 +34,10 @@ export function DetectAgentCLIs() {
   return window['go']['app']['App']['DetectAgentCLIs']();
 }
 
+export function FinishTaskTurn(arg1) {
+  return window['go']['app']['App']['FinishTaskTurn'](arg1);
+}
+
 export function ListWorkspaces() {
   return window['go']['app']['App']['ListWorkspaces']();
 }
@@ -54,6 +58,10 @@ export function ResizeNativeTerminal(arg1) {
   return window['go']['app']['App']['ResizeNativeTerminal'](arg1);
 }
 
+export function ResumeTaskTurn(arg1) {
+  return window['go']['app']['App']['ResumeTaskTurn'](arg1);
+}
+
 export function SaveAutomation(arg1) {
   return window['go']['app']['App']['SaveAutomation'](arg1);
 }
@@ -68,6 +76,10 @@ export function SelectWorkspaceFolder() {
 
 export function StartNativeTerminal(arg1) {
   return window['go']['app']['App']['StartNativeTerminal'](arg1);
+}
+
+export function StartTaskTurn(arg1) {
+  return window['go']['app']['App']['StartTaskTurn'](arg1);
 }
 
 export function StopNativeTerminal(arg1) {

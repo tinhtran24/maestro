@@ -4,6 +4,7 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"strings"
 	"testing"
 	"time"
 )
@@ -149,6 +150,108 @@ func TestTaskFlowFallsBackToImplementWhenMissing(t *testing.T) {
 	}
 	if custom.Flow != "custom-flow" {
 		t.Fatalf("custom flow = %q", custom.Flow)
+	}
+}
+
+func TestTaskTurnLoopPersistsOutputUsageAndResume(t *testing.T) {
+	root := t.TempDir()
+	provider := NewRealProvider()
+	provider.now = func() time.Time { return time.Date(2026, 7, 7, 9, 0, 0, 0, time.UTC) }
+	task, err := provider.CreateTask(CreateTaskRequest{Root: root, Title: "Run agent", Prompt: "Implement", Agent: "codex"})
+	if err != nil {
+		t.Fatalf("CreateTask returned error: %v", err)
+	}
+	started, err := provider.StartTaskTurn(StartTaskTurnRequest{
+		Root:           root,
+		TaskID:         task.ID,
+		Step:           "Implementation",
+		ProviderID:     "codex",
+		SessionID:      "native-1",
+		TranscriptPath: ".thanos/terminal/sessions/native-1.log",
+	})
+	if err != nil {
+		t.Fatalf("StartTaskTurn returned error: %v", err)
+	}
+	if started.Status != "in_progress" || len(started.Turns) != 1 || started.LastTurn == nil || started.LastTurn.Status != "running" {
+		t.Fatalf("started task = %#v", started)
+	}
+
+	provider.now = func() time.Time { return time.Date(2026, 7, 7, 9, 5, 0, 0, time.UTC) }
+	finished, err := provider.FinishTaskTurn(FinishTaskTurnRequest{
+		Root:       root,
+		TaskID:     task.ID,
+		TurnID:     "turn-001",
+		Status:     "completed",
+		Stdout:     "implemented changes\nSTOP_REASON=waiting_user\n",
+		Stderr:     "",
+		StopReason: "waiting_user",
+		UsageUSD:   1.25,
+	})
+	if err != nil {
+		t.Fatalf("FinishTaskTurn returned error: %v", err)
+	}
+	if finished.Status != "waiting" || finished.UsageUSD != 1.25 || finished.LastTurn.StopReason != "waiting_user" || !strings.Contains(finished.LastOutput, "implemented changes") {
+		t.Fatalf("finished task = %#v", finished)
+	}
+	stdoutData, err := os.ReadFile(filepath.Join(root, filepath.FromSlash(finished.LastTurn.StdoutPath)))
+	if err != nil {
+		t.Fatalf("stdout log missing: %v", err)
+	}
+	if !strings.Contains(string(stdoutData), "implemented changes") {
+		t.Fatalf("stdout log = %q", string(stdoutData))
+	}
+
+	provider.now = func() time.Time { return time.Date(2026, 7, 7, 9, 10, 0, 0, time.UTC) }
+	resumed, err := provider.ResumeTaskTurn(ResumeTaskTurnRequest{Root: root, TaskID: task.ID, Feedback: "Continue with tests"})
+	if err != nil {
+		t.Fatalf("ResumeTaskTurn returned error: %v", err)
+	}
+	if resumed.Status != "in_progress" || len(resumed.FeedbackHistory) != 1 {
+		t.Fatalf("resumed task = %#v", resumed)
+	}
+}
+
+func TestTaskTurnLoopClassifiesFailuresAndAutoContinue(t *testing.T) {
+	root := t.TempDir()
+	provider := NewRealProvider()
+	provider.now = func() time.Time { return time.Date(2026, 7, 7, 10, 0, 0, 0, time.UTC) }
+	task, err := provider.CreateTask(CreateTaskRequest{Root: root, Title: "Run with limits", Prompt: "Implement", Agent: "codex"})
+	if err != nil {
+		t.Fatalf("CreateTask returned error: %v", err)
+	}
+	if _, err := provider.StartTaskTurn(StartTaskTurnRequest{Root: root, TaskID: task.ID, ProviderID: "codex"}); err != nil {
+		t.Fatalf("StartTaskTurn returned error: %v", err)
+	}
+	continued, err := provider.FinishTaskTurn(FinishTaskTurnRequest{
+		Root:         root,
+		TaskID:       task.ID,
+		TurnID:       "turn-001",
+		Status:       "completed",
+		Stdout:       "hit max token limit",
+		AutoContinue: true,
+	})
+	if err != nil {
+		t.Fatalf("FinishTaskTurn auto-continue returned error: %v", err)
+	}
+	if continued.Status != "in_progress" || continued.LastTurn.StopReason != "max_tokens" || !continued.LastTurn.AutoContinue {
+		t.Fatalf("auto-continued task = %#v", continued)
+	}
+	if _, err := provider.StartTaskTurn(StartTaskTurnRequest{Root: root, TaskID: task.ID, ProviderID: "codex"}); err != nil {
+		t.Fatalf("second StartTaskTurn returned error: %v", err)
+	}
+	failed, err := provider.FinishTaskTurn(FinishTaskTurnRequest{
+		Root:     root,
+		TaskID:   task.ID,
+		TurnID:   "turn-002",
+		Status:   "failed",
+		Stderr:   "permission denied opening file",
+		ExitCode: 1,
+	})
+	if err != nil {
+		t.Fatalf("FinishTaskTurn failure returned error: %v", err)
+	}
+	if failed.Status != "failed" || failed.FailureCategory != "permissions" || failed.LastTurn.FailureCategory != "permissions" {
+		t.Fatalf("failed task = %#v", failed)
 	}
 }
 

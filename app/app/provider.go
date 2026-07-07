@@ -60,6 +60,9 @@ type TaskInfo struct {
 	PromptHistory   []PromptRecord   `json:"promptHistory"`
 	FeedbackHistory []FeedbackRecord `json:"feedbackHistory"`
 	RetryHistory    []RetryRecord    `json:"retryHistory"`
+	Turns           []TaskTurnInfo   `json:"turns"`
+	LastTurn        *TaskTurnInfo    `json:"lastTurn,omitempty"`
+	LastOutput      string           `json:"lastOutput,omitempty"`
 	FailureCategory string           `json:"failureCategory"`
 	CreatedAt       string           `json:"createdAt"`
 }
@@ -79,6 +82,25 @@ type RetryRecord struct {
 	Reason string `json:"reason"`
 }
 
+type TaskTurnInfo struct {
+	ID              string  `json:"id"`
+	TaskID          string  `json:"taskId"`
+	Step            string  `json:"step"`
+	ProviderID      string  `json:"providerId"`
+	SessionID       string  `json:"sessionId,omitempty"`
+	Status          string  `json:"status"`
+	Worktree        string  `json:"worktree"`
+	StartedAt       string  `json:"startedAt"`
+	EndedAt         string  `json:"endedAt,omitempty"`
+	StdoutPath      string  `json:"stdoutPath,omitempty"`
+	StderrPath      string  `json:"stderrPath,omitempty"`
+	TranscriptPath  string  `json:"transcriptPath,omitempty"`
+	StopReason      string  `json:"stopReason,omitempty"`
+	UsageUSD        float64 `json:"usageUsd"`
+	FailureCategory string  `json:"failureCategory,omitempty"`
+	AutoContinue    bool    `json:"autoContinue"`
+}
+
 type CreateTaskRequest struct {
 	Root         string   `json:"root"`
 	Title        string   `json:"title"`
@@ -94,6 +116,34 @@ type UpdateTaskStatusRequest struct {
 	Status          string `json:"status"`
 	Feedback        string `json:"feedback"`
 	FailureCategory string `json:"failureCategory"`
+}
+
+type StartTaskTurnRequest struct {
+	Root           string `json:"root"`
+	TaskID         string `json:"taskId"`
+	Step           string `json:"step"`
+	ProviderID     string `json:"providerId"`
+	SessionID      string `json:"sessionId"`
+	TranscriptPath string `json:"transcriptPath"`
+}
+
+type FinishTaskTurnRequest struct {
+	Root         string  `json:"root"`
+	TaskID       string  `json:"taskId"`
+	TurnID       string  `json:"turnId"`
+	Status       string  `json:"status"`
+	Stdout       string  `json:"stdout"`
+	Stderr       string  `json:"stderr"`
+	StopReason   string  `json:"stopReason"`
+	UsageUSD     float64 `json:"usageUsd"`
+	ExitCode     int     `json:"exitCode"`
+	AutoContinue bool    `json:"autoContinue"`
+}
+
+type ResumeTaskTurnRequest struct {
+	Root     string `json:"root"`
+	TaskID   string `json:"taskId"`
+	Feedback string `json:"feedback"`
 }
 
 type BatchCreateTasksRequest struct {
@@ -505,6 +555,187 @@ func (p *RealProvider) UpdateTaskStatus(req UpdateTaskStatusRequest) (*TaskInfo,
 	return updated, nil
 }
 
+func (p *RealProvider) StartTaskTurn(req StartTaskTurnRequest) (*TaskInfo, error) {
+	root, err := normalizeWorkspaceRoot(req.Root)
+	if err != nil {
+		return nil, err
+	}
+	var updated *TaskInfo
+	now := p.now().UTC().Format(time.RFC3339)
+	store := NewWorkspaceStore(root)
+	err = store.WithLock(func() error {
+		tasks, err := loadTasks(root)
+		if err != nil {
+			return err
+		}
+		for _, task := range tasks {
+			if task.ID != req.TaskID {
+				continue
+			}
+			task = hydrateTask(task)
+			if task.Blocked {
+				return fmt.Errorf("task is blocked by unfinished dependencies: %s", task.ID)
+			}
+			if task.Status == "done" || task.Status == "cancelled" {
+				return fmt.Errorf("task %s cannot start a turn from %s", task.ID, task.Status)
+			}
+			if strings.TrimSpace(task.Worktree) == "" {
+				return fmt.Errorf("task %s cannot start without an isolated worktree", task.ID)
+			}
+			if task.Status != "in_progress" {
+				if err := validateTaskTransition(task.Status, "in_progress"); err != nil {
+					return err
+				}
+			}
+			if task.Status == "failed" {
+				task.RetryHistory = append(task.RetryHistory, RetryRecord{At: now, Reason: "start new turn"})
+			}
+			turnID := fmt.Sprintf("turn-%03d", len(task.Turns)+1)
+			turn := TaskTurnInfo{
+				ID:             turnID,
+				TaskID:         task.ID,
+				Step:           fallback(req.Step, "Implementation"),
+				ProviderID:     fallback(req.ProviderID, task.Agent),
+				SessionID:      strings.TrimSpace(req.SessionID),
+				Status:         "running",
+				Worktree:       task.Worktree,
+				StartedAt:      now,
+				TranscriptPath: strings.TrimSpace(req.TranscriptPath),
+			}
+			task.Turns = append(task.Turns, turn)
+			task.LastTurn = &task.Turns[len(task.Turns)-1]
+			task.Status = "in_progress"
+			task.UpdatedAt = now
+			if err := writeTask(store, task); err != nil {
+				return err
+			}
+			if err := store.AppendEvent(EventInfo{ID: "event-turn-start-" + stableID(task.ID+"-"+turnID), At: now, Kind: "TaskTurnStarted", Message: fmt.Sprintf("%s %s started", task.Title, turnID)}); err != nil {
+				return err
+			}
+			copied := task
+			updated = &copied
+			return nil
+		}
+		return fmt.Errorf("task not found: %s", req.TaskID)
+	})
+	if err != nil {
+		return nil, err
+	}
+	return updated, nil
+}
+
+func (p *RealProvider) FinishTaskTurn(req FinishTaskTurnRequest) (*TaskInfo, error) {
+	root, err := normalizeWorkspaceRoot(req.Root)
+	if err != nil {
+		return nil, err
+	}
+	var updated *TaskInfo
+	now := p.now().UTC().Format(time.RFC3339)
+	store := NewWorkspaceStore(root)
+	err = store.WithLock(func() error {
+		tasks, err := loadTasks(root)
+		if err != nil {
+			return err
+		}
+		for _, task := range tasks {
+			if task.ID != req.TaskID {
+				continue
+			}
+			task = hydrateTask(task)
+			index := findTurnIndex(task.Turns, req.TurnID)
+			if index < 0 {
+				return fmt.Errorf("turn not found: %s", req.TurnID)
+			}
+			turn := task.Turns[index]
+			turn.Status = normalizeTurnStatus(req.Status, req.ExitCode)
+			turn.EndedAt = now
+			turn.StopReason = normalizeStopReason(firstNonEmpty(req.StopReason, parseStopReason(req.Stdout), parseStopReason(req.Stderr)))
+			turn.UsageUSD = req.UsageUSD
+			turn.AutoContinue = req.AutoContinue
+			stdoutPath, stderrPath, err := writeTurnOutput(root, task.ID, turn.ID, req.Stdout, req.Stderr)
+			if err != nil {
+				return err
+			}
+			turn.StdoutPath = stdoutPath
+			turn.StderrPath = stderrPath
+			task.LastOutput = compactTurnOutput(req.Stdout, req.Stderr)
+			if turn.Status == "failed" {
+				turn.FailureCategory = classifyFailure(req.Stderr, req.Stdout, req.ExitCode)
+				task.FailureCategory = turn.FailureCategory
+				task.Status = "failed"
+			} else if req.AutoContinue && isContinuableStop(turn.StopReason) {
+				task.Status = "in_progress"
+			} else {
+				task.Status = "waiting"
+			}
+			task.UsageUSD += req.UsageUSD
+			task.Turns[index] = turn
+			task.LastTurn = &task.Turns[index]
+			task.UpdatedAt = now
+			if err := writeTask(store, task); err != nil {
+				return err
+			}
+			if err := store.AppendEvent(EventInfo{ID: "event-turn-finish-" + stableID(task.ID+"-"+turn.ID+"-"+now), At: now, Kind: "TaskTurnFinished", Message: fmt.Sprintf("%s %s finished: %s", task.Title, turn.ID, task.Status)}); err != nil {
+				return err
+			}
+			copied := task
+			updated = &copied
+			return nil
+		}
+		return fmt.Errorf("task not found: %s", req.TaskID)
+	})
+	if err != nil {
+		return nil, err
+	}
+	return updated, nil
+}
+
+func (p *RealProvider) ResumeTaskTurn(req ResumeTaskTurnRequest) (*TaskInfo, error) {
+	root, err := normalizeWorkspaceRoot(req.Root)
+	if err != nil {
+		return nil, err
+	}
+	feedback := strings.TrimSpace(req.Feedback)
+	if feedback == "" {
+		return nil, fmt.Errorf("feedback is required to resume a task")
+	}
+	var updated *TaskInfo
+	now := p.now().UTC().Format(time.RFC3339)
+	store := NewWorkspaceStore(root)
+	err = store.WithLock(func() error {
+		tasks, err := loadTasks(root)
+		if err != nil {
+			return err
+		}
+		for _, task := range tasks {
+			if task.ID != req.TaskID {
+				continue
+			}
+			task = hydrateTask(task)
+			if task.Status != "waiting" {
+				return fmt.Errorf("task %s must be waiting to resume, got %s", task.ID, task.Status)
+			}
+			task.FeedbackHistory = append(task.FeedbackHistory, FeedbackRecord{At: now, Message: feedback})
+			task.Status = "in_progress"
+			task.UpdatedAt = now
+			if err := writeTask(store, task); err != nil {
+				return err
+			}
+			if err := store.AppendEvent(EventInfo{ID: "event-turn-resume-" + stableID(task.ID+"-"+now), At: now, Kind: "TaskTurnResumed", Message: fmt.Sprintf("%s resumed with feedback", task.Title)}); err != nil {
+				return err
+			}
+			copied := task
+			updated = &copied
+			return nil
+		}
+		return fmt.Errorf("task not found: %s", req.TaskID)
+	})
+	if err != nil {
+		return nil, err
+	}
+	return updated, nil
+}
+
 func (p *RealProvider) CreateSpec(req CreateSpecRequest) (*SpecNodeInfo, error) {
 	root, err := normalizeWorkspaceRoot(req.Root)
 	if err != nil {
@@ -849,6 +1080,8 @@ func decodeTask(path, root string) (TaskInfo, bool) {
 		PromptHistory:   promptHistoryFrom(raw, prompt),
 		FeedbackHistory: feedbackHistoryFrom(raw),
 		RetryHistory:    retryHistoryFrom(raw),
+		Turns:           taskTurnsFrom(raw),
+		LastOutput:      stringFrom(raw, "lastOutput", "last_output"),
 		FailureCategory: stringFrom(raw, "failure_category", "failureCategory", "FailureCategory"),
 	}
 	return hydrateTask(task), true
@@ -1180,6 +1413,108 @@ func writeJSON(path string, value any) error {
 	return os.Rename(tmp, path)
 }
 
+func writeTurnOutput(root, taskID, turnID, stdout, stderr string) (string, string, error) {
+	dir := filepath.Join(root, ".thanos", "logs", taskID)
+	if err := os.MkdirAll(dir, 0o755); err != nil {
+		return "", "", err
+	}
+	stdoutRel := filepath.ToSlash(filepath.Join(".thanos", "logs", taskID, turnID+".stdout.log"))
+	stderrRel := filepath.ToSlash(filepath.Join(".thanos", "logs", taskID, turnID+".stderr.log"))
+	if err := os.WriteFile(filepath.Join(root, filepath.FromSlash(stdoutRel)), []byte(stdout), 0o644); err != nil {
+		return "", "", err
+	}
+	if err := os.WriteFile(filepath.Join(root, filepath.FromSlash(stderrRel)), []byte(stderr), 0o644); err != nil {
+		return "", "", err
+	}
+	return stdoutRel, stderrRel, nil
+}
+
+func findTurnIndex(turns []TaskTurnInfo, id string) int {
+	id = strings.TrimSpace(id)
+	for index, turn := range turns {
+		if turn.ID == id {
+			return index
+		}
+	}
+	return -1
+}
+
+func normalizeTurnStatus(status string, exitCode int) string {
+	status = strings.ToLower(strings.TrimSpace(status))
+	switch status {
+	case "completed", "complete", "done", "success":
+		return "completed"
+	case "stopped", "cancelled", "canceled":
+		return "stopped"
+	case "failed", "error":
+		return "failed"
+	}
+	if exitCode != 0 {
+		return "failed"
+	}
+	return "completed"
+}
+
+func parseStopReason(output string) string {
+	text := strings.ToLower(output)
+	switch {
+	case strings.Contains(text, "max token") || strings.Contains(text, "context length") || strings.Contains(text, "token limit"):
+		return "max_tokens"
+	case strings.Contains(text, "waiting for user") || strings.Contains(text, "needs input") || strings.Contains(text, "user input"):
+		return "waiting_user"
+	case strings.Contains(text, "paused") || strings.Contains(text, "pause"):
+		return "paused"
+	case strings.Contains(text, "completed") || strings.Contains(text, "done"):
+		return "completed"
+	default:
+		return ""
+	}
+}
+
+func normalizeStopReason(reason string) string {
+	reason = strings.ToLower(strings.TrimSpace(reason))
+	reason = strings.ReplaceAll(reason, " ", "_")
+	if reason == "" {
+		return "completed"
+	}
+	return reason
+}
+
+func isContinuableStop(reason string) bool {
+	switch normalizeStopReason(reason) {
+	case "max_tokens", "paused":
+		return true
+	default:
+		return false
+	}
+}
+
+func classifyFailure(stderr, stdout string, exitCode int) string {
+	text := strings.ToLower(stderr + "\n" + stdout)
+	switch {
+	case strings.Contains(text, "permission denied") || strings.Contains(text, "unauthorized") || strings.Contains(text, "forbidden"):
+		return "permissions"
+	case strings.Contains(text, "timed out") || strings.Contains(text, "timeout") || strings.Contains(text, "deadline exceeded"):
+		return "timeout"
+	case strings.Contains(text, "not found") || strings.Contains(text, "no such file") || strings.Contains(text, "executable file not found"):
+		return "environment"
+	case strings.Contains(text, "rate limit") || strings.Contains(text, "quota"):
+		return "provider_limit"
+	case exitCode != 0:
+		return "process_exit"
+	default:
+		return "unknown"
+	}
+}
+
+func compactTurnOutput(stdout, stderr string) string {
+	output := strings.TrimSpace(strings.TrimSpace(stdout) + "\n" + strings.TrimSpace(stderr))
+	if len(output) <= 4000 {
+		return output
+	}
+	return output[len(output)-4000:]
+}
+
 func appendEvent(root string, event EventInfo) error {
 	path := filepath.Join(root, ".thanos", "events.jsonl")
 	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
@@ -1426,6 +1761,39 @@ func retryHistoryFrom(raw map[string]any) []RetryRecord {
 	return out
 }
 
+func taskTurnsFrom(raw map[string]any) []TaskTurnInfo {
+	records, ok := raw["turns"].([]any)
+	if !ok {
+		return []TaskTurnInfo{}
+	}
+	out := make([]TaskTurnInfo, 0, len(records))
+	for _, item := range records {
+		record, ok := item.(map[string]any)
+		if !ok {
+			continue
+		}
+		out = append(out, TaskTurnInfo{
+			ID:              stringFrom(record, "id"),
+			TaskID:          stringFrom(record, "taskId", "task_id"),
+			Step:            stringFrom(record, "step"),
+			ProviderID:      stringFrom(record, "providerId", "provider_id"),
+			SessionID:       stringFrom(record, "sessionId", "session_id"),
+			Status:          stringFrom(record, "status"),
+			Worktree:        stringFrom(record, "worktree"),
+			StartedAt:       stringFrom(record, "startedAt", "started_at"),
+			EndedAt:         stringFrom(record, "endedAt", "ended_at"),
+			StdoutPath:      stringFrom(record, "stdoutPath", "stdout_path"),
+			StderrPath:      stringFrom(record, "stderrPath", "stderr_path"),
+			TranscriptPath:  stringFrom(record, "transcriptPath", "transcript_path"),
+			StopReason:      stringFrom(record, "stopReason", "stop_reason"),
+			UsageUSD:        floatFrom(record, "usageUsd", "usage_usd"),
+			FailureCategory: stringFrom(record, "failureCategory", "failure_category"),
+			AutoContinue:    boolFrom(record, "autoContinue", "auto_continue"),
+		})
+	}
+	return out
+}
+
 func normalizeTaskStatus(status string) string {
 	switch strings.ToLower(strings.TrimSpace(status)) {
 	case "in_progress", "running":
@@ -1480,6 +1848,22 @@ func hydrateTask(task TaskInfo) TaskInfo {
 	}
 	if task.RetryHistory == nil {
 		task.RetryHistory = []RetryRecord{}
+	}
+	if task.Turns == nil {
+		task.Turns = []TaskTurnInfo{}
+	}
+	for index := range task.Turns {
+		if task.Turns[index].TaskID == "" {
+			task.Turns[index].TaskID = task.ID
+		}
+		if task.Turns[index].Worktree == "" {
+			task.Turns[index].Worktree = task.Worktree
+		}
+	}
+	if len(task.Turns) > 0 {
+		task.LastTurn = &task.Turns[len(task.Turns)-1]
+	} else {
+		task.LastTurn = nil
 	}
 	return task
 }

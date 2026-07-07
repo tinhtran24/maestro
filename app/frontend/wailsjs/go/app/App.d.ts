@@ -18,6 +18,8 @@ export function DeleteWorkspace(arg1:app.DeleteWorkspaceRequest):Promise<app.Wor
 
 export function DetectAgentCLIs():Promise<Array<app.ProviderInfo>>;
 
+export function FinishTaskTurn(arg1:app.FinishTaskTurnRequest):Promise<app.TaskInfo>;
+
 export function ListWorkspaces():Promise<app.WorkspaceRegistryInfo>;
 
 export function LoadActiveWorkspace():Promise<app.WorkspaceInfo>;
@@ -28,6 +30,8 @@ export function Ping():Promise<string>;
 
 export function ResizeNativeTerminal(arg1:app.NativeTerminalResizeRequest):Promise<void>;
 
+export function ResumeTaskTurn(arg1:app.ResumeTaskTurnRequest):Promise<app.TaskInfo>;
+
 export function SaveAutomation(arg1:app.SaveAutomationRequest):Promise<app.AutomationInfo>;
 
 export function SearchTasks(arg1:app.SearchTasksRequest):Promise<Array<app.TaskInfo>>;
@@ -35,6 +39,8 @@ export function SearchTasks(arg1:app.SearchTasksRequest):Promise<Array<app.TaskI
 export function SelectWorkspaceFolder():Promise<any>;
 
 export function StartNativeTerminal(arg1:app.NativeTerminalRequest):Promise<app.NativeTerminalSessionInfo>;
+
+export function StartTaskTurn(arg1:app.StartTaskTurnRequest):Promise<app.TaskInfo>;
 
 export function StopNativeTerminal(arg1:string):Promise<boolean>;
 

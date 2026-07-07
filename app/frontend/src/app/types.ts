@@ -40,6 +40,9 @@ export type Task = {
   promptHistory: PromptRecord[];
   feedbackHistory: FeedbackRecord[];
   retryHistory: RetryRecord[];
+  turns: TaskTurn[];
+  lastTurn?: TaskTurn;
+  lastOutput?: string;
   failureCategory: string;
   createdAt: string;
 };
@@ -57,6 +60,25 @@ export type FeedbackRecord = {
 export type RetryRecord = {
   at: string;
   reason: string;
+};
+
+export type TaskTurn = {
+  id: string;
+  taskId: string;
+  step: string;
+  providerId: string;
+  sessionId?: string;
+  status: "running" | "completed" | "failed" | "stopped" | string;
+  worktree: string;
+  startedAt: string;
+  endedAt?: string;
+  stdoutPath?: string;
+  stderrPath?: string;
+  transcriptPath?: string;
+  stopReason?: string;
+  usageUsd: number;
+  failureCategory?: string;
+  autoContinue: boolean;
 };
 
 export type SpecNode = {
@@ -125,6 +147,34 @@ export type UpdateTaskStatusRequest = {
   status: TaskStatus;
   feedback?: string;
   failureCategory?: string;
+};
+
+export type StartTaskTurnRequest = {
+  root: string;
+  taskId: string;
+  step?: string;
+  providerId?: string;
+  sessionId?: string;
+  transcriptPath?: string;
+};
+
+export type FinishTaskTurnRequest = {
+  root: string;
+  taskId: string;
+  turnId: string;
+  status: string;
+  stdout?: string;
+  stderr?: string;
+  stopReason?: string;
+  usageUsd?: number;
+  exitCode?: number;
+  autoContinue?: boolean;
+};
+
+export type ResumeTaskTurnRequest = {
+  root: string;
+  taskId: string;
+  feedback: string;
 };
 
 export type BatchCreateTasksRequest = {

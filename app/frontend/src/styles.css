@@ -340,6 +340,21 @@ button {
   line-height: 1.45;
 }
 
+.task-output {
+  max-height: 120px;
+  overflow: auto;
+  margin: 10px 0 0;
+  border: 1px solid #273449;
+  border-radius: 8px;
+  background: #020617;
+  padding: 8px;
+  color: #cbd5e1;
+  font-size: 12px;
+  line-height: 1.45;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
 .task-meta,
 .flow-steps,
 .settings-list p {
