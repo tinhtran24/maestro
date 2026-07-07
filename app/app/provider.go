@@ -594,17 +594,7 @@ func (p *RealProvider) SaveAutomation(req SaveAutomationRequest) (*AutomationInf
 }
 
 func (p *RealProvider) DetectAgentCLIs(ctx context.Context) ([]ProviderInfo, error) {
-	catalog := []ProviderInfo{
-		{ID: "claude", Name: "Claude Code", Command: "claude", Type: "cli", SetupHint: "Install Claude Code and authenticate it before assigning tasks.", SupportsRun: true},
-		{ID: "codex", Name: "Codex", Command: "codex", Type: "cli", SetupHint: "Install Codex and ensure `codex` is on PATH.", SupportsRun: true},
-		{ID: "gemini", Name: "Gemini CLI", Command: "gemini", Type: "cli", SetupHint: "Install Gemini CLI and ensure `gemini` is on PATH.", SupportsRun: true},
-		{ID: "opencode", Name: "OpenCode", Command: "opencode", Type: "cli", SetupHint: "Install OpenCode and finish setup before assigning it.", SupportsRun: true},
-		{ID: "cursor", Name: "Cursor Agent", Command: "cursor-agent", Type: "cli", SetupHint: "Install Cursor Agent and ensure `cursor-agent` is on PATH.", SupportsRun: true},
-		{ID: "aider", Name: "Aider", Command: "aider", Type: "cli", SetupHint: "Install Aider and ensure `aider` is on PATH.", SupportsRun: true},
-		{ID: "goose", Name: "Goose", Command: "goose", Type: "cli", SetupHint: "Install Goose and ensure `goose` is on PATH.", SupportsRun: true},
-		{ID: "shell", Name: "Shell", Command: "sh", Type: "shell", Status: "installed", SetupHint: "System shell used for explicit user-approved commands.", SupportsRun: false},
-	}
-
+	catalog := providerCatalog()
 	out := make([]ProviderInfo, 0, len(catalog))
 	for _, item := range catalog {
 		provider := item
@@ -622,6 +612,19 @@ func (p *RealProvider) DetectAgentCLIs(ctx context.Context) ([]ProviderInfo, err
 		out = append(out, provider)
 	}
 	return out, nil
+}
+
+func providerCatalog() []ProviderInfo {
+	return []ProviderInfo{
+		{ID: "claude-code", Name: "Claude Code", Command: "claude", Type: "cli", SetupHint: "Install Claude Code and authenticate it before assigning tasks.", SupportsRun: true},
+		{ID: "codex", Name: "Codex", Command: "codex", Type: "cli", SetupHint: "Install Codex and ensure `codex` is on PATH.", SupportsRun: true},
+		{ID: "gemini-cli", Name: "Gemini CLI", Command: "gemini", Type: "cli", SetupHint: "Install Gemini CLI and ensure `gemini` is on PATH.", SupportsRun: true},
+		{ID: "opencode", Name: "OpenCode", Command: "opencode", Type: "cli", SetupHint: "Install OpenCode and finish setup before assigning it.", SupportsRun: true},
+		{ID: "cursor-agent", Name: "Cursor Agent", Command: "cursor-agent", Type: "cli", SetupHint: "Install Cursor Agent and ensure `cursor-agent` is on PATH.", SupportsRun: true},
+		{ID: "aider", Name: "Aider", Command: "aider", Type: "cli", SetupHint: "Install Aider and ensure `aider` is on PATH.", SupportsRun: true},
+		{ID: "goose", Name: "Goose", Command: "goose", Type: "cli", SetupHint: "Install Goose and ensure `goose` is on PATH.", SupportsRun: true},
+		{ID: "shell", Name: "Shell", Command: "sh", Type: "shell", Status: "installed", SetupHint: "System shell used for explicit user-approved commands.", SupportsRun: false},
+	}
 }
 
 func commandVersion(parent context.Context, command string) string {
@@ -967,14 +970,14 @@ func appendEvent(root string, event EventInfo) error {
 }
 
 func builtinAgentRoles(providers []ProviderInfo) []AgentRoleInfo {
-	defaultHarness := firstInstalled(providers, "codex", "claude", "opencode", "cursor")
+	defaultHarness := firstInstalled(providers, "codex", "claude-code", "claude", "opencode", "cursor-agent", "cursor")
 	if defaultHarness == "" {
 		defaultHarness = "codex"
 	}
 	return []AgentRoleInfo{
 		{ID: "impl", Role: "Implementation", Harness: displayHarness(defaultHarness), Model: "provider default", Capabilities: []string{"workspace.read", "workspace.write", "board.context"}},
-		{ID: "test", Role: "Testing", Harness: displayHarness(firstNonEmpty(firstInstalled(providers, "claude", "codex"), defaultHarness)), Model: "provider default", Capabilities: []string{"workspace.read", "commands.run"}},
-		{ID: "oversight", Role: "Oversight", Harness: displayHarness(firstNonEmpty(firstInstalled(providers, "claude", "codex"), defaultHarness)), Model: "provider default", Capabilities: []string{"diff.read", "timeline.read", "risk.review"}},
+		{ID: "test", Role: "Testing", Harness: displayHarness(firstNonEmpty(firstInstalled(providers, "claude-code", "claude", "codex"), defaultHarness)), Model: "provider default", Capabilities: []string{"workspace.read", "commands.run"}},
+		{ID: "oversight", Role: "Oversight", Harness: displayHarness(firstNonEmpty(firstInstalled(providers, "claude-code", "claude", "codex"), defaultHarness)), Model: "provider default", Capabilities: []string{"diff.read", "timeline.read", "risk.review"}},
 		{ID: "title", Role: "Title", Harness: "Shell", Model: "none", Capabilities: []string{"metadata.write"}},
 		{ID: "commit-msg", Role: "Commit Message", Harness: displayHarness(defaultHarness), Model: "provider default", Capabilities: []string{"diff.read", "metadata.write"}},
 	}
@@ -1001,15 +1004,15 @@ func firstInstalled(providers []ProviderInfo, ids ...string) string {
 
 func displayHarness(id string) string {
 	switch id {
-	case "claude":
+	case "claude", "claude-code":
 		return "Claude"
 	case "codex":
 		return "Codex"
-	case "cursor":
+	case "cursor", "cursor-agent":
 		return "Cursor"
 	case "opencode":
 		return "OpenCode"
-	case "gemini":
+	case "gemini", "gemini-cli":
 		return "Gemini"
 	default:
 		return "Shell"

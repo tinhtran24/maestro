@@ -3,6 +3,7 @@ package app
 import (
 	"os"
 	"path/filepath"
+	"reflect"
 	"testing"
 	"time"
 )
@@ -41,6 +42,21 @@ func TestRealProviderLoadWorkspaceReadsRealSpecsAndTasks(t *testing.T) {
 	}
 	if len(workspace.Flows) == 0 || len(workspace.Agents) == 0 {
 		t.Fatalf("expected built-in roles and flows")
+	}
+}
+
+func TestProviderCatalogContainsMilestoneFiveProviders(t *testing.T) {
+	catalog := providerCatalog()
+	got := make([]string, 0, len(catalog))
+	for _, provider := range catalog {
+		got = append(got, provider.ID)
+		if provider.ID != "shell" && (!provider.SupportsRun || provider.SetupHint == "") {
+			t.Fatalf("provider missing run metadata: %#v", provider)
+		}
+	}
+	want := []string{"claude-code", "codex", "gemini-cli", "opencode", "cursor-agent", "aider", "goose", "shell"}
+	if !reflect.DeepEqual(got, want) {
+		t.Fatalf("catalog IDs = %#v, want %#v", got, want)
 	}
 }
 

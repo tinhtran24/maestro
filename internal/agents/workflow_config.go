@@ -5,6 +5,7 @@ type WorkflowStepConfig struct {
 	Enabled                       bool              `json:"enabled"`
 	Provider                      string            `json:"provider"`
 	Command                       string            `json:"command"`
+	Model                         string            `json:"model,omitempty"`
 	WorkingDirectoryMode          string            `json:"working_directory_mode"`
 	AutoStartTerminal             bool              `json:"auto_start_terminal"`
 	RequireApprovalBeforeNextStep bool              `json:"approval_required"`

@@ -9,7 +9,7 @@ import (
 
 func TestDefaultAdapterRegistryContainsRequiredAdapters(t *testing.T) {
 	registry := DefaultAdapterRegistry()
-	for _, id := range []string{"claude-code", "codex", "gemini-cli", "opencode", "shell"} {
+	for _, id := range []string{"claude-code", "codex", "gemini-cli", "opencode", "cursor-agent", "aider", "goose", "shell"} {
 		if _, ok := registry.Get(id); !ok {
 			t.Fatalf("missing adapter %q", id)
 		}
@@ -19,6 +19,9 @@ func TestDefaultAdapterRegistryContainsRequiredAdapters(t *testing.T) {
 	}
 	if adapter, ok := registry.Get("gemini"); !ok || adapter.ID() != "gemini-cli" {
 		t.Fatalf("gemini alias = %v/%v, want gemini-cli", adapter, ok)
+	}
+	if adapter, ok := registry.Get("cursor"); !ok || adapter.ID() != "cursor-agent" {
+		t.Fatalf("cursor alias = %v/%v, want cursor-agent", adapter, ok)
 	}
 }
 
@@ -63,6 +66,60 @@ func TestDetectAllUsesCheapLocalDetection(t *testing.T) {
 	}
 	if byID["shell"].Status != StatusInstalled || !byID["shell"].Enabled {
 		t.Fatalf("shell detection = %#v", byID["shell"])
+	}
+}
+
+func TestBuildLaunchBuildsProviderSpecificArgs(t *testing.T) {
+	tests := []struct {
+		name     string
+		provider string
+		prompt   string
+		model    string
+		want     []string
+	}{
+		{name: "claude", provider: "claude-code", prompt: "implement task", model: "sonnet", want: []string{"--print", "--model", "sonnet", "implement task"}},
+		{name: "codex", provider: "codex", prompt: "implement task", model: "gpt-5", want: []string{"exec", "--model", "gpt-5", "--permission", "workspace-write", "implement task"}},
+		{name: "gemini", provider: "gemini-cli", prompt: "implement task", model: "pro", want: []string{"--prompt", "implement task", "--model", "pro"}},
+		{name: "opencode", provider: "opencode", prompt: "implement task", model: "plan", want: []string{"run", "--model", "plan", "implement task"}},
+		{name: "cursor", provider: "cursor-agent", prompt: "implement task", model: "auto", want: []string{"--model", "auto", "implement task"}},
+		{name: "aider", provider: "aider", prompt: "implement task", model: "opus", want: []string{"--message", "implement task", "--model", "opus"}},
+		{name: "goose", provider: "goose", prompt: "implement task", model: "agent", want: []string{"run", "--model", "agent", "--text", "implement task"}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			launch, err := DefaultAdapterRegistry().BuildLaunch(context.Background(), WorkflowStepConfig{
+				ID:          "coding",
+				Provider:    tt.provider,
+				Permissions: []string{"workspace-write"},
+			}, LaunchRequest{
+				ProjectRoot: "/repo",
+				Prompt:      tt.prompt,
+				Model:       tt.model,
+			})
+			if err != nil {
+				t.Fatalf("BuildLaunch: %v", err)
+			}
+			if !reflect.DeepEqual(launch.Args, tt.want) {
+				t.Fatalf("args = %#v, want %#v", launch.Args, tt.want)
+			}
+		})
+	}
+}
+
+func TestBuildLaunchPreservesExplicitArgs(t *testing.T) {
+	launch, err := DefaultAdapterRegistry().BuildLaunch(context.Background(), WorkflowStepConfig{
+		ID:       "coding",
+		Provider: "codex",
+	}, LaunchRequest{
+		ProjectRoot: "/repo",
+		Prompt:      "ignored when args are explicit",
+		Args:        []string{"exec", "--json", "-"},
+	})
+	if err != nil {
+		t.Fatalf("BuildLaunch: %v", err)
+	}
+	if !reflect.DeepEqual(launch.Args, []string{"exec", "--json", "-"}) {
+		t.Fatalf("args = %#v", launch.Args)
 	}
 }
 
@@ -132,5 +189,20 @@ func TestBuildRestoreRequiresNativeSessionID(t *testing.T) {
 	}
 	if launch.Command != "codex" {
 		t.Fatalf("restore launch = %#v", launch)
+	}
+}
+
+func TestParseTerminalEventNormalizesJSONAndKeepsRawFallback(t *testing.T) {
+	tool := ParseTerminalEvent("codex", `{"type":"tool_call","message":"go test ./..."}`)
+	if tool.Kind != TerminalEventToolCall || tool.Text != "go test ./..." || tool.Metadata["type"] != "tool_call" {
+		t.Fatalf("tool event = %#v", tool)
+	}
+	usage := ParseTerminalEvent("claude", `{"event":"usage","tokens":120}`)
+	if usage.Kind != TerminalEventUsage || usage.ProviderID != "claude" {
+		t.Fatalf("usage event = %#v", usage)
+	}
+	raw := ParseTerminalEvent("goose", "plain terminal output")
+	if raw.Kind != TerminalEventRaw || raw.Text != "plain terminal output" || raw.Raw != "plain terminal output" || raw.Metadata != nil {
+		t.Fatalf("raw event = %#v", raw)
 	}
 }

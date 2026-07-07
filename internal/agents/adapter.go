@@ -42,6 +42,7 @@ type LaunchRequest struct {
 	ProjectRoot  string
 	WorktreePath string
 	Prompt       string
+	Model        string
 	Args         []string
 	Environment  map[string]string
 }
@@ -84,6 +85,7 @@ type CLIAdapter struct {
 	setupHint      string
 	restoreArg     string
 	promptDelivery PromptDeliveryMode
+	argBuilder     func(WorkflowStepConfig, LaunchRequest) []string
 }
 
 func NewCLIAdapter(id, name, command, setupHint string) CLIAdapter {
@@ -96,6 +98,12 @@ func NewCLIAdapter(id, name, command, setupHint string) CLIAdapter {
 		restoreArg:     "",
 		promptDelivery: PromptAfterStart,
 	}
+}
+
+func NewProfiledCLIAdapter(id, name, command, setupHint string, builder func(WorkflowStepConfig, LaunchRequest) []string) CLIAdapter {
+	adapter := NewCLIAdapter(id, name, command, setupHint)
+	adapter.argBuilder = builder
+	return adapter
 }
 
 func NewShellAdapter() CLIAdapter {
@@ -177,11 +185,15 @@ func (a CLIAdapter) BuildLaunch(_ context.Context, step WorkflowStepConfig, req 
 	if command == "" {
 		return LaunchCommand{}, fmt.Errorf("workflow step %s has no command", step.ID)
 	}
+	args := append([]string(nil), req.Args...)
+	if len(args) == 0 && a.argBuilder != nil {
+		args = a.argBuilder(step, req)
+	}
 	return LaunchCommand{
 		ProviderID: a.ID(),
 		StepID:     step.ID,
 		Command:    command,
-		Args:       append([]string(nil), req.Args...),
+		Args:       args,
 		Env:        mergeEnv(step.Environment, req.Environment),
 		CWD:        workingDirectory(step.WorkingDirectoryMode, req),
 	}, nil

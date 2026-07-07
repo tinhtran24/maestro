@@ -22,12 +22,13 @@ type Provider struct {
 
 func KnownProviders() []Provider {
 	return []Provider{
-		{ID: "claude", Name: "Claude Code", Command: "claude", Type: "cli"},
+		{ID: "claude-code", Name: "Claude Code", Command: "claude", Type: "cli"},
 		{ID: "codex", Name: "Codex", Command: "codex", Type: "cli"},
-		{ID: "gemini", Name: "Gemini", Command: "gemini", Type: "cli"},
+		{ID: "gemini-cli", Name: "Gemini CLI", Command: "gemini", Type: "cli"},
 		{ID: "opencode", Name: "OpenCode", Command: "opencode", Type: "cli"},
-		{ID: "cursor", Name: "Cursor", Command: "cursor", Type: "cli"},
+		{ID: "cursor-agent", Name: "Cursor Agent", Command: "cursor-agent", Type: "cli"},
 		{ID: "aider", Name: "Aider", Command: "aider", Type: "cli"},
 		{ID: "goose", Name: "Goose", Command: "goose", Type: "cli"},
+		{ID: "shell", Name: "Shell", Command: "sh", Type: "shell"},
 	}
 }
