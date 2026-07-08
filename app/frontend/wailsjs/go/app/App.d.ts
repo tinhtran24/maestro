@@ -50,9 +50,9 @@ export function ResizeNativeTerminal(arg1:app.NativeTerminalResizeRequest):Promi
 
 export function ResumeTaskTurn(arg1:app.ResumeTaskTurnRequest):Promise<app.TaskInfo>;
 
-export function RunTaskVerification(arg1:app.RunTaskVerificationRequest):Promise<app.TaskInfo>;
-
 export function RunRoutineScheduler(arg1:app.RunRoutineSchedulerRequest):Promise<Array<app.TaskInfo>>;
+
+export function RunTaskVerification(arg1:app.RunTaskVerificationRequest):Promise<app.TaskInfo>;
 
 export function SaveAutomation(arg1:app.SaveAutomationRequest):Promise<app.AutomationInfo>;
 
@@ -68,17 +68,17 @@ export function StartNativeTerminal(arg1:app.NativeTerminalRequest):Promise<app.
 
 export function StartTaskTurn(arg1:app.StartTaskTurnRequest):Promise<app.TaskInfo>;
 
-export function StopNativeTerminal(arg1:string):Promise<boolean>;
-
 export function StopAgentSession(arg1:string,arg2:string):Promise<void>;
 
-export function TriggerRoutine(arg1:app.TriggerRoutineRequest):Promise<app.TaskInfo>;
+export function StopNativeTerminal(arg1:string):Promise<boolean>;
 
-export function UpdateTaskFlags(arg1:app.UpdateTaskFlagsRequest):Promise<app.TaskInfo>;
+export function TriggerRoutine(arg1:app.TriggerRoutineRequest):Promise<app.TaskInfo>;
 
 export function UndoPlanningChange(arg1:app.UndoPlanningChangeRequest):Promise<app.SpecNodeInfo>;
 
 export function UpdateSpec(arg1:app.UpdateSpecRequest):Promise<app.SpecNodeInfo>;
+
+export function UpdateTaskFlags(arg1:app.UpdateTaskFlagsRequest):Promise<app.TaskInfo>;
 
 export function UpdateTaskStatus(arg1:app.UpdateTaskStatusRequest):Promise<app.TaskInfo>;
 

@@ -12,6 +12,24 @@ export namespace app {
 	        this.id = source["id"];
 	    }
 	}
+	export class AgentEventInfo {
+	    sessionId: string;
+	    type: string;
+	    payload: string;
+	    time: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new AgentEventInfo(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.sessionId = source["sessionId"];
+	        this.type = source["type"];
+	        this.payload = source["payload"];
+	        this.time = source["time"];
+	    }
+	}
 	export class AgentRoleInfo {
 	    id: string;
 	    role: string;
@@ -36,22 +54,18 @@ export namespace app {
 	        this.source = source["source"];
 	    }
 	}
-	export class AgentEventInfo {
-	    sessionId: string;
-	    type: string;
-	    payload: string;
-	    time: string;
+	export class PromptRecord {
+	    at: string;
+	    prompt: string;
 	
 	    static createFrom(source: any = {}) {
-	        return new AgentEventInfo(source);
+	        return new PromptRecord(source);
 	    }
 	
 	    constructor(source: any = {}) {
 	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.sessionId = source["sessionId"];
-	        this.type = source["type"];
-	        this.payload = source["payload"];
-	        this.time = source["time"];
+	        this.at = source["at"];
+	        this.prompt = source["prompt"];
 	    }
 	}
 	export class AgentSessionInfo {
@@ -240,58 +254,6 @@ export namespace app {
 	        this.approved = source["approved"];
 	    }
 	}
-	export class RegenerateOversightRequest {
-	    root: string;
-	    taskId: string;
-	
-	    static createFrom(source: any = {}) {
-	        return new RegenerateOversightRequest(source);
-	    }
-	
-	    constructor(source: any = {}) {
-	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.root = source["root"];
-	        this.taskId = source["taskId"];
-	    }
-	}
-	export class OversightInfo {
-	    schema_version: number;
-	    id: string;
-	    taskId: string;
-	    status: string;
-	    summary: string;
-	    phases: string[];
-	    risks: string[];
-	    changedFiles: string[];
-	    commands: string[];
-	    testResult: string;
-	    usageUsd: number;
-	    generatedAt: string;
-	    path: string;
-	    testPath?: string;
-	
-	    static createFrom(source: any = {}) {
-	        return new OversightInfo(source);
-	    }
-	
-	    constructor(source: any = {}) {
-	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.schema_version = source["schema_version"];
-	        this.id = source["id"];
-	        this.taskId = source["taskId"];
-	        this.status = source["status"];
-	        this.summary = source["summary"];
-	        this.phases = source["phases"];
-	        this.risks = source["risks"];
-	        this.changedFiles = source["changedFiles"];
-	        this.commands = source["commands"];
-	        this.testResult = source["testResult"];
-	        this.usageUsd = source["usageUsd"];
-	        this.generatedAt = source["generatedAt"];
-	        this.path = source["path"];
-	        this.testPath = source["testPath"];
-	    }
-	}
 	export class CreateSpecRequest {
 	    root: string;
 	    title: string;
@@ -310,52 +272,6 @@ export namespace app {
 	        this.body = source["body"];
 	        this.state = source["state"];
 	        this.parentPath = source["parentPath"];
-	    }
-	}
-	export class UpdateSpecRequest {
-	    root: string;
-	    path: string;
-	    title: string;
-	    body: string;
-	    state: string;
-	
-	    static createFrom(source: any = {}) {
-	        return new UpdateSpecRequest(source);
-	    }
-	
-	    constructor(source: any = {}) {
-	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.root = source["root"];
-	        this.path = source["path"];
-	        this.title = source["title"];
-	        this.body = source["body"];
-	        this.state = source["state"];
-	    }
-	}
-	export class DispatchSpecsRequest {
-	    root: string;
-	    path: string;
-	
-	    static createFrom(source: any = {}) {
-	        return new DispatchSpecsRequest(source);
-	    }
-	
-	    constructor(source: any = {}) {
-	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.root = source["root"];
-	        this.path = source["path"];
-	    }
-	}
-	export class UndoPlanningChangeRequest {
-	    root: string;
-	
-	    static createFrom(source: any = {}) {
-	        return new UndoPlanningChangeRequest(source);
-	    }
-	
-	    constructor(source: any = {}) {
-	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.root = source["root"];
 	    }
 	}
 	
@@ -435,6 +351,20 @@ export namespace app {
 	        this.message = source["message"];
 	    }
 	}
+	export class DispatchSpecsRequest {
+	    root: string;
+	    path: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new DispatchSpecsRequest(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.root = source["root"];
+	        this.path = source["path"];
+	    }
+	}
 	export class EventInfo {
 	    schema_version: number;
 	    id: string;
@@ -452,6 +382,20 @@ export namespace app {
 	        this.id = source["id"];
 	        this.at = source["at"];
 	        this.kind = source["kind"];
+	        this.message = source["message"];
+	    }
+	}
+	export class FeedbackRecord {
+	    at: string;
+	    message: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new FeedbackRecord(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.at = source["at"];
 	        this.message = source["message"];
 	    }
 	}
@@ -531,20 +475,7 @@ export namespace app {
 		    return a;
 		}
 	}
-	export class FeedbackRecord {
-	    at: string;
-	    message: string;
 	
-	    static createFrom(source: any = {}) {
-	        return new FeedbackRecord(source);
-	    }
-	
-	    constructor(source: any = {}) {
-	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.at = source["at"];
-	        this.message = source["message"];
-	    }
-	}
 	export class FinishTaskTurnRequest {
 	    root: string;
 	    taskId: string;
@@ -595,6 +526,22 @@ export namespace app {
 	        this.parallelGroups = source["parallelGroups"];
 	        this.readOnly = source["readOnly"];
 	        this.source = source["source"];
+	    }
+	}
+	export class ListWorkspaceFilesRequest {
+	    root: string;
+	    path: string;
+	    maxDepth: number;
+	
+	    static createFrom(source: any = {}) {
+	        return new ListWorkspaceFilesRequest(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.root = source["root"];
+	        this.path = source["path"];
+	        this.maxDepth = source["maxDepth"];
 	    }
 	}
 	export class NativeTerminalInputRequest {
@@ -691,6 +638,44 @@ export namespace app {
 	        this.endedAt = source["endedAt"];
 	    }
 	}
+	export class OversightInfo {
+	    schema_version: number;
+	    id: string;
+	    taskId: string;
+	    status: string;
+	    summary: string;
+	    phases: string[];
+	    risks: string[];
+	    changedFiles: string[];
+	    commands: string[];
+	    testResult: string;
+	    usageUsd: number;
+	    generatedAt: string;
+	    path: string;
+	    testPath?: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new OversightInfo(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.schema_version = source["schema_version"];
+	        this.id = source["id"];
+	        this.taskId = source["taskId"];
+	        this.status = source["status"];
+	        this.summary = source["summary"];
+	        this.phases = source["phases"];
+	        this.risks = source["risks"];
+	        this.changedFiles = source["changedFiles"];
+	        this.commands = source["commands"];
+	        this.testResult = source["testResult"];
+	        this.usageUsd = source["usageUsd"];
+	        this.generatedAt = source["generatedAt"];
+	        this.path = source["path"];
+	        this.testPath = source["testPath"];
+	    }
+	}
 	export class PrepareTaskCommitRequest {
 	    root: string;
 	    taskId: string;
@@ -707,20 +692,21 @@ export namespace app {
 	        this.message = source["message"];
 	    }
 	}
-	export class PromptRecord {
-	    at: string;
-	    prompt: string;
+	export class PreviewTaskDiffRequest {
+	    root: string;
+	    taskId: string;
 	
 	    static createFrom(source: any = {}) {
-	        return new PromptRecord(source);
+	        return new PreviewTaskDiffRequest(source);
 	    }
 	
 	    constructor(source: any = {}) {
 	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.at = source["at"];
-	        this.prompt = source["prompt"];
+	        this.root = source["root"];
+	        this.taskId = source["taskId"];
 	    }
 	}
+	
 	export class ProviderInfo {
 	    id: string;
 	    name: string;
@@ -747,6 +733,34 @@ export namespace app {
 	        this.type = source["type"];
 	        this.setupHint = source["setupHint"];
 	        this.supportsRun = source["supportsRun"];
+	    }
+	}
+	export class ReadWorkspaceFileRequest {
+	    root: string;
+	    path: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new ReadWorkspaceFileRequest(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.root = source["root"];
+	        this.path = source["path"];
+	    }
+	}
+	export class RegenerateOversightRequest {
+	    root: string;
+	    taskId: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new RegenerateOversightRequest(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.root = source["root"];
+	        this.taskId = source["taskId"];
 	    }
 	}
 	export class ResumeTaskTurnRequest {
@@ -815,6 +829,18 @@ export namespace app {
 	        this.updatedAt = source["updatedAt"];
 	    }
 	}
+	export class RunRoutineSchedulerRequest {
+	    root: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new RunRoutineSchedulerRequest(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.root = source["root"];
+	    }
+	}
 	export class RunTaskVerificationRequest {
 	    root: string;
 	    taskId: string;
@@ -835,32 +861,6 @@ export namespace app {
 	        this.providerId = source["providerId"];
 	        this.passPattern = source["passPattern"];
 	        this.failPattern = source["failPattern"];
-	    }
-	}
-	export class TriggerRoutineRequest {
-	    root: string;
-	    routineId: string;
-	
-	    static createFrom(source: any = {}) {
-	        return new TriggerRoutineRequest(source);
-	    }
-	
-	    constructor(source: any = {}) {
-	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.root = source["root"];
-	        this.routineId = source["routineId"];
-	    }
-	}
-	export class RunRoutineSchedulerRequest {
-	    root: string;
-	
-	    static createFrom(source: any = {}) {
-	        return new RunRoutineSchedulerRequest(source);
-	    }
-	
-	    constructor(source: any = {}) {
-	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.root = source["root"];
 	    }
 	}
 	export class SaveAutomationRequest {
@@ -895,110 +895,6 @@ export namespace app {
 		    return a;
 		}
 	}
-	export class ListWorkspaceFilesRequest {
-	    root: string;
-	    path: string;
-	    maxDepth: number;
-	
-	    static createFrom(source: any = {}) {
-	        return new ListWorkspaceFilesRequest(source);
-	    }
-	
-	    constructor(source: any = {}) {
-	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.root = source["root"];
-	        this.path = source["path"];
-	        this.maxDepth = source["maxDepth"];
-	    }
-	}
-	export class ReadWorkspaceFileRequest {
-	    root: string;
-	    path: string;
-	
-	    static createFrom(source: any = {}) {
-	        return new ReadWorkspaceFileRequest(source);
-	    }
-	
-	    constructor(source: any = {}) {
-	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.root = source["root"];
-	        this.path = source["path"];
-	    }
-	}
-	export class WriteWorkspaceFileRequest {
-	    root: string;
-	    path: string;
-	    content: string;
-	
-	    static createFrom(source: any = {}) {
-	        return new WriteWorkspaceFileRequest(source);
-	    }
-	
-	    constructor(source: any = {}) {
-	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.root = source["root"];
-	        this.path = source["path"];
-	        this.content = source["content"];
-	    }
-	}
-	export class PreviewTaskDiffRequest {
-	    root: string;
-	    taskId: string;
-	
-	    static createFrom(source: any = {}) {
-	        return new PreviewTaskDiffRequest(source);
-	    }
-	
-	    constructor(source: any = {}) {
-	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.root = source["root"];
-	        this.taskId = source["taskId"];
-	    }
-	}
-	export class WorkspaceFileInfo {
-	    path: string;
-	    name: string;
-	    content: string;
-	    encoding: string;
-	    size: number;
-	    modifiedAt?: string;
-	    readOnly: boolean;
-	    virtual: boolean;
-	
-	    static createFrom(source: any = {}) {
-	        return new WorkspaceFileInfo(source);
-	    }
-	
-	    constructor(source: any = {}) {
-	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.path = source["path"];
-	        this.name = source["name"];
-	        this.content = source["content"];
-	        this.encoding = source["encoding"];
-	        this.size = source["size"];
-	        this.modifiedAt = source["modifiedAt"];
-	        this.readOnly = source["readOnly"];
-	        this.virtual = source["virtual"];
-	    }
-	}
-	export class TaskDiffPreviewInfo {
-	    taskId: string;
-	    worktree: string;
-	    diff: string;
-	    diffStat: string;
-	
-	    static createFrom(source: any = {}) {
-	        return new TaskDiffPreviewInfo(source);
-	    }
-	
-	    constructor(source: any = {}) {
-	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.taskId = source["taskId"];
-	        this.worktree = source["worktree"];
-	        this.diff = source["diff"];
-	        this.diffStat = source["diffStat"];
-	    }
-	}
 	export class SearchTasksRequest {
 	    root: string;
 	    query: string;
@@ -1015,6 +911,22 @@ export namespace app {
 	        this.query = source["query"];
 	        this.includeArchived = source["includeArchived"];
 	        this.includeDeleted = source["includeDeleted"];
+	    }
+	}
+	export class SendAgentInputRequest {
+	    root: string;
+	    sessionId: string;
+	    input: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new SendAgentInputRequest(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.root = source["root"];
+	        this.sessionId = source["sessionId"];
+	        this.input = source["input"];
 	    }
 	}
 	export class SpecNodeInfo {
@@ -1059,28 +971,6 @@ export namespace app {
 		    return a;
 		}
 	}
-	export class StartTaskTurnRequest {
-	    root: string;
-	    taskId: string;
-	    step: string;
-	    providerId: string;
-	    sessionId: string;
-	    transcriptPath: string;
-	
-	    static createFrom(source: any = {}) {
-	        return new StartTaskTurnRequest(source);
-	    }
-	
-	    constructor(source: any = {}) {
-	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.root = source["root"];
-	        this.taskId = source["taskId"];
-	        this.step = source["step"];
-	        this.providerId = source["providerId"];
-	        this.sessionId = source["sessionId"];
-	        this.transcriptPath = source["transcriptPath"];
-	    }
-	}
 	export class StartAgentRequest {
 	    root: string;
 	    providerId: string;
@@ -1121,20 +1011,44 @@ export namespace app {
 	        this.cols = source["cols"];
 	    }
 	}
-	export class SendAgentInputRequest {
+	export class StartTaskTurnRequest {
 	    root: string;
+	    taskId: string;
+	    step: string;
+	    providerId: string;
 	    sessionId: string;
-	    input: string;
+	    transcriptPath: string;
 	
 	    static createFrom(source: any = {}) {
-	        return new SendAgentInputRequest(source);
+	        return new StartTaskTurnRequest(source);
 	    }
 	
 	    constructor(source: any = {}) {
 	        if ('string' === typeof source) source = JSON.parse(source);
 	        this.root = source["root"];
+	        this.taskId = source["taskId"];
+	        this.step = source["step"];
+	        this.providerId = source["providerId"];
 	        this.sessionId = source["sessionId"];
-	        this.input = source["input"];
+	        this.transcriptPath = source["transcriptPath"];
+	    }
+	}
+	export class TaskDiffPreviewInfo {
+	    taskId: string;
+	    worktree: string;
+	    diff: string;
+	    diffStat: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new TaskDiffPreviewInfo(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.taskId = source["taskId"];
+	        this.worktree = source["worktree"];
+	        this.diff = source["diff"];
+	        this.diffStat = source["diffStat"];
 	    }
 	}
 	export class TestResultInfo {
@@ -1301,6 +1215,52 @@ export namespace app {
 	}
 	
 	
+	export class TriggerRoutineRequest {
+	    root: string;
+	    routineId: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new TriggerRoutineRequest(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.root = source["root"];
+	        this.routineId = source["routineId"];
+	    }
+	}
+	export class UndoPlanningChangeRequest {
+	    root: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new UndoPlanningChangeRequest(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.root = source["root"];
+	    }
+	}
+	export class UpdateSpecRequest {
+	    root: string;
+	    path: string;
+	    title: string;
+	    body: string;
+	    state: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new UpdateSpecRequest(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.root = source["root"];
+	        this.path = source["path"];
+	        this.title = source["title"];
+	        this.body = source["body"];
+	        this.state = source["state"];
+	    }
+	}
 	export class UpdateTaskFlagsRequest {
 	    root: string;
 	    taskId: string;
@@ -1399,6 +1359,32 @@ export namespace app {
 	        this.flow = source["flow"];
 	        this.schedule = source["schedule"];
 	        this.enabled = source["enabled"];
+	    }
+	}
+	export class WorkspaceFileInfo {
+	    path: string;
+	    name: string;
+	    content: string;
+	    encoding: string;
+	    size: number;
+	    modifiedAt?: string;
+	    readOnly: boolean;
+	    virtual: boolean;
+	
+	    static createFrom(source: any = {}) {
+	        return new WorkspaceFileInfo(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.path = source["path"];
+	        this.name = source["name"];
+	        this.content = source["content"];
+	        this.encoding = source["encoding"];
+	        this.size = source["size"];
+	        this.modifiedAt = source["modifiedAt"];
+	        this.readOnly = source["readOnly"];
+	        this.virtual = source["virtual"];
 	    }
 	}
 	
@@ -1538,5 +1524,22 @@ export namespace app {
 		    return a;
 		}
 	}
+	export class WriteWorkspaceFileRequest {
+	    root: string;
+	    path: string;
+	    content: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new WriteWorkspaceFileRequest(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.root = source["root"];
+	        this.path = source["path"];
+	        this.content = source["content"];
+	    }
+	}
 
 }
+

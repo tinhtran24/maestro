@@ -98,12 +98,12 @@ export function ResumeTaskTurn(arg1) {
   return window['go']['app']['App']['ResumeTaskTurn'](arg1);
 }
 
-export function RunTaskVerification(arg1) {
-  return window['go']['app']['App']['RunTaskVerification'](arg1);
-}
-
 export function RunRoutineScheduler(arg1) {
   return window['go']['app']['App']['RunRoutineScheduler'](arg1);
+}
+
+export function RunTaskVerification(arg1) {
+  return window['go']['app']['App']['RunTaskVerification'](arg1);
 }
 
 export function SaveAutomation(arg1) {
@@ -134,20 +134,16 @@ export function StartTaskTurn(arg1) {
   return window['go']['app']['App']['StartTaskTurn'](arg1);
 }
 
-export function StopNativeTerminal(arg1) {
-  return window['go']['app']['App']['StopNativeTerminal'](arg1);
-}
-
 export function StopAgentSession(arg1, arg2) {
   return window['go']['app']['App']['StopAgentSession'](arg1, arg2);
 }
 
-export function TriggerRoutine(arg1) {
-  return window['go']['app']['App']['TriggerRoutine'](arg1);
+export function StopNativeTerminal(arg1) {
+  return window['go']['app']['App']['StopNativeTerminal'](arg1);
 }
 
-export function UpdateTaskFlags(arg1) {
-  return window['go']['app']['App']['UpdateTaskFlags'](arg1);
+export function TriggerRoutine(arg1) {
+  return window['go']['app']['App']['TriggerRoutine'](arg1);
 }
 
 export function UndoPlanningChange(arg1) {
@@ -156,6 +152,10 @@ export function UndoPlanningChange(arg1) {
 
 export function UpdateSpec(arg1) {
   return window['go']['app']['App']['UpdateSpec'](arg1);
+}
+
+export function UpdateTaskFlags(arg1) {
+  return window['go']['app']['App']['UpdateTaskFlags'](arg1);
 }
 
 export function UpdateTaskStatus(arg1) {
