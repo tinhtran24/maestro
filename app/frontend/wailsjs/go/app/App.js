@@ -46,6 +46,10 @@ export function FinishTaskTurn(arg1) {
   return window['go']['app']['App']['FinishTaskTurn'](arg1);
 }
 
+export function ListWorkspaceFiles(arg1) {
+  return window['go']['app']['App']['ListWorkspaceFiles'](arg1);
+}
+
 export function ListWorkspaces() {
   return window['go']['app']['App']['ListWorkspaces']();
 }
@@ -64,6 +68,14 @@ export function Ping() {
 
 export function PrepareTaskCommit(arg1) {
   return window['go']['app']['App']['PrepareTaskCommit'](arg1);
+}
+
+export function PreviewTaskDiff(arg1) {
+  return window['go']['app']['App']['PreviewTaskDiff'](arg1);
+}
+
+export function ReadWorkspaceFile(arg1) {
+  return window['go']['app']['App']['ReadWorkspaceFile'](arg1);
 }
 
 export function RegenerateOversight(arg1) {
@@ -140,4 +152,8 @@ export function UpsertRoutine(arg1) {
 
 export function WriteNativeTerminal(arg1) {
   return window['go']['app']['App']['WriteNativeTerminal'](arg1);
+}
+
+export function WriteWorkspaceFile(arg1) {
+  return window['go']['app']['App']['WriteWorkspaceFile'](arg1);
 }

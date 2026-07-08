@@ -368,7 +368,7 @@ Acceptance:
 
 ### 16. Usage and Analytics
 
-Status: Next.
+Status: Pending.
 
 Goal: track cost, time, and provider activity.
 
@@ -385,6 +385,8 @@ Acceptance:
 - Missing provider usage is shown as unknown, not zero.
 
 ### 17. File Explorer
+
+Status: Next.
 
 Goal: inspect and edit workspace files.
 

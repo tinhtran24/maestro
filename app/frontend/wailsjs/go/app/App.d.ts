@@ -24,6 +24,8 @@ export function DispatchSpecs(arg1:app.DispatchSpecsRequest):Promise<Array<app.T
 
 export function FinishTaskTurn(arg1:app.FinishTaskTurnRequest):Promise<app.TaskInfo>;
 
+export function ListWorkspaceFiles(arg1:app.ListWorkspaceFilesRequest):Promise<app.FileExplorerInfo>;
+
 export function ListWorkspaces():Promise<app.WorkspaceRegistryInfo>;
 
 export function LoadActiveWorkspace():Promise<app.WorkspaceInfo>;
@@ -33,6 +35,10 @@ export function LoadWorkspace(arg1:string):Promise<app.WorkspaceInfo>;
 export function Ping():Promise<string>;
 
 export function PrepareTaskCommit(arg1:app.PrepareTaskCommitRequest):Promise<app.TaskInfo>;
+
+export function PreviewTaskDiff(arg1:app.PreviewTaskDiffRequest):Promise<app.TaskDiffPreviewInfo>;
+
+export function ReadWorkspaceFile(arg1:app.ReadWorkspaceFileRequest):Promise<app.WorkspaceFileInfo>;
 
 export function RegenerateOversight(arg1:app.RegenerateOversightRequest):Promise<app.TaskInfo>;
 
@@ -71,3 +77,5 @@ export function UpdateWorkspace(arg1:app.UpdateWorkspaceRequest):Promise<app.Wor
 export function UpsertRoutine(arg1:app.UpsertRoutineRequest):Promise<app.RoutineInfo>;
 
 export function WriteNativeTerminal(arg1:app.NativeTerminalInputRequest):Promise<void>;
+
+export function WriteWorkspaceFile(arg1:app.WriteWorkspaceFileRequest):Promise<app.WorkspaceFileInfo>;

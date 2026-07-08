@@ -375,6 +375,82 @@ export namespace app {
 	        this.message = source["message"];
 	    }
 	}
+	export class FileTreeEntry {
+	    name: string;
+	    path: string;
+	    kind: string;
+	    size: number;
+	    modifiedAt?: string;
+	    readOnly: boolean;
+	    children?: FileTreeEntry[];
+	
+	    static createFrom(source: any = {}) {
+	        return new FileTreeEntry(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.name = source["name"];
+	        this.path = source["path"];
+	        this.kind = source["kind"];
+	        this.size = source["size"];
+	        this.modifiedAt = source["modifiedAt"];
+	        this.readOnly = source["readOnly"];
+	        this.children = this.convertValues(source["children"], FileTreeEntry);
+	    }
+	
+		convertValues(a: any, classs: any, asMap: boolean = false): any {
+		    if (!a) {
+		        return a;
+		    }
+		    if (a.slice && a.map) {
+		        return (a as any[]).map(elem => this.convertValues(elem, classs));
+		    } else if ("object" === typeof a) {
+		        if (asMap) {
+		            for (const key of Object.keys(a)) {
+		                a[key] = new classs(a[key]);
+		            }
+		            return a;
+		        }
+		        return new classs(a);
+		    }
+		    return a;
+		}
+	}
+	export class FileExplorerInfo {
+	    root: string;
+	    base: string;
+	    entries: FileTreeEntry[];
+	
+	    static createFrom(source: any = {}) {
+	        return new FileExplorerInfo(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.root = source["root"];
+	        this.base = source["base"];
+	        this.entries = this.convertValues(source["entries"], FileTreeEntry);
+	    }
+	
+		convertValues(a: any, classs: any, asMap: boolean = false): any {
+		    if (!a) {
+		        return a;
+		    }
+		    if (a.slice && a.map) {
+		        return (a as any[]).map(elem => this.convertValues(elem, classs));
+		    } else if ("object" === typeof a) {
+		        if (asMap) {
+		            for (const key of Object.keys(a)) {
+		                a[key] = new classs(a[key]);
+		            }
+		            return a;
+		        }
+		        return new classs(a);
+		    }
+		    return a;
+		}
+	}
 	export class FeedbackRecord {
 	    at: string;
 	    message: string;
@@ -738,6 +814,110 @@ export namespace app {
 		    }
 		    return a;
 		}
+	}
+	export class ListWorkspaceFilesRequest {
+	    root: string;
+	    path: string;
+	    maxDepth: number;
+	
+	    static createFrom(source: any = {}) {
+	        return new ListWorkspaceFilesRequest(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.root = source["root"];
+	        this.path = source["path"];
+	        this.maxDepth = source["maxDepth"];
+	    }
+	}
+	export class ReadWorkspaceFileRequest {
+	    root: string;
+	    path: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new ReadWorkspaceFileRequest(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.root = source["root"];
+	        this.path = source["path"];
+	    }
+	}
+	export class WriteWorkspaceFileRequest {
+	    root: string;
+	    path: string;
+	    content: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new WriteWorkspaceFileRequest(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.root = source["root"];
+	        this.path = source["path"];
+	        this.content = source["content"];
+	    }
+	}
+	export class PreviewTaskDiffRequest {
+	    root: string;
+	    taskId: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new PreviewTaskDiffRequest(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.root = source["root"];
+	        this.taskId = source["taskId"];
+	    }
+	}
+	export class WorkspaceFileInfo {
+	    path: string;
+	    name: string;
+	    content: string;
+	    encoding: string;
+	    size: number;
+	    modifiedAt?: string;
+	    readOnly: boolean;
+	    virtual: boolean;
+	
+	    static createFrom(source: any = {}) {
+	        return new WorkspaceFileInfo(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.path = source["path"];
+	        this.name = source["name"];
+	        this.content = source["content"];
+	        this.encoding = source["encoding"];
+	        this.size = source["size"];
+	        this.modifiedAt = source["modifiedAt"];
+	        this.readOnly = source["readOnly"];
+	        this.virtual = source["virtual"];
+	    }
+	}
+	export class TaskDiffPreviewInfo {
+	    taskId: string;
+	    worktree: string;
+	    diff: string;
+	    diffStat: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new TaskDiffPreviewInfo(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.taskId = source["taskId"];
+	        this.worktree = source["worktree"];
+	        this.diff = source["diff"];
+	        this.diffStat = source["diffStat"];
+	    }
 	}
 	export class SearchTasksRequest {
 	    root: string;

@@ -8,6 +8,7 @@ import {
   BoardView,
   ChatView,
   DocsView,
+  FileExplorerView,
   MissionView,
   PlanView,
   RoutinesView,
@@ -46,6 +47,7 @@ export function App() {
       {activeView === "chat" ? <ChatView /> : null}
       {activeView === "routines" ? <RoutinesView workspace={workspace} onReload={refreshWorkspace} /> : null}
       {activeView === "whiteboard" ? <WhiteboardView /> : null}
+      {activeView === "files" ? <FileExplorerView workspace={workspace} /> : null}
       {activeView === "analytics" ? <AnalyticsView workspace={workspace} /> : null}
       {activeView === "settings" ? <SettingsView runtime={runtime} workspace={workspace} onReload={refreshWorkspace} /> : null}
       {activeView === "docs" ? <DocsView /> : null}

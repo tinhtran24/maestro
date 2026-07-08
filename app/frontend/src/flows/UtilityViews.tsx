@@ -1,7 +1,16 @@
-import { CalendarClock, MessageSquare, PenTool, Settings } from "lucide-react";
-import { useState } from "react";
-import type { Workspace } from "../app/types";
-import { runRoutineScheduler, saveAutomation, triggerRoutine, upsertRoutine } from "../services/wails";
+import { CalendarClock, File, Folder, GitCompare, MessageSquare, PenTool, RefreshCw, Save, Settings } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import type { FileTreeEntry, TaskDiffPreviewInfo, Workspace, WorkspaceFileInfo } from "../app/types";
+import {
+  listWorkspaceFiles,
+  previewTaskDiff,
+  readWorkspaceFile,
+  runRoutineScheduler,
+  saveAutomation,
+  triggerRoutine,
+  upsertRoutine,
+  writeWorkspaceFile,
+} from "../services/wails";
 import { Panel } from "../shared/Panel";
 
 type AutomationToggle = "autoImplement" | "autoTest" | "autoSubmit" | "autoRetry";
@@ -74,6 +83,138 @@ export function WhiteboardView() {
     <Panel title="Whiteboard" meta="freeform">
       <div className="placeholder"><PenTool size={30} /> Sketch architecture, flows, and notes without dispatching agents.</div>
     </Panel>
+  );
+}
+
+export function FileExplorerView({ workspace }: { workspace: Workspace }) {
+  const [tree, setTree] = useState<FileTreeEntry[]>([]);
+  const [selected, setSelected] = useState<WorkspaceFileInfo | null>(null);
+  const [content, setContent] = useState("");
+  const [status, setStatus] = useState("");
+  const [diffTaskId, setDiffTaskId] = useState(workspace.tasks[0]?.id ?? "");
+  const [diff, setDiff] = useState<TaskDiffPreviewInfo | null>(null);
+  const canSave = Boolean(selected && !selected.readOnly && selected.content !== content);
+  const taskOptions = useMemo(() => workspace.tasks.filter((task) => task.worktree), [workspace.tasks]);
+
+  async function loadTree() {
+    if (!workspace.path) return;
+    setStatus("Loading Files");
+    try {
+      const next = await listWorkspaceFiles({ root: workspace.path, maxDepth: 3 });
+      setTree(next.entries);
+      setStatus("");
+    } catch (error) {
+      setStatus(error instanceof Error ? error.message : "Unable To Load Files");
+    }
+  }
+
+  async function openFile(path: string) {
+    if (!workspace.path) return;
+    setStatus("Opening File");
+    try {
+      const file = await readWorkspaceFile({ root: workspace.path, path });
+      if (file) {
+        setSelected(file);
+        setContent(file.content);
+      }
+      setStatus("");
+    } catch (error) {
+      setStatus(error instanceof Error ? error.message : "Unable To Open File");
+    }
+  }
+
+  async function saveFile() {
+    if (!workspace.path || !selected || selected.readOnly) return;
+    setStatus("Saving File");
+    try {
+      const saved = await writeWorkspaceFile({ root: workspace.path, path: selected.path, content });
+      if (saved) {
+        setSelected(saved);
+        setContent(saved.content);
+      }
+      await loadTree();
+      setStatus("Saved");
+    } catch (error) {
+      setStatus(error instanceof Error ? error.message : "Unable To Save File");
+    }
+  }
+
+  async function loadDiff(taskId = diffTaskId) {
+    if (!workspace.path || !taskId) return;
+    setStatus("Loading Diff");
+    try {
+      const next = await previewTaskDiff({ root: workspace.path, taskId });
+      setDiff(next);
+      setStatus("");
+    } catch (error) {
+      setDiff(null);
+      setStatus(error instanceof Error ? error.message : "Unable To Load Diff");
+    }
+  }
+
+  useEffect(() => {
+    void loadTree();
+  }, [workspace.path]);
+
+  useEffect(() => {
+    setDiffTaskId(workspace.tasks[0]?.id ?? "");
+  }, [workspace.tasks]);
+
+  return (
+    <div className="file-explorer">
+      <Panel title="Files" meta={workspace.path || "No Workspace"}>
+        <div className="file-toolbar">
+          <button onClick={loadTree} disabled={!workspace.path} type="button"><RefreshCw size={15} /> Refresh</button>
+          {status ? <span>{status}</span> : null}
+        </div>
+        <div className="file-tree">
+          {tree.length === 0 ? <p className="empty">No files loaded.</p> : null}
+          {tree.map((entry) => (
+            <FileTreeNode key={entry.path} entry={entry} onOpen={openFile} />
+          ))}
+        </div>
+      </Panel>
+      <Panel title={selected?.name ?? "File Preview"} meta={selected?.path ?? "Select File"}>
+        <div className="file-editor">
+          <textarea value={content} onChange={(event) => setContent(event.target.value)} readOnly={!selected || selected.readOnly} />
+          <div className="file-editor-actions">
+            <span>{selected ? `${selected.encoding} · ${selected.size} bytes${selected.readOnly ? " · Read Only" : ""}` : "No file selected"}</span>
+            <button onClick={saveFile} disabled={!canSave} type="button"><Save size={15} /> Save File</button>
+          </div>
+        </div>
+      </Panel>
+      <Panel title="Task Diff" meta="worktree preview">
+        <div className="file-diff-tools">
+          <select value={diffTaskId} onChange={(event) => setDiffTaskId(event.target.value)}>
+            {taskOptions.map((task) => (
+              <option key={task.id} value={task.id}>{task.title || task.id}</option>
+            ))}
+          </select>
+          <button onClick={() => loadDiff()} disabled={!workspace.path || !diffTaskId} type="button"><GitCompare size={15} /> Preview Diff</button>
+        </div>
+        <pre className="file-diff">{diff ? `${diff.diffStat}\n\n${diff.diff}`.trim() || "No diff." : "Select a task worktree."}</pre>
+      </Panel>
+    </div>
+  );
+}
+
+function FileTreeNode({ entry, onOpen }: { entry: FileTreeEntry; onOpen: (path: string) => void }) {
+  const isDirectory = entry.kind === "directory";
+  const Icon = isDirectory ? Folder : File;
+  return (
+    <div className="file-tree-node">
+      <button onClick={() => !isDirectory && onOpen(entry.path)} disabled={isDirectory} type="button">
+        <Icon size={15} />
+        <span>{entry.name}</span>
+      </button>
+      {entry.children?.length ? (
+        <div className="file-tree-children">
+          {entry.children.map((child) => (
+            <FileTreeNode key={child.path} entry={child} onOpen={onOpen} />
+          ))}
+        </div>
+      ) : null}
+    </div>
   );
 }
 

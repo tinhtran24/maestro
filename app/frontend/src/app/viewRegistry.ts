@@ -4,6 +4,7 @@ import {
   BrainCircuit,
   CalendarClock,
   FileText,
+  FolderTree,
   Kanban,
   Map,
   MessageSquare,
@@ -28,6 +29,7 @@ export const navGroups: NavGroup[] = [
   {
     label: "Inspect",
     items: [
+      { id: "files", label: "Files", icon: FolderTree },
       { id: "analytics", label: "Analytics", icon: BarChart3 },
       { id: "settings", label: "Settings", icon: Settings },
       { id: "docs", label: "Docs", icon: Bot },

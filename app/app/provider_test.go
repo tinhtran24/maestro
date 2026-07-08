@@ -495,6 +495,77 @@ func TestCommitPipelineRequiresApprovalAndRecordsCommit(t *testing.T) {
 	}
 }
 
+func TestFileExplorerListsReadsWritesVirtualPromptsAndDiffs(t *testing.T) {
+	root := t.TempDir()
+	provider := NewRealProvider()
+	provider.now = func() time.Time { return time.Date(2026, 7, 8, 14, 0, 0, 0, time.UTC) }
+	if err := os.WriteFile(filepath.Join(root, "README.md"), []byte("# Project\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.MkdirAll(filepath.Join(root, "node_modules", "pkg"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(root, "node_modules", "pkg", "index.js"), []byte("ignored"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	task, err := provider.CreateTask(CreateTaskRequest{Root: root, Title: "Inspect Files", Prompt: "Use README.md", Agent: "codex"})
+	if err != nil {
+		t.Fatalf("CreateTask returned error: %v", err)
+	}
+
+	tree, err := provider.ListWorkspaceFiles(ListWorkspaceFilesRequest{Root: root, MaxDepth: 2})
+	if err != nil {
+		t.Fatalf("ListWorkspaceFiles returned error: %v", err)
+	}
+	if !hasExplorerEntry(tree.Entries, "README.md") {
+		t.Fatalf("README.md missing from tree: %#v", tree.Entries)
+	}
+	if hasExplorerEntry(tree.Entries, "node_modules") {
+		t.Fatalf("ignored node_modules appeared in tree: %#v", tree.Entries)
+	}
+	if !hasExplorerEntry(tree.Entries, "Task Prompts") {
+		t.Fatalf("virtual task prompts missing from tree: %#v", tree.Entries)
+	}
+
+	virtualPrompt, err := provider.ReadWorkspaceFile(ReadWorkspaceFileRequest{Root: root, Path: taskPromptVirtualPath(task.ID)})
+	if err != nil {
+		t.Fatalf("ReadWorkspaceFile virtual prompt returned error: %v", err)
+	}
+	if !virtualPrompt.Virtual || !virtualPrompt.ReadOnly || !strings.Contains(virtualPrompt.Content, "Use README.md") {
+		t.Fatalf("virtual prompt = %#v", virtualPrompt)
+	}
+	if _, err := provider.WriteWorkspaceFile(WriteWorkspaceFileRequest{Root: root, Path: "../escape.txt", Content: "bad"}); err == nil {
+		t.Fatal("expected path traversal write to be rejected")
+	}
+	written, err := provider.WriteWorkspaceFile(WriteWorkspaceFileRequest{Root: root, Path: "docs/note.md", Content: "Saved note\n"})
+	if err != nil {
+		t.Fatalf("WriteWorkspaceFile returned error: %v", err)
+	}
+	if written.Path != "docs/note.md" || written.Content != "Saved note\n" {
+		t.Fatalf("written file = %#v", written)
+	}
+	events, err := loadEvents(root)
+	if err != nil {
+		t.Fatalf("loadEvents returned error: %v", err)
+	}
+	if !hasEventKind(events, "WorkspaceFileWritten") {
+		t.Fatalf("file write event missing: %#v", events)
+	}
+
+	worktree := filepath.Join(root, filepath.FromSlash(task.Worktree))
+	initGitRepo(t, worktree)
+	if err := os.WriteFile(filepath.Join(worktree, "app.txt"), []byte("changed\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	diff, err := provider.PreviewTaskDiff(context.Background(), PreviewTaskDiffRequest{Root: root, TaskID: task.ID})
+	if err != nil {
+		t.Fatalf("PreviewTaskDiff returned error: %v", err)
+	}
+	if !strings.Contains(diff.Diff, "changed") || !strings.Contains(diff.DiffStat, "app.txt") {
+		t.Fatalf("diff preview = %#v", diff)
+	}
+}
+
 func initGitRepo(t *testing.T, dir string) {
 	t.Helper()
 	if err := os.MkdirAll(dir, 0o755); err != nil {
@@ -518,6 +589,27 @@ func runGit(t *testing.T, dir string, args ...string) {
 	if err != nil {
 		t.Fatalf("git %s failed: %v\n%s", strings.Join(args, " "), err, string(output))
 	}
+}
+
+func hasExplorerEntry(entries []FileTreeEntry, name string) bool {
+	for _, entry := range entries {
+		if entry.Name == name {
+			return true
+		}
+		if hasExplorerEntry(entry.Children, name) {
+			return true
+		}
+	}
+	return false
+}
+
+func hasEventKind(events []EventInfo, kind string) bool {
+	for _, event := range events {
+		if event.Kind == kind {
+			return true
+		}
+	}
+	return false
 }
 
 func markTaskCommitted(t *testing.T, root, taskID string) {

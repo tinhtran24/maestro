@@ -8,14 +8,18 @@ import type {
   CreateTaskRequest,
   DeleteWorkspaceRequest,
   DispatchSpecsRequest,
+  FileExplorerInfo,
   NativeTerminalRequest,
   NativeTerminalInputRequest,
   NativeTerminalResizeRequest,
   NativeTerminalSession,
+  ListWorkspaceFilesRequest,
+  PreviewTaskDiffRequest,
   ProviderInfo,
   PrepareTaskCommitRequest,
   RegenerateOversightRequest,
   FinishTaskTurnRequest,
+  ReadWorkspaceFileRequest,
   ResumeTaskTurnRequest,
   RunTaskVerificationRequest,
   RunRoutineSchedulerRequest,
@@ -25,6 +29,7 @@ import type {
   SpecNode,
   StartTaskTurnRequest,
   Task,
+  TaskDiffPreviewInfo,
   TriggerRoutineRequest,
   UndoPlanningChangeRequest,
   UpdateTaskFlagsRequest,
@@ -33,8 +38,10 @@ import type {
   UpdateTaskStatusRequest,
   UpsertRoutineRequest,
   Workspace,
+  WorkspaceFileInfo,
   WorkspaceRecord,
   WorkspaceRegistry,
+  WriteWorkspaceFileRequest,
 } from "../app/types";
 
 export type AgentCandidate = ProviderInfo;
@@ -71,6 +78,10 @@ type WailsApp = {
   TriggerRoutine?: (request: TriggerRoutineRequest) => Promise<Task>;
   RunRoutineScheduler?: (request: RunRoutineSchedulerRequest) => Promise<Task[]>;
   SaveAutomation?: (request: SaveAutomationRequest) => Promise<AutomationInfo>;
+  ListWorkspaceFiles?: (request: ListWorkspaceFilesRequest) => Promise<FileExplorerInfo>;
+  ReadWorkspaceFile?: (request: ReadWorkspaceFileRequest) => Promise<WorkspaceFileInfo>;
+  WriteWorkspaceFile?: (request: WriteWorkspaceFileRequest) => Promise<WorkspaceFileInfo>;
+  PreviewTaskDiff?: (request: PreviewTaskDiffRequest) => Promise<TaskDiffPreviewInfo>;
   StartNativeTerminal?: (request: NativeTerminalRequest) => Promise<NativeTerminalSession>;
   WriteNativeTerminal?: (request: NativeTerminalInputRequest) => Promise<void>;
   ResizeNativeTerminal?: (request: NativeTerminalResizeRequest) => Promise<void>;
@@ -216,6 +227,22 @@ export async function runRoutineScheduler(request: RunRoutineSchedulerRequest): 
 
 export async function saveAutomation(request: SaveAutomationRequest): Promise<AutomationInfo | null> {
   return (await app().SaveAutomation?.(request)) ?? null;
+}
+
+export async function listWorkspaceFiles(request: ListWorkspaceFilesRequest): Promise<FileExplorerInfo> {
+  return (await app().ListWorkspaceFiles?.(request)) ?? { root: request.root, base: request.path ?? ".", entries: [] };
+}
+
+export async function readWorkspaceFile(request: ReadWorkspaceFileRequest): Promise<WorkspaceFileInfo | null> {
+  return (await app().ReadWorkspaceFile?.(request)) ?? null;
+}
+
+export async function writeWorkspaceFile(request: WriteWorkspaceFileRequest): Promise<WorkspaceFileInfo | null> {
+  return (await app().WriteWorkspaceFile?.(request)) ?? null;
+}
+
+export async function previewTaskDiff(request: PreviewTaskDiffRequest): Promise<TaskDiffPreviewInfo | null> {
+  return (await app().PreviewTaskDiff?.(request)) ?? null;
 }
 
 export async function startNativeTerminal(request: NativeTerminalRequest): Promise<NativeTerminalSession | null> {

@@ -8,6 +8,7 @@ export type ViewId =
   | "chat"
   | "routines"
   | "whiteboard"
+  | "files"
   | "analytics"
   | "settings"
   | "docs";
@@ -334,6 +335,62 @@ export type TriggerRoutineRequest = {
 
 export type RunRoutineSchedulerRequest = {
   root: string;
+};
+
+export type ListWorkspaceFilesRequest = {
+  root: string;
+  path?: string;
+  maxDepth?: number;
+};
+
+export type ReadWorkspaceFileRequest = {
+  root: string;
+  path: string;
+};
+
+export type WriteWorkspaceFileRequest = {
+  root: string;
+  path: string;
+  content: string;
+};
+
+export type PreviewTaskDiffRequest = {
+  root: string;
+  taskId: string;
+};
+
+export type FileTreeEntry = {
+  name: string;
+  path: string;
+  kind: "directory" | "file" | "virtual" | string;
+  size: number;
+  modifiedAt?: string;
+  readOnly: boolean;
+  children?: FileTreeEntry[];
+};
+
+export type FileExplorerInfo = {
+  root: string;
+  base: string;
+  entries: FileTreeEntry[];
+};
+
+export type WorkspaceFileInfo = {
+  path: string;
+  name: string;
+  content: string;
+  encoding: string;
+  size: number;
+  modifiedAt?: string;
+  readOnly: boolean;
+  virtual: boolean;
+};
+
+export type TaskDiffPreviewInfo = {
+  taskId: string;
+  worktree: string;
+  diff: string;
+  diffStat: string;
 };
 
 export type ProviderInfo = {

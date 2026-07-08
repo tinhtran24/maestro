@@ -167,6 +167,26 @@ func (a *App) SaveAutomation(request SaveAutomationRequest) (*AutomationInfo, er
 	return a.provider.SaveAutomation(request)
 }
 
+func (a *App) ListWorkspaceFiles(request ListWorkspaceFilesRequest) (*FileExplorerInfo, error) {
+	return a.provider.ListWorkspaceFiles(request)
+}
+
+func (a *App) ReadWorkspaceFile(request ReadWorkspaceFileRequest) (*WorkspaceFileInfo, error) {
+	return a.provider.ReadWorkspaceFile(request)
+}
+
+func (a *App) WriteWorkspaceFile(request WriteWorkspaceFileRequest) (*WorkspaceFileInfo, error) {
+	return a.provider.WriteWorkspaceFile(request)
+}
+
+func (a *App) PreviewTaskDiff(request PreviewTaskDiffRequest) (*TaskDiffPreviewInfo, error) {
+	ctx := a.ctx
+	if ctx == nil {
+		ctx = context.Background()
+	}
+	return a.provider.PreviewTaskDiff(ctx, request)
+}
+
 func (a *App) DetectAgentCLIs() ([]AgentCandidateInfo, error) {
 	return a.provider.DetectAgentCLIs(context.Background())
 }

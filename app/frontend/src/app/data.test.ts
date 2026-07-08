@@ -11,6 +11,7 @@ describe("fresh Wails workbench shell", () => {
       "agent-graph",
       "routines",
       "mission",
+      "files",
       "analytics",
       "settings",
       "docs",
