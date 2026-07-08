@@ -16,7 +16,6 @@ import (
 	"github.com/tinhtran/thanos/internal/prompts"
 	"github.com/tinhtran/thanos/internal/runner"
 	"github.com/tinhtran/thanos/internal/state"
-	"github.com/tinhtran/thanos/internal/ui"
 	"github.com/tinhtran/thanos/internal/workspace"
 )
 
@@ -157,12 +156,12 @@ func (o *Orchestrator) Run(ctx context.Context, featureID, runnerOverride string
 				}
 			}
 		case model.PhasePending:
-			ui.Block(o.Stdout, ui.ExecLog(ui.ExecLogEntry{
+			writeLog(o.Stdout, logEntry{
 				Type:    "read",
 				Path:    filepath.Join(o.Workspace.DotDir(), feature.ID, "state.json"),
 				Message: fmt.Sprintf("%s is pending human review. Run: thanos done %s", feature.ID, feature.ID),
-				Status:  ui.Completed,
-			}))
+				Status:  "completed",
+			})
 			return nil
 		case model.PhaseDone:
 			return nil
@@ -183,11 +182,11 @@ func (o *Orchestrator) Run(ctx context.Context, featureID, runnerOverride string
 					Type: "clarify", FeatureID: feature.ID, Timestamp: time.Now().UTC(),
 					Phase: current.Phase, Role: current.Role,
 				})
-				ui.Block(o.Stdout, ui.ExecLog(ui.ExecLogEntry{
+				writeLog(o.Stdout, logEntry{
 					Type: "read", Path: filepath.Join(o.Workspace.DotDir(), feature.ID, ecJoin(current, "clarify.json")),
 					Message: fmt.Sprintf("%s needs clarification. Answer: thanos clarify %s \"<answer>\"", feature.ID, feature.ID),
-					Status:  ui.Warned,
-				}))
+					Status:  "warned",
+				})
 				return nil
 			}
 			current.Active = false
@@ -231,20 +230,20 @@ func (o *Orchestrator) executeRole(ctx context.Context, feature model.Feature, c
 	command := strings.TrimSpace(runnerConfig.Command + " " + strings.Join(runnerConfig.Args, " "))
 	started := time.Now()
 	label := fmt.Sprintf("%s %s running", workItemName(feature, current, ec.chunk), current.Role)
-	ui.Block(o.Stdout, ui.ExecLog(ui.ExecLogEntry{
-		Type: "exec", Command: command, Workdir: o.Workspace.Root, Status: ui.Running,
+	writeLog(o.Stdout, logEntry{
+		Type: "exec", Command: command, Workdir: o.Workspace.Root, Status: "running",
 		Message: label,
-	}))
+	})
 	err = o.Runner.Run(ctx, o.Workspace.Root, runnerConfig, prompt, o.Stdout, o.Stderr)
-	status := ui.Succeeded
+	status := "succeeded"
 	output := o.Stdout
 	if err != nil {
-		status = ui.Failed
+		status = "failed"
 		output = o.Stderr
 	}
-	ui.Block(output, ui.ExecLog(ui.ExecLogEntry{
+	writeLog(output, logEntry{
 		Status: status, DurationMs: time.Since(started).Milliseconds(),
-	}))
+	})
 	data := map[string]any{"success": err == nil}
 	if err != nil {
 		data["error"] = err.Error()
@@ -257,6 +256,46 @@ func (o *Orchestrator) executeRole(ctx context.Context, feature model.Feature, c
 		return errClarifyPending
 	}
 	return err
+}
+
+type logEntry struct {
+	Type       string
+	Command    string
+	Workdir    string
+	Path       string
+	Status     string
+	Message    string
+	DurationMs int64
+}
+
+func writeLog(w io.Writer, entry logEntry) {
+	if w == nil {
+		return
+	}
+	status := strings.TrimSpace(entry.Status)
+	if status == "" {
+		status = "info"
+	}
+	parts := []string{"[" + status + "]"}
+	if entry.Type != "" {
+		parts = append(parts, entry.Type)
+	}
+	if entry.Command != "" {
+		parts = append(parts, entry.Command)
+	}
+	if entry.Path != "" {
+		parts = append(parts, entry.Path)
+	}
+	if entry.Workdir != "" {
+		parts = append(parts, "cwd="+entry.Workdir)
+	}
+	if entry.DurationMs > 0 {
+		parts = append(parts, fmt.Sprintf("%dms", entry.DurationMs))
+	}
+	if entry.Message != "" {
+		parts = append(parts, entry.Message)
+	}
+	_, _ = fmt.Fprintln(w, strings.Join(parts, " "))
 }
 
 // errClarifyPending signals that a role wrote a clarify.json question instead of

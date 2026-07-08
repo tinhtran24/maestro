@@ -20,8 +20,8 @@ with distinct strengths converge to conquer complexity.
 
 ## Features
 
-- Bubble Tea terminal UI with project sessions, phase progress, capability
-  status, and keyboard-driven task operations
+- Wails desktop workbench with project sessions, phase progress, provider
+  status, and task operations
 - Per-session runner selection with filesystem context preserved across model
   changes
 - Persistent feature graph containing business rules, architectural decisions,
@@ -40,37 +40,25 @@ with distinct strengths converge to conquer complexity.
 - Automatic completion only after review and testing pass
 - No AI SDK dependency or vendor lock-in
 
-## Terminal UI architecture
+## Desktop workbench architecture
 
-The TUI ports the transferable parts of Charm's Crush architecture (now on
-**Bubble Tea v2** / Lip Gloss v2, `charm.land/...`) without replacing Thanos's
-workflow engine. It lives in `internal/tui/` as component packages:
-
-| Package | Responsibility |
-|---|---|
-| `tui` | Root `tea.Model`: state, message routing, focus, mouse, layout (`view.go`) |
-| `chat` | Role-attributed agent log (viewport), bubble selection/copy, phase-flow strip |
-| `sidebar` | Logo + clickable Feature→EC tree + model/MCP info (right column) |
-| `dialog` | Feature picker, help, and the clarification popup |
-| `input` | Command box (slash-commands, completions, real terminal cursor) |
-| `attachments` | Staged files/`@`-refs and the context-manifest writer |
-| `styles` / `util` | Palette + role/phase styling; text, clipboard (OSC52), overlay |
+The active workbench is a Wails desktop app in `app/` with a Go host boundary
+and React frontend. The app owns workspace loading, provider detection, native
+terminal sessions, task state, file exploration, and persisted agent sessions.
 
 Key points:
 
-1. One top-level model owns terminal size, tree selection (feature + EC cursor),
-   task execution, and rendering. `View()` returns a `tea.View` whose `AltScreen`
-   and `MouseMode` fields are declarative (v2 dropped the program-option form).
-2. Features are project-scoped sessions; their YAML and
-   `.thanos/<feature-id>/state.json` (now including `ec_index`/`ec_total`) remain
-   the source of truth. Each feature's `execution-plan.yaml` drives the tree.
-3. Agent runs execute as a subprocess of the `thanos` binary itself
-   (`os.Executable()`), streamed into the chat; the engine writes role events to
-   `events.jsonl`, which the TUI tails to render each role as a chat bubble.
-4. The right sidebar reports the active runner, code graph, LSPs, MCPs, and the
-   per-EC status tree; clicking a feature/EC row selects it.
-5. The command box exposes the full CLI surface as slash-commands and stages
-   `@path`/pasted files into the run context manifest.
+1. Wails methods in `app/app` are the desktop boundary. They delegate durable
+   workspace behavior to provider/store helpers and emit native terminal events.
+2. Workspace state is stored under `.thanos/` in the selected repository. Task,
+   spec, routine, event, terminal, file, and agent-session records remain local
+   and JSON-compatible.
+3. Native agent sessions run through provider-agnostic adapters and PTY-backed
+   terminal sessions. Thanos does not inject provider API or OAuth tokens.
+4. The React workbench in `app/frontend` renders board, plan, mission control,
+   agents, routines, files, analytics, settings, and local docs.
+5. Generated Wails bindings live under `app/frontend/wailsjs/` and must stay
+   consistent when exported Go methods or app DTOs change.
 
 Switching runners updates the feature and runtime state only — it does not
 rewrite prompts, reports, events, or artifacts, so another LLM can continue the
@@ -100,17 +88,16 @@ synthesizes results, refreshes project memory, and marks the feature done.
 Any role may write `clarify.json` (`{"question": "...", "options": [...]}`) instead
 of finishing. After the role runs, `Orchestrator.clarifyPending` detects an
 unanswered/newer `clarify.json` and the run pauses cleanly (`Active=false`,
-`Reason="needs clarification"`, phase preserved). `thanos clarify` (or the TUI
-popup) writes `clarify-answer.md` and re-runs; the role reads the answer and
+`Reason="needs clarification"`, phase preserved). `thanos clarify` or the
+desktop workbench writes `clarify-answer.md` and re-runs; the role reads the answer and
 proceeds. Paths are EC-scoped like other chunk artifacts.
 
 ### Coding style & attachments
 
 If `.thanos/coding-style.md` exists it is loaded into `prompts.Data.CodingStyle`
-and injected into the planner/coder templates. Before a run the TUI
-writes staged attachments and `@`-file references to
-`.thanos/<id>/context/attachments.md`; `prompts.Render` references it (EC-level
-overrides feature-level) so the agent reads it as primary context.
+and injected into the planner/coder templates. Attachment/context manifests live
+under `.thanos/<id>/context/` and are referenced by `prompts.Render` so the agent
+reads them as primary context.
 
 ## Feature memory graph
 

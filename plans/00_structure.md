@@ -87,7 +87,7 @@ thanos/
 * `internal/workspace/` owns all `.thanos/` paths and persistence.
 * `internal/runner/` owns shell, git, test, lint, and worktree execution.
 * `internal/agent/` owns AI planning, execution, and review prompts.
-* `internal/events/` owns streaming updates for CLI/TUI/Tauri.
+* `internal/events/` owns streaming updates for CLI, Wails, and desktop consumers.
 * `app/frontend/` must not duplicate workflow logic.
 * `app/app/` must stay a thin Wails adapter over internal services.
 
@@ -159,7 +159,6 @@ Avoid loading:
 ```text
 internal/cli/root.go
 internal/cli/feature.go
-internal/tui/**
 internal/prompts/**
 internal/codegraph/**
 internal/featuregraph/**

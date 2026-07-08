@@ -164,26 +164,18 @@ Evolution Gate.
 
 Khi feature có nhiều EC, artifact của mỗi phần nằm trong
 `.thanos/<feature-id>/ec-<n>/`. Nếu một role gặp quyết định mơ hồ, nó ghi
-`clarify.json` và run sẽ tạm dừng chờ người trả lời — trong TUI có popup để chọn,
+`clarify.json` và run sẽ tạm dừng chờ người trả lời qua desktop workbench,
 hoặc chạy `thanos clarify FEATURE_ID "<câu trả lời>"`. Nếu có
 `.thanos/coding-style.md`, nội dung sẽ được chèn vào prompt của designer/coder/reviewer.
 
 ## Giao diện phiên làm việc
 
-Mặc định (`thanos` hoặc `thanos ui`) là một ứng dụng terminal lấy chat làm trung tâm:
+Ứng dụng desktop Wails là giao diện làm việc chính:
 
-- **Bên trái** — hội thoại theo từng role cho feature đang chọn, kèm dải phase
-  (`planning → design → … → done`). Chọn và copy bubble bằng bàn phím/chuột; nhấn
-  `ctrl+s` để dùng bôi chọn văn bản gốc của terminal.
-- **Sidebar bên phải** — logo THANOS, cây **Feature → EC** bấm được (mỗi EC hiển
-  thị trạng thái), runner đang dùng và các MCP server.
-- **Ô lệnh** — gõ `/` để mở bảng lệnh đầy đủ; đính kèm tệp bằng cách dán đường dẫn
-  hoặc tham chiếu `@path` để truyền vào ngữ cảnh của agent. Có thể dán văn bản
-  một dòng hoặc nhiều dòng trực tiếp vào ô soạn thảo; dấu xuống dòng được giữ
-  nguyên, và Enter sẽ gửi nội dung hoặc chuyển bước trong biểu mẫu đang mở.
-
-Phím cây: `↑↓` di chuyển, `→/←` vào/ra EC của feature, `enter` chạy, `x` xoá EC,
-`c` trả lời clarification, `n` tạo feature, `tab` đổi vùng.
+- **Board** — quản lý task, trạng thái, dependency, retry và kiểm thử.
+- **Agents** — chọn provider, mode, task và theo dõi native terminal session.
+- **Files** — duyệt, đọc, ghi file workspace và xem diff worktree của task.
+- **Mission Control** — xem graph task/spec/routine/provider và điểm nghẽn.
 
 ## Cài Agent Skills từ GitHub
 

@@ -307,7 +307,6 @@ Examples
 Skip
 
 ```
-internal/tui/**
 internal/prompts/**
 internal/codegraph/**
 internal/featuregraph/**

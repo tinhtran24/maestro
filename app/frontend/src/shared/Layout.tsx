@@ -31,7 +31,7 @@ export function Layout({
       <aside className="sidebar">
         <div className="brand">
           <div className="brand-mark">
-            <img className="brand-logo" src="/favicon/logo_tui.png" alt="" />
+            <img className="brand-logo" src="/logo.png" alt="" />
           </div>
         </div>
         <nav className="nav">

@@ -17,7 +17,7 @@ Thanos app/frontend must same function and structure with ưallfacer/frontend:
 - Layout
 - styles
 - view 
-- Implement logo_tui.png
+- Implement app logo
 - Stores
 
 ## Implementation Status
@@ -26,6 +26,6 @@ Thanos app/frontend must same function and structure with ưallfacer/frontend:
 - [x] Project structure aligned with `hooks`, `stores`, `i18n`, `views`, and modular `styles` directories.
 - [x] i18n foundation added with keyed English copy and interpolation tests.
 - [x] Layout updated to match the Wallfacer local workbench shell shape: grouped workspace and inspect navigation, workspace switcher, status metadata, and Thanos branding.
-- [x] `logo_tui.png` wired into the shell brand mark.
+- [x] App logo wired into the shell brand mark.
 - [x] Store helpers added for workspace defaults and refresh identity preservation.
 - [x] Tests added for navigation shape, i18n interpolation, and workspace store behavior.

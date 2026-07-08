@@ -115,8 +115,8 @@ func Render(role model.Role, data Data) (string, error) {
 	output.WriteString("\n== Codebase Graph ==\n")
 	fmt.Fprintf(&output, "Read `%s` before exploring source files. It contains the local codebase map, hub symbols, relationships, and detected conventions. Use `.thanos/codebase/graph.json` for machine-readable edges.\n", data.CodebaseGraph)
 
-	// User-attached context (files/@-refs). The TUI writes the manifest before a
-	// run; reference it (EC-level overrides feature-level) when present.
+	// User-attached context (files/@-refs). The active workbench writes the
+	// manifest before a run; reference it when present.
 	for _, rel := range []string{filepath.Join(data.ECPrefix, "context", "attachments.md"), filepath.Join("context", "attachments.md")} {
 		abs := filepath.Join(data.Root, ".thanos", data.Feature.ID, rel)
 		if _, err := os.Stat(abs); err == nil {
