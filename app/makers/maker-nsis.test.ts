@@ -6,6 +6,7 @@ const buildForge = vi.fn<(forge: { dir: string }, options: any) => Promise<strin
 ]);
 vi.mock("app-builder-lib", () => ({ buildForge }));
 
+// @ts-expect-error - JS ESM maker has no type declarations
 import MakerNSIS from "./maker-nsis.mjs";
 
 const makeOptions = {

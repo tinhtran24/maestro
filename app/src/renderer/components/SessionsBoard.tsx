@@ -16,7 +16,7 @@ import { useSessionScmSummary, type SessionPRSummary } from "../hooks/useSession
 import { useWorkspaceQuery, workspaceQueryKey } from "../hooks/useWorkspaceQuery";
 import { BoardWelcome, ProjectBoardEmpty } from "./BoardEmptyState";
 import { OrchestratorIcon } from "./icons";
-import { NewTaskDialog } from "./NewTaskDialog";
+import { CreateTaskWizard } from "./quick-capture/CreateTaskWizard";
 import { spawnOrchestrator } from "../lib/spawn-orchestrator";
 import { restartProjectOrchestrator } from "../lib/restart-orchestrator";
 import { prBrowserUrl, sessionPRDisplaySummaries } from "../lib/pr-display";
@@ -319,7 +319,7 @@ export function SessionsBoard({ projectId }: SessionsBoardProps) {
 					)}
 				</div>
 			)}
-			<NewTaskDialog
+			<CreateTaskWizard
 				open={isNewTaskOpen}
 				projectId={projectId}
 				onCreated={(sessionId) => void handleTaskCreated(sessionId)}

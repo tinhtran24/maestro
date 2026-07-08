@@ -17,7 +17,7 @@ import { spawnOrchestrator } from "../lib/spawn-orchestrator";
 import { addRendererExceptionStep, captureRendererEvent, captureRendererException } from "../lib/telemetry";
 import { useUiStore } from "../stores/ui-store";
 import { OrchestratorIcon } from "./icons";
-import { NewTaskDialog } from "./NewTaskDialog";
+import { CreateTaskWizard } from "./quick-capture/CreateTaskWizard";
 import { cn } from "../lib/utils";
 
 const isMac = typeof navigator !== "undefined" && /Mac|iPod|iPhone|iPad/.test(navigator.userAgent);
@@ -102,7 +102,7 @@ export function ShellTopbar() {
 			surface: isSessionRoute ? "session_detail" : "project_board",
 			project_id: projectId,
 		});
-		void captureRendererEvent("ao.renderer.orchestrator_open_requested", { project_id: projectId });
+		void captureRendererEvent("to.renderer.orchestrator_open_requested", { project_id: projectId });
 		if (orchestrator) {
 			void navigate({
 				to: "/projects/$projectId/sessions/$sessionId",
@@ -230,7 +230,7 @@ export function ShellTopbar() {
 					</>
 				) : null}
 			</div>
-			<NewTaskDialog
+			<CreateTaskWizard
 				open={isNewTaskOpen}
 				projectId={projectId}
 				onCreated={(sessionId) => void handleTaskCreated(sessionId)}
@@ -252,19 +252,19 @@ export function TopbarKillButton({ session }: { session: WorkspaceSession }) {
 
 	const kill = useMutation({
 		mutationFn: async () => {
-			void captureRendererEvent("ao.renderer.session_kill_requested", { project_id: session.workspaceId });
+			void captureRendererEvent("to.renderer.session_kill_requested", { project_id: session.workspaceId });
 			const { error: apiError } = await apiClient.POST("/api/v1/sessions/{sessionId}/kill", {
 				params: { path: { sessionId: session.id } },
 			});
 			if (apiError) throw new Error(apiErrorMessage(apiError));
 		},
 		onSuccess: () => {
-			void captureRendererEvent("ao.renderer.session_kill_succeeded", { project_id: session.workspaceId });
+			void captureRendererEvent("to.renderer.session_kill_succeeded", { project_id: session.workspaceId });
 			setConfirming(false);
 			void queryClient.invalidateQueries({ queryKey: workspaceQueryKey });
 		},
 		onError: (e) => {
-			void captureRendererEvent("ao.renderer.session_kill_failed", { project_id: session.workspaceId });
+			void captureRendererEvent("to.renderer.session_kill_failed", { project_id: session.workspaceId });
 			setError(e instanceof Error ? e.message : "Kill failed");
 		},
 	});
