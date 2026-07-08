@@ -81,6 +81,57 @@ func TestNativeTerminalWriteInput(t *testing.T) {
 	}
 }
 
+func TestAgentProviderStartsNeutralPersistedSession(t *testing.T) {
+	root := t.TempDir()
+	provider := NewRealProvider()
+	provider.now = func() time.Time { return time.Date(2026, 7, 8, 15, 0, 0, 0, time.UTC) }
+	manager := NewNativeTerminalManager()
+	session, err := provider.StartAgentSession(context.Background(), manager, StartAgentRequest{
+		Root:           root,
+		ProviderID:     "custom-local",
+		CustomCommand:  "printf",
+		Mode:           AgentModePlanner,
+		Prompt:         "Add provider routing",
+		Context:        "Use the app provider layer.",
+		Acceptance:     "Session is persisted.",
+		Constraints:    "Do not mention a specific vendor.",
+		AllowedFiles:   []string{"app/app"},
+		ExpectedOutput: "Return a plan.",
+	})
+	if err != nil {
+		t.Fatalf("StartAgentSession returned error: %v", err)
+	}
+	waitForSessionExit(t, manager, session.TerminalID)
+	if session.ProviderID != "custom-local" || session.Mode != AgentModePlanner || session.TranscriptPath == "" {
+		t.Fatalf("session = %#v", session)
+	}
+	if strings.Contains(strings.ToLower(session.Prompt), "claude") {
+		t.Fatalf("prompt is provider-specific: %q", session.Prompt)
+	}
+	loaded, err := provider.ListAgentSessions(root)
+	if err != nil {
+		t.Fatalf("ListAgentSessions returned error: %v", err)
+	}
+	if len(loaded) != 1 || loaded[0].ID != session.ID || !strings.Contains(loaded[0].Prompt, "Acceptance Criteria") {
+		t.Fatalf("loaded sessions = %#v", loaded)
+	}
+}
+
+func TestAgentProviderDoesNotFallbackWhenSelectedProviderMissing(t *testing.T) {
+	root := t.TempDir()
+	provider := NewRealProvider()
+	_, err := provider.StartAgentSession(context.Background(), NewNativeTerminalManager(), StartAgentRequest{
+		Root:          root,
+		ProviderID:    "custom-local",
+		CustomCommand: "thanos-agent-command-that-does-not-exist",
+		Mode:          AgentModeCoding,
+		Prompt:        "Implement work",
+	})
+	if err == nil || !strings.Contains(err.Error(), "provider not installed") {
+		t.Fatalf("expected provider-not-installed error, got %v", err)
+	}
+}
+
 func waitForSessionExit(t *testing.T, manager *NativeTerminalManager, sessionID string) {
 	t.Helper()
 	deadline := time.Now().Add(3 * time.Second)

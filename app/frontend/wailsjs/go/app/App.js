@@ -46,6 +46,14 @@ export function FinishTaskTurn(arg1) {
   return window['go']['app']['App']['FinishTaskTurn'](arg1);
 }
 
+export function ListAgentProviders() {
+  return window['go']['app']['App']['ListAgentProviders']();
+}
+
+export function ListAgentSessions(arg1) {
+  return window['go']['app']['App']['ListAgentSessions'](arg1);
+}
+
 export function ListWorkspaceFiles(arg1) {
   return window['go']['app']['App']['ListWorkspaceFiles'](arg1);
 }
@@ -110,6 +118,14 @@ export function SelectWorkspaceFolder() {
   return window['go']['app']['App']['SelectWorkspaceFolder']();
 }
 
+export function SendAgentInput(arg1) {
+  return window['go']['app']['App']['SendAgentInput'](arg1);
+}
+
+export function StartAgentSession(arg1) {
+  return window['go']['app']['App']['StartAgentSession'](arg1);
+}
+
 export function StartNativeTerminal(arg1) {
   return window['go']['app']['App']['StartNativeTerminal'](arg1);
 }
@@ -120,6 +136,10 @@ export function StartTaskTurn(arg1) {
 
 export function StopNativeTerminal(arg1) {
   return window['go']['app']['App']['StopNativeTerminal'](arg1);
+}
+
+export function StopAgentSession(arg1, arg2) {
+  return window['go']['app']['App']['StopAgentSession'](arg1, arg2);
 }
 
 export function TriggerRoutine(arg1) {

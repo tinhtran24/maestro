@@ -377,6 +377,64 @@ button {
     gap: 8px;
 }
 
+.agent-launcher {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(150px, 1fr));
+    gap: 10px;
+}
+
+.agent-launcher label {
+    display: grid;
+    gap: 6px;
+    color: #94a3b8;
+    font-size: 12px;
+}
+
+.agent-launcher select,
+.agent-launcher input,
+.agent-launcher textarea {
+    min-width: 0;
+    border: 1px solid #273449;
+    border-radius: 8px;
+    background: #070a12;
+    color: #e5e7eb;
+    padding: 9px 10px;
+}
+
+.agent-launcher textarea {
+    grid-column: 1 / -1;
+    min-height: 110px;
+    resize: vertical;
+    line-height: 1.5;
+}
+
+.agent-session-list {
+    display: grid;
+    gap: 8px;
+}
+
+.agent-session-list button {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 7px 9px;
+    align-items: center;
+    border: 1px solid #273449;
+    border-radius: 8px;
+    background: #0f172a;
+    color: #e5e7eb;
+    padding: 10px;
+    text-align: left;
+}
+
+.agent-session-list code {
+    grid-column: 2;
+    overflow: hidden;
+    color: #94a3b8;
+    font-size: 11px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
 .provider-actions button {
     display: inline-flex;
     align-items: center;

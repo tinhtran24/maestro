@@ -444,6 +444,59 @@ export type NativeTerminalSession = {
   endedAt?: string;
 };
 
+export type AgentMode = "planner" | "coding" | "review" | "debug" | "research";
+
+export type AgentEventRecord = {
+  sessionId: string;
+  type: string;
+  payload: string;
+  time: string;
+};
+
+export type AgentSession = {
+  id: string;
+  providerId: string;
+  providerName: string;
+  projectId: string;
+  taskId: string;
+  mode: AgentMode;
+  status: "idle" | "starting" | "running" | "waiting_user" | "completed" | "failed" | "stopped" | "archived" | string;
+  workdir: string;
+  prompt: string;
+  promptHistory: PromptRecord[];
+  conversation: AgentEventRecord[];
+  terminalId: string;
+  transcriptPath: string;
+  approvedPlan?: string;
+  result?: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type StartAgentRequest = {
+  root: string;
+  providerId: string;
+  projectId?: string;
+  taskId?: string;
+  mode: AgentMode;
+  prompt: string;
+  context?: string;
+  acceptanceCriteria?: string;
+  constraints?: string;
+  allowedFiles?: string[];
+  previousPlan?: string;
+  expectedOutput?: string;
+  customCommand?: string;
+  rows?: number;
+  cols?: number;
+};
+
+export type SendAgentInputRequest = {
+  root: string;
+  sessionId: string;
+  input: string;
+};
+
 export type DiagnosticInfo = {
   kind: string;
   message: string;

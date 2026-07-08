@@ -24,6 +24,10 @@ export function DispatchSpecs(arg1:app.DispatchSpecsRequest):Promise<Array<app.T
 
 export function FinishTaskTurn(arg1:app.FinishTaskTurnRequest):Promise<app.TaskInfo>;
 
+export function ListAgentProviders():Promise<Array<app.ProviderInfo>>;
+
+export function ListAgentSessions(arg1:string):Promise<Array<app.AgentSessionInfo>>;
+
 export function ListWorkspaceFiles(arg1:app.ListWorkspaceFilesRequest):Promise<app.FileExplorerInfo>;
 
 export function ListWorkspaces():Promise<app.WorkspaceRegistryInfo>;
@@ -56,11 +60,17 @@ export function SearchTasks(arg1:app.SearchTasksRequest):Promise<Array<app.TaskI
 
 export function SelectWorkspaceFolder():Promise<any>;
 
+export function SendAgentInput(arg1:app.SendAgentInputRequest):Promise<void>;
+
+export function StartAgentSession(arg1:app.StartAgentRequest):Promise<app.AgentSessionInfo>;
+
 export function StartNativeTerminal(arg1:app.NativeTerminalRequest):Promise<app.NativeTerminalSessionInfo>;
 
 export function StartTaskTurn(arg1:app.StartTaskTurnRequest):Promise<app.TaskInfo>;
 
 export function StopNativeTerminal(arg1:string):Promise<boolean>;
+
+export function StopAgentSession(arg1:string,arg2:string):Promise<void>;
 
 export function TriggerRoutine(arg1:app.TriggerRoutineRequest):Promise<app.TaskInfo>;
 

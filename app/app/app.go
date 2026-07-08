@@ -191,6 +191,42 @@ func (a *App) DetectAgentCLIs() ([]AgentCandidateInfo, error) {
 	return a.provider.DetectAgentCLIs(context.Background())
 }
 
+func (a *App) ListAgentProviders() ([]ProviderInfo, error) {
+	ctx := a.ctx
+	if ctx == nil {
+		ctx = context.Background()
+	}
+	return a.provider.ListAgentProviders(ctx)
+}
+
+func (a *App) StartAgentSession(request StartAgentRequest) (*AgentSessionInfo, error) {
+	ctx := a.ctx
+	if ctx == nil {
+		ctx = context.Background()
+	}
+	return a.provider.StartAgentSession(ctx, a.terminal, request)
+}
+
+func (a *App) ListAgentSessions(root string) ([]AgentSessionInfo, error) {
+	return a.provider.ListAgentSessions(root)
+}
+
+func (a *App) SendAgentInput(request SendAgentInputRequest) error {
+	ctx := a.ctx
+	if ctx == nil {
+		ctx = context.Background()
+	}
+	return a.provider.SendAgentInput(ctx, a.terminal, request)
+}
+
+func (a *App) StopAgentSession(root string, sessionID string) error {
+	ctx := a.ctx
+	if ctx == nil {
+		ctx = context.Background()
+	}
+	return a.provider.StopAgentSession(ctx, a.terminal, root, sessionID)
+}
+
 func (a *App) StartNativeTerminal(request NativeTerminalRequest) (*NativeTerminalSessionInfo, error) {
 	ctx := a.ctx
 	if ctx == nil {

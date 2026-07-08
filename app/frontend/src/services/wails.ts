@@ -13,6 +13,7 @@ import type {
   NativeTerminalInputRequest,
   NativeTerminalResizeRequest,
   NativeTerminalSession,
+  AgentSession,
   ListWorkspaceFilesRequest,
   PreviewTaskDiffRequest,
   ProviderInfo,
@@ -28,6 +29,7 @@ import type {
   SearchTasksRequest,
   SpecNode,
   StartTaskTurnRequest,
+  StartAgentRequest,
   Task,
   TaskDiffPreviewInfo,
   TriggerRoutineRequest,
@@ -42,6 +44,7 @@ import type {
   WorkspaceRecord,
   WorkspaceRegistry,
   WriteWorkspaceFileRequest,
+  SendAgentInputRequest,
 } from "../app/types";
 
 export type AgentCandidate = ProviderInfo;
@@ -51,6 +54,11 @@ type WailsApp = {
   CurrentWorkspaceFolder?: () => Promise<string>;
   SelectWorkspaceFolder?: () => Promise<string | null>;
   DetectAgentCLIs?: () => Promise<AgentCandidate[]>;
+  ListAgentProviders?: () => Promise<AgentCandidate[]>;
+  StartAgentSession?: (request: StartAgentRequest) => Promise<AgentSession>;
+  ListAgentSessions?: (root: string) => Promise<AgentSession[]>;
+  SendAgentInput?: (request: SendAgentInputRequest) => Promise<void>;
+  StopAgentSession?: (root: string, sessionId: string) => Promise<void>;
   ListWorkspaces?: () => Promise<WorkspaceRegistry>;
   CreateWorkspace?: (request: CreateWorkspaceRequest) => Promise<WorkspaceRecord>;
   UpdateWorkspace?: (request: UpdateWorkspaceRequest) => Promise<WorkspaceRecord>;
@@ -119,6 +127,26 @@ export async function selectWorkspaceFolder(): Promise<string | null> {
 
 export async function detectAgents(): Promise<AgentCandidate[]> {
   return (await app().DetectAgentCLIs?.()) ?? [];
+}
+
+export async function listAgentProviders(): Promise<AgentCandidate[]> {
+  return (await app().ListAgentProviders?.()) ?? detectAgents();
+}
+
+export async function startAgentSession(request: StartAgentRequest): Promise<AgentSession | null> {
+  return (await app().StartAgentSession?.(request)) ?? null;
+}
+
+export async function listAgentSessions(root: string): Promise<AgentSession[]> {
+  return (await app().ListAgentSessions?.(root)) ?? [];
+}
+
+export async function sendAgentInput(request: SendAgentInputRequest): Promise<void> {
+  await app().SendAgentInput?.(request);
+}
+
+export async function stopAgentSession(root: string, sessionId: string): Promise<void> {
+  await app().StopAgentSession?.(root, sessionId);
 }
 
 export async function listWorkspaces(): Promise<WorkspaceRegistry> {

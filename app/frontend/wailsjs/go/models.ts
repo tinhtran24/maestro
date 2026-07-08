@@ -36,6 +36,86 @@ export namespace app {
 	        this.source = source["source"];
 	    }
 	}
+	export class AgentEventInfo {
+	    sessionId: string;
+	    type: string;
+	    payload: string;
+	    time: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new AgentEventInfo(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.sessionId = source["sessionId"];
+	        this.type = source["type"];
+	        this.payload = source["payload"];
+	        this.time = source["time"];
+	    }
+	}
+	export class AgentSessionInfo {
+	    id: string;
+	    providerId: string;
+	    providerName: string;
+	    projectId: string;
+	    taskId: string;
+	    mode: string;
+	    status: string;
+	    workdir: string;
+	    prompt: string;
+	    promptHistory: PromptRecord[];
+	    conversation: AgentEventInfo[];
+	    terminalId: string;
+	    transcriptPath: string;
+	    approvedPlan?: string;
+	    result?: string;
+	    createdAt: string;
+	    updatedAt: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new AgentSessionInfo(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.id = source["id"];
+	        this.providerId = source["providerId"];
+	        this.providerName = source["providerName"];
+	        this.projectId = source["projectId"];
+	        this.taskId = source["taskId"];
+	        this.mode = source["mode"];
+	        this.status = source["status"];
+	        this.workdir = source["workdir"];
+	        this.prompt = source["prompt"];
+	        this.promptHistory = this.convertValues(source["promptHistory"], PromptRecord);
+	        this.conversation = this.convertValues(source["conversation"], AgentEventInfo);
+	        this.terminalId = source["terminalId"];
+	        this.transcriptPath = source["transcriptPath"];
+	        this.approvedPlan = source["approvedPlan"];
+	        this.result = source["result"];
+	        this.createdAt = source["createdAt"];
+	        this.updatedAt = source["updatedAt"];
+	    }
+	
+		convertValues(a: any, classs: any, asMap: boolean = false): any {
+		    if (!a) {
+		        return a;
+		    }
+		    if (a.slice && a.map) {
+		        return (a as any[]).map(elem => this.convertValues(elem, classs));
+		    } else if ("object" === typeof a) {
+		        if (asMap) {
+		            for (const key of Object.keys(a)) {
+		                a[key] = new classs(a[key]);
+		            }
+		            return a;
+		        }
+		        return new classs(a);
+		    }
+		    return a;
+		}
+	}
 	export class AutomationInfo {
 	    schema_version: number;
 	    autoImplement: boolean;
@@ -999,6 +1079,62 @@ export namespace app {
 	        this.providerId = source["providerId"];
 	        this.sessionId = source["sessionId"];
 	        this.transcriptPath = source["transcriptPath"];
+	    }
+	}
+	export class StartAgentRequest {
+	    root: string;
+	    providerId: string;
+	    projectId: string;
+	    taskId: string;
+	    mode: string;
+	    prompt: string;
+	    context: string;
+	    acceptanceCriteria: string;
+	    constraints: string;
+	    allowedFiles: string[];
+	    previousPlan: string;
+	    expectedOutput: string;
+	    customCommand: string;
+	    rows: number;
+	    cols: number;
+	
+	    static createFrom(source: any = {}) {
+	        return new StartAgentRequest(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.root = source["root"];
+	        this.providerId = source["providerId"];
+	        this.projectId = source["projectId"];
+	        this.taskId = source["taskId"];
+	        this.mode = source["mode"];
+	        this.prompt = source["prompt"];
+	        this.context = source["context"];
+	        this.acceptanceCriteria = source["acceptanceCriteria"];
+	        this.constraints = source["constraints"];
+	        this.allowedFiles = source["allowedFiles"];
+	        this.previousPlan = source["previousPlan"];
+	        this.expectedOutput = source["expectedOutput"];
+	        this.customCommand = source["customCommand"];
+	        this.rows = source["rows"];
+	        this.cols = source["cols"];
+	    }
+	}
+	export class SendAgentInputRequest {
+	    root: string;
+	    sessionId: string;
+	    input: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new SendAgentInputRequest(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.root = source["root"];
+	        this.sessionId = source["sessionId"];
+	        this.input = source["input"];
 	    }
 	}
 	export class TestResultInfo {

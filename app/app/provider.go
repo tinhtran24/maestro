@@ -1441,24 +1441,7 @@ func (p *RealProvider) SaveAutomation(req SaveAutomationRequest) (*AutomationInf
 }
 
 func (p *RealProvider) DetectAgentCLIs(ctx context.Context) ([]ProviderInfo, error) {
-	catalog := providerCatalog()
-	out := make([]ProviderInfo, 0, len(catalog))
-	for _, item := range catalog {
-		provider := item
-		if provider.Status == "" {
-			provider.Status = "not_found"
-		}
-		path, err := exec.LookPath(provider.Command)
-		if err == nil {
-			provider.Status = "installed"
-			provider.Path = &path
-			if version := commandVersion(ctx, provider.Command); version != "" {
-				provider.Version = &version
-			}
-		}
-		out = append(out, provider)
-	}
-	return out, nil
+	return p.ListAgentProviders(ctx)
 }
 
 func providerCatalog() []ProviderInfo {
@@ -1466,10 +1449,12 @@ func providerCatalog() []ProviderInfo {
 		{ID: "claude-code", Name: "Claude Code", Command: "claude", Type: "cli", SetupHint: "Install Claude Code and authenticate it before assigning tasks.", SupportsRun: true},
 		{ID: "codex", Name: "Codex", Command: "codex", Type: "cli", SetupHint: "Install Codex and ensure `codex` is on PATH.", SupportsRun: true},
 		{ID: "gemini-cli", Name: "Gemini CLI", Command: "gemini", Type: "cli", SetupHint: "Install Gemini CLI and ensure `gemini` is on PATH.", SupportsRun: true},
+		{ID: "crush", Name: "Crush", Command: "crush", Type: "cli", SetupHint: "Install Crush and ensure `crush` is on PATH.", SupportsRun: true},
 		{ID: "opencode", Name: "OpenCode", Command: "opencode", Type: "cli", SetupHint: "Install OpenCode and finish setup before assigning it.", SupportsRun: true},
 		{ID: "cursor-agent", Name: "Cursor Agent", Command: "cursor-agent", Type: "cli", SetupHint: "Install Cursor Agent and ensure `cursor-agent` is on PATH.", SupportsRun: true},
 		{ID: "aider", Name: "Aider", Command: "aider", Type: "cli", SetupHint: "Install Aider and ensure `aider` is on PATH.", SupportsRun: true},
 		{ID: "goose", Name: "Goose", Command: "goose", Type: "cli", SetupHint: "Install Goose and ensure `goose` is on PATH.", SupportsRun: true},
+		{ID: "custom-local", Name: "Custom Local Agent", Command: "", Type: "custom", Status: "needs_setup", SetupHint: "Enter a local agent command available on PATH.", SupportsRun: true},
 		{ID: "shell", Name: "Shell", Command: "sh", Type: "shell", Status: "installed", SetupHint: "System shell used for explicit user-approved commands.", SupportsRun: false},
 	}
 }

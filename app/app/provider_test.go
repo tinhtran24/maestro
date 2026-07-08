@@ -58,7 +58,7 @@ func TestProviderCatalogContainsMilestoneFiveProviders(t *testing.T) {
 			t.Fatalf("provider missing run metadata: %#v", provider)
 		}
 	}
-	want := []string{"claude-code", "codex", "gemini-cli", "opencode", "cursor-agent", "aider", "goose", "shell"}
+	want := []string{"claude-code", "codex", "gemini-cli", "crush", "opencode", "cursor-agent", "aider", "goose", "custom-local", "shell"}
 	if !reflect.DeepEqual(got, want) {
 		t.Fatalf("catalog IDs = %#v, want %#v", got, want)
 	}
