@@ -1926,8 +1926,15 @@ func (m *Manager) validateRuntimePrerequisites() error {
 	if runtime.GOOS == "windows" {
 		return nil
 	}
+	// Honor an explicit tmux binary (THANOS_TMUX_BIN) so the check agrees with the
+	// runtime adapter even when the binary is not named "tmux" or not on PATH.
+	if bin := strings.TrimSpace(os.Getenv("THANOS_TMUX_BIN")); bin != "" {
+		if info, err := os.Stat(bin); err == nil && !info.IsDir() && info.Mode()&0o111 != 0 {
+			return nil
+		}
+	}
 	if path, err := m.lookPath("tmux"); err != nil || path == "" {
-		return fmt.Errorf("%w: tmux required on macOS/Linux but not in PATH", ports.ErrRuntimePrerequisite)
+		return fmt.Errorf("%w: tmux required on macOS/Linux but not in PATH (install tmux, or set THANOS_TMUX_BIN to a tmux binary)", ports.ErrRuntimePrerequisite)
 	}
 	return nil
 }

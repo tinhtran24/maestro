@@ -150,7 +150,11 @@ is written to OS-default app-data locations.
   supported` when starting the app**: your Node is too old for Vite 8. Use Node
   `>=22.12` (`nvm use`), or just run via `make dev` (it auto-selects one).
 - **`tmux required ... but not in PATH`** when spawning a session: install tmux
-  (`brew install tmux`). It's the session runtime.
+  (`brew install tmux`). It's the session runtime. The daemon augments PATH with
+  common tool dirs (`/opt/homebrew/bin`, `/usr/local/bin`, …) so a Finder/Dock-
+  launched app finds Homebrew tmux; to use a custom/non-standard tmux, set
+  **`THANOS_TMUX_BIN`** to its path (the runtime and the prerequisite check both
+  honor it).
 - **`gh: executable file not found`**: install the GitHub CLI (`brew install gh`)
   for PR/SCM features, or ignore it if you don't need them.
 - **pnpm skips Electron's postinstall** (`Ignored build scripts: electron`): the

@@ -34,6 +34,11 @@ import (
 // Run starts the daemon and blocks until it exits. SIGINT/SIGTERM drive
 // graceful shutdown through the HTTP server and background workers.
 func Run() error {
+	// Enrich PATH before any tool lookup so tmux/git/agent binaries resolve even
+	// when launched from a GUI (Finder/Dock) with a minimal environment, or when
+	// THANOS_TMUX_BIN points at a custom tmux install.
+	augmentToolPath()
+
 	cfg, err := config.Load()
 	if err != nil {
 		return err

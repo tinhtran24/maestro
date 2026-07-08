@@ -69,7 +69,11 @@ func (execRunner) Run(ctx context.Context, env []string, name string, args ...st
 func New(opts Options) *Runtime {
 	binary := opts.Binary
 	if binary == "" {
-		if path, err := exec.LookPath("tmux"); err == nil {
+		// THANOS_TMUX_BIN lets an operator point Thanos at a specific tmux binary
+		// (custom build or non-standard prefix) regardless of PATH.
+		if env := getenv("THANOS_TMUX_BIN"); env != "" {
+			binary = env
+		} else if path, err := exec.LookPath("tmux"); err == nil {
 			binary = path
 		} else {
 			binary = "tmux"
