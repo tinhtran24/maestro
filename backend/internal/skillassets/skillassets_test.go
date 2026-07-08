@@ -7,7 +7,7 @@ import (
 )
 
 // TestInstall_WritesSkillAndIsIdempotent: Install must lay down the embedded
-// skill (SKILL.md plus a commands file) under <dataDir>/skills/using-ao, and a
+// skill (SKILL.md plus a commands file) under <dataDir>/skills/using-to, and a
 // second run must clobber cleanly, leaving no stale files. This is the whole
 // contract the daemon boot hook relies on.
 func TestInstall_WritesSkillAndIsIdempotent(t *testing.T) {

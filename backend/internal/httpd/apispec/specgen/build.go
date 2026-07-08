@@ -292,7 +292,27 @@ func operations() []operation {
 	ops = append(ops, reviewOperations()...)
 	ops = append(ops, notificationOperations()...)
 	ops = append(ops, importOperations()...)
+	ops = append(ops, plannerOperations()...)
 	return ops
+}
+
+// plannerOperations declares the 1 /plan operation. Must stay 1:1 with the
+// route PlanController.Register mounts (enforced by the parity test).
+func plannerOperations() []operation {
+	return []operation{
+		{
+			method: http.MethodPost, path: "/api/v1/plan", id: "planTask", tag: "plan",
+			summary: "Structure raw Quick Capture input into a task draft via the chosen agent",
+			reqBody: controllers.PlanRequest{},
+			resps: []respUnit{
+				{http.StatusOK, controllers.PlanResponse{}},
+				{http.StatusBadRequest, envelope.APIError{}},
+				{http.StatusServiceUnavailable, envelope.APIError{}},
+				{http.StatusInternalServerError, envelope.APIError{}},
+				{http.StatusNotImplemented, envelope.APIError{}},
+			},
+		},
+	}
 }
 
 func agentOperations() []operation {

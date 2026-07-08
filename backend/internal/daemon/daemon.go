@@ -25,6 +25,7 @@ import (
 	agentsvc "github.com/tinhtran/thanos/backend/internal/service/agent"
 	importsvc "github.com/tinhtran/thanos/backend/internal/service/importer"
 	notificationsvc "github.com/tinhtran/thanos/backend/internal/service/notification"
+	"github.com/tinhtran/thanos/backend/internal/service/planner"
 	projectsvc "github.com/tinhtran/thanos/backend/internal/service/project"
 	"github.com/tinhtran/thanos/backend/internal/skillassets"
 	"github.com/tinhtran/thanos/backend/internal/storage/sqlite"
@@ -69,17 +70,17 @@ func Run() error {
 	}
 	defer func() { _ = store.Close() }()
 
-	// Refresh the embedded using-ao skill into the data dir so worker sessions
-	// in any project can read the ao CLI catalog from a stable absolute path.
-	// Non-fatal: the skill is an enhancement over `ao --help`, not required.
+	// Refresh the embedded using-to skill into the data dir so worker sessions
+	// in any project can read the to CLI catalog from a stable absolute path.
+	// Non-fatal: the skill is an enhancement over `to --help`, not required.
 	if err := skillassets.Install(cfg.DataDir); err != nil {
-		log.Warn("install using-ao skill", "err", err)
+		log.Warn("install using-to skill", "err", err)
 	}
 
 	telemetrySink := newTelemetrySink(cfg, store, log)
 	defer func() { _ = telemetrySink.Close(context.Background()) }()
 	telemetrySink.Emit(context.Background(), ports.TelemetryEvent{
-		Name:       "ao.daemon.started",
+		Name:       "to.daemon.started",
 		Source:     "daemon",
 		OccurredAt: time.Now().UTC(),
 		Level:      ports.TelemetryLevelInfo,
@@ -152,6 +153,8 @@ func Run() error {
 		Notifications:      notifier,
 		NotificationStream: notificationHub,
 		Import:             importsvc.New(importsvc.Deps{Store: store}),
+		Planner:            planner.New(planner.Options{}),
+		PlannerAgent:       cfg.PlannerAgent,
 		CDC:                store,
 		Events:             cdcPipe.Broadcaster,
 		Activity:           lcStack.LCM,

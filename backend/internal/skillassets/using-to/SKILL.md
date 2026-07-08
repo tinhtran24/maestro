@@ -1,12 +1,12 @@
 ---
-name: using-ao
-description: Catalog of the Thanos (Thanos) `ao` CLI: spawning workers, managing sessions and projects, sending messages, previewing pages, and daemon control. Use when using the ao CLI, spawning workers, or managing Thanos sessions in an Thanos workspace.
-trigger: Using the ao CLI in an Thanos workspace: spawning workers, managing sessions/projects, sending messages, previewing pages.
+name: using-to
+description: Catalog of the Thanos (Thanos) `to` CLI: spawning workers, managing sessions and projects, sending messages, previewing pages, and daemon control. Use when using the to CLI, spawning workers, or managing Thanos sessions in an Thanos workspace.
+trigger: Using the to CLI in an Thanos workspace: spawning workers, managing sessions/projects, sending messages, previewing pages.
 ---
 
 # Thanos CLI Catalog
 
-`ao` is a thin CLI over the local Thanos daemon. Every command is `ao <command> --help` for the authoritative flag list.
+`to` is a thin CLI over the local Thanos daemon. Every command is `to <command> --help` for the authoritative flag list.
 
 | Command | What it does | When to use | Details |
 |---|---|---|---|

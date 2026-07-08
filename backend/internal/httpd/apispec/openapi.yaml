@@ -452,6 +452,50 @@ paths:
       summary: Fetch one orchestrator session
       tags:
       - sessions
+  /api/v1/plan:
+    post:
+      operationId: planTask
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ControllersPlanRequest'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ControllersPlanResponse'
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIError'
+          description: Bad Request
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIError'
+          description: Internal Server Error
+        "501":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIError'
+          description: Not Implemented
+        "503":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIError'
+          description: Service Unavailable
+      summary: Structure raw Quick Capture input into a task draft via the chosen
+        agent
+      tags:
+      - plan
   /api/v1/projects:
     get:
       operationId: listProjects
@@ -1655,6 +1699,36 @@ components:
       - sessionId
       - reason
       type: object
+    ControllersPlanRequest:
+      properties:
+        agent:
+          type: string
+        attachments:
+          items:
+            type: string
+          type: array
+        input:
+          type: string
+        projectId:
+          type: string
+      required:
+      - input
+      type: object
+    ControllersPlanResponse:
+      properties:
+        agent:
+          type: string
+        draft:
+          $ref: '#/components/schemas/PlannerTaskDraft'
+        status:
+          enum:
+          - ok
+          type: string
+      required:
+      - status
+      - agent
+      - draft
+      type: object
     ControllersSessionView:
       properties:
         activity:
@@ -2014,6 +2088,93 @@ components:
       - targetSha
       - status
       type: object
+    PlannerConfidence:
+      properties:
+        acceptanceCriteria:
+          type: integer
+        overall:
+          type: integer
+        priority:
+          type: integer
+        title:
+          type: integer
+      required:
+      - overall
+      - title
+      - priority
+      - acceptanceCriteria
+      type: object
+    PlannerTaskDraft:
+      properties:
+        acceptanceCriteria:
+          items:
+            type: string
+          type: array
+        confidence:
+          $ref: '#/components/schemas/PlannerConfidence'
+        dependencies:
+          items:
+            type: string
+          type: array
+        description:
+          type: string
+        estimate:
+          type: string
+        labels:
+          items:
+            type: string
+          type: array
+        likelyFiles:
+          items:
+            type: string
+          type: array
+        missingInformation:
+          items:
+            type: string
+          type: array
+        openQuestions:
+          items:
+            type: string
+          type: array
+        plan:
+          items:
+            type: string
+          type: array
+        priority:
+          type: string
+        risks:
+          items:
+            type: string
+          type: array
+        scope:
+          type: string
+        suggestedAgent:
+          type: string
+        technicalNotes:
+          type: string
+        title:
+          type: string
+        userStory:
+          type: string
+      required:
+      - title
+      - description
+      - userStory
+      - priority
+      - labels
+      - acceptanceCriteria
+      - technicalNotes
+      - likelyFiles
+      - risks
+      - dependencies
+      - estimate
+      - scope
+      - plan
+      - openQuestions
+      - missingInformation
+      - suggestedAgent
+      - confidence
+      type: object
     ProbeAgentResponse:
       properties:
         agent:
@@ -2068,6 +2229,8 @@ components:
             type: string
           type: object
         orchestrator:
+          $ref: '#/components/schemas/RoleOverride'
+        planner:
           $ref: '#/components/schemas/RoleOverride'
         postCreate:
           items:

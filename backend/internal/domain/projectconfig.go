@@ -36,6 +36,11 @@ type ProjectConfig struct {
 	Worker       RoleOverride `json:"worker,omitempty"`
 	Orchestrator RoleOverride `json:"orchestrator,omitempty"`
 
+	// Planner is the agent that structures raw Quick Capture input into a task
+	// draft (the "AI Structure" step). Empty falls back to the Worker agent, then
+	// the daemon's global planner/default agent.
+	Planner RoleOverride `json:"planner,omitempty"`
+
 	// Reviewers names the agent(s) that review a worker's PR when a review is
 	// triggered. It is configured independently of the Worker override; an empty
 	// list falls back to claude-code (see ResolveReviewerHarness).

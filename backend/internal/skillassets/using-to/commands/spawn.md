@@ -12,7 +12,7 @@ to spawn [flags]
 
 | Flag | Meaning | Default / Required |
 |---|---|---|
-| `--branch string` | Branch for the session worktree | `ao/<session-id>/root` |
+| `--branch string` | Branch for the session worktree | `to/<session-id>/root` |
 | `--claim-pr string` | Immediately claim an existing PR for the spawned session | - |
 | `--harness string` | Agent harness to use (see list below) | Project `worker.agent`; required if the project has none |
 | `--issue string` | Issue id to associate with the session | - |

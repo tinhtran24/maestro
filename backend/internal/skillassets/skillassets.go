@@ -1,4 +1,4 @@
-// Package skillassets embeds the using-ao skill (the ao CLI catalog) and
+// Package skillassets embeds the using-to skill (the to CLI catalog) and
 // installs it into the Thanos data dir at daemon boot. Worker sessions run in a
 // worktree of whatever project they were spawned in, so a repo-relative
 // skills/ path only resolves when that project happens to be the Thanos repo
@@ -20,11 +20,11 @@ import (
 	"embed"
 )
 
-//go:embed using-ao
+//go:embed using-to
 var files embed.FS
 
 // SkillName is the installed skill's directory name under <dataDir>/skills.
-const SkillName = "using-ao"
+const SkillName = "using-to"
 
 // Dir returns the absolute directory the skill installs into for a given data
 // dir. Callers building prompts use this so the path they cite always matches
@@ -33,17 +33,17 @@ func Dir(dataDir string) string {
 	return filepath.Join(dataDir, "skills", SkillName)
 }
 
-// Install writes the embedded using-ao skill into <dataDir>/skills/using-ao,
+// Install writes the embedded using-to skill into <dataDir>/skills/using-to,
 // replacing any existing copy. It runs once at daemon boot, before any session
 // spawns, so a plain clobber-and-write needs no locking: there are no
 // concurrent readers yet. A failure is returned but is non-fatal to boot (the
-// skill enhances `ao --help`, it is not load-bearing).
+// skill enhances `to --help`, it is not load-bearing).
 func Install(dataDir string) error {
 	dest := Dir(dataDir)
 	if err := os.RemoveAll(dest); err != nil {
 		return fmt.Errorf("clear skill dir %q: %w", dest, err)
 	}
-	// embed.FS always uses forward-slash paths rooted at "using-ao"; map each
+	// embed.FS always uses forward-slash paths rooted at "using-to"; map each
 	// onto <dataDir>/skills/<same path> with the platform separator.
 	return fs.WalkDir(files, SkillName, func(p string, d fs.DirEntry, err error) error {
 		if err != nil {

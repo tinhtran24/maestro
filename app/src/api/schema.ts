@@ -193,6 +193,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/plan": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Structure raw Quick Capture input into a task draft via the chosen agent */
+        post: operations["planTask"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/projects": {
         parameters: {
             query?: never;
@@ -592,6 +609,18 @@ export interface components {
             reason: string;
             sessionId: string;
         };
+        ControllersPlanRequest: {
+            agent?: string;
+            attachments?: string[];
+            input: string;
+            projectId?: string;
+        };
+        ControllersPlanResponse: {
+            agent: string;
+            draft: components["schemas"]["PlannerTaskDraft"];
+            /** @enum {string} */
+            status: "ok";
+        };
         ControllersSessionView: {
             activity: components["schemas"]["DomainActivity"];
             branch?: string;
@@ -725,6 +754,31 @@ export interface components {
             targetSha: string;
             title: string;
         };
+        PlannerConfidence: {
+            acceptanceCriteria: number;
+            overall: number;
+            priority: number;
+            title: number;
+        };
+        PlannerTaskDraft: {
+            acceptanceCriteria: string[];
+            confidence: components["schemas"]["PlannerConfidence"];
+            dependencies: string[];
+            description: string;
+            estimate: string;
+            labels: string[];
+            likelyFiles: string[];
+            missingInformation: string[];
+            openQuestions: string[];
+            plan: string[];
+            priority: string;
+            risks: string[];
+            scope: string;
+            suggestedAgent: string;
+            technicalNotes: string;
+            title: string;
+            userStory: string;
+        };
         ProbeAgentResponse: {
             agent: components["schemas"]["AgentInfo"];
             installed: boolean;
@@ -748,6 +802,7 @@ export interface components {
                 [key: string]: string;
             };
             orchestrator?: components["schemas"]["RoleOverride"];
+            planner?: components["schemas"]["RoleOverride"];
             postCreate?: string[];
             reviewers?: components["schemas"]["DomainReviewerConfig"][];
             sessionPrefix?: string;
@@ -1596,6 +1651,66 @@ export interface operations {
             };
             /** @description Not Implemented */
             501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["APIError"];
+                };
+            };
+        };
+    };
+    planTask: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ControllersPlanRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ControllersPlanResponse"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["APIError"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["APIError"];
+                };
+            };
+            /** @description Not Implemented */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["APIError"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };

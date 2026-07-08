@@ -89,6 +89,9 @@ type Config struct {
 	// Agent is the compatibility agent adapter id selected by THANOS_AGENT;
 	// startSession fails fast if no adapter with this id is registered.
 	Agent string
+	// PlannerAgent is the default agent used by the Quick Capture "AI Structure"
+	// step (THANOS_PLANNER_AGENT). Empty falls back to Agent.
+	PlannerAgent string
 	// AllowedOrigins are the browser origins granted CORS read access (see
 	// DefaultAllowedOrigins). Overridden by THANOS_ALLOWED_ORIGINS.
 	AllowedOrigins []string
@@ -165,6 +168,13 @@ func Load() (Config, error) {
 
 	if raw := os.Getenv("THANOS_AGENT"); raw != "" {
 		cfg.Agent = raw
+	}
+
+	if raw := os.Getenv("THANOS_PLANNER_AGENT"); raw != "" {
+		cfg.PlannerAgent = raw
+	}
+	if cfg.PlannerAgent == "" {
+		cfg.PlannerAgent = cfg.Agent
 	}
 
 	if raw, ok := os.LookupEnv("THANOS_ALLOWED_ORIGINS"); ok && raw != "" {

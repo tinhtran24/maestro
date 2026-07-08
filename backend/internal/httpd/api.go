@@ -28,6 +28,8 @@ type APIDeps struct {
 	Notifications      controllers.NotificationService
 	NotificationStream controllers.NotificationStream
 	Import             controllers.ImportService
+	Planner            controllers.PlanService
+	PlannerAgent       string
 	CDC                cdc.Source
 	Events             cdcSubscriber
 	Telemetry          ports.EventSink
@@ -44,6 +46,7 @@ type API struct {
 	reviews       *controllers.ReviewsController
 	notifications *controllers.NotificationsController
 	imports       *controllers.ImportController
+	plan          *controllers.PlanController
 	events        *EventsController
 }
 
@@ -67,6 +70,7 @@ func NewAPI(cfg config.Config, deps APIDeps) *API {
 		reviews:       &controllers.ReviewsController{Svc: deps.Reviews},
 		notifications: &controllers.NotificationsController{Svc: deps.Notifications, Stream: deps.NotificationStream},
 		imports:       &controllers.ImportController{Svc: deps.Import},
+		plan:          &controllers.PlanController{Svc: deps.Planner, DefaultAgent: deps.PlannerAgent},
 		events:        &EventsController{Source: deps.CDC, Live: deps.Events},
 	}
 }
@@ -94,6 +98,9 @@ func (a *API) Register(root chi.Router) {
 			a.imports.Register(r)
 			// Sibling REST controllers plug in here.
 		})
+		// The planner shells out to an agent CLI that can take tens of seconds, so
+		// it bypasses the short REST timeout and relies on its own bounded context.
+		a.plan.Register(r)
 		// Long-lived streams intentionally bypass the REST timeout middleware.
 		a.notifications.RegisterStream(r)
 		a.events.Register(r)
