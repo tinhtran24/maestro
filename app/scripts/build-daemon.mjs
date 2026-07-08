@@ -8,7 +8,7 @@ const frontendRoot = resolve(scriptsDir, "..");
 const repoRoot = resolve(frontendRoot, "..");
 const backendRoot = join(repoRoot, "backend");
 const outDir = join(frontendRoot, "daemon");
-const outPath = join(outDir, process.platform === "win32" ? "ao.exe" : "ao");
+const outPath = join(outDir, process.platform === "win32" ? "to.exe" : "to");
 
 rmSync(outDir, { recursive: true, force: true });
 mkdirSync(outDir, { recursive: true });

@@ -14,7 +14,7 @@ function RootComponent() {
 	const location = useRouterState({ select: (state) => state.location });
 
 	useEffect(() => {
-		void captureRendererEvent("ao.renderer.route_viewed", {
+		void captureRendererEvent("to.renderer.route_viewed", {
 			surface: routeSurface(location.pathname),
 		});
 	}, [location.pathname]);

@@ -19,7 +19,7 @@ type Spec struct {
 
 // WriteTemp serialises spec to a temporary JSON file and returns its path.
 func WriteTemp(spec Spec) (string, error) {
-	file, err := os.CreateTemp(os.TempDir(), "ao-launch-*.json")
+	file, err := os.CreateTemp(os.TempDir(), "to-launch-*.json")
 	if err != nil {
 		return "", fmt.Errorf("create launch spec: %w", err)
 	}

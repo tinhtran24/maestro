@@ -38,13 +38,13 @@ export function NotificationCenter({ style }: NotificationCenterProps) {
 		(notification: NotificationDTO) => {
 			const target = notification.target;
 			if (target.kind === "pr" && target.prUrl) {
-				void captureRendererEvent("ao.renderer.notification_opened", { target: "pr" });
+				void captureRendererEvent("to.renderer.notification_opened", { target: "pr" });
 				window.open(target.prUrl, "_blank", "noopener,noreferrer");
 				return;
 			}
 			const sessionId = target.sessionId || notification.sessionId;
 			if (!sessionId) return;
-			void captureRendererEvent("ao.renderer.notification_opened", { target: "session" });
+			void captureRendererEvent("to.renderer.notification_opened", { target: "session" });
 			if (notification.projectId) {
 				void navigate({
 					to: "/projects/$projectId/sessions/$sessionId",
@@ -69,24 +69,24 @@ export function NotificationCenter({ style }: NotificationCenterProps) {
 
 	const markOneRead = async (id: string) => {
 		setActionError(null);
-		void captureRendererEvent("ao.renderer.notification_mark_read_requested", { scope: "single" });
+		void captureRendererEvent("to.renderer.notification_mark_read_requested", { scope: "single" });
 		try {
 			await markRead.mutateAsync(id);
-			void captureRendererEvent("ao.renderer.notification_mark_read_succeeded", { scope: "single" });
+			void captureRendererEvent("to.renderer.notification_mark_read_succeeded", { scope: "single" });
 		} catch (error) {
-			void captureRendererEvent("ao.renderer.notification_mark_read_failed", { scope: "single" });
+			void captureRendererEvent("to.renderer.notification_mark_read_failed", { scope: "single" });
 			setActionError(error instanceof Error ? error.message : "Could not mark notification read");
 		}
 	};
 
 	const markAll = async () => {
 		setActionError(null);
-		void captureRendererEvent("ao.renderer.notification_mark_read_requested", { scope: "all" });
+		void captureRendererEvent("to.renderer.notification_mark_read_requested", { scope: "all" });
 		try {
 			await markAllRead.mutateAsync();
-			void captureRendererEvent("ao.renderer.notification_mark_read_succeeded", { scope: "all" });
+			void captureRendererEvent("to.renderer.notification_mark_read_succeeded", { scope: "all" });
 		} catch (error) {
-			void captureRendererEvent("ao.renderer.notification_mark_read_failed", { scope: "all" });
+			void captureRendererEvent("to.renderer.notification_mark_read_failed", { scope: "all" });
 			setActionError(error instanceof Error ? error.message : "Could not mark notifications read");
 		}
 	};

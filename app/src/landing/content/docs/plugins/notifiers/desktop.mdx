@@ -22,7 +22,7 @@ description: Native macOS / Linux notifications. Silent no-op on Windows.
 Run the setup command on macOS:
 
 ```bash
-ao setup desktop
+to setup desktop
 ```
 
 Thanos asks which desktop backend to use and which notification priorities desktop
@@ -35,7 +35,7 @@ pass `--routing-preset <preset>`.
 notifiers:
   desktop:
     plugin: desktop
-    backend: ao-app
+    backend: to-app
     dashboardUrl: http://localhost:3000
 
 notificationRouting:
@@ -45,7 +45,7 @@ notificationRouting:
 
 | Config key     | Default                | What it does                                                 |
 | -------------- | ---------------------- | ------------------------------------------------------------ |
-| `backend`      | `auto`                 | `ao-app`, `terminal-notifier`, `osascript`, or auto fallback |
+| `backend`      | `auto`                 | `to-app`, `terminal-notifier`, `osascript`, or auto fallback |
 | `dashboardUrl` | dashboard port         | URL opened from desktop notification actions                 |
 | `appPath`      | macOS app install path | Custom Thanos Notifier.app path                                  |
 

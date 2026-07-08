@@ -18,7 +18,7 @@ Covers: install health, plugin resolution, notifier connectivity, stale temp fil
 ## Install & environment
 
 <Accordions>
-  <Accordion title="`ao: command not found`">
+  <Accordion title="`to: command not found`">
     The npm global bin isn't on your PATH. Find it with `npm config get prefix` and add `<prefix>/bin` to your shell's PATH.
   </Accordion>
   <Accordion title="`tmux: command not found` (on Windows)">
@@ -31,7 +31,7 @@ Covers: install health, plugin resolution, notifier connectivity, stale temp fil
     Thanos auto-picks the next free port. You'll see the actual URL in the `to start` output.
   </Accordion>
   <Accordion title="Dashboard crashes with 'vendor-chunks not found'">
-    Stale Next.js artifacts. Run `ao dashboard --rebuild`.
+    Stale Next.js artifacts. Run `to dashboard --rebuild`.
   </Accordion>
 </Accordions>
 
@@ -94,7 +94,7 @@ Covers: install health, plugin resolution, notifier connectivity, stale temp fil
 ## Windows-specific
 
 <Accordions>
-  <Accordion title="`ao open` prints a URL instead of opening a tab">
+  <Accordion title="`to open` prints a URL instead of opening a tab">
     Expected on Windows. The iTerm2 helper only runs on macOS. Use the dashboard's built-in terminal (the printed URL takes you there).
   </Accordion>
   <Accordion title="Child process exits immediately">
@@ -108,6 +108,6 @@ Covers: install health, plugin resolution, notifier connectivity, stale temp fil
 - Open an issue: [`ComposioHQ/thanos`](https://github.com/ComposioHQ/thanos/issues).
   When opening an issue, include:
 
-- Output of `ao --version`
+- Output of `to --version`
 - The contents of `~/.thanos/{hash}-observability/processes/` (one JSON snapshot per process; each contains traces, health, and metrics)
 - Your `thanos.yaml` (redact any secrets)

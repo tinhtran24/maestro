@@ -8,10 +8,10 @@ import { Tab, Tabs } from "fumadocs-ui/components/tabs";
 import { Step, Steps } from "fumadocs-ui/components/steps";
 import { Accordions, Accordion } from "fumadocs-ui/components/accordion";
 
-This page gets your machine ready to run Thanos. By the end, the `ao` command should be on your `PATH`, your source-control CLI should be authenticated, and `to doctor` should be able to explain what is ready or missing.
+This page gets your machine ready to run Thanos. By the end, the `to` command should be on your `PATH`, your source-control CLI should be authenticated, and `to doctor` should be able to explain what is ready or missing.
 
 <Callout type="info" title="What Thanos installs">
-	The published package is `@tinhtran/ao`. It provides the global `ao` command and includes the built-in CLI, dashboard,
+	The published package is `@tinhtran/to`. It provides the global `to` command and includes the built-in CLI, dashboard,
 	and plugin packages.
 </Callout>
 
@@ -44,19 +44,19 @@ If you plan to use GitLab or Linear, install and authenticate their CLIs or cred
 ## Install Thanos
 
 <Tabs items={["npm", "pnpm", "yarn", "from source"]}>
-	<Tab value="npm">```bash npm install -g @tinhtran/ao ```</Tab>
-	<Tab value="pnpm">```bash pnpm add -g @tinhtran/ao ```</Tab>
-	<Tab value="yarn">```bash yarn global add @tinhtran/ao ```</Tab>
+	<Tab value="npm">```bash npm install -g @tinhtran/to ```</Tab>
+	<Tab value="pnpm">```bash pnpm add -g @tinhtran/to ```</Tab>
+	<Tab value="yarn">```bash yarn global add @tinhtran/to ```</Tab>
 	<Tab value="from source">
 		```bash git clone https://github.com/ComposioHQ/thanos cd thanos pnpm install pnpm build
-		pnpm --filter @tinhtran/ao link --global ```
+		pnpm --filter @tinhtran/to link --global ```
 	</Tab>
 </Tabs>
 
 Confirm the command is available:
 
 ```bash
-ao --version
+to --version
 ```
 
 ## Authenticate Your Tools
@@ -143,9 +143,9 @@ Use Slack, Discord, webhook, or another network notifier for alerts. Desktop not
 ## Common Install Issues
 
 <Accordions>
-	<Accordion title="`ao` is not found after install">
+	<Accordion title="`to` is not found after install">
 		Your global package bin directory is not on `PATH`. Check your package manager's global bin path, then reopen your
-		shell and run `ao --version` again.
+		shell and run `to --version` again.
 	</Accordion>
 	<Accordion title="`gh` is not authenticated">
 		Run `gh auth login`, then `gh auth status`. Thanos cannot read GitHub issues, PRs, reviews, or CI checks until `gh` is
@@ -161,7 +161,7 @@ Use Slack, Discord, webhook, or another network notifier for alerts. Desktop not
 		`to start` scans for a free port and prints the final dashboard URL. Use the URL in the command output.
 	</Accordion>
 	<Accordion title="The dashboard fails after an update">
-		Run `ao dashboard --rebuild` to clean stale dashboard build artifacts and start again.
+		Run `to dashboard --rebuild` to clean stale dashboard build artifacts and start again.
 	</Accordion>
 </Accordions>
 

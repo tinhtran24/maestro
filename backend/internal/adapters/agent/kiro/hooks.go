@@ -21,18 +21,18 @@ const (
 	// https://kiro.dev/docs/cli/custom-agents/configuration-reference#hooks-field
 	kiroHooksDirName  = ".kiro"
 	kiroAgentsDirName = "agents"
-	kiroAgentFileName = "ao.json"
+	kiroAgentFileName = "to.json"
 
 	// kiroHookCommandPrefix identifies the hook commands Thanos owns, so install
 	// skips duplicates and uninstall recognizes Thanos entries by prefix without an
 	// embedded template to diff against.
 	kiroHookCommandPrefix = "to hooks kiro "
 
-	kiroAgentName        = "ao"
+	kiroAgentName        = "to"
 	kiroAgentDescription = "Thanos session instructions"
 )
 
-// kiroHookFile is the on-disk shape of .kiro/agents/ao.json. It is used by
+// kiroHookFile is the on-disk shape of .kiro/agents/to.json. It is used by
 // tests to decode the written file. Kiro hooks are a map of camelCase event
 // name to a flat array of {matcher?, command} entries.
 type kiroHookFile struct {
@@ -71,7 +71,7 @@ var kiroManagedHooks = []kiroHookSpec{
 }
 
 // GetAgentHooks installs Thanos's Kiro hooks into the worktree-local
-// .kiro/agents/ao.json file. Existing hook entries are preserved and duplicate
+// .kiro/agents/to.json file. Existing hook entries are preserved and duplicate
 // Thanos commands are not appended.
 func (p *Plugin) GetAgentHooks(ctx context.Context, cfg ports.WorkspaceHookConfig) error {
 	if err := ctx.Err(); err != nil {
@@ -112,7 +112,7 @@ func (p *Plugin) GetAgentHooks(ctx context.Context, cfg ports.WorkspaceHookConfi
 }
 
 // UninstallHooks removes Thanos's Kiro hooks from the workspace-local
-// .kiro/agents/ao.json file, leaving user-defined hooks untouched. A missing
+// .kiro/agents/to.json file, leaving user-defined hooks untouched. A missing
 // file is a no-op.
 func (p *Plugin) UninstallHooks(ctx context.Context, workspacePath string) error {
 	if err := ctx.Err(); err != nil {

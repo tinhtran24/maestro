@@ -32,8 +32,8 @@ func (a *captureAgent) SessionInfo(context.Context, ports.SessionRef) (ports.Ses
 
 func TestReviewCommandUsesReadOnlySandbox(t *testing.T) {
 	t.Setenv("THANOS_PORT", "3103")
-	t.Setenv("THANOS_DATA_DIR", "/tmp/ao data")
-	t.Setenv("THANOS_RUN_FILE", "/tmp/ao data/running.json")
+	t.Setenv("THANOS_DATA_DIR", "/tmp/to data")
+	t.Setenv("THANOS_RUN_FILE", "/tmp/to data/running.json")
 	agent := &captureAgent{}
 	r := &Reviewer{agent: agent}
 
@@ -51,8 +51,8 @@ func TestReviewCommandUsesReadOnlySandbox(t *testing.T) {
 		"agent",
 		"--sandbox", "read-only",
 		"-c", `shell_environment_policy.set.THANOS_PORT="3103"`,
-		"-c", `shell_environment_policy.set.THANOS_DATA_DIR="/tmp/ao data"`,
-		"-c", `shell_environment_policy.set.THANOS_RUN_FILE="/tmp/ao data/running.json"`,
+		"-c", `shell_environment_policy.set.THANOS_DATA_DIR="/tmp/to data"`,
+		"-c", `shell_environment_policy.set.THANOS_RUN_FILE="/tmp/to data/running.json"`,
 		"--", "review it",
 	}
 	if !slices.Equal(got.Argv, want) {

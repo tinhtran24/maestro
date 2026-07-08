@@ -1,6 +1,6 @@
 # Thanos CLI
 
-The `ao` CLI is a thin Go/Cobra client for the local Thanos daemon.
+The `to` CLI is a thin Go/Cobra client for the local Thanos daemon.
 It starts, discovers, inspects, and stops the daemon through the loopback HTTP
 surface and the `running.json` handshake. It must not open SQLite directly or
 call runtime, workspace, tracker, or agent adapters in-process.
@@ -13,13 +13,13 @@ a source checkout, build and run the local binary explicitly, for example:
 
 ```bash
 cd backend
-go build -o ./bin/ao ./cmd/ao
+go build -o ./bin/to ./cmd/to
 ./bin/to agent ls
 ```
 
 ## Current commands
 
-Every product command resolves to a daemon HTTP route. Run `ao <command>
+Every product command resolves to a daemon HTTP route. Run `to <command>
 --help` for the authoritative flag shape.
 
 ### Daemon control
@@ -31,7 +31,7 @@ Every product command resolves to a daemon HTTP route. Run `ao <command>
 | `to status` / `--json`        | Report daemon state from `running.json`, process liveness, `/healthz`, and `/readyz`.                                             |
 | `to doctor` / `--json`        | Check config, data directory, DB-file presence, daemon state, `git`, and (on Darwin/Linux) `tmux`; on Windows conpty is built in. |
 | `to completion <shell>`       | Generate completions for `bash`, `zsh`, `fish`, or `powershell`.                                                                  |
-| `to version` / `ao --version` | Print build metadata.                                                                                                             |
+| `to version` / `to --version` | Print build metadata.                                                                                                             |
 | `to daemon`                   | Hidden internal daemon entrypoint used by `to start`.                                                                             |
 
 ### Product commands
@@ -83,7 +83,7 @@ opens that URL verbatim (`file://`, `http`, `https`).
 `go run .` in `backend/` remains a compatibility wrapper around the daemon.
 
 PR and review actions (merge, resolve-comments, review execute/send) are
-HTTP-only today and driven by the frontend; there are no `ao pr` / `to review`
+HTTP-only today and driven by the frontend; there are no `to pr` / `to review`
 commands yet.
 
 ## Configuration
@@ -104,7 +104,7 @@ The daemon always binds `127.0.0.1`.
 
 ```bash
 cd backend
-go build -o /tmp/ao ./cmd/ao
+go build -o /tmp/to ./cmd/to
 
 tmp=$(mktemp -d)
 export THANOS_RUN_FILE="$tmp/running.json"
@@ -125,7 +125,7 @@ rm -rf "$tmp"
 Add a product command only when a daemon HTTP route owns the corresponding
 mutation/read; the CLI must call that route rather than reimplementing daemon
 behavior. Commands not yet exposed but with backend routes in place include
-`ao events ...` (over the CDC/SSE endpoint) and CLI parity for PR/review
+`to events ...` (over the CDC/SSE endpoint) and CLI parity for PR/review
 actions.
 
 Do not port old in-process TypeScript CLI behavior that mixed command handling

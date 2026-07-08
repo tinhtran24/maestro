@@ -200,7 +200,7 @@ function CliDemo() {
 			<div className="px-5 py-4 leading-[1.8]">
 				<div>
 					<span className="text-[var(--landing-muted)]">$</span>{" "}
-					<span className="text-white">ao batch-spawn 42 43 44 45 46</span>
+					<span className="text-white">to batch-spawn 42 43 44 45 46</span>
 				</div>
 				<div className="text-[var(--landing-muted)] opacity-60">&nbsp;</div>
 				<div className="text-[var(--landing-muted)] opacity-60">⟡ Loading config from thanos.yaml</div>

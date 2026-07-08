@@ -316,9 +316,9 @@ func clearDoctorGitHubEnv(t *testing.T) {
 	t.Setenv("GH_TOKEN", "")
 }
 
-// TestDoctorChecksAOBinaryIdentity covers the `ao-binary` check: workspace
+// TestDoctorChecksAOBinaryIdentity covers the `to-binary` check: workspace
 // hooks invoke a bare `to hooks <agent> <event>`, so doctor must surface when
-// the `ao` on PATH is not the running binary (e.g. a legacy CLI without the
+// the `to` on PATH is not the running binary (e.g. a legacy CLI without the
 // hooks command shadowing the Go one).
 func TestDoctorChecksAOBinaryIdentity(t *testing.T) {
 	dir := t.TempDir()
@@ -340,7 +340,7 @@ func TestDoctorChecksAOBinaryIdentity(t *testing.T) {
 	}{
 		{"to in PATH is this binary", selfExe, map[string]string{"to": self}, doctorPass, "this binary"},
 		{"to in PATH is a different binary", selfExe, map[string]string{"to": other}, doctorWarn, "not this binary"},
-		{"ao missing from PATH", selfExe, map[string]string{}, doctorWarn, "not found in PATH"},
+		{"to missing from PATH", selfExe, map[string]string{}, doctorWarn, "not found in PATH"},
 		{"running executable unresolvable", func() (string, error) { return "", errors.New("no exe") }, map[string]string{"to": self}, doctorWarn, "could not resolve"},
 	}
 	for _, tc := range cases {
@@ -359,24 +359,24 @@ func TestDoctorChecksAOBinaryIdentity(t *testing.T) {
 			c := &commandContext{deps: deps.withDefaults()}
 			check := c.checkAOBinary()
 			if check.Level != tc.wantLevel || !strings.Contains(check.Message, tc.wantIn) {
-				t.Fatalf("ao-binary check = %+v, want level %s with %q", check, tc.wantLevel, tc.wantIn)
+				t.Fatalf("to-binary check = %+v, want level %s with %q", check, tc.wantLevel, tc.wantIn)
 			}
 		})
 	}
 }
 
 // TestDoctorIncludesAOBinaryCheck asserts runDoctor actually surfaces the
-// ao-binary check, so the identity probe cannot silently fall out of the report.
+// to-binary check, so the identity probe cannot silently fall out of the report.
 func TestDoctorIncludesAOBinaryCheck(t *testing.T) {
 	setConfigEnv(t)
 	c := doctorContext(t, map[string]string{"git": "/bin/git"}, func(context.Context, string, ...string) ([]byte, error) {
 		return []byte("git version 2.43.0\n"), nil
 	})
 
-	// doctorContext's LookPath has no "ao", so the check lands as a WARN.
+	// doctorContext's LookPath has no "to", so the check lands as a WARN.
 	check := findDoctorCheck(t, c.runDoctor(context.Background()), "to-binary")
 	if check.Level != doctorWarn || !strings.Contains(check.Message, "not found in PATH") {
-		t.Fatalf("ao-binary check = %+v, want WARN for missing ao", check)
+		t.Fatalf("to-binary check = %+v, want WARN for missing to", check)
 	}
 }
 

@@ -199,7 +199,7 @@ func TestActivity_WaitingInputEntryAndExitEmitTelemetry(t *testing.T) {
 	if len(sink.events) != 2 {
 		t.Fatalf("events = %#v, want waiting_input entered/exited", sink.events)
 	}
-	if sink.events[0].Name != "ao.session.waiting_input_entered" || sink.events[1].Name != "ao.session.waiting_input_exited" {
+	if sink.events[0].Name != "to.session.waiting_input_entered" || sink.events[1].Name != "to.session.waiting_input_exited" {
 		t.Fatalf("event names = %#v", []string{sink.events[0].Name, sink.events[1].Name})
 	}
 	if got := sink.events[1].Payload["dwell_ms"]; got != int64(3000) {
@@ -447,8 +447,8 @@ func TestPRObservation_StackedChildConflictSuppressed(t *testing.T) {
 	m, st, msg := newManager()
 	st.sessions["mer-1"] = working("mer-1")
 	st.prs["mer-1"] = []domain.PullRequest{
-		{URL: "parent", SourceBranch: "ao/x", TargetBranch: "main"},
-		{URL: "child", SourceBranch: "ao/x/auth", TargetBranch: "ao/x"},
+		{URL: "parent", SourceBranch: "to/x", TargetBranch: "main"},
+		{URL: "child", SourceBranch: "to/x/auth", TargetBranch: "to/x"},
 	}
 	o := ports.PRObservation{Fetched: true, URL: "child", Mergeability: domain.MergeConflicting}
 	if err := m.ApplyPRObservation(ctx, "mer-1", o); err != nil {
@@ -465,8 +465,8 @@ func TestPRObservation_BottomOfStackConflictNudges(t *testing.T) {
 	m, st, msg := newManager()
 	st.sessions["mer-1"] = working("mer-1")
 	st.prs["mer-1"] = []domain.PullRequest{
-		{URL: "parent", SourceBranch: "ao/x", TargetBranch: "main"},
-		{URL: "child", SourceBranch: "ao/x/auth", TargetBranch: "ao/x"},
+		{URL: "parent", SourceBranch: "to/x", TargetBranch: "main"},
+		{URL: "child", SourceBranch: "to/x/auth", TargetBranch: "to/x"},
 	}
 	o := ports.PRObservation{Fetched: true, URL: "parent", Mergeability: domain.MergeConflicting}
 	if err := m.ApplyPRObservation(ctx, "mer-1", o); err != nil {

@@ -96,7 +96,7 @@ func newProviderForTest(t *testing.T, f *fakeGH) *Provider {
 		HTTPClient: f.server.Client(),
 		RESTBase:   f.server.URL,
 		GraphQLURL: f.server.URL + "/graphql",
-		UserAgent:  "ao-scm-test",
+		UserAgent:  "to-scm-test",
 	})
 	if err != nil {
 		t.Fatalf("NewProvider: %v", err)

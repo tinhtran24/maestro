@@ -26,7 +26,7 @@ const { workspaces, panels } = vi.hoisted(() => {
 		title: "do the thing",
 		provider: "claude-code",
 		kind: "worker",
-		branch: "ao/sess-1",
+		branch: "to/sess-1",
 		status: "working",
 		updatedAt: "2026-06-10T00:00:00Z",
 		prs: [],
@@ -237,7 +237,7 @@ describe("SessionView", () => {
 		// Dragging it back open reopens + persists the width.
 		act(() => entry.onResize?.({ asPercentage: 31.5, inPixels: 400 }));
 		expect(useUiStore.getState().isInspectorOpen).toBe(true);
-		expect(window.localStorage.getItem("ao.inspector.split")).toBe("31.5");
+		expect(window.localStorage.getItem("to.inspector.split")).toBe("31.5");
 	});
 
 	// Regression: rrp v4 reports observed DOM sizes, so the flex-grow
@@ -258,11 +258,11 @@ describe("SessionView", () => {
 		act(() => useUiStore.getState().toggleInspector());
 		act(() => entry.onResize?.({ asPercentage: 12.4, inPixels: 160 }));
 		expect(useUiStore.getState().isInspectorOpen).toBe(false);
-		expect(window.localStorage.getItem("ao.inspector.split")).toBeNull();
+		expect(window.localStorage.getItem("to.inspector.split")).toBeNull();
 	});
 
 	it("restores the persisted split width", () => {
-		window.localStorage.setItem("ao.inspector.split", "40");
+		window.localStorage.setItem("to.inspector.split", "40");
 		render(<SessionView sessionId="sess-1" />);
 		expect(panelSizes("inspector")[0]).toBe("40%");
 	});

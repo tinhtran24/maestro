@@ -59,7 +59,7 @@ func telemetryRecord(id string, at time.Time, projectID *domain.ProjectID, sessi
 	return sqlitestore.TelemetryEventRecord{
 		ID:          id,
 		OccurredAt:  at,
-		Name:        "ao.daemon.started",
+		Name:        "to.daemon.started",
 		Source:      "daemon",
 		Level:       "info",
 		ProjectID:   projectID,

@@ -1,8 +1,8 @@
-# End-to-end CLI smoke test, modelling "install ao on a fresh machine, then use it".
+# End-to-end CLI smoke test, modelling "install to on a fresh machine, then use it".
 #
 # Build context is the REPO ROOT:
-#   docker build -f test/cli/Dockerfile -t ao-cli-smoke .
-#   docker run --rm --init ao-cli-smoke
+#   docker build -f test/cli/Dockerfile -t to-cli-smoke .
+#   docker run --rm --init to-cli-smoke
 #
 # `to start` is now the desktop-app launcher (it no longer runs a daemon); the
 # fresh-box check just proves the binary is sane and start reaches the fetch
@@ -24,7 +24,7 @@ COPY backend ./backend
 # exit 0, defeating the fresh-install assertion below. See install-check.sh.
 RUN cd backend && CGO_ENABLED=0 go build -trimpath \
       -ldflags "-X github.com/tinhtran/thanos/backend/internal/cli.releaseRepo=AgentWrapper/thanos-fresh-install-fixture" \
-      -o /out/ao ./cmd/ao
+      -o /out/to ./cmd/to
 
 # ---- stage 2: a clean machine with NO Go toolchain, just like an end user ----
 FROM debian:bookworm-slim AS run
@@ -37,16 +37,16 @@ RUN apt-get update \
  && rm -rf /var/lib/apt/lists/*
 
 # "Install" the CLI the way a user would: drop the binary on PATH.
-COPY --from=build /out/ao /usr/local/bin/ao
-COPY test/cli/install-check.sh /usr/local/bin/ao-install-check.sh
-RUN chmod +x /usr/local/bin/ao /usr/local/bin/ao-install-check.sh
+COPY --from=build /out/to /usr/local/bin/to
+COPY test/cli/install-check.sh /usr/local/bin/to-install-check.sh
+RUN chmod +x /usr/local/bin/to /usr/local/bin/to-install-check.sh
 
 # Run as an unprivileged user with a real HOME, like a normal install.
-RUN useradd --create-home --shell /bin/bash ao
-USER ao
-WORKDIR /home/ao
+RUN useradd --create-home --shell /bin/bash to
+USER to
+WORKDIR /home/to
 
 # Sanity: prove the install resolved before the check runs.
 RUN to version
 
-ENTRYPOINT ["/usr/local/bin/ao-install-check.sh"]
+ENTRYPOINT ["/usr/local/bin/to-install-check.sh"]

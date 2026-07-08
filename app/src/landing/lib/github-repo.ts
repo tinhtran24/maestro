@@ -18,7 +18,7 @@ export async function getGitHubRepoStats(): Promise<GitHubRepoStats> {
 			next: { revalidate: 3600 },
 			headers: {
 				Accept: "application/vnd.github+json",
-				"User-Agent": "ao-website",
+				"User-Agent": "to-website",
 			},
 		});
 

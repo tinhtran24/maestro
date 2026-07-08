@@ -88,7 +88,7 @@ export function useBrowserView({
 	const observerRef = useRef<ResizeObserver | null>(null);
 	const previewTriggerRef = useRef<{ revision: number | null; target: string } | null>(null);
 	const hasUrlRef = useRef(false);
-	const hasNativeBrowser = Boolean(window.ao?.browser);
+	const hasNativeBrowser = Boolean(window.to?.browser);
 
 	useEffect(() => {
 		activeRef.current = active;
@@ -100,7 +100,7 @@ export function useBrowserView({
 
 	const sendHiddenBounds = useCallback((id = viewIdRef.current) => {
 		if (!id) return;
-		window.ao?.browser.setBounds({ viewId: id, rect: HIDDEN_RECT, visible: false });
+		window.to?.browser.setBounds({ viewId: id, rect: HIDDEN_RECT, visible: false });
 	}, []);
 
 	const measureAndSend = useCallback(() => {
@@ -118,7 +118,7 @@ export function useBrowserView({
 			rect,
 			visible: rect.width > 0 && rect.height > 0,
 		};
-		window.ao?.browser.setBounds(payload);
+		window.to?.browser.setBounds(payload);
 	}, [sendHiddenBounds]);
 
 	const cancelScheduledMeasure = useCallback(() => {
@@ -192,7 +192,7 @@ export function useBrowserView({
 				viewIdRef.current = "";
 			};
 		}
-		window.ao?.browser.ensure(sessionId).then((state) => {
+		window.to?.browser.ensure(sessionId).then((state) => {
 			if (disposed) return;
 			viewIdRef.current = state.viewId;
 			setViewId(state.viewId);
@@ -210,7 +210,7 @@ export function useBrowserView({
 	}, [hasNativeBrowser, scheduleSettleMeasure, sendHiddenBounds, sessionId]);
 
 	useEffect(() => {
-		return window.ao?.browser.onNavState((state) => {
+		return window.to?.browser.onNavState((state) => {
 			if (state.viewId !== viewIdRef.current) return;
 			setNavState(state);
 		});
@@ -256,7 +256,7 @@ export function useBrowserView({
 				}));
 				return Promise.resolve();
 			}
-			return withView((id) => window.ao!.browser.navigate({ viewId: id, url }));
+			return withView((id) => window.to!.browser.navigate({ viewId: id, url }));
 		},
 		[hasNativeBrowser, withView],
 	);
@@ -266,7 +266,7 @@ export function useBrowserView({
 			setNavState((current) => ({ ...current, url: "", title: "", isLoading: false }));
 			return Promise.resolve();
 		}
-		return withView((id) => window.ao!.browser.clear(id));
+		return withView((id) => window.to!.browser.clear(id));
 	}, [hasNativeBrowser, withView]);
 
 	// When the session is terminated, clear the view and stop reacting to
@@ -298,7 +298,7 @@ export function useBrowserView({
 		const id = viewIdRef.current;
 		if (!id) return;
 		sendHiddenBounds(id);
-		window.ao?.browser.destroy(id);
+		window.to?.browser.destroy(id);
 		viewIdRef.current = "";
 	}, [sendHiddenBounds]);
 
@@ -307,10 +307,10 @@ export function useBrowserView({
 		navState,
 		slotRef,
 		navigate,
-		goBack: () => (hasNativeBrowser ? withView((id) => window.ao!.browser.goBack(id)) : Promise.resolve()),
-		goForward: () => (hasNativeBrowser ? withView((id) => window.ao!.browser.goForward(id)) : Promise.resolve()),
-		reload: () => (hasNativeBrowser ? withView((id) => window.ao!.browser.reload(id)) : Promise.resolve()),
-		stop: () => (hasNativeBrowser ? withView((id) => window.ao!.browser.stop(id)) : Promise.resolve()),
+		goBack: () => (hasNativeBrowser ? withView((id) => window.to!.browser.goBack(id)) : Promise.resolve()),
+		goForward: () => (hasNativeBrowser ? withView((id) => window.to!.browser.goForward(id)) : Promise.resolve()),
+		reload: () => (hasNativeBrowser ? withView((id) => window.to!.browser.reload(id)) : Promise.resolve()),
+		stop: () => (hasNativeBrowser ? withView((id) => window.to!.browser.stop(id)) : Promise.resolve()),
 		destroy,
 	};
 }

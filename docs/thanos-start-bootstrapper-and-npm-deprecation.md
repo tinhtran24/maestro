@@ -1,11 +1,11 @@
 # `to start` Bootstrapper + npm Deprecation: Implementation Spec
 
 > **Status:** ready for build (Track A). Grounded against the real codebase on
-> branch `feat/ao-start-bootstrapper` (= `upstream/main` + PR #2185) on 2026-06-26.
+> branch `feat/to-start-bootstrapper` (= `upstream/main` + PR #2185) on 2026-06-26.
 > Every "current state" claim carries a `file:line` reference.
 >
-> **This is NOT a new JS launcher package.** The `ao` binary that npm ships is the
-> existing Go cobra CLI (`backend/cmd/ao`). This effort rewrites one subcommand,
+> **This is NOT a new JS launcher package.** The `to` binary that npm ships is the
+> existing Go cobra CLI (`backend/cmd/to`). This effort rewrites one subcommand,
 > `to start`, to fetch and open the desktop app. Everything else in the CLI is
 > already wired and rides along.
 
@@ -13,10 +13,10 @@
 
 ## 0. Goal
 
-npm `ao` is the **legacy on-ramp** for users who already have `ao` on their PATH.
+npm `to` is the **legacy on-ramp** for users who already have `to` on their PATH.
 We are deprecating npm as an app-distribution path:
 
-- `npm update` swaps in our **new Go `ao` binary** (the whole CLI), replacing the
+- `npm update` swaps in our **new Go `to` binary** (the whole CLI), replacing the
   old one in place. No fresh-install story; the audience is existing users.
 - The **`to start`** subcommand is rewritten: instead of starting a daemon, it
   **fetches the desktop app from GitHub Releases and opens it**.
@@ -67,7 +67,7 @@ Setup.exe` (per-user installer); Linux `maker-deb`/`maker-rpm` →
 
 - Frontend `frontend/package.json` `version: "0.0.0"`; daemon
   `backend/internal/cli/version.go:12` `Version = "dev"`; `build-daemon.mjs` runs
-  `go build ./cmd/ao` with **no `-ldflags`**. No real semver anywhere.
+  `go build ./cmd/to` with **no `-ldflags`**. No real semver anywhere.
 
 ### 1.4 Signing / notarization / auto-update
 
@@ -97,21 +97,21 @@ Setup.exe` (per-user installer); Linux `maker-deb`/`maker-rpm` →
 
 ### 1.6 npm delivery of the Go binary (the packaging gap)
 
-- The `ao` binary is `backend/cmd/ao` (`cmd/ao/main.go` → `cli.Execute()`); the
+- The `to` binary is `backend/cmd/to` (`cmd/to/main.go` → `cli.Execute()`); the
   same binary serves as both the CLI and `to daemon`. `build-daemon.mjs` builds it
-  to `frontend/daemon/ao` and bundles it into the desktop app.
-- **This repo has no npm-registry publish path for the `ao` binary** (only
+  to `frontend/daemon/to` and bundles it into the desktop app.
+- **This repo has no npm-registry publish path for the `to` binary** (only
   electron-forge → GitHub Releases; no `NPM_TOKEN`, no publish workflow — research
-  confirmed). The old Thanos npm package shipped `ao` via npm; that delivery mechanism
+  confirmed). The old Thanos npm package shipped `to` via npm; that delivery mechanism
   must be **ported/rebuilt here** (task T2). To honor "zero install scripts"
   (npm v12, est. July 2026, blocks unapproved install scripts), the Go binary
   should ship via **per-platform `optionalDependencies` packages** (the
   esbuild/turbo model: a tiny JS `bin` shim execs the right prebuilt binary), not
   via a `postinstall` download.
 
-### 1.7 The Go `ao` CLI surface (already wired)
+### 1.7 The Go `to` CLI surface (already wired)
 
-`backend/cmd/ao/main.go` → `backend/internal/cli`. Cobra root (`root.go:154-202`)
+`backend/cmd/to/main.go` → `backend/internal/cli`. Cobra root (`root.go:154-202`)
 registers **all** of: `daemon` (hidden), **`start`**, `stop`, `status`, `doctor`,
 `spawn`, `send`, `preview`, `hooks`, `launch`, `ptyhost`, `import`, `project`,
 `session`, `orchestrator`, `review`, `completion`, `version`. These are real
@@ -132,17 +132,17 @@ waits for ready) and runs a first-boot legacy import (`maybeFirstBootImport`,
 2. **`to start` = fetch + open the desktop app.** It no longer starts the daemon;
    the frontend owns the daemon. The current daemon-spawn logic in `start.go` is
    removed.
-3. **npm ships the Go `ao` binary**; existing users update in place. No JS launcher
+3. **npm ships the Go `to` binary**; existing users update in place. No JS launcher
    package.
 4. **Marker = `~/.thanos/app-state.json`**, written only by the app, every launch.
 5. **Scope = Track A only** (de-scope auto-update copy; Track B is separate).
 6. **All three platforms; Windows installer is NSIS.**
 7. **Two release targets, never conflated:**
    - **Production:** GitHub `AgentWrapper/thanos`; npm = the real
-     package name (legacy `ao`). Cutting a prod release is a deliberate, gated
+     package name (legacy `to`). Cutting a prod release is a deliberate, gated
      step, never part of the dev/test loop.
    - **Test/dev:** GitHub **`harshitsinghbhandari/thanos`** (the fork);
-     npm scope **`@theharshitsingh/ao`**. All `to start` download/open testing runs
+     npm scope **`@theharshitsingh/to`**. All `to start` download/open testing runs
      against fork releases and the test npm scope.
      The download repo and npm scope are **build-time overridable** (§6.3, §8) so a
      test binary fetches from the fork and a prod binary from AgentWrapper, with no
@@ -283,11 +283,11 @@ AgentWrapper, with no source edit.
 `to start` currently runs `maybeFirstBootImport` (`start.go:84`, imports a legacy
 Thanos install before the daemon starts). With the daemon-spawn removed, this must
 move. Options (decide §11): (a) the **desktop app** runs the import when it first
-boots its daemon; (b) drop it from `to start` and rely on the standalone `ao
+boots its daemon; (b) drop it from `to start` and rely on the standalone `to
 import` command (still wired). Recommended: (a), so the on-ramp still migrates
 existing data.
 
-### 6.5 Other subcommands / bare `ao`
+### 6.5 Other subcommands / bare `to`
 
 Unchanged — they stay wired and talk to the app-owned daemon's loopback API. Add a
 one-line deprecation hint to the root long-help noting that npm is now an on-ramp
@@ -366,8 +366,8 @@ website.
 
 | #   | Scenario                                                  | Expected                                                                                                                                                    |
 | --- | --------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1   | `npm i -g @theharshitsingh/ao` (test scope)               | Zero `allow-scripts` warning; nothing listed by `npm approve-scripts --allow-scripts-pending`.                                                              |
-| 2   | `npm i -g @theharshitsingh/ao --ignore-scripts` (v12 sim) | Install succeeds; `ao` runs; `to start` works (binary delivered via optionalDeps, not a script).                                                            |
+| 1   | `npm i -g @theharshitsingh/to` (test scope)               | Zero `allow-scripts` warning; nothing listed by `npm approve-scripts --allow-scripts-pending`.                                                              |
+| 2   | `npm i -g @theharshitsingh/to --ignore-scripts` (v12 sim) | Install succeeds; `to` runs; `to start` works (binary delivered via optionalDeps, not a script).                                                            |
 | 3   | Fresh macOS `to start`                                    | Fetches `.zip`, `ditto`-unpacks, opens `Thanos.app`; app relocates to `/Applications`; `~/.thanos/app-state.json` records the `/Applications` path. |
 | 4   | Website install first, then `to start`                    | Known-location scan finds it; opens; no second copy fetched.                                                                                                |
 | 5   | App trashed (marker stale), then `to start`               | Marker `stat` misses → scan misses → re-fetch.                                                                                                              |
@@ -388,8 +388,8 @@ website.
 
 1. **npm delivery mechanism** for the Go binary: per-platform `optionalDependencies`
    packages (recommended, zero-install-script) vs porting whatever the old Thanos
-   package did. Test scope is **`@theharshitsingh/ao`**; the **prod package name**
-   (the legacy `ao` users already have) still needs confirming, plus an `NPM_TOKEN`
+   package did. Test scope is **`@theharshitsingh/to`**; the **prod package name**
+   (the legacy `to` users already have) still needs confirming, plus an `NPM_TOKEN`
    - publish workflow for each.
 2. **Legacy first-boot import** (§6.4): move into the desktop app, or drop from
    `to start` and rely on `to import`?
@@ -416,8 +416,8 @@ website.
   `to start` opens it and writes nothing; with it absent, it fetches+opens.
 - **T2. npm delivery of the Go binary.** Per §11.1: optionalDeps platform packages
   - JS `bin` shim, zero install scripts; publish workflow. **Publish to the
-    `@theharshitsingh/ao` test scope**, not the prod package. Check: `npm i -g
-@theharshitsingh/ao --ignore-scripts` yields a working `ao`.
+    `@theharshitsingh/to` test scope**, not the prod package. Check: `npm i -g
+@theharshitsingh/to --ignore-scripts` yields a working `to`.
 - **T3. Release repo + asset wiring (override-driven).** Make the forge publisher
   repo + the `to start` download repo build-time overridable (§6.3, §8); add the
   stable-asset rename step; finalize the draft (§11.4); add Linux to the matrix.
@@ -431,8 +431,8 @@ website.
 - **T4. App-side marker + relocation** (`main.ts whenReady`, §7.1). Check: a
   packaged launch writes/updates `~/.thanos/app-state.json` with the real bundle path.
 - **T5. macOS `to start` end-to-end against the FORK release** (needs T3): build the
-  test `ao` with `cli.releaseRepo=harshitsinghbhandari/thanos`, install
-  it from `@theharshitsingh/ao`, run `to start`. Check: acceptance #3–#7 on a mac,
+  test `to` with `cli.releaseRepo=harshitsinghbhandari/thanos`, install
+  it from `@theharshitsingh/to`, run `to start`. Check: acceptance #3–#7 on a mac,
   fetching from the fork.
 
 **Batch 3 — cross-platform + integrity (after T1/T3):**

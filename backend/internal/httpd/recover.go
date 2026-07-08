@@ -33,7 +33,7 @@ func recoverTelemetry(log *slog.Logger, sink ports.EventSink) func(http.Handler)
 						path := telemetrymeta.RoutePattern(r)
 						panicKind := telemetrymeta.PanicKind(rec)
 						sink.Emit(r.Context(), ports.TelemetryEvent{
-							Name:       "ao.daemon.panic",
+							Name:       "to.daemon.panic",
 							Source:     "http",
 							OccurredAt: time.Now().UTC(),
 							Level:      ports.TelemetryLevelError,

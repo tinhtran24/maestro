@@ -208,13 +208,13 @@ func TestStartTrackerIntake_RunsEvenWithoutEnabledProjects(t *testing.T) {
 }
 
 func TestTrackerTokenSourcePrefersAOGitHubToken(t *testing.T) {
-	t.Setenv("THANOS_GITHUB_TOKEN", "ao-token")
+	t.Setenv("THANOS_GITHUB_TOKEN", "to-token")
 	t.Setenv("GITHUB_TOKEN", "github-token")
 	token, err := (&trackerTokenSource{}).Token(context.Background())
 	if err != nil {
 		t.Fatal(err)
 	}
-	if token != "ao-token" {
+	if token != "to-token" {
 		t.Fatalf("token = %q, want THANOS_GITHUB_TOKEN", token)
 	}
 }
@@ -230,7 +230,7 @@ func (c *captureRuntimeSender) SendMessage(_ context.Context, handle ports.Runti
 	return nil
 }
 
-// TestWiring_SessionMessengerSendsToRuntimePane asserts the daemon wires ao
+// TestWiring_SessionMessengerSendsToRuntimePane asserts the daemon wires to
 // send to the live runtime pane and resolves the handle from the shared store.
 func TestWiring_SessionMessengerSendsToRuntimePane(t *testing.T) {
 	store, err := sqlite.Open(t.TempDir())
@@ -249,7 +249,7 @@ func TestWiring_SessionMessengerSendsToRuntimePane(t *testing.T) {
 	rec, err := store.CreateSession(ctx, domain.SessionRecord{
 		ProjectID: "p", Kind: domain.KindWorker,
 		Activity: domain.Activity{State: domain.ActivityIdle, LastActivityAt: time.Now()},
-		Metadata: domain.SessionMetadata{RuntimeHandleID: "ao-1/terminal_0"},
+		Metadata: domain.SessionMetadata{RuntimeHandleID: "to-1/terminal_0"},
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -257,8 +257,8 @@ func TestWiring_SessionMessengerSendsToRuntimePane(t *testing.T) {
 	if err := messenger.Send(ctx, rec.ID, "hello agent"); err != nil {
 		t.Fatalf("messenger.Send: %v", err)
 	}
-	if runtime.handle.ID != "ao-1/terminal_0" {
-		t.Fatalf("handle = %q, want ao-1/terminal_0", runtime.handle.ID)
+	if runtime.handle.ID != "to-1/terminal_0" {
+		t.Fatalf("handle = %q, want to-1/terminal_0", runtime.handle.ID)
 	}
 	if runtime.message != "hello agent" {
 		t.Fatalf("message = %q, want hello agent", runtime.message)
@@ -319,7 +319,7 @@ func TestWiring_SessionMessengerRejectsTerminatedSession(t *testing.T) {
 		ProjectID: "p", Kind: domain.KindWorker,
 		IsTerminated: true,
 		Activity:     domain.Activity{State: domain.ActivityIdle, LastActivityAt: time.Now()},
-		Metadata:     domain.SessionMetadata{RuntimeHandleID: "ao-1/terminal_0"},
+		Metadata:     domain.SessionMetadata{RuntimeHandleID: "to-1/terminal_0"},
 	})
 	if err != nil {
 		t.Fatal(err)

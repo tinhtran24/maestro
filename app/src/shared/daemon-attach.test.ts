@@ -62,11 +62,11 @@ describe("parseDaemonProbe", () => {
 	});
 
 	it("accepts a well-formed readyz body and carries identity fields", () => {
-		expect(parseDaemonProbe("readyz", { ...readyBody, executablePath: "/bin/ao", workingDirectory: "/work" })).toEqual({
+		expect(parseDaemonProbe("readyz", { ...readyBody, executablePath: "/bin/to", workingDirectory: "/work" })).toEqual({
 			status: "ready",
 			service: DAEMON_SERVICE_NAME,
 			pid: 4242,
-			executablePath: "/bin/ao",
+			executablePath: "/bin/to",
 			workingDirectory: "/work",
 		});
 	});
@@ -206,7 +206,7 @@ describe("resolveDaemonFromRunFile", () => {
 					status: "ready",
 					service: DAEMON_SERVICE_NAME,
 					pid: 4242,
-					executablePath: "/bin/ao",
+					executablePath: "/bin/to",
 					workingDirectory: "/work/backend",
 				},
 			}),
@@ -216,7 +216,7 @@ describe("resolveDaemonFromRunFile", () => {
 			state: "ready",
 			port: 3037,
 			pid: 4242,
-			executablePath: "/bin/ao",
+			executablePath: "/bin/to",
 			workingDirectory: "/work/backend",
 		});
 	});
@@ -241,7 +241,7 @@ describe("resolveDaemonFromPort", () => {
 					status: "ready",
 					service: DAEMON_SERVICE_NAME,
 					pid: 777,
-					executablePath: "/bin/ao",
+					executablePath: "/bin/to",
 					workingDirectory: "/work",
 				},
 			}),
@@ -251,7 +251,7 @@ describe("resolveDaemonFromPort", () => {
 			state: "ready",
 			port: 3001,
 			pid: 777,
-			executablePath: "/bin/ao",
+			executablePath: "/bin/to",
 			workingDirectory: "/work",
 		});
 	});
@@ -281,10 +281,10 @@ describe("resolveDaemonFromPort", () => {
 			expectedPort: 3001,
 			probe: fakeProbe({
 				"3001:healthz": { status: "ok", service: DAEMON_SERVICE_NAME, pid: 777 },
-				"3001:readyz": { status: "ready", service: DAEMON_SERVICE_NAME, pid: 777, executablePath: "/old/ao" },
+				"3001:readyz": { status: "ready", service: DAEMON_SERVICE_NAME, pid: 777, executablePath: "/old/to" },
 			}),
 			identityError: (probe) =>
-				probe.executablePath === "/new/ao"
+				probe.executablePath === "/new/to"
 					? null
 					: `Another Thanos daemon is already running from ${probe.executablePath}.`,
 		});
@@ -292,7 +292,7 @@ describe("resolveDaemonFromPort", () => {
 			state: "error",
 			port: 3001,
 			pid: 777,
-			message: "Another Thanos daemon is already running from /old/ao.",
+			message: "Another Thanos daemon is already running from /old/to.",
 		});
 	});
 
@@ -429,13 +429,13 @@ describe("end-to-end against a real daemon server", () => {
 	// identity check must surface an error rather than silently attach — the same
 	// guard the run-file path enforces, now enforced on the port-probe path too.
 	it("surfaces an identity error for a foreign Thanos binary serving the port (does not silently attach)", async () => {
-		const port = await startServer({ pid: 909, executablePath: "/old/build/ao", workingDirectory: "/old/build" });
+		const port = await startServer({ pid: 909, executablePath: "/old/build/to", workingDirectory: "/old/build" });
 		const result = await startupDecision({
 			runFileContents: null, // run-file diverged, so we reach the port probe
 			isProcessAlive: ALIVE,
 			expectedPort: port,
 			identityError: (probe) =>
-				probe.executablePath === "/expected/ao"
+				probe.executablePath === "/expected/to"
 					? null
 					: `Another Thanos daemon is already running from ${probe.executablePath}.`,
 		});
@@ -443,7 +443,7 @@ describe("end-to-end against a real daemon server", () => {
 			state: "error",
 			port,
 			pid: 909,
-			message: "Another Thanos daemon is already running from /old/build/ao.",
+			message: "Another Thanos daemon is already running from /old/build/to.",
 		});
 	});
 
@@ -452,7 +452,7 @@ describe("end-to-end against a real daemon server", () => {
 	// crashed launch). Pre-fix this fell through to spawn() and the Go child
 	// refused with exit 1. Post-fix the port probe attaches instead.
 	it("attaches when a daemon serves the port but the run-file names a dead pid", async () => {
-		const port = await startServer({ pid: 6060, executablePath: "/bin/ao" });
+		const port = await startServer({ pid: 6060, executablePath: "/bin/to" });
 		const result = await startupDecision({
 			runFileContents: runFile(4242, port), // stale pid 4242 ...
 			isProcessAlive: DEAD, // ... which is no longer alive
@@ -462,7 +462,7 @@ describe("end-to-end against a real daemon server", () => {
 			state: "ready",
 			port,
 			pid: 6060, // attached to the daemon actually serving the port
-			executablePath: "/bin/ao",
+			executablePath: "/bin/to",
 			workingDirectory: undefined,
 		});
 	});
@@ -482,7 +482,7 @@ describe("end-to-end against a real daemon server", () => {
 	it("still attaches via the run-file path when everything agrees (no regression)", async () => {
 		const port = await startServer({
 			pid: 4242,
-			executablePath: "/work/backend/ao",
+			executablePath: "/work/backend/to",
 			workingDirectory: "/work/backend",
 		});
 		const result = await startupDecision({

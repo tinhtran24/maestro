@@ -262,7 +262,7 @@ func (m *Service) emitProjectAdded(row domain.ProjectRecord, firstProject bool) 
 		"has_git_remote": row.RepoOriginURL != "",
 	}
 	m.telemetry.Emit(context.Background(), ports.TelemetryEvent{
-		Name:       "ao.projects.created",
+		Name:       "to.projects.created",
 		Source:     "project_service",
 		OccurredAt: at,
 		Level:      ports.TelemetryLevelInfo,
@@ -273,7 +273,7 @@ func (m *Service) emitProjectAdded(row domain.ProjectRecord, firstProject bool) 
 		return
 	}
 	m.telemetry.Emit(context.Background(), ports.TelemetryEvent{
-		Name:       "ao.onboarding.first_project_added",
+		Name:       "to.onboarding.first_project_added",
 		Source:     "project_service",
 		OccurredAt: at,
 		Level:      ports.TelemetryLevelInfo,
@@ -468,7 +468,7 @@ var projectIDPattern = regexp.MustCompile(`^[A-Za-z0-9][A-Za-z0-9._-]*$`)
 func validateProjectID(id domain.ProjectID) error {
 	raw := string(id)
 	// Reject any "." run: a "." prefix fails the pattern, but an embedded ".."
-	// (e.g. "a..b") passes it yet yields a branch like "ao/a..b-1" that git's
+	// (e.g. "a..b") passes it yet yields a branch like "to/a..b-1" that git's
 	// check-ref-format rejects — surfacing as an opaque 500 at spawn time.
 	if raw == "" || raw == "." || strings.Contains(raw, "..") || strings.ContainsAny(raw, `/\`) || !projectIDPattern.MatchString(raw) {
 		return apierr.Invalid("INVALID_PROJECT_ID", "Project id failed storage-path validation", nil)
@@ -488,7 +488,7 @@ func resolveSessionPrefix(row domain.ProjectRecord) string {
 
 func sessionPrefix(id string) string {
 	if id == "" {
-		return "ao"
+		return "to"
 	}
 	if len(id) <= 12 {
 		return id

@@ -11,8 +11,8 @@
 // The native session id (and prompt/model where known) is piped to the hook
 // command as JSON on stdin, run with cwd set to the worktree so Thanos can correlate
 // the Kilo session to its Thanos session. Every invocation is best-effort and must
-// never crash the user's Kilo session: a missing `ao` binary is a guarded no-op
-// (`command -v ao`), and spawn exceptions, non-zero exit codes, and malformed
+// never crash the user's Kilo session: a missing `to` binary is a guarded no-op
+// (`command -v to`), and spawn exceptions, non-zero exit codes, and malformed
 // event payloads are caught and surfaced through Kilo's structured logger
 // (client.app.log) for diagnosis — never rethrown.
 //
@@ -47,10 +47,10 @@ export const aoActivity: Plugin = async ({ directory, client }) => {
     }
   }
 
-  // Wrap in `sh -c` with a guard so a missing `ao` binary is a silent no-op
+  // Wrap in `sh -c` with a guard so a missing `to` binary is a silent no-op
   // (exit 0) rather than a per-event error in the user's session.
   function hookCmd(hookName: string): string[] {
-    return ["sh", "-c", `if ! command -v ao >/dev/null 2>&1; then exit 0; fi; exec to hooks kilocode ${hookName}`]
+    return ["sh", "-c", `if ! command -v to >/dev/null 2>&1; then exit 0; fi; exec to hooks kilocode ${hookName}`]
   }
 
   // Report a hook failure through Kilo's structured logger. Best-effort: the
@@ -76,7 +76,7 @@ export const aoActivity: Plugin = async ({ directory, client }) => {
   //   2. `kilo run` exits on the idle event, so an async stop hook would be
   //      killed before completing.
   //
-  // A non-zero exit (the guard makes a missing `ao` exit 0, so this is a real
+  // A non-zero exit (the guard makes a missing `to` exit 0, so this is a real
   // `to hooks` failure) or a spawn exception is logged with its stderr and never
   // rethrown, so reporting failures are diagnosable without crashing Kilo.
   function callHookSync(hookName: string, payload: Record<string, unknown>) {

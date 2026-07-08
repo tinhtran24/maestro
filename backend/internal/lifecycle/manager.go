@@ -182,7 +182,7 @@ func (m *Manager) waitingInputEvents(next domain.SessionRecord, prevState domain
 	var events []ports.TelemetryEvent
 	if prevState != domain.ActivityWaitingInput && next.Activity.State == domain.ActivityWaitingInput && !next.IsTerminated {
 		events = append(events, ports.TelemetryEvent{
-			Name:       "ao.session.waiting_input_entered",
+			Name:       "to.session.waiting_input_entered",
 			Source:     "lifecycle",
 			OccurredAt: now.UTC(),
 			Level:      ports.TelemetryLevelInfo,
@@ -200,7 +200,7 @@ func (m *Manager) waitingInputEvents(next domain.SessionRecord, prevState domain
 			"exited_to": string(next.Activity.State),
 		}
 		events = append(events, ports.TelemetryEvent{
-			Name:       "ao.session.waiting_input_exited",
+			Name:       "to.session.waiting_input_exited",
 			Source:     "lifecycle",
 			OccurredAt: now.UTC(),
 			Level:      ports.TelemetryLevelInfo,

@@ -19,7 +19,7 @@ Point it at any HTTPS endpoint. Thanos POSTs a JSON event. Use this for PagerDut
 Run the setup command:
 
 ```bash
-ao setup webhook
+to setup webhook
 ```
 
 If a webhook notifier is already configured, the command asks whether to use the
@@ -35,7 +35,7 @@ receive: `urgent-only`, `urgent-action`, or `all`. For scriptable setup, pass
 notifiers:
   webhook:
     plugin: webhook
-    url: https://example.com/ao-events
+    url: https://example.com/to-events
     headers:
       Authorization: "Bearer ${MY_TOKEN}"
       X-Source: "thanos"

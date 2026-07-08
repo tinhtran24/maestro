@@ -124,7 +124,7 @@ The orchestrator prompt, injected by `to start`, enforces the following rules:
 - **Monitors with `to status`.** Gets a live view of every session's PR, CI, and review state across all projects.
 - **Cleans up via `to session kill` and `to session cleanup`.** Removes dead or merged sessions.
 
-The orchestrator is itself a long-running agent session (`<prefix>-orchestrator`) launched with `to start`. It has access to all `ao` CLI commands and your project configuration but is explicitly prohibited from owning a branch or PR.
+The orchestrator is itself a long-running agent session (`<prefix>-orchestrator`) launched with `to start`. It has access to all `to` CLI commands and your project configuration but is explicitly prohibited from owning a branch or PR.
 
 ## Role metadata
 

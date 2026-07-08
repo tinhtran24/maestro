@@ -1,4 +1,4 @@
-// Package cli implements the user-facing ao command. It stays thin: commands
+// Package cli implements the user-facing to command. It stays thin: commands
 // discover the local daemon, call its loopback HTTP API, and format output.
 package cli
 
@@ -19,7 +19,7 @@ import (
 	"github.com/tinhtran/thanos/backend/internal/processalive"
 )
 
-// Execute runs the ao CLI with process stdio.
+// Execute runs the to CLI with process stdio.
 func Execute() error {
 	return executeWithDeps(DefaultDeps(), os.Args[1:])
 }
@@ -236,7 +236,7 @@ func (c *commandContext) emitCLIUsageError(ctx context.Context, args []string, e
 }
 
 func usageErrorCommand(args []string) (string, string) {
-	tokens := []string{"ao"}
+	tokens := []string{"to"}
 	for _, arg := range args {
 		if strings.HasPrefix(arg, "-") {
 			break
@@ -244,7 +244,7 @@ func usageErrorCommand(args []string) (string, string) {
 		tokens = append(tokens, arg)
 	}
 	commandPath := strings.Join(tokens, " ")
-	command := "ao"
+	command := "to"
 	if len(tokens) > 1 {
 		command = tokens[len(tokens)-1]
 	}

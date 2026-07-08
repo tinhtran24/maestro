@@ -12,7 +12,7 @@ const demoPr = (
 	review: PullRequestFacts["review"] = "none",
 	mergeability: PullRequestFacts["mergeability"] = "mergeable",
 ): PullRequestFacts => ({
-	url: `https://github.com/acme-inc/ao-demo/pull/${number}`,
+	url: `https://github.com/acme-inc/to-demo/pull/${number}`,
 	number,
 	state,
 	ci,
@@ -24,18 +24,18 @@ const demoPr = (
 
 export const mockWorkspaces: WorkspaceSummary[] = [
 	{
-		id: "ao-demo",
-		name: "ao-demo",
-		path: "/demo/ao-demo",
+		id: "to-demo",
+		name: "to-demo",
+		path: "/demo/to-demo",
 		type: "main",
 		orchestratorAgent: "codex",
 		accentColor: "#6ee7b7",
 		sessions: [
 			{
-				id: "ao-demo-orchestrator",
-				terminalHandleId: "ao-demo-orchestrator/terminal_0",
-				workspaceId: "ao-demo",
-				workspaceName: "ao-demo",
+				id: "to-demo-orchestrator",
+				terminalHandleId: "to-demo-orchestrator/terminal_0",
+				workspaceId: "to-demo",
+				workspaceName: "to-demo",
 				title: "Project orchestrator",
 				provider: "codex",
 				kind: "orchestrator",
@@ -49,8 +49,8 @@ export const mockWorkspaces: WorkspaceSummary[] = [
 			{
 				id: "demo-working",
 				terminalHandleId: "demo-working/terminal_0",
-				workspaceId: "ao-demo",
-				workspaceName: "ao-demo",
+				workspaceId: "to-demo",
+				workspaceName: "to-demo",
 				title: "Build screenshot-ready dashboard data",
 				provider: "codex",
 				branch: "demo/dashboard-screenshot",
@@ -69,8 +69,8 @@ export const mockWorkspaces: WorkspaceSummary[] = [
 			{
 				id: "demo-needs-input",
 				terminalHandleId: "demo-needs-input/terminal_0",
-				workspaceId: "ao-demo",
-				workspaceName: "ao-demo",
+				workspaceId: "to-demo",
+				workspaceName: "to-demo",
 				title: "Resolve reviewer feedback on terminal polish",
 				provider: "claude-code",
 				branch: "demo/terminal-polish",
@@ -89,8 +89,8 @@ export const mockWorkspaces: WorkspaceSummary[] = [
 			{
 				id: "demo-review-stack",
 				terminalHandleId: "demo-review-stack/terminal_0",
-				workspaceId: "ao-demo",
-				workspaceName: "ao-demo",
+				workspaceId: "to-demo",
+				workspaceName: "to-demo",
 				title: "Review stacked browser preview flow",
 				provider: "codex",
 				branch: "demo/browser-preview-stack",
@@ -116,8 +116,8 @@ export const mockWorkspaces: WorkspaceSummary[] = [
 			{
 				id: "demo-in-review",
 				terminalHandleId: "demo-in-review/terminal_0",
-				workspaceId: "ao-demo",
-				workspaceName: "ao-demo",
+				workspaceId: "to-demo",
+				workspaceName: "to-demo",
 				title: "Wait for CI on project settings copy",
 				provider: "opencode",
 				branch: "demo/project-settings-copy",
@@ -131,8 +131,8 @@ export const mockWorkspaces: WorkspaceSummary[] = [
 			{
 				id: "demo-ready",
 				terminalHandleId: "demo-ready/terminal_0",
-				workspaceId: "ao-demo",
-				workspaceName: "ao-demo",
+				workspaceId: "to-demo",
+				workspaceName: "to-demo",
 				title: "Merge README screenshot asset update",
 				provider: "codex",
 				branch: "demo/readme-assets",
@@ -150,8 +150,8 @@ export const mockWorkspaces: WorkspaceSummary[] = [
 			{
 				id: "demo-ci-failed",
 				terminalHandleId: "demo-ci-failed/terminal_0",
-				workspaceId: "ao-demo",
-				workspaceName: "ao-demo",
+				workspaceId: "to-demo",
+				workspaceName: "to-demo",
 				title: "Fix flaky NewTaskDialog smoke test",
 				provider: "codex",
 				branch: "demo/new-task-flake",

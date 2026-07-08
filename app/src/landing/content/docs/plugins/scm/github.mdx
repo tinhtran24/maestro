@@ -35,13 +35,13 @@ Thanos's dashboard receives webhook events at:
 POST /api/webhooks
 ```
 
-The absolute URL is `https://<your-ao-host>/api/webhooks`. To expose your local dashboard publicly, see [Remote access](/docs/configuration/remote-access).
+The absolute URL is `https://<your-to-host>/api/webhooks`. To expose your local dashboard publicly, see [Remote access](/docs/configuration/remote-access).
 
 ### GitHub repo settings
 
 In your GitHub repo go to **Settings → Webhooks → Add webhook**:
 
-- **Payload URL**: `https://<your-ao-host>/api/webhooks`
+- **Payload URL**: `https://<your-to-host>/api/webhooks`
 - **Content type**: `application/json`
 - **Secret**: the value of your `secretEnvVar` environment variable
 - **Events**: Pull requests, Push, Workflow runs, Pull request reviews, Check suites

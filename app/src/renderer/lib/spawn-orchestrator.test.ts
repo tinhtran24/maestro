@@ -56,11 +56,11 @@ describe("spawnOrchestrator", () => {
 			response: { status: 201 },
 		});
 		await spawnOrchestrator("proj", "sidebar");
-		expect(captureMock).toHaveBeenCalledWith("ao.renderer.orchestrator_spawn_requested", {
+		expect(captureMock).toHaveBeenCalledWith("to.renderer.orchestrator_spawn_requested", {
 			project_id: "proj",
 			source: "sidebar",
 		});
-		expect(captureMock).toHaveBeenCalledWith("ao.renderer.orchestrator_spawn_succeeded", {
+		expect(captureMock).toHaveBeenCalledWith("to.renderer.orchestrator_spawn_succeeded", {
 			project_id: "proj",
 			source: "sidebar",
 		});
@@ -73,11 +73,11 @@ describe("spawnOrchestrator", () => {
 			response: { status: 500 },
 		});
 		await expect(spawnOrchestrator("proj", "topbar")).rejects.toThrow("boom");
-		expect(captureMock).toHaveBeenCalledWith("ao.renderer.orchestrator_spawn_failed", {
+		expect(captureMock).toHaveBeenCalledWith("to.renderer.orchestrator_spawn_failed", {
 			project_id: "proj",
 			source: "topbar",
 		});
-		expect(captureMock).not.toHaveBeenCalledWith("ao.renderer.orchestrator_spawn_succeeded", expect.anything());
+		expect(captureMock).not.toHaveBeenCalledWith("to.renderer.orchestrator_spawn_succeeded", expect.anything());
 	});
 
 	it("surfaces daemon spawn error messages and codes", async () => {

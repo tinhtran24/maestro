@@ -68,8 +68,8 @@ func TestWorkspaceIntegrationStashApplyRoundTrip(t *testing.T) {
 	if ref == "" {
 		t.Fatal("StashUncommitted returned empty ref for dirty worktree")
 	}
-	if !strings.HasPrefix(ref, "refs/ao/preserved/") {
-		t.Fatalf("ref = %q, want refs/ao/preserved/... prefix", ref)
+	if !strings.HasPrefix(ref, "refs/to/preserved/") {
+		t.Fatalf("ref = %q, want refs/to/preserved/... prefix", ref)
 	}
 
 	// ForceDestroy: simulate session close.

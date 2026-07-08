@@ -42,13 +42,13 @@ Thanos's dashboard receives webhook events at:
 POST /api/webhooks
 ```
 
-The absolute URL is `https://<your-ao-host>/api/webhooks`. To expose your local dashboard publicly, see [Remote access](/docs/configuration/remote-access).
+The absolute URL is `https://<your-to-host>/api/webhooks`. To expose your local dashboard publicly, see [Remote access](/docs/configuration/remote-access).
 
 ### GitLab project settings
 
 In your GitLab project go to **Settings → Webhooks → Add new webhook**:
 
-- **URL**: `https://<your-ao-host>/api/webhooks`
+- **URL**: `https://<your-to-host>/api/webhooks`
 - **Secret token**: the value of your `secretEnvVar` environment variable
 - **Trigger events**: Merge request events, Pipeline events, Push events, Note events (review comments)
 

@@ -35,7 +35,7 @@ type fakeSessionService struct {
 
 func newFakeSessionService() *fakeSessionService {
 	now := time.Now().UTC()
-	s := domain.Session{SessionRecord: domain.SessionRecord{ID: "ao-1", ProjectID: "ao", Kind: domain.KindWorker, Activity: domain.Activity{State: domain.ActivityIdle, LastActivityAt: now}, CreatedAt: now, UpdatedAt: now}, Status: domain.StatusIdle, TerminalHandleID: "ao-1/terminal_0"}
+	s := domain.Session{SessionRecord: domain.SessionRecord{ID: "to-1", ProjectID: "to", Kind: domain.KindWorker, Activity: domain.Activity{State: domain.ActivityIdle, LastActivityAt: now}, CreatedAt: now, UpdatedAt: now}, Status: domain.StatusIdle, TerminalHandleID: "to-1/terminal_0"}
 	return &fakeSessionService{sessions: map[domain.SessionID]domain.Session{s.ID: s}}
 }
 
@@ -131,7 +131,7 @@ func (f *fakeSessionService) Cleanup(_ context.Context, project domain.ProjectID
 	f.cleanupProjects = append(f.cleanupProjects, project)
 	cleaned := f.cleanupResult
 	if cleaned == nil {
-		cleaned = []domain.SessionID{"ao-1"}
+		cleaned = []domain.SessionID{"to-1"}
 	}
 	return sessionsvc.CleanupOutcome{Cleaned: cleaned, Skipped: f.cleanupSkipped}, nil
 }
@@ -236,12 +236,12 @@ func TestSessionsRoutes_DefaultToStubsWithoutService(t *testing.T) {
 
 func TestSessionsAPI_ListSpawnGetAndActions(t *testing.T) {
 	svc := newFakeSessionService()
-	s := svc.sessions["ao-1"]
+	s := svc.sessions["to-1"]
 	s.Metadata = domain.SessionMetadata{Branch: "qa/modal-worker", WorkspacePath: "/tmp/private-worktree", RuntimeHandleID: "runtime-1", Prompt: "private prompt"}
-	svc.sessions["ao-1"] = s
+	svc.sessions["to-1"] = s
 	srv := newSessionTestServer(t, svc)
 
-	body, status, _ := doRequest(t, srv, "GET", "/api/v1/sessions?project=ao", "")
+	body, status, _ := doRequest(t, srv, "GET", "/api/v1/sessions?project=to", "")
 	if status != http.StatusOK {
 		t.Fatalf("GET sessions = %d, want 200; body=%s", status, body)
 	}
@@ -249,7 +249,7 @@ func TestSessionsAPI_ListSpawnGetAndActions(t *testing.T) {
 		Sessions []sessionBody `json:"sessions"`
 	}
 	mustJSON(t, body, &list)
-	if len(list.Sessions) != 1 || list.Sessions[0].ID != "ao-1" || list.Sessions[0].Status != string(domain.StatusIdle) || list.Sessions[0].TerminalHandleID != "ao-1/terminal_0" {
+	if len(list.Sessions) != 1 || list.Sessions[0].ID != "to-1" || list.Sessions[0].Status != string(domain.StatusIdle) || list.Sessions[0].TerminalHandleID != "to-1/terminal_0" {
 		t.Fatalf("list = %#v", list)
 	}
 	if list.Sessions[0].Branch != "qa/modal-worker" {
@@ -269,7 +269,7 @@ func TestSessionsAPI_ListSpawnGetAndActions(t *testing.T) {
 		t.Fatalf("list leaked prompt: %s", body)
 	}
 
-	body, status, _ = doRequest(t, srv, "POST", "/api/v1/sessions", `{"projectId":"ao","issueId":"ISS-1","kind":"worker","harness":"codex","prompt":"fix","displayName":"my worker"}`)
+	body, status, _ = doRequest(t, srv, "POST", "/api/v1/sessions", `{"projectId":"to","issueId":"ISS-1","kind":"worker","harness":"codex","prompt":"fix","displayName":"my worker"}`)
 	if status != http.StatusCreated {
 		t.Fatalf("POST session = %d, want 201; body=%s", status, body)
 	}
@@ -277,24 +277,24 @@ func TestSessionsAPI_ListSpawnGetAndActions(t *testing.T) {
 		Session sessionBody `json:"session"`
 	}
 	mustJSON(t, body, &spawned)
-	if spawned.Session.ID != "ao-2" || spawned.Session.IssueID != "ISS-1" || spawned.Session.Harness != "codex" {
+	if spawned.Session.ID != "to-2" || spawned.Session.IssueID != "ISS-1" || spawned.Session.Harness != "codex" {
 		t.Fatalf("spawned = %#v", spawned)
 	}
 	if spawned.Session.DisplayName != "my worker" {
 		t.Fatalf("spawned displayName = %q, want %q", spawned.Session.DisplayName, "my worker")
 	}
 
-	body, status, _ = doRequest(t, srv, "GET", "/api/v1/sessions/ao-2", "")
+	body, status, _ = doRequest(t, srv, "GET", "/api/v1/sessions/to-2", "")
 	if status != http.StatusOK {
 		t.Fatalf("GET session = %d, want 200; body=%s", status, body)
 	}
 
-	body, status, _ = doRequest(t, srv, "POST", "/api/v1/sessions/ao-2/send", "{\"message\":\"con\\u0000tinue\"}")
+	body, status, _ = doRequest(t, srv, "POST", "/api/v1/sessions/to-2/send", "{\"message\":\"con\\u0000tinue\"}")
 	if status != http.StatusOK || svc.sent != "continue" {
 		t.Fatalf("send status=%d sent=%q body=%s", status, svc.sent, body)
 	}
 
-	body, status, _ = doRequest(t, srv, "POST", "/api/v1/sessions/ao-2/kill", "")
+	body, status, _ = doRequest(t, srv, "POST", "/api/v1/sessions/to-2/kill", "")
 	if status != http.StatusOK {
 		t.Fatalf("kill = %d, want 200; body=%s", status, body)
 	}
@@ -303,16 +303,16 @@ func TestSessionsAPI_ListSpawnGetAndActions(t *testing.T) {
 		Freed     bool   `json:"freed"`
 	}
 	mustJSON(t, body, &killed)
-	if killed.SessionID != "ao-2" || !killed.Freed {
+	if killed.SessionID != "to-2" || !killed.Freed {
 		t.Fatalf("kill response = %#v", killed)
 	}
 
-	body, status, _ = doRequest(t, srv, "POST", "/api/v1/sessions/ao-2/restore", "")
+	body, status, _ = doRequest(t, srv, "POST", "/api/v1/sessions/to-2/restore", "")
 	if status != http.StatusOK {
 		t.Fatalf("restore = %d, want 200; body=%s", status, body)
 	}
 
-	body, status, _ = doRequest(t, srv, "PATCH", "/api/v1/sessions/ao-2", `{"displayName":"Renamed"}`)
+	body, status, _ = doRequest(t, srv, "PATCH", "/api/v1/sessions/to-2", `{"displayName":"Renamed"}`)
 	if status != http.StatusOK {
 		t.Fatalf("rename = %d, want 200; body=%s", status, body)
 	}
@@ -322,14 +322,14 @@ func TestSessionsAPI_ListSpawnGetAndActions(t *testing.T) {
 		DisplayName string `json:"displayName"`
 	}
 	mustJSON(t, body, &renamed)
-	if !renamed.OK || renamed.SessionID != "ao-2" || renamed.DisplayName != "Renamed" {
+	if !renamed.OK || renamed.SessionID != "to-2" || renamed.DisplayName != "Renamed" {
 		t.Fatalf("rename response = %#v", renamed)
 	}
-	if svc.sessions["ao-2"].DisplayName != "Renamed" {
-		t.Fatalf("session displayName not updated: %+v", svc.sessions["ao-2"])
+	if svc.sessions["to-2"].DisplayName != "Renamed" {
+		t.Fatalf("session displayName not updated: %+v", svc.sessions["to-2"])
 	}
 
-	body, status, _ = doRequest(t, srv, "POST", "/api/v1/orchestrators", `{"projectId":"ao"}`)
+	body, status, _ = doRequest(t, srv, "POST", "/api/v1/orchestrators", `{"projectId":"to"}`)
 	if status != http.StatusCreated {
 		t.Fatalf("orchestrator = %d, want 201; body=%s", status, body)
 	}
@@ -344,12 +344,12 @@ func TestSessionsAPI_PreviewDiscoversAndServesStaticIndex(t *testing.T) {
 	if err := os.WriteFile(filepath.Join(workspace, "styles.css"), []byte(`body { color: red; }`), 0o644); err != nil {
 		t.Fatalf("write css: %v", err)
 	}
-	s := svc.sessions["ao-1"]
+	s := svc.sessions["to-1"]
 	s.Metadata = domain.SessionMetadata{WorkspacePath: workspace}
-	svc.sessions["ao-1"] = s
+	svc.sessions["to-1"] = s
 	srv := newSessionTestServer(t, svc)
 
-	body, status, _ := doRequest(t, srv, "GET", "/api/v1/sessions/ao-1/preview", "")
+	body, status, _ := doRequest(t, srv, "GET", "/api/v1/sessions/to-1/preview", "")
 	if status != http.StatusOK {
 		t.Fatalf("preview = %d, want 200; body=%s", status, body)
 	}
@@ -359,7 +359,7 @@ func TestSessionsAPI_PreviewDiscoversAndServesStaticIndex(t *testing.T) {
 		Entry      string `json:"entry"`
 	}
 	mustJSON(t, body, &preview)
-	if preview.SessionID != "ao-1" || preview.Entry != "index.html" || preview.PreviewURL == "" {
+	if preview.SessionID != "to-1" || preview.Entry != "index.html" || preview.PreviewURL == "" {
 		t.Fatalf("preview response = %#v", preview)
 	}
 	if strings.Contains(preview.PreviewURL, workspace) {
@@ -388,7 +388,7 @@ func TestSessionsAPI_SetPreviewExplicitURLPersists(t *testing.T) {
 	svc := newFakeSessionService()
 	srv := newSessionTestServer(t, svc)
 
-	body, status, _ := doRequest(t, srv, "POST", "/api/v1/sessions/ao-1/preview", `{"url":"http://localhost:5173/"}`)
+	body, status, _ := doRequest(t, srv, "POST", "/api/v1/sessions/to-1/preview", `{"url":"http://localhost:5173/"}`)
 	if status != http.StatusOK {
 		t.Fatalf("set preview = %d, want 200; body=%s", status, body)
 	}
@@ -401,7 +401,7 @@ func TestSessionsAPI_SetPreviewExplicitURLPersists(t *testing.T) {
 	if resp.Session.PreviewURL != "http://localhost:5173/" {
 		t.Fatalf("response previewUrl = %q, want explicit url", resp.Session.PreviewURL)
 	}
-	if got := svc.sessions["ao-1"].Metadata.PreviewURL; got != "http://localhost:5173/" {
+	if got := svc.sessions["to-1"].Metadata.PreviewURL; got != "http://localhost:5173/" {
 		t.Fatalf("persisted previewUrl = %q, want explicit url", got)
 	}
 }
@@ -412,12 +412,12 @@ func TestSessionsAPI_SetPreviewEmptyURLAutodetectsIndex(t *testing.T) {
 	if err := os.WriteFile(filepath.Join(workspace, "index.html"), []byte(`<html></html>`), 0o644); err != nil {
 		t.Fatalf("write index: %v", err)
 	}
-	s := svc.sessions["ao-1"]
+	s := svc.sessions["to-1"]
 	s.Metadata = domain.SessionMetadata{WorkspacePath: workspace}
-	svc.sessions["ao-1"] = s
+	svc.sessions["to-1"] = s
 	srv := newSessionTestServer(t, svc)
 
-	body, status, _ := doRequest(t, srv, "POST", "/api/v1/sessions/ao-1/preview", `{}`)
+	body, status, _ := doRequest(t, srv, "POST", "/api/v1/sessions/to-1/preview", `{}`)
 	if status != http.StatusOK {
 		t.Fatalf("set preview = %d, want 200; body=%s", status, body)
 	}
@@ -443,12 +443,12 @@ func TestSessionsAPI_SetPreviewEmptyURLPrefersWorkspaceEntryOverExistingTarget(t
 	if err := os.WriteFile(filepath.Join(workspace, "index.html"), []byte(`<html></html>`), 0o644); err != nil {
 		t.Fatalf("write index: %v", err)
 	}
-	s := svc.sessions["ao-1"]
+	s := svc.sessions["to-1"]
 	s.Metadata = domain.SessionMetadata{WorkspacePath: workspace, PreviewURL: "http://localhost:4321/docs"}
-	svc.sessions["ao-1"] = s
+	svc.sessions["to-1"] = s
 	srv := newSessionTestServer(t, svc)
 
-	body, status, _ := doRequest(t, srv, "POST", "/api/v1/sessions/ao-1/preview", `{}`)
+	body, status, _ := doRequest(t, srv, "POST", "/api/v1/sessions/to-1/preview", `{}`)
 	if status != http.StatusOK {
 		t.Fatalf("set preview = %d, want 200; body=%s", status, body)
 	}
@@ -469,12 +469,12 @@ func TestSessionsAPI_SetPreviewEmptyURLNormalizesExistingRelativeTarget(t *testi
 	if err := os.WriteFile(filepath.Join(workspace, "index.html"), []byte(`<html></html>`), 0o644); err != nil {
 		t.Fatalf("write index: %v", err)
 	}
-	s := svc.sessions["ao-1"]
+	s := svc.sessions["to-1"]
 	s.Metadata = domain.SessionMetadata{WorkspacePath: workspace, PreviewURL: "index.html"}
-	svc.sessions["ao-1"] = s
+	svc.sessions["to-1"] = s
 	srv := newSessionTestServer(t, svc)
 
-	body, status, _ := doRequest(t, srv, "POST", "/api/v1/sessions/ao-1/preview", `{}`)
+	body, status, _ := doRequest(t, srv, "POST", "/api/v1/sessions/to-1/preview", `{}`)
 	if status != http.StatusOK {
 		t.Fatalf("set preview = %d, want 200; body=%s", status, body)
 	}
@@ -487,19 +487,19 @@ func TestSessionsAPI_SetPreviewEmptyURLNormalizesExistingRelativeTarget(t *testi
 	if !strings.HasSuffix(resp.Session.PreviewURL, "/preview/files/index.html") {
 		t.Fatalf("response previewUrl = %q, want index.html files URL", resp.Session.PreviewURL)
 	}
-	if got := svc.sessions["ao-1"].Metadata.PreviewURL; got != resp.Session.PreviewURL {
+	if got := svc.sessions["to-1"].Metadata.PreviewURL; got != resp.Session.PreviewURL {
 		t.Fatalf("persisted previewUrl = %q, want normalized response URL %q", got, resp.Session.PreviewURL)
 	}
 }
 
 func TestSessionsAPI_SetPreviewEmptyURLReusesExistingTargetWhenNoEntryExists(t *testing.T) {
 	svc := newFakeSessionService()
-	s := svc.sessions["ao-1"]
+	s := svc.sessions["to-1"]
 	s.Metadata = domain.SessionMetadata{WorkspacePath: t.TempDir(), PreviewURL: "http://localhost:4321/docs"}
-	svc.sessions["ao-1"] = s
+	svc.sessions["to-1"] = s
 	srv := newSessionTestServer(t, svc)
 
-	body, status, _ := doRequest(t, srv, "POST", "/api/v1/sessions/ao-1/preview", `{}`)
+	body, status, _ := doRequest(t, srv, "POST", "/api/v1/sessions/to-1/preview", `{}`)
 	if status != http.StatusOK {
 		t.Fatalf("set preview = %d, want 200; body=%s", status, body)
 	}
@@ -523,12 +523,12 @@ func TestSessionsAPI_SetPreviewLocalRelativePathResolvesToFilesURL(t *testing.T)
 	if err := os.WriteFile(filepath.Join(workspace, "dist", "index.html"), []byte(`<html></html>`), 0o644); err != nil {
 		t.Fatalf("write dist index: %v", err)
 	}
-	s := svc.sessions["ao-1"]
+	s := svc.sessions["to-1"]
 	s.Metadata = domain.SessionMetadata{WorkspacePath: workspace}
-	svc.sessions["ao-1"] = s
+	svc.sessions["to-1"] = s
 	srv := newSessionTestServer(t, svc)
 
-	body, status, _ := doRequest(t, srv, "POST", "/api/v1/sessions/ao-1/preview", `{"url":"./dist/index.html"}`)
+	body, status, _ := doRequest(t, srv, "POST", "/api/v1/sessions/to-1/preview", `{"url":"./dist/index.html"}`)
 	if status != http.StatusOK {
 		t.Fatalf("set preview = %d, want 200; body=%s", status, body)
 	}
@@ -563,7 +563,7 @@ func TestSessionsAPI_SetPreviewAbsoluteFilePathPersistsFileURL(t *testing.T) {
 	}
 	srv := newSessionTestServer(t, svc)
 
-	body, status, _ := doRequest(t, srv, "POST", "/api/v1/sessions/ao-1/preview", `{"url":`+strconv.Quote(file)+`}`)
+	body, status, _ := doRequest(t, srv, "POST", "/api/v1/sessions/to-1/preview", `{"url":`+strconv.Quote(file)+`}`)
 	if status != http.StatusOK {
 		t.Fatalf("set preview = %d, want 200; body=%s", status, body)
 	}
@@ -585,16 +585,16 @@ func TestSessionsAPI_SetPreviewAbsoluteFilePathPersistsFileURL(t *testing.T) {
 func TestSessionsAPI_SetPreviewMissingAbsoluteFilePathFailsWithoutOverwriting(t *testing.T) {
 	svc := newFakeSessionService()
 	missing := filepath.Join(t.TempDir(), "implmentation_plan.html")
-	s := svc.sessions["ao-1"]
+	s := svc.sessions["to-1"]
 	s.Metadata = domain.SessionMetadata{PreviewURL: "http://localhost:4321/docs"}
-	svc.sessions["ao-1"] = s
+	svc.sessions["to-1"] = s
 	srv := newSessionTestServer(t, svc)
 
-	body, status, _ := doRequest(t, srv, "POST", "/api/v1/sessions/ao-1/preview", `{"url":`+strconv.Quote(missing)+`}`)
+	body, status, _ := doRequest(t, srv, "POST", "/api/v1/sessions/to-1/preview", `{"url":`+strconv.Quote(missing)+`}`)
 	if status != http.StatusNotFound {
 		t.Fatalf("set missing absolute preview = %d, want 404; body=%s", status, body)
 	}
-	if got := svc.sessions["ao-1"].Metadata.PreviewURL; got != "http://localhost:4321/docs" {
+	if got := svc.sessions["to-1"].Metadata.PreviewURL; got != "http://localhost:4321/docs" {
 		t.Fatalf("persisted previewUrl = %q, want existing target preserved", got)
 	}
 }
@@ -604,7 +604,7 @@ func TestSessionsAPI_SetPreviewBumpsRevisionOnSameURL(t *testing.T) {
 	srv := newSessionTestServer(t, svc)
 
 	readRevision := func() int64 {
-		body, status, _ := doRequest(t, srv, "POST", "/api/v1/sessions/ao-1/preview", `{"url":"http://localhost:5173/"}`)
+		body, status, _ := doRequest(t, srv, "POST", "/api/v1/sessions/to-1/preview", `{"url":"http://localhost:5173/"}`)
 		if status != http.StatusOK {
 			t.Fatalf("set preview = %d, want 200; body=%s", status, body)
 		}
@@ -625,12 +625,12 @@ func TestSessionsAPI_SetPreviewBumpsRevisionOnSameURL(t *testing.T) {
 
 func TestSessionsAPI_ClearPreviewResetsURL(t *testing.T) {
 	svc := newFakeSessionService()
-	s := svc.sessions["ao-1"]
+	s := svc.sessions["to-1"]
 	s.Metadata = domain.SessionMetadata{PreviewURL: "http://localhost:5173/"}
-	svc.sessions["ao-1"] = s
+	svc.sessions["to-1"] = s
 	srv := newSessionTestServer(t, svc)
 
-	body, status, _ := doRequest(t, srv, "DELETE", "/api/v1/sessions/ao-1/preview", "")
+	body, status, _ := doRequest(t, srv, "DELETE", "/api/v1/sessions/to-1/preview", "")
 	if status != http.StatusOK {
 		t.Fatalf("clear preview = %d, want 200; body=%s", status, body)
 	}
@@ -643,7 +643,7 @@ func TestSessionsAPI_ClearPreviewResetsURL(t *testing.T) {
 	if resp.Session.PreviewURL != "" {
 		t.Fatalf("response previewUrl = %q, want empty after clear", resp.Session.PreviewURL)
 	}
-	if got := svc.sessions["ao-1"].Metadata.PreviewURL; got != "" {
+	if got := svc.sessions["to-1"].Metadata.PreviewURL; got != "" {
 		t.Fatalf("persisted previewUrl = %q, want empty after clear", got)
 	}
 }
@@ -657,12 +657,12 @@ func TestSessionsAPI_ClearPreviewNotFound(t *testing.T) {
 
 func TestSessionsAPI_SetPreviewEmptyURLNoEntry(t *testing.T) {
 	svc := newFakeSessionService()
-	s := svc.sessions["ao-1"]
+	s := svc.sessions["to-1"]
 	s.Metadata = domain.SessionMetadata{WorkspacePath: t.TempDir()}
-	svc.sessions["ao-1"] = s
+	svc.sessions["to-1"] = s
 	srv := newSessionTestServer(t, svc)
 
-	body, status, _ := doRequest(t, srv, "POST", "/api/v1/sessions/ao-1/preview", `{}`)
+	body, status, _ := doRequest(t, srv, "POST", "/api/v1/sessions/to-1/preview", `{}`)
 	assertErrorCode(t, body, status, http.StatusNotFound, "NO_PREVIEW_ENTRY")
 }
 
@@ -678,7 +678,7 @@ func TestSessionsAPI_SpawnBranchNotFetchedReturnsTypedError(t *testing.T) {
 	svc.spawnErr = apierr.Invalid("BRANCH_NOT_FETCHED", `workspace: branch is not fetched: "feature/missing"`, nil)
 	srv := newSessionTestServer(t, svc)
 
-	body, status, _ := doRequest(t, srv, "POST", "/api/v1/sessions", `{"projectId":"ao","kind":"worker","branch":"feature/missing","prompt":"fix"}`)
+	body, status, _ := doRequest(t, srv, "POST", "/api/v1/sessions", `{"projectId":"to","kind":"worker","branch":"feature/missing","prompt":"fix"}`)
 	assertErrorCode(t, body, status, http.StatusBadRequest, "BRANCH_NOT_FETCHED")
 }
 
@@ -690,7 +690,7 @@ func TestSessionsAPI_SpawnRejectsOverlongDisplayName(t *testing.T) {
 	srv := newSessionTestServer(t, newFakeSessionService())
 
 	overlong := strings.Repeat("x", 21)
-	body, status, _ := doRequest(t, srv, "POST", "/api/v1/sessions", `{"projectId":"ao","harness":"codex","displayName":"`+overlong+`"}`)
+	body, status, _ := doRequest(t, srv, "POST", "/api/v1/sessions", `{"projectId":"to","harness":"codex","displayName":"`+overlong+`"}`)
 	assertErrorCode(t, body, status, http.StatusBadRequest, "DISPLAY_NAME_TOO_LONG")
 }
 
@@ -704,20 +704,20 @@ func TestSessionsAPI_RenameNotFound(t *testing.T) {
 func TestSessionsAPI_RenameValidation(t *testing.T) {
 	srv := newSessionTestServer(t, newFakeSessionService())
 
-	body, status, _ := doRequest(t, srv, "PATCH", "/api/v1/sessions/ao-1", `{"displayName":"  "}`)
+	body, status, _ := doRequest(t, srv, "PATCH", "/api/v1/sessions/to-1", `{"displayName":"  "}`)
 	assertErrorCode(t, body, status, http.StatusBadRequest, "DISPLAY_NAME_REQUIRED")
 
-	body, status, _ = doRequest(t, srv, "PATCH", "/api/v1/sessions/ao-1", `{`)
+	body, status, _ = doRequest(t, srv, "PATCH", "/api/v1/sessions/to-1", `{`)
 	assertErrorCode(t, body, status, http.StatusBadRequest, "INVALID_JSON")
 }
 
 func TestSessionsAPI_ListOrchestratorsOnly(t *testing.T) {
 	svc := newFakeSessionService()
 	now := time.Now().UTC()
-	svc.sessions["ao-orch"] = domain.Session{
+	svc.sessions["to-orch"] = domain.Session{
 		SessionRecord: domain.SessionRecord{
-			ID:        "ao-orch",
-			ProjectID: "ao",
+			ID:        "to-orch",
+			ProjectID: "to",
 			Kind:      domain.KindOrchestrator,
 			Activity:  domain.Activity{State: domain.ActivityIdle, LastActivityAt: now},
 			CreatedAt: now,
@@ -753,10 +753,10 @@ func TestSessionsAPI_ListOrchestratorsOnly(t *testing.T) {
 	for _, sess := range list.Sessions {
 		got[sess.ID] = sess.Kind
 	}
-	if got["ao-orch"] != string(domain.KindOrchestrator) || got["other-orch"] != string(domain.KindOrchestrator) {
+	if got["to-orch"] != string(domain.KindOrchestrator) || got["other-orch"] != string(domain.KindOrchestrator) {
 		t.Fatalf("missing orchestrators: %#v", got)
 	}
-	if _, ok := got["ao-1"]; ok {
+	if _, ok := got["to-1"]; ok {
 		t.Fatalf("worker session leaked into orchestrator list: %#v", got)
 	}
 }
@@ -764,17 +764,17 @@ func TestSessionsAPI_ListOrchestratorsOnly(t *testing.T) {
 func TestSessionsAPI_SendValidation(t *testing.T) {
 	srv := newSessionTestServer(t, newFakeSessionService())
 
-	body, status, _ := doRequest(t, srv, "POST", "/api/v1/sessions/ao-1/send", `{"message":""}`)
+	body, status, _ := doRequest(t, srv, "POST", "/api/v1/sessions/to-1/send", `{"message":""}`)
 	assertErrorCode(t, body, status, http.StatusBadRequest, "MESSAGE_REQUIRED")
 }
 
 func TestSessionsAPI_CleanupWithProjectFilter(t *testing.T) {
 	svc := newFakeSessionService()
-	svc.cleanupResult = []domain.SessionID{"ao-1"}
-	svc.cleanupSkipped = []sessionsvc.CleanupSkipped{{SessionID: "ao-2", Reason: "workspace has uncommitted changes"}}
+	svc.cleanupResult = []domain.SessionID{"to-1"}
+	svc.cleanupSkipped = []sessionsvc.CleanupSkipped{{SessionID: "to-2", Reason: "workspace has uncommitted changes"}}
 	srv := newSessionTestServer(t, svc)
 
-	body, status, _ := doRequest(t, srv, "POST", "/api/v1/sessions/cleanup?project=ao", "")
+	body, status, _ := doRequest(t, srv, "POST", "/api/v1/sessions/cleanup?project=to", "")
 	if status != http.StatusOK {
 		t.Fatalf("cleanup = %d, want 200; body=%s", status, body)
 	}
@@ -787,20 +787,20 @@ func TestSessionsAPI_CleanupWithProjectFilter(t *testing.T) {
 		} `json:"skipped"`
 	}
 	mustJSON(t, body, &got)
-	if !got.OK || len(got.Cleaned) != 1 || got.Cleaned[0] != "ao-1" {
+	if !got.OK || len(got.Cleaned) != 1 || got.Cleaned[0] != "to-1" {
 		t.Fatalf("cleanup response = %#v", got)
 	}
-	if len(got.Skipped) != 1 || got.Skipped[0].SessionID != "ao-2" || got.Skipped[0].Reason != "workspace has uncommitted changes" {
+	if len(got.Skipped) != 1 || got.Skipped[0].SessionID != "to-2" || got.Skipped[0].Reason != "workspace has uncommitted changes" {
 		t.Fatalf("cleanup skipped = %#v, want preserved workspace with reason", got.Skipped)
 	}
-	if len(svc.cleanupProjects) != 1 || svc.cleanupProjects[0] != "ao" {
-		t.Fatalf("cleanupProjects = %#v, want [ao]", svc.cleanupProjects)
+	if len(svc.cleanupProjects) != 1 || svc.cleanupProjects[0] != "to" {
+		t.Fatalf("cleanupProjects = %#v, want [to]", svc.cleanupProjects)
 	}
 }
 
 func TestSessionsAPI_CleanupWithoutProjectFilter(t *testing.T) {
 	svc := newFakeSessionService()
-	svc.cleanupResult = []domain.SessionID{"ao-1", "other-1"}
+	svc.cleanupResult = []domain.SessionID{"to-1", "other-1"}
 	srv := newSessionTestServer(t, svc)
 
 	body, status, _ := doRequest(t, srv, "POST", "/api/v1/sessions/cleanup", "")
@@ -811,7 +811,7 @@ func TestSessionsAPI_CleanupWithoutProjectFilter(t *testing.T) {
 		Cleaned []string `json:"cleaned"`
 	}
 	mustJSON(t, body, &got)
-	if len(got.Cleaned) != 2 || got.Cleaned[0] != "ao-1" || got.Cleaned[1] != "other-1" {
+	if len(got.Cleaned) != 2 || got.Cleaned[0] != "to-1" || got.Cleaned[1] != "other-1" {
 		t.Fatalf("cleanup response = %#v", got)
 	}
 	if len(svc.cleanupProjects) != 1 || svc.cleanupProjects[0] != "" {
@@ -834,7 +834,7 @@ type sessionBody struct {
 func TestSessionsAPI_PRRoutes(t *testing.T) {
 	srv := newSessionTestServer(t, newFakeSessionService())
 
-	body, status, _ := doRequest(t, srv, "GET", "/api/v1/sessions/ao-1/pr", "")
+	body, status, _ := doRequest(t, srv, "GET", "/api/v1/sessions/to-1/pr", "")
 	if status != http.StatusOK {
 		t.Fatalf("GET PRs = %d body=%s", status, body)
 	}
@@ -880,7 +880,7 @@ func TestSessionsAPI_PRRoutes(t *testing.T) {
 		} `json:"prs"`
 	}
 	mustJSON(t, body, &listed)
-	if listed.SessionID != "ao-1" || len(listed.PRs) != 1 || listed.PRs[0].State != "open" || listed.PRs[0].Title == "" {
+	if listed.SessionID != "to-1" || len(listed.PRs) != 1 || listed.PRs[0].State != "open" || listed.PRs[0].Title == "" {
 		t.Fatalf("GET shape = %#v", listed)
 	}
 	if checks := listed.PRs[0].CI.FailingChecks; len(checks) != 1 || checks[0].Name != "unit" || checks[0].LogTail != "" {
@@ -893,7 +893,7 @@ func TestSessionsAPI_PRRoutes(t *testing.T) {
 		t.Fatalf("mergeability = %#v", merge)
 	}
 
-	body, status, _ = doRequest(t, srv, "POST", "/api/v1/sessions/ao-1/pr/claim", `{"pr":"142"}`)
+	body, status, _ = doRequest(t, srv, "POST", "/api/v1/sessions/to-1/pr/claim", `{"pr":"142"}`)
 	if status != http.StatusOK {
 		t.Fatalf("claim = %d body=%s", status, body)
 	}
@@ -905,7 +905,7 @@ func TestSessionsAPI_PRRoutes(t *testing.T) {
 		TakenOverFrom []string `json:"takenOverFrom"`
 	}
 	mustJSON(t, body, &claimed)
-	if !claimed.OK || claimed.SessionID != "ao-1" || len(claimed.PRs) != 1 || !claimed.BranchChanged || len(claimed.TakenOverFrom) != 0 {
+	if !claimed.OK || claimed.SessionID != "to-1" || len(claimed.PRs) != 1 || !claimed.BranchChanged || len(claimed.TakenOverFrom) != 0 {
 		t.Fatalf("claim shape = %#v", claimed)
 	}
 }
@@ -924,7 +924,7 @@ func TestSessionsAPI_ClaimPRErrors(t *testing.T) {
 		{"session missing", `{"pr":"142"}`, apierr.NotFound("SESSION_NOT_FOUND", "Unknown session"), http.StatusNotFound, "SESSION_NOT_FOUND"},
 		{"pr missing", `{"pr":"142"}`, sessionsvc.ErrPRNotFound, http.StatusNotFound, "PR_NOT_FOUND"},
 		{"not open", `{"pr":"142"}`, sessionsvc.ErrPRNotOpen, http.StatusConflict, "PR_NOT_OPEN"},
-		{"claimed", `{"pr":"142","allowTakeover":false}`, ports.PRClaimedByActiveSessionError{Owner: "ao-2"}, http.StatusConflict, "PR_CLAIMED_BY_ACTIVE_SESSION"},
+		{"claimed", `{"pr":"142","allowTakeover":false}`, ports.PRClaimedByActiveSessionError{Owner: "to-2"}, http.StatusConflict, "PR_CLAIMED_BY_ACTIVE_SESSION"},
 		{"not claimable", `{"pr":"142"}`, sessionsvc.ErrSessionNotClaimable, http.StatusUnprocessableEntity, "SESSION_NOT_CLAIMABLE"},
 		{"mismatch", `{"pr":"142"}`, sessionsvc.ErrProjectMismatch, http.StatusUnprocessableEntity, "PR_PROJECT_MISMATCH"},
 		{"scm", `{"pr":"142"}`, sessionsvc.ErrSCMUnavailable, http.StatusServiceUnavailable, "SCM_UNAVAILABLE"},
@@ -934,7 +934,7 @@ func TestSessionsAPI_ClaimPRErrors(t *testing.T) {
 			svc := newFakeSessionService()
 			svc.claimErr = tc.err
 			srv := newSessionTestServer(t, svc)
-			body, status, _ := doRequest(t, srv, "POST", "/api/v1/sessions/ao-1/pr/claim", tc.body)
+			body, status, _ := doRequest(t, srv, "POST", "/api/v1/sessions/to-1/pr/claim", tc.body)
 			assertErrorCode(t, body, status, tc.code, tc.want)
 		})
 	}

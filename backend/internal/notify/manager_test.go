@@ -82,7 +82,7 @@ func TestHubProjectFilter(t *testing.T) {
 	hub := NewHub()
 	ch, unsub := hub.Subscribe("mer")
 	defer unsub()
-	_ = hub.Publish(context.Background(), domain.NotificationRecord{ID: "skip", ProjectID: "ao"})
+	_ = hub.Publish(context.Background(), domain.NotificationRecord{ID: "skip", ProjectID: "to"})
 	_ = hub.Publish(context.Background(), domain.NotificationRecord{ID: "keep", ProjectID: "mer"})
 	select {
 	case got := <-ch:

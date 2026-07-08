@@ -93,7 +93,7 @@ surface (`npm run sqlc`, `npm run api`).
   `to session get` ([#111](https://github.com/tinhtran/thanos/issues/111))
   is still open.
 - **CLI parity for PR/review actions**: merge, resolve-comments, and review are
-  HTTP-only (frontend-driven); there are no `ao pr` / `to review` commands.
+  HTTP-only (frontend-driven); there are no `to pr` / `to review` commands.
 
 Tracking milestone:
 [`rewrite`](https://github.com/tinhtran/thanos/milestone/1).

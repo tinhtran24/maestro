@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef } from "react";
 
 interface UseResizableOptions {
-	/** CSS custom property to drive (set on :root), e.g. "--ao-sidebar-w". */
+	/** CSS custom property to drive (set on :root), e.g. "--to-sidebar-w". */
 	cssVar: string;
 	/** localStorage key to persist the width. */
 	storageKey: string;

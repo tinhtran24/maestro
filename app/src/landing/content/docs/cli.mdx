@@ -1,6 +1,6 @@
 ---
 title: CLI reference
-description: Every `ao` command, every flag, drawn from the source.
+description: Every `to` command, every flag, drawn from the source.
 ---
 
 import { Callout } from "fumadocs-ui/components/callout";
@@ -10,7 +10,7 @@ All commands support `--help`. Use that in place of re-reading this page.
 ## Command tree
 
 ```
-ao
+to
 ├── start [project]             Start orchestrator + dashboard (auto-creates config on first run)
 ├── stop [project]              Stop orchestrator + dashboard
 ├── status                      Show all sessions with PR and CI status
@@ -90,7 +90,7 @@ Positional `[first]` — issue identifier. The project is auto-detected from `cw
 	worktree.
 </Callout>
 
-### `ao batch-spawn <issues...>`
+### `to batch-spawn <issues...>`
 
 > Spawn sessions for multiple issues with duplicate detection
 
@@ -122,7 +122,7 @@ Positional: `<session>` required, `[message...]` variadic. One of inline message
 
 Checks all projects if `[project]` is omitted.
 
-### `ao dashboard`
+### `to dashboard`
 
 > Start the web dashboard
 
@@ -132,9 +132,9 @@ Checks all projects if `[project]` is omitted.
 | `--no-open`         | —                       | Don't open the browser                    |
 | `--rebuild`         | —                       | Clean stale Next.js artifacts and rebuild |
 
-If the build looks stale you'll see a suggestion to run `ao dashboard --rebuild`.
+If the build looks stale you'll see a suggestion to run `to dashboard --rebuild`.
 
-### `ao open [target]`
+### `to open [target]`
 
 > Open session(s) in terminal tabs
 
@@ -144,7 +144,7 @@ If the build looks stale you'll see a suggestion to run `ao dashboard --rebuild`
 
 Positional `[target]` — session name, project id, or `"all"`. Defaults to all sessions. Falls back to printing the dashboard URL when the native terminal helper isn't available (anywhere but macOS + iTerm2).
 
-### `ao verify [issue]`
+### `to verify [issue]`
 
 > Mark an issue as verified (or failed) after checking the fix on staging
 
@@ -166,9 +166,9 @@ Positional `[target]` — session name, project id, or `"all"`. Defaults to all 
 | `--fix`         | —       | Apply safe fixes for launcher and stale-temp issues       |
 | `--test-notify` | —       | Send a test notification through each configured notifier |
 
-Runs `ao-doctor.sh` for shell-level checks, then TypeScript checks (version freshness, plugin resolution, notifier connectivity). OpenClaw is the only notifier probed without side effects.
+Runs `to-doctor.sh` for shell-level checks, then TypeScript checks (version freshness, plugin resolution, notifier connectivity). OpenClaw is the only notifier probed without side effects.
 
-### `ao update`
+### `to update`
 
 > Check for updates and upgrade Thanos to the latest version
 
@@ -180,7 +180,7 @@ Runs `ao-doctor.sh` for shell-level checks, then TypeScript checks (version fres
 
 Behavior depends on how Thanos was installed — git, npm-global, pnpm-global, or unknown (manual instructions printed).
 
-### `ao config-help`
+### `to config-help`
 
 > Show config schema and guide for creating `thanos.yaml`
 
@@ -188,7 +188,7 @@ No flags.
 
 ## Notify subcommands
 
-### `ao notify test`
+### `to notify test`
 
 > Send a manual demo notification without spawning sessions
 
@@ -272,19 +272,19 @@ writing `notificationRouting`.
 
 | Command                         | Purpose                                                |
 | ------------------------------- | ------------------------------------------------------ |
-| `ao setup dashboard`            | Configure dashboard notification retention and routing |
-| `ao setup desktop`              | Configure native desktop notifications                 |
-| `ao setup webhook`              | Configure a generic HTTP webhook                       |
-| `ao setup slack`                | Configure a Slack incoming webhook                     |
-| `ao setup discord`              | Configure a Discord incoming webhook                   |
-| `ao setup composio`             | Open the interactive Composio setup hub                |
-| `ao setup composio-slack`       | Configure Slack through Composio                       |
-| `ao setup composio-discord`     | Configure Discord webhook mode through Composio        |
-| `ao setup composio-discord-bot` | Configure Discord bot mode through Composio            |
-| `ao setup composio-mail`        | Configure Gmail through Composio                       |
-| `ao setup openclaw`             | Configure OpenClaw gateway notifications               |
+| `to setup dashboard`            | Configure dashboard notification retention and routing |
+| `to setup desktop`              | Configure native desktop notifications                 |
+| `to setup webhook`              | Configure a generic HTTP webhook                       |
+| `to setup slack`                | Configure a Slack incoming webhook                     |
+| `to setup discord`              | Configure a Discord incoming webhook                   |
+| `to setup composio`             | Open the interactive Composio setup hub                |
+| `to setup composio-slack`       | Configure Slack through Composio                       |
+| `to setup composio-discord`     | Configure Discord webhook mode through Composio        |
+| `to setup composio-discord-bot` | Configure Discord bot mode through Composio            |
+| `to setup composio-mail`        | Configure Gmail through Composio                       |
+| `to setup openclaw`             | Configure OpenClaw gateway notifications               |
 
-### `ao setup openclaw`
+### `to setup openclaw`
 
 > Connect Thanos notifications to an OpenClaw gateway
 
@@ -304,7 +304,7 @@ Interactive mode (TTY) uses `@clack/prompts` with review/change steps for the ga
 
 ## Plugin subcommands
 
-### `ao plugin list`
+### `to plugin list`
 
 > List bundled marketplace plugins
 
@@ -314,13 +314,13 @@ Interactive mode (TTY) uses `@clack/prompts` with review/change steps for the ga
 | `--type <slot>` | —       | Filter by slot: `agent`, `runtime`, `tracker`, `scm`, `notifier`, `workspace`, `terminal` |
 | `--refresh`     | —       | Re-fetch the marketplace catalog                                                          |
 
-### `ao plugin search <query>`
+### `to plugin search <query>`
 
 > Search the bundled marketplace catalog
 
 No flags.
 
-### `ao plugin create [directory]`
+### `to plugin create [directory]`
 
 > Scaffold a new Thanos plugin package
 
@@ -333,19 +333,19 @@ No flags.
 | `--package-name <name>` | derived | npm package name                |
 | `--non-interactive`     | —       | Use all flags without prompting |
 
-### `ao plugin install <reference>`
+### `to plugin install <reference>`
 
 > Install a plugin into the current config
 
 | Flag                            | Default                     | Purpose                                                           |
 | ------------------------------- | --------------------------- | ----------------------------------------------------------------- |
-| `--url <url>`                   | —                           | Passed to `ao setup openclaw` when installing `notifier-openclaw` |
+| `--url <url>`                   | —                           | Passed to `to setup openclaw` when installing `notifier-openclaw` |
 | `--token <token>`               | —                           | Remote/manual OpenClaw token fallback                             |
 | `--openclaw-config-path <path>` | `~/.openclaw/openclaw.json` | OpenClaw config path that contains `hooks.token`                  |
 
 `<reference>` is a marketplace id, npm package name, or local path.
 
-### `ao plugin update [reference]`
+### `to plugin update [reference]`
 
 > Update installer-managed plugins in the current config
 
@@ -355,7 +355,7 @@ No flags.
 
 Requires either `[reference]` or `--all`.
 
-### `ao plugin uninstall <reference>`
+### `to plugin uninstall <reference>`
 
 > Remove a plugin from the current config
 

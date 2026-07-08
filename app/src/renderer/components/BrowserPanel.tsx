@@ -38,7 +38,7 @@ export function BrowserPanelView({
 }: BrowserPanelProps & { browserView: BrowserViewModel }) {
 	const { navState, slotRef, navigate, goBack, goForward, reload, stop } = browserView;
 	const [urlInput, setUrlInput] = useState(navState.url);
-	const showStaticPreview = !window.ao?.browser && navState.url !== "";
+	const showStaticPreview = !window.to?.browser && navState.url !== "";
 
 	useEffect(() => {
 		setUrlInput(navState.url);

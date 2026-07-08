@@ -29,7 +29,7 @@ export function PluginCard({ name, logo, href, description, badge }: PluginCardP
 				textDecoration: "none",
 				transition: "border-color 150ms, transform 150ms",
 			}}
-			className="ao-plugin-card"
+			className="to-plugin-card"
 		>
 			<span
 				style={{

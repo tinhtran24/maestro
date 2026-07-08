@@ -4,7 +4,7 @@ Operational guidance for coding agents working in this repository. Keep changes 
 
 ## Repo layout
 
-- `backend/` — Go rewrite of Thanos: Cobra `ao` CLI, loopback HTTP daemon, services, SQLite storage, lifecycle/reaper, runtime/workspace/agent/tracker adapters, terminal mux, and tests.
+- `backend/` — Go rewrite of Thanos: Cobra `to` CLI, loopback HTTP daemon, services, SQLite storage, lifecycle/reaper, runtime/workspace/agent/tracker adapters, terminal mux, and tests.
 - `frontend/` — Electron + React supervisor wired to the daemon via the generated typed client. Treat it as a thin supervisor/UI surface; do not move daemon logic into it.
 - `docs/` — current architecture/status notes. Start here before changing lifecycle, CLI, agents, storage, or daemon behavior.
 - `test/` — external smoke/e2e assets, including the CLI fresh-install container check.

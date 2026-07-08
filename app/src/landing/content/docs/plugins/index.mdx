@@ -190,8 +190,8 @@ Thanos has **eight plugin slots**. Only one plugin per slot is active at a time,
 
 Every plugin is a small Node package that exports a `manifest` + `create()` function. See **[Authoring a plugin](/docs/plugins/authoring)** for the full contract, loading paths, and the core utilities available to plugins.
 
-The fastest path is `ao plugin create` — it scaffolds a working starter:
+The fastest path is `to plugin create` — it scaffolds a working starter:
 
 ```bash
-ao plugin create --slot notifier --name pagerduty
+to plugin create --slot notifier --name pagerduty
 ```

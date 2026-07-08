@@ -67,7 +67,7 @@ func requestLogger(log *slog.Logger, sink ports.EventSink) func(http.Handler) ht
 						payload["fingerprint"] = telemetrymeta.Fingerprint("httpd", "http_request", r.Method, path, strconv.Itoa(ww.Status()), errorKind, errorCode)
 					}
 					sink.Emit(r.Context(), ports.TelemetryEvent{
-						Name:       "ao.http.5xx",
+						Name:       "to.http.5xx",
 						Source:     "http",
 						OccurredAt: time.Now().UTC(),
 						Level:      ports.TelemetryLevelError,

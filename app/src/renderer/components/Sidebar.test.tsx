@@ -193,15 +193,15 @@ describe("Sidebar", () => {
 	it("requires explicit worker and orchestrator agents when creating a project", async () => {
 		const user = userEvent.setup();
 		const onCreateProject = vi.fn().mockResolvedValue(undefined) as CreateProjectHandler;
-		window.ao!.app.chooseDirectory = vi.fn().mockResolvedValue("/repo/new-project");
+		window.to!.app.chooseDirectory = vi.fn().mockResolvedValue("/repo/new-project");
 		renderSidebar({ onCreateProject });
 
 		await user.click(screen.getByLabelText("New project"));
 		expect(screen.getByRole("dialog", { name: "Import to Thanos" })).toBeInTheDocument();
-		expect(window.ao!.app.chooseDirectory).not.toHaveBeenCalled();
+		expect(window.to!.app.chooseDirectory).not.toHaveBeenCalled();
 		await user.click(screen.getByRole("button", { name: /^Project/i }));
 		expect(await screen.findByRole("dialog", { name: "Import project" })).toBeInTheDocument();
-		expect(window.ao!.app.chooseDirectory).not.toHaveBeenCalled();
+		expect(window.to!.app.chooseDirectory).not.toHaveBeenCalled();
 		await user.click(screen.getByRole("button", { name: /Choose a project folder/i }));
 
 		expect(await screen.findByText("/repo/new-project")).toBeInTheDocument();
@@ -224,13 +224,13 @@ describe("Sidebar", () => {
 	it("can create a workspace project from the project add flow", async () => {
 		const user = userEvent.setup();
 		const onCreateProject = vi.fn().mockResolvedValue(undefined) as CreateProjectHandler;
-		window.ao!.app.chooseDirectory = vi.fn().mockResolvedValue("/repo/workspace");
+		window.to!.app.chooseDirectory = vi.fn().mockResolvedValue("/repo/workspace");
 		renderSidebar({ onCreateProject });
 
 		await user.click(screen.getByLabelText("New project"));
 		await user.click(screen.getByRole("button", { name: /^Workspace/i }));
 		expect(await screen.findByRole("dialog", { name: "Import workspace" })).toBeInTheDocument();
-		expect(window.ao!.app.chooseDirectory).not.toHaveBeenCalled();
+		expect(window.to!.app.chooseDirectory).not.toHaveBeenCalled();
 		await user.click(screen.getByRole("button", { name: /Choose a folder/i }));
 
 		expect(await screen.findByText("/repo/workspace")).toBeInTheDocument();
@@ -252,8 +252,8 @@ describe("Sidebar", () => {
 	it("shows detected repository validation when workspace import fails", async () => {
 		const user = userEvent.setup();
 		const onCreateProject = vi.fn().mockRejectedValue(new Error("workspace not registered")) as CreateProjectHandler;
-		window.ao!.app.chooseDirectory = vi.fn().mockResolvedValue("/Users/test/dev/acme");
-		window.ao!.app.scanImportFolder = vi.fn().mockResolvedValue({
+		window.to!.app.chooseDirectory = vi.fn().mockResolvedValue("/Users/test/dev/acme");
+		window.to!.app.scanImportFolder = vi.fn().mockResolvedValue({
 			path: "/Users/test/dev/acme",
 			repos: [
 				{
@@ -294,7 +294,7 @@ describe("Sidebar", () => {
 		expect(screen.getByText("api")).toBeInTheDocument();
 		expect(screen.getByText("main github.com/acme/api")).toBeInTheDocument();
 		expect(screen.getByText("Resolve 1 failed repository to continue")).toBeInTheDocument();
-		expect(window.ao!.app.scanImportFolder).toHaveBeenCalledWith({
+		expect(window.to!.app.scanImportFolder).toHaveBeenCalledWith({
 			path: "/Users/test/dev/acme",
 			mode: "workspace",
 		});
@@ -303,8 +303,8 @@ describe("Sidebar", () => {
 	it("does not rescan folders for non-validation create failures", async () => {
 		const user = userEvent.setup();
 		const onCreateProject = vi.fn().mockRejectedValue(new Error("Thanos daemon is not ready.")) as CreateProjectHandler;
-		window.ao!.app.chooseDirectory = vi.fn().mockResolvedValue("/repo/workspace");
-		window.ao!.app.scanImportFolder = vi.fn();
+		window.to!.app.chooseDirectory = vi.fn().mockResolvedValue("/repo/workspace");
+		window.to!.app.scanImportFolder = vi.fn();
 		renderSidebar({ onCreateProject });
 
 		await user.click(screen.getByLabelText("New project"));
@@ -316,7 +316,7 @@ describe("Sidebar", () => {
 		await user.click(screen.getByRole("button", { name: "Create workspace and start" }));
 
 		expect(await screen.findByText("Thanos daemon is not ready.")).toBeInTheDocument();
-		expect(window.ao!.app.scanImportFolder).not.toHaveBeenCalled();
+		expect(window.to!.app.scanImportFolder).not.toHaveBeenCalled();
 	});
 
 	it("opens global settings from the footer menu when no project is selected", async () => {
@@ -331,7 +331,7 @@ describe("Sidebar", () => {
 	it("shows needs-auth agents as unavailable while keeping authorized agents selectable", async () => {
 		const user = userEvent.setup();
 		const onCreateProject = vi.fn().mockResolvedValue(undefined) as CreateProjectHandler;
-		window.ao!.app.chooseDirectory = vi.fn().mockResolvedValue("/repo/new-project");
+		window.to!.app.chooseDirectory = vi.fn().mockResolvedValue("/repo/new-project");
 		getMock.mockResolvedValueOnce({
 			data: {
 				supported: [
@@ -377,7 +377,7 @@ describe("Sidebar", () => {
 	it("updates project agent options when the catalog loads after the dialog opens", async () => {
 		const user = userEvent.setup();
 		const onCreateProject = vi.fn().mockResolvedValue(undefined) as CreateProjectHandler;
-		window.ao!.app.chooseDirectory = vi.fn().mockResolvedValue("/repo/new-project");
+		window.to!.app.chooseDirectory = vi.fn().mockResolvedValue("/repo/new-project");
 		let resolveAgents!: (value: {
 			data: {
 				supported: { id: string; label: string }[];

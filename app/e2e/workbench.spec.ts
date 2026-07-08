@@ -3,7 +3,7 @@ import { expect, test } from "@playwright/test";
 // The Playwright web server runs `dev:web` (VITE_NO_ELECTRON=1), so
 // useWorkspaceQuery serves the deterministic preview fixtures from
 // lib/mock-data.ts instead of hitting a daemon. The tests run in Chromium
-// (no window.ao), so the terminal shows its browser-preview surface.
+// (no window.to), so the terminal shows its browser-preview surface.
 
 test("renders the orchestrator-first workbench shell", async ({ page }) => {
 	await page.goto("/");

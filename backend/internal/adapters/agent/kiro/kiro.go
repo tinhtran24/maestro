@@ -60,7 +60,7 @@ func (p *Plugin) Manifest() adapters.Manifest {
 }
 
 // GetLaunchCommand builds the argv to start a new Kiro session:
-// `kiro-cli chat --agent ao [trust flags] [-- <prompt>]`.
+// `kiro-cli chat --agent to [trust flags] [-- <prompt>]`.
 //
 // The prompt is passed as a positional argument after `--` so a leading "-" is
 // not read as a flag. Kiro runs interactively for both workers and orchestrators;

@@ -77,7 +77,7 @@ function ShellLayout() {
 				operation: "project_add",
 				surface: "project_board",
 			});
-			void captureRendererEvent("ao.renderer.project_add_requested");
+			void captureRendererEvent("to.renderer.project_add_requested");
 			const status = await refreshDaemonStatus();
 			if (status.state !== "ready" || !status.port) {
 				throw new Error(status.message || "Thanos daemon is not ready.");
@@ -114,7 +114,7 @@ function ShellLayout() {
 				orchestratorAgent: input.orchestratorAgent as WorkspaceSummary["orchestratorAgent"],
 				sessions: [],
 			};
-			void captureRendererEvent("ao.renderer.project_add_succeeded", { project_id: workspace.id });
+			void captureRendererEvent("to.renderer.project_add_succeeded", { project_id: workspace.id });
 			updateWorkspaces((current) => [workspace, ...current.filter((item) => item.id !== workspace.id)]);
 			setOrchestratorStartupError(workspace.id, null);
 			try {
@@ -155,7 +155,7 @@ function ShellLayout() {
 				});
 				throw failure;
 			}
-			void captureRendererEvent("ao.renderer.project_removed", { project_id: projectId });
+			void captureRendererEvent("to.renderer.project_removed", { project_id: projectId });
 			updateWorkspaces((current) => current.filter((item) => item.id !== projectId));
 		},
 		[updateWorkspaces],
@@ -230,12 +230,12 @@ function ShellLayout() {
 				<ShellTopbar />
 				{/* Controlled by the ui-store so TitlebarNav / Topbar toggles (which
             call the store directly) stay in sync. --sidebar-width chains to
-            the drag-resizable --ao-sidebar-w set on :root by useResizable. */}
+            the drag-resizable --to-sidebar-w set on :root by useResizable. */}
 				<SidebarProvider
 					className="min-h-0 flex-1"
 					onOpenChange={(open) => open !== isSidebarOpen && toggleSidebar()}
 					open={isSidebarOpen}
-					style={{ "--sidebar-width": "var(--ao-sidebar-w, 240px)", "--sidebar-width-icon": "48px" } as CSSProperties}
+					style={{ "--sidebar-width": "var(--to-sidebar-w, 240px)", "--sidebar-width-icon": "48px" } as CSSProperties}
 				>
 					<Sidebar
 						daemonStatus={daemonStatus}

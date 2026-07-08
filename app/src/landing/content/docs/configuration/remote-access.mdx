@@ -110,7 +110,7 @@ caffeinate -i to start
 caffeinate -dims to start
 ```
 
-To run Thanos persistently in the background as a launchd service, create a plist at `~/Library/LaunchAgents/com.ao.orchestrator.plist`:
+To run Thanos persistently in the background as a launchd service, create a plist at `~/Library/LaunchAgents/com.to.orchestrator.plist`:
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
@@ -119,10 +119,10 @@ To run Thanos persistently in the background as a launchd service, create a plis
 <plist version="1.0">
 <dict>
   <key>Label</key>
-  <string>com.ao.orchestrator</string>
+  <string>com.to.orchestrator</string>
   <key>ProgramArguments</key>
   <array>
-    <string>/usr/local/bin/ao</string>
+    <string>/usr/local/bin/to</string>
     <string>start</string>
   </array>
   <key>RunAtLoad</key>
@@ -141,7 +141,7 @@ To run Thanos persistently in the background as a launchd service, create a plis
 Load it with:
 
 ```bash
-launchctl load ~/Library/LaunchAgents/com.ao.orchestrator.plist
+launchctl load ~/Library/LaunchAgents/com.to.orchestrator.plist
 ```
 
 ## Reverse proxy
@@ -164,7 +164,7 @@ If you want to expose Thanos over a domain name with TLS, or place it behind an 
 ```nginx
 server {
   listen 443 ssl;
-  server_name ao.example.com;
+  server_name to.example.com;
 
   # SSL cert config here
 
@@ -207,7 +207,7 @@ HOST=0.0.0.0 NEXT_PUBLIC_TERMINAL_WS_PATH=/ws/terminal to start
 Caddy handles WebSocket upgrades automatically — no explicit `Upgrade` headers needed:
 
 ```
-ao.example.com {
+to.example.com {
   reverse_proxy /ws/terminal/* 127.0.0.1:14800
   reverse_proxy /ws/direct/* 127.0.0.1:14801
   reverse_proxy 127.0.0.1:3000

@@ -31,11 +31,11 @@ describe("telemetry sanitizers", () => {
 	});
 
 	it("hashes renderer ids and drops raw route identifiers", async () => {
-		const props = await sanitizeRendererProperties("ao.renderer.project_removed", { project_id: "demo-project" });
+		const props = await sanitizeRendererProperties("to.renderer.project_removed", { project_id: "demo-project" });
 		expect(props).toHaveProperty("project_id_hash");
 		expect(props).not.toHaveProperty("project_id");
 
-		const routeProps = await sanitizeRendererProperties("ao.renderer.route_viewed", {
+		const routeProps = await sanitizeRendererProperties("to.renderer.route_viewed", {
 			surface: "project_board",
 			pathname: "/projects/demo",
 			search: "?token=secret",
@@ -128,15 +128,15 @@ describe("telemetry sanitizers", () => {
 
 	it("hashes project ids and drops everything else on CTA triads", async () => {
 		const triads = [
-			"ao.renderer.task_create_requested",
-			"ao.renderer.task_create_succeeded",
-			"ao.renderer.task_create_failed",
-			"ao.renderer.session_kill_requested",
-			"ao.renderer.session_kill_succeeded",
-			"ao.renderer.session_kill_failed",
-			"ao.renderer.settings_save_requested",
-			"ao.renderer.settings_save_succeeded",
-			"ao.renderer.settings_save_failed",
+			"to.renderer.task_create_requested",
+			"to.renderer.task_create_succeeded",
+			"to.renderer.task_create_failed",
+			"to.renderer.session_kill_requested",
+			"to.renderer.session_kill_succeeded",
+			"to.renderer.session_kill_failed",
+			"to.renderer.settings_save_requested",
+			"to.renderer.settings_save_succeeded",
+			"to.renderer.settings_save_failed",
 		];
 		for (const event of triads) {
 			const props = await sanitizeRendererProperties(event, {
@@ -149,14 +149,14 @@ describe("telemetry sanitizers", () => {
 	});
 
 	it("keeps only the source enum on orchestrator_spawn events", async () => {
-		const props = await sanitizeRendererProperties("ao.renderer.orchestrator_spawn_requested", {
+		const props = await sanitizeRendererProperties("to.renderer.orchestrator_spawn_requested", {
 			project_id: "demo-project",
 			source: "board",
 		});
 		expect(Object.keys(props).sort()).toEqual(["project_id_hash", "source"]);
 		expect(props.source).toBe("board");
 
-		const badSource = await sanitizeRendererProperties("ao.renderer.orchestrator_spawn_failed", {
+		const badSource = await sanitizeRendererProperties("to.renderer.orchestrator_spawn_failed", {
 			project_id: "demo-project",
 			source: "/Users/alice/private",
 		});
@@ -165,7 +165,7 @@ describe("telemetry sanitizers", () => {
 
 	it("keeps every whitelisted spawn source, including topbar/sidebar/project_add/settings/restart", async () => {
 		for (const source of ["board", "restore_dialog", "topbar", "sidebar", "project_add", "settings", "restart"]) {
-			const props = await sanitizeRendererProperties("ao.renderer.orchestrator_spawn_succeeded", {
+			const props = await sanitizeRendererProperties("to.renderer.orchestrator_spawn_succeeded", {
 				project_id: "demo-project",
 				source,
 			});
@@ -175,37 +175,37 @@ describe("telemetry sanitizers", () => {
 	});
 
 	it("keeps only enum values on notification events", async () => {
-		expect(await sanitizeRendererProperties("ao.renderer.notification_opened", { target: "pr" })).toEqual({
+		expect(await sanitizeRendererProperties("to.renderer.notification_opened", { target: "pr" })).toEqual({
 			target: "pr",
 		});
-		expect(await sanitizeRendererProperties("ao.renderer.notification_opened", { target: "http://x" })).toEqual({});
-		expect(await sanitizeRendererProperties("ao.renderer.notification_mark_read_requested", { scope: "all" })).toEqual({
+		expect(await sanitizeRendererProperties("to.renderer.notification_opened", { target: "http://x" })).toEqual({});
+		expect(await sanitizeRendererProperties("to.renderer.notification_mark_read_requested", { scope: "all" })).toEqual({
 			scope: "all",
 		});
-		expect(await sanitizeRendererProperties("ao.renderer.notification_mark_read_succeeded", { scope: "all" })).toEqual({
+		expect(await sanitizeRendererProperties("to.renderer.notification_mark_read_succeeded", { scope: "all" })).toEqual({
 			scope: "all",
 		});
-		expect(await sanitizeRendererProperties("ao.renderer.notification_mark_read_failed", { scope: "all" })).toEqual({
+		expect(await sanitizeRendererProperties("to.renderer.notification_mark_read_failed", { scope: "all" })).toEqual({
 			scope: "all",
 		});
 		expect(
-			await sanitizeRendererProperties("ao.renderer.notification_mark_read_requested", { scope: "everything" }),
+			await sanitizeRendererProperties("to.renderer.notification_mark_read_requested", { scope: "everything" }),
 		).toEqual({});
 	});
 
 	it("whitelists coarse daemon failure fields and drops messages", async () => {
-		const props = await sanitizeRendererProperties("ao.renderer.daemon_failure", {
+		const props = await sanitizeRendererProperties("to.renderer.daemon_failure", {
 			daemon_state: "error",
 			code: "spawn_failed",
 			exit_code: 1,
 			signal: "SIGKILL",
-			message: "spawn /Users/alice/ao failed",
+			message: "spawn /Users/alice/to failed",
 		});
 		expect(props).toEqual({ daemon_state: "error", code: "spawn_failed", exit_code: 1, signal: "SIGKILL" });
 	});
 
 	it("whitelists normalized api_error fields", async () => {
-		const props = await sanitizeRendererProperties("ao.renderer.api_error", {
+		const props = await sanitizeRendererProperties("to.renderer.api_error", {
 			operation: "GET /api/v1/projects/:id",
 			error_category: "http_5xx",
 			status: 500,
@@ -215,11 +215,11 @@ describe("telemetry sanitizers", () => {
 	});
 
 	it("keeps only the reason enum on terminal_attach_failed", async () => {
-		expect(await sanitizeRendererProperties("ao.renderer.terminal_attach_failed", { reason: "open_timeout" })).toEqual({
+		expect(await sanitizeRendererProperties("to.renderer.terminal_attach_failed", { reason: "open_timeout" })).toEqual({
 			reason: "open_timeout",
 		});
 		expect(
-			await sanitizeRendererProperties("ao.renderer.terminal_attach_failed", { reason: "something else" }),
+			await sanitizeRendererProperties("to.renderer.terminal_attach_failed", { reason: "something else" }),
 		).toEqual({});
 	});
 });

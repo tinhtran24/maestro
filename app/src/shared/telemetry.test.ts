@@ -19,7 +19,7 @@ test("defaultDataDir prefers THANOS_DATA_DIR", () => {
 });
 
 test("loadOrCreateTelemetryInstallId persists a stable install id", async () => {
-	const dir = await mkdtemp(path.join(os.tmpdir(), "ao-telemetry-"));
+	const dir = await mkdtemp(path.join(os.tmpdir(), "to-telemetry-"));
 	tempDirs.push(dir);
 
 	const first = await loadOrCreateTelemetryInstallId(dir);

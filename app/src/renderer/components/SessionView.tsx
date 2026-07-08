@@ -13,7 +13,7 @@ import type { TerminalTarget } from "../types/terminal";
 
 const INSPECTOR_MIN_PERCENT = 22;
 const INSPECTOR_MAX_PERCENT = 45;
-const inspectorSplitStorageKey = "ao.inspector.split";
+const inspectorSplitStorageKey = "to.inspector.split";
 
 function initialSplitPercent(): number {
 	const raw = typeof window === "undefined" ? null : window.localStorage?.getItem(inspectorSplitStorageKey);

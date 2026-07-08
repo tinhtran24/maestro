@@ -21,7 +21,7 @@ export function TerminalPane({ session, theme, daemonReady, terminalTarget, font
 	const terminalKey =
 		terminalTarget?.kind === "reviewer" ? terminalTarget.handleId : (session?.terminalHandleId ?? "empty");
 
-	if (!window.ao) {
+	if (!window.to) {
 		const provider = terminalTarget?.kind === "reviewer" ? terminalTarget.harness : (session?.provider ?? "claude");
 		const lines =
 			terminalTarget?.kind === "reviewer" ? reviewerPreviewLines(session) : workerPreviewLines(session, provider);

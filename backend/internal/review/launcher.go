@@ -112,10 +112,10 @@ func (l *agentLauncher) Spawn(ctx context.Context, spec LaunchSpec) (string, err
 }
 
 // pinnedEnv returns the reviewer command's env with PATH pinned to the daemon's
-// own directory, so the bare `ao` the reviewer runs (e.g. `to review submit`)
-// resolves to this daemon's CLI rather than a foreign `ao` first on the
+// own directory, so the bare `to` the reviewer runs (e.g. `to review submit`)
+// resolves to this daemon's CLI rather than a foreign `to` first on the
 // inherited PATH. Mirrors the worker-session pin in the session manager.
-// Best-effort: an unpinnable daemon (not named "ao") keeps the inherited PATH.
+// Best-effort: an unpinnable daemon (not named "to") keeps the inherited PATH.
 func pinnedEnv(base map[string]string) map[string]string {
 	path, err := sessionmanager.HookPATH(os.Executable, os.Getenv, base)
 	if err != nil {

@@ -61,8 +61,8 @@ const (
 // hookBinaryName is the executable name the workspace hook commands invoke:
 // every agent adapter installs a bare `to hooks <agent> <event>`. The session
 // PATH pin (hookPATH) only works when the daemon's own executable carries this
-// name, since prepending its directory must change what `ao` resolves to.
-const hookBinaryName = "ao"
+// name, since prepending its directory must change what `to` resolves to.
+const hookBinaryName = "to"
 
 type lifecycleRecorder interface {
 	MarkSpawned(ctx context.Context, id domain.SessionID, metadata domain.SessionMetadata) error
@@ -1471,18 +1471,18 @@ func seedRecord(cfg ports.SpawnConfig, now time.Time) domain.SessionRecord {
 
 func defaultSessionBranch(id domain.SessionID, kind domain.SessionKind, prefix string) string {
 	if kind == domain.KindOrchestrator {
-		return "ao/" + prefix + "-orchestrator"
+		return "to/" + prefix + "-orchestrator"
 	}
 	// A fresh, unique branch per worker session: gitworktree can't add a worktree
 	// on a branch already checked out elsewhere (e.g. main). Put the root work
 	// branch under a session namespace so sibling PR branches such as
-	// ao/<session>/<topic> remain valid Git refs.
-	return "ao/" + string(id) + "/root"
+	// to/<session>/<topic> remain valid Git refs.
+	return "to/" + string(id) + "/root"
 }
 
 func defaultSpawnBranch(id domain.SessionID, kind domain.SessionKind, prefix string, projectKind domain.ProjectKind) string {
 	if projectKind == domain.ProjectKindWorkspace {
-		return "ao/" + string(id)
+		return "to/" + string(id)
 	}
 	return defaultSessionBranch(id, kind, prefix)
 }
@@ -1540,7 +1540,7 @@ func (m *Manager) buildSystemPrompt(ctx context.Context, kind domain.SessionKind
 }
 
 // aoSkillPointer is appended to every agent system prompt. It points the agent
-// at the using-ao skill the daemon installs under the data dir, rather than
+// at the using-to skill the daemon installs under the data dir, rather than
 // inlining the whole CLI catalog. The path is absolute so it resolves from any
 // project's worktree, not just the Thanos repo (the only place a repo-relative
 // skills/ path would exist). The skill file carries exact flags and examples,
@@ -1549,8 +1549,8 @@ func (m *Manager) aoSkillPointer() string {
 	dir := skillassets.Dir(m.dataDir)
 	skillFile := filepath.Join(dir, "SKILL.md")
 	commandsGlob := filepath.Join(dir, "commands", "*.md")
-	return "\n\n" + "## Using the ao CLI\n\n" +
-		"When you need to use the `ao` CLI, read `" + skillFile + "` first (and the relevant `" + commandsGlob + "`) for the full command catalog, flags, and examples."
+	return "\n\n" + "## Using the to CLI\n\n" +
+		"When you need to use the `to` CLI, read `" + skillFile + "` first (and the relevant `" + commandsGlob + "`) for the full command catalog, flags, and examples."
 }
 
 func (m *Manager) workspaceProjectPrompt(ctx context.Context, kind domain.SessionKind, projectID domain.ProjectID) (string, error) {
@@ -1610,7 +1610,7 @@ To run a worker on a specific agent, add `+"`--agent <name>`"+` (an alias for `+
 Message workers with `+"`to send`"+`, for example:
 `+"`to send --session <worker-session-id> --message \"<your message>\"`"+`
 
-To discover any other Thanos command, run `+"`ao --help`"+` (and `+"`ao <command> --help`"+` for details on one).
+To discover any other Thanos command, run `+"`to --help`"+` (and `+"`to <command> --help`"+` for details on one).
 
 Use workers for focused implementation tasks, track their progress, synthesize their results, and only step into implementation directly for true emergencies or small coordination fixes.`, project, project)
 }
@@ -1689,9 +1689,9 @@ func spawnEnv(id domain.SessionID, project domain.ProjectID, issue domain.IssueI
 }
 
 // runtimeEnv is spawnEnv plus the hook PATH pin: the session's PATH puts the
-// running daemon's own directory first, so the bare `ao` in workspace hook
+// running daemon's own directory first, so the bare `to` in workspace hook
 // commands resolves to the daemon that installed them rather than whatever
-// `ao` is first on the inherited PATH (e.g. a legacy CLI without the hooks
+// `to` is first on the inherited PATH (e.g. a legacy CLI without the hooks
 // command, which fails every callback and silently kills activity tracking).
 // When the pin cannot be applied the inherited PATH is kept and a warning is
 // logged so the degradation isn't silent.
@@ -1699,7 +1699,7 @@ func (m *Manager) runtimeEnv(id domain.SessionID, project domain.ProjectID, issu
 	env := spawnEnv(id, project, issue, m.dataDir, projectEnv)
 	path, err := HookPATH(m.executable, os.Getenv, projectEnv)
 	if err != nil {
-		m.logger.Warn("session PATH not pinned to the daemon binary; `to hooks` callbacks may resolve to a different ao and activity tracking will stall",
+		m.logger.Warn("session PATH not pinned to the daemon binary; `to hooks` callbacks may resolve to a different to and activity tracking will stall",
 			"session", id, "error", err)
 		return env
 	}
@@ -1711,8 +1711,8 @@ func (m *Manager) runtimeEnv(id domain.SessionID, project domain.ProjectID, issu
 // executable's directory prepended to the base PATH (the project's PATH
 // override when set, else the daemon's inherited PATH — matching what the
 // runtime would have exported anyway). An error means the pin cannot be
-// applied: the executable is unresolvable, or is not named "ao", in which case
-// prepending its directory would not change what `ao` resolves to. Exported so
+// applied: the executable is unresolvable, or is not named "to", in which case
+// prepending its directory would not change what `to` resolves to. Exported so
 // the reviewer launcher can pin its pane's PATH the same way.
 func HookPATH(executable func() (string, error), getenv func(string) string, projectEnv map[string]string) (string, error) {
 	exe, err := executable()

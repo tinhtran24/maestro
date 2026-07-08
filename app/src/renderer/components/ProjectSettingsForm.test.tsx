@@ -376,7 +376,7 @@ describe("ProjectSettingsForm", () => {
 						title: "Orchestrator",
 						provider: "claude-code",
 						kind: "orchestrator",
-						branch: "ao/proj-1-orchestrator",
+						branch: "to/proj-1-orchestrator",
 						status: "working",
 						createdAt: "2026-07-03T00:00:00Z",
 						updatedAt: "2026-07-03T00:00:00Z",

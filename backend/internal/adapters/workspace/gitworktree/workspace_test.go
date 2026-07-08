@@ -129,13 +129,13 @@ func TestOrchestratorManagedPath(t *testing.T) {
 			ProjectID:     "proj",
 			SessionID:     "proj-1",
 			Kind:          domain.KindOrchestrator,
-			SessionPrefix: "ao-agents",
+			SessionPrefix: "to-agents",
 		}
 		path, err := ws.managedPath(cfg)
 		if err != nil {
 			t.Fatalf("managed path: %v", err)
 		}
-		want := filepath.Join(ws.managedRoot, "proj", "orchestrator", "ao-agents-orchestrator")
+		want := filepath.Join(ws.managedRoot, "proj", "orchestrator", "to-agents-orchestrator")
 		if path != want {
 			t.Fatalf("path = %q, want %q", path, want)
 		}
@@ -187,7 +187,7 @@ func TestCreateReusesRegisteredWorktreeAtExpectedPath(t *testing.T) {
 		SessionID:     "proj-1",
 		Kind:          domain.KindOrchestrator,
 		SessionPrefix: "proj",
-		Branch:        "ao/proj-orchestrator",
+		Branch:        "to/proj-orchestrator",
 	}
 	ws.run = func(_ context.Context, _ string, args ...string) ([]byte, error) {
 		joined := strings.Join(args, " ")
@@ -195,7 +195,7 @@ func TestCreateReusesRegisteredWorktreeAtExpectedPath(t *testing.T) {
 		case strings.Contains(joined, "check-ref-format"):
 			return nil, nil
 		case strings.Contains(joined, "worktree list --porcelain"):
-			return []byte("worktree " + path + "\nbranch refs/heads/ao/proj-orchestrator\n"), nil
+			return []byte("worktree " + path + "\nbranch refs/heads/to/proj-orchestrator\n"), nil
 		default:
 			t.Fatalf("unexpected git invocation: %v", args)
 			return nil, nil
@@ -206,8 +206,8 @@ func TestCreateReusesRegisteredWorktreeAtExpectedPath(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Create: %v", err)
 	}
-	if info.Path != path || info.Branch != "ao/proj-orchestrator" {
-		t.Fatalf("info = %#v, want path %q branch ao/proj-orchestrator", info, path)
+	if info.Path != path || info.Branch != "to/proj-orchestrator" {
+		t.Fatalf("info = %#v, want path %q branch to/proj-orchestrator", info, path)
 	}
 }
 
@@ -384,7 +384,7 @@ func TestRestoreWithRepoPathMovesStrayPathAside(t *testing.T) {
 	info, err := ws.Restore(context.Background(), ports.WorkspaceConfig{
 		ProjectID: "proj",
 		SessionID: "proj-1",
-		Branch:    "ao/proj-1",
+		Branch:    "to/proj-1",
 		RepoPath:  repo,
 		Path:      path,
 	})
@@ -616,7 +616,7 @@ func TestResolveBaseRefInfersRepoDefaultBranchWhenUnset(t *testing.T) {
 			return nil, nil
 		}
 	}
-	ref, err := ws.resolveBaseRef(context.Background(), "/repo/child", "ao/work", "")
+	ref, err := ws.resolveBaseRef(context.Background(), "/repo/child", "to/work", "")
 	if err != nil {
 		t.Fatalf("resolveBaseRef err = %v", err)
 	}

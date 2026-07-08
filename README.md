@@ -97,37 +97,37 @@ The desktop app is the main control surface: projects on the left, active sessio
 Thanos ships adapters for 23 worker agent harnesses:
 
 <p>
-  <a href="https://ao-agents.com/docs/plugins/agents/claude-code"><img src="frontend/src/landing/public/docs/logos/claude-code.svg" alt="" width="16" height="16" valign="middle" /> <code>claude-code</code></a> ·
-  <a href="https://ao-agents.com/docs/plugins/agents/codex"><img src="frontend/src/landing/public/docs/logos/codex.svg" alt="" width="16" height="16" valign="middle" /> <code>codex</code></a> ·
-  <a href="https://ao-agents.com/docs/plugins/agents/aider"><img src="frontend/src/landing/public/docs/logos/aider.png" alt="" width="16" height="16" valign="middle" /> <code>aider</code></a> ·
-  <a href="https://ao-agents.com/docs/plugins/agents/opencode"><img src="frontend/src/landing/public/docs/logos/opencode.svg" alt="" width="16" height="16" valign="middle" /> <code>opencode</code></a> ·
-  <a href="https://ao-agents.com/docs/plugins/agents"><img src="frontend/src/landing/public/docs/logos/grok.png" alt="" width="16" height="16" valign="middle" /> <code>grok</code></a> ·
-  <a href="https://ao-agents.com/docs/plugins/agents"><img src="frontend/src/landing/public/docs/logos/droid.png" alt="" width="16" height="16" valign="middle" /> <code>droid</code></a> ·
-  <a href="https://ao-agents.com/docs/plugins/agents"><code>amp</code></a> ·
-  <a href="https://ao-agents.com/docs/plugins/agents"><code>agy</code></a> ·
-  <a href="https://ao-agents.com/docs/plugins/agents"><img src="frontend/src/landing/public/docs/logos/crush.png" alt="" width="16" height="16" valign="middle" /> <code>crush</code></a> ·
-  <a href="https://ao-agents.com/docs/plugins/agents/cursor"><img src="frontend/src/landing/public/docs/logos/cursor.svg" alt="" width="16" height="16" valign="middle" /> <code>cursor</code></a> ·
-  <a href="https://ao-agents.com/docs/plugins/agents"><img src="frontend/src/landing/public/docs/logos/qwen.png" alt="" width="16" height="16" valign="middle" /> <code>qwen</code></a> ·
-  <a href="https://ao-agents.com/docs/plugins/agents"><img src="frontend/src/landing/public/docs/logos/copilot.png" alt="" width="16" height="16" valign="middle" /> <code>copilot</code></a> ·
-  <a href="https://ao-agents.com/docs/plugins/agents"><img src="frontend/src/landing/public/docs/logos/goose.png" alt="" width="16" height="16" valign="middle" /> <code>goose</code></a> ·
-  <a href="https://ao-agents.com/docs/plugins/agents"><code>auggie</code></a> ·
-  <a href="https://ao-agents.com/docs/plugins/agents"><img src="frontend/src/landing/public/docs/logos/continue.png" alt="" width="16" height="16" valign="middle" /> <code>continue</code></a> ·
-  <a href="https://ao-agents.com/docs/plugins/agents"><img src="frontend/src/landing/public/docs/logos/devin.png" alt="" width="16" height="16" valign="middle" /> <code>devin</code></a> ·
-  <a href="https://ao-agents.com/docs/plugins/agents"><code>cline</code></a> ·
-  <a href="https://ao-agents.com/docs/plugins/agents"><img src="frontend/src/landing/public/docs/logos/kimi.png" alt="" width="16" height="16" valign="middle" /> <code>kimi</code></a> ·
-  <a href="https://ao-agents.com/docs/plugins/agents"><img src="frontend/src/landing/public/docs/logos/kiro.png" alt="" width="16" height="16" valign="middle" /> <code>kiro</code></a> ·
-  <a href="https://ao-agents.com/docs/plugins/agents"><img src="frontend/src/landing/public/docs/logos/kilocode.png" alt="" width="16" height="16" valign="middle" /> <code>kilocode</code></a> ·
-  <a href="https://ao-agents.com/docs/plugins/agents"><img src="frontend/src/landing/public/docs/logos/vibe.png" alt="" width="16" height="16" valign="middle" /> <code>vibe</code></a> ·
-  <a href="https://ao-agents.com/docs/plugins/agents"><img src="frontend/src/landing/public/docs/logos/pi.png" alt="" width="16" height="16" valign="middle" /> <code>pi</code></a> ·
-  <a href="https://ao-agents.com/docs/plugins/agents"><code>autohand</code></a>
+  <a href="https://to-agents.com/docs/plugins/agents/claude-code"><img src="frontend/src/landing/public/docs/logos/claude-code.svg" alt="" width="16" height="16" valign="middle" /> <code>claude-code</code></a> ·
+  <a href="https://to-agents.com/docs/plugins/agents/codex"><img src="frontend/src/landing/public/docs/logos/codex.svg" alt="" width="16" height="16" valign="middle" /> <code>codex</code></a> ·
+  <a href="https://to-agents.com/docs/plugins/agents/aider"><img src="frontend/src/landing/public/docs/logos/aider.png" alt="" width="16" height="16" valign="middle" /> <code>aider</code></a> ·
+  <a href="https://to-agents.com/docs/plugins/agents/opencode"><img src="frontend/src/landing/public/docs/logos/opencode.svg" alt="" width="16" height="16" valign="middle" /> <code>opencode</code></a> ·
+  <a href="https://to-agents.com/docs/plugins/agents"><img src="frontend/src/landing/public/docs/logos/grok.png" alt="" width="16" height="16" valign="middle" /> <code>grok</code></a> ·
+  <a href="https://to-agents.com/docs/plugins/agents"><img src="frontend/src/landing/public/docs/logos/droid.png" alt="" width="16" height="16" valign="middle" /> <code>droid</code></a> ·
+  <a href="https://to-agents.com/docs/plugins/agents"><code>amp</code></a> ·
+  <a href="https://to-agents.com/docs/plugins/agents"><code>agy</code></a> ·
+  <a href="https://to-agents.com/docs/plugins/agents"><img src="frontend/src/landing/public/docs/logos/crush.png" alt="" width="16" height="16" valign="middle" /> <code>crush</code></a> ·
+  <a href="https://to-agents.com/docs/plugins/agents/cursor"><img src="frontend/src/landing/public/docs/logos/cursor.svg" alt="" width="16" height="16" valign="middle" /> <code>cursor</code></a> ·
+  <a href="https://to-agents.com/docs/plugins/agents"><img src="frontend/src/landing/public/docs/logos/qwen.png" alt="" width="16" height="16" valign="middle" /> <code>qwen</code></a> ·
+  <a href="https://to-agents.com/docs/plugins/agents"><img src="frontend/src/landing/public/docs/logos/copilot.png" alt="" width="16" height="16" valign="middle" /> <code>copilot</code></a> ·
+  <a href="https://to-agents.com/docs/plugins/agents"><img src="frontend/src/landing/public/docs/logos/goose.png" alt="" width="16" height="16" valign="middle" /> <code>goose</code></a> ·
+  <a href="https://to-agents.com/docs/plugins/agents"><code>auggie</code></a> ·
+  <a href="https://to-agents.com/docs/plugins/agents"><img src="frontend/src/landing/public/docs/logos/continue.png" alt="" width="16" height="16" valign="middle" /> <code>continue</code></a> ·
+  <a href="https://to-agents.com/docs/plugins/agents"><img src="frontend/src/landing/public/docs/logos/devin.png" alt="" width="16" height="16" valign="middle" /> <code>devin</code></a> ·
+  <a href="https://to-agents.com/docs/plugins/agents"><code>cline</code></a> ·
+  <a href="https://to-agents.com/docs/plugins/agents"><img src="frontend/src/landing/public/docs/logos/kimi.png" alt="" width="16" height="16" valign="middle" /> <code>kimi</code></a> ·
+  <a href="https://to-agents.com/docs/plugins/agents"><img src="frontend/src/landing/public/docs/logos/kiro.png" alt="" width="16" height="16" valign="middle" /> <code>kiro</code></a> ·
+  <a href="https://to-agents.com/docs/plugins/agents"><img src="frontend/src/landing/public/docs/logos/kilocode.png" alt="" width="16" height="16" valign="middle" /> <code>kilocode</code></a> ·
+  <a href="https://to-agents.com/docs/plugins/agents"><img src="frontend/src/landing/public/docs/logos/vibe.png" alt="" width="16" height="16" valign="middle" /> <code>vibe</code></a> ·
+  <a href="https://to-agents.com/docs/plugins/agents"><img src="frontend/src/landing/public/docs/logos/pi.png" alt="" width="16" height="16" valign="middle" /> <code>pi</code></a> ·
+  <a href="https://to-agents.com/docs/plugins/agents"><code>autohand</code></a>
 </p>
 
 Reviewer agents are configured separately. The current reviewer harnesses are:
 
 <p>
-  <a href="https://ao-agents.com/docs/plugins/agents/claude-code"><img src="frontend/src/landing/public/docs/logos/claude-code.svg" alt="" width="16" height="16" valign="middle" /> <code>claude-code</code></a> ·
-  <a href="https://ao-agents.com/docs/plugins/agents/codex"><img src="frontend/src/landing/public/docs/logos/codex.svg" alt="" width="16" height="16" valign="middle" /> <code>codex</code></a> ·
-  <a href="https://ao-agents.com/docs/plugins/agents/opencode"><img src="frontend/src/landing/public/docs/logos/opencode.svg" alt="" width="16" height="16" valign="middle" /> <code>opencode</code></a>
+  <a href="https://to-agents.com/docs/plugins/agents/claude-code"><img src="frontend/src/landing/public/docs/logos/claude-code.svg" alt="" width="16" height="16" valign="middle" /> <code>claude-code</code></a> ·
+  <a href="https://to-agents.com/docs/plugins/agents/codex"><img src="frontend/src/landing/public/docs/logos/codex.svg" alt="" width="16" height="16" valign="middle" /> <code>codex</code></a> ·
+  <a href="https://to-agents.com/docs/plugins/agents/opencode"><img src="frontend/src/landing/public/docs/logos/opencode.svg" alt="" width="16" height="16" valign="middle" /> <code>opencode</code></a>
 </p>
 
 **If it runs in a terminal, it runs on Thanos.**
@@ -137,11 +137,11 @@ Reviewer agents are configured separately. The current reviewer harnesses are:
 The fastest path is the same flow used by the installation docs:
 
 ```bash
-npm install -g @tinhtran/ao
+npm install -g @tinhtran/to
 to start
 ```
 
-Run `to start` from the repository you want Thanos to manage. See the [installation guide](https://ao-agents.com/docs/installation) for pnpm, yarn, source installs, agent CLI setup, and troubleshooting.
+Run `to start` from the repository you want Thanos to manage. See the [installation guide](https://to-agents.com/docs/installation) for pnpm, yarn, source installs, agent CLI setup, and troubleshooting.
 
 You can also download the latest desktop build for your platform:
 

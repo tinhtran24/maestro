@@ -14,7 +14,7 @@ const (
 	// installing the file is sufficient.
 	gooseHooksRootDirName = ".agents"
 	goosePluginsDirName   = "plugins"
-	goosePluginName       = "ao"
+	goosePluginName       = "to"
 	gooseHooksSubDirName  = "hooks"
 	gooseHooksFileName    = "hooks.json"
 
@@ -34,7 +34,7 @@ var gooseManagedHooks = []hooksjson.HookSpec{
 }
 
 // gooseHooks manages Thanos's hooks in the workspace-local
-// .agents/plugins/ao/hooks/hooks.json file.
+// .agents/plugins/to/hooks/hooks.json file.
 var gooseHooks = hooksjson.Manager{
 	Label:         "goose",
 	CommandPrefix: gooseHookCommandPrefix,

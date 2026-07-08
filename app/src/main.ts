@@ -462,7 +462,7 @@ function establishSupervisorLink(): void {
 	const rfp = runFilePath();
 	const addr =
 		process.platform === "win32"
-			? "\\\\.\\pipe\\ao-supervise"
+			? "\\\\.\\pipe\\to-supervise"
 			: rfp
 				? path.join(path.dirname(rfp), "supervise.sock")
 				: null;
@@ -801,7 +801,7 @@ async function startDaemonInner(startEpoch: number): Promise<DaemonStatus> {
 		daemonProcess = null;
 		// An explicit stopDaemon() already set a clean `{ state: "stopped" }`.
 		// daemon-telemetry reports any status carrying a `code` as
-		// ao.renderer.daemon_failure, so don't stamp `code: "exited"` on a stop
+		// to.renderer.daemon_failure, so don't stamp `code: "exited"` on a stop
 		// the user or app asked for — that would count intentional stops as
 		// failures. Preserve the clean stopped status instead.
 		if (daemonStoppingProcess === child) {

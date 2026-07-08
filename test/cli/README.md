@@ -1,6 +1,6 @@
-# `ao` CLI end-to-end tests
+# `to` CLI end-to-end tests
 
-These tests drive the **real `ao` binary** the way a user would — `start` →
+These tests drive the **real `to` binary** the way a user would — `start` →
 `status` → `doctor` → `stop`, plus the daemon-control HTTP surface — and assert
 the whole thing works. They run against **isolated, throwaway state** (a per-test
 temp run-file + data dir + an OS-assigned free loopback port), so they never
@@ -10,7 +10,7 @@ touch a developer's real Thanos installation.
 
 | Tier                          | What                                                                                                                                                                                                                                                                  | Where                                                |
 | ----------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------- |
-| **Comprehensive (primary)**   | A cross-platform Go suite that builds `ao` and exercises the full behaviour. Runs natively on **ubuntu + macOS + windows** — the only way to cover the OS-specific process-detach paths (`setsid` vs `CREATE_NEW_PROCESS_GROUP`) and `os.UserConfigDir()` resolution. | `backend/internal/cli/e2e_test.go` (build tag `e2e`) |
+| **Comprehensive (primary)**   | A cross-platform Go suite that builds `to` and exercises the full behaviour. Runs natively on **ubuntu + macOS + windows** — the only way to cover the OS-specific process-detach paths (`setsid` vs `CREATE_NEW_PROCESS_GROUP`) and `os.UserConfigDir()` resolution. | `backend/internal/cli/e2e_test.go` (build tag `e2e`) |
 | **Fresh-install (hardening)** | Proves a freshly installed binary works on a clean machine with no Go toolchain and no developer state.                                                                                                                                                               | `test/cli/Dockerfile` + `test/cli/install-check.sh`  |
 
 ## Run it
@@ -23,15 +23,15 @@ go test -tags e2e ./internal/cli/...              # run it
 go test -tags e2e -v -run TestE2E ./internal/cli/...   # verbose: prints every command + output
 ```
 
-It builds its own `ao` binary; `git` must be on PATH (required by `doctor`).
-`-v` logs each `ao` invocation and its full output, which is the audit trail you
+It builds its own `to` binary; `git` must be on PATH (required by `doctor`).
+`-v` logs each `to` invocation and its full output, which is the audit trail you
 get for free from `go test`.
 
 **Fresh-machine install, in a clean container:**
 
 ```bash
-docker build -f test/cli/Dockerfile -t ao-cli-smoke .
-docker run --rm --init ao-cli-smoke
+docker build -f test/cli/Dockerfile -t to-cli-smoke .
+docker run --rm --init to-cli-smoke
 ```
 
 > `--init` gives the container a real PID-1 reaper (tini) so the daemon the

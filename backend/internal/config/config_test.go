@@ -57,8 +57,8 @@ func TestLoadOverrides(t *testing.T) {
 	t.Setenv("THANOS_PORT", "4002")
 	t.Setenv("THANOS_REQUEST_TIMEOUT", "5s")
 	t.Setenv("THANOS_SHUTDOWN_TIMEOUT", "3s")
-	t.Setenv("THANOS_RUN_FILE", "/tmp/ao-test-running.json")
-	t.Setenv("THANOS_DATA_DIR", "/tmp/ao-test-data")
+	t.Setenv("THANOS_RUN_FILE", "/tmp/to-test-running.json")
+	t.Setenv("THANOS_DATA_DIR", "/tmp/to-test-data")
 	t.Setenv("THANOS_TELEMETRY_EVENTS", "on")
 	t.Setenv("THANOS_TELEMETRY_METRICS", "off")
 	t.Setenv("THANOS_TELEMETRY_REMOTE", "posthog")
@@ -78,11 +78,11 @@ func TestLoadOverrides(t *testing.T) {
 	if cfg.ShutdownTimeout != 3*time.Second {
 		t.Errorf("ShutdownTimeout = %s, want 3s", cfg.ShutdownTimeout)
 	}
-	if cfg.RunFilePath != "/tmp/ao-test-running.json" {
-		t.Errorf("RunFilePath = %q, want /tmp/ao-test-running.json", cfg.RunFilePath)
+	if cfg.RunFilePath != "/tmp/to-test-running.json" {
+		t.Errorf("RunFilePath = %q, want /tmp/to-test-running.json", cfg.RunFilePath)
 	}
-	if cfg.DataDir != "/tmp/ao-test-data" {
-		t.Errorf("DataDir = %q, want /tmp/ao-test-data", cfg.DataDir)
+	if cfg.DataDir != "/tmp/to-test-data" {
+		t.Errorf("DataDir = %q, want /tmp/to-test-data", cfg.DataDir)
 	}
 	if !cfg.Telemetry.Events || cfg.Telemetry.Metrics {
 		t.Fatalf("Telemetry toggles = %+v", cfg.Telemetry)

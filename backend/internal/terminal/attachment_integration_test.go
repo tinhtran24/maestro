@@ -26,7 +26,7 @@ func TestAttachmentStreamsRealTmuxPane(t *testing.T) {
 	// See TestAttachmentReattachAdoptsNewSize: tmux needs a usable TERM to attach.
 	t.Setenv("TERM", "xterm-256color")
 
-	name := "ao-term-it-" + strconv.Itoa(os.Getpid())
+	name := "to-term-it-" + strconv.Itoa(os.Getpid())
 	rt := tmux.New(tmux.Options{Timeout: 10 * time.Second})
 	handle, err := rt.Create(context.Background(), ports.RuntimeConfig{
 		SessionID:     domain.SessionID(name),
@@ -69,7 +69,7 @@ func TestAttachmentReattachAdoptsNewSize(t *testing.T) {
 	// none, so set it here to match the real environment.
 	t.Setenv("TERM", "xterm-256color")
 
-	name := "ao-term-size-it-" + strconv.Itoa(os.Getpid())
+	name := "to-term-size-it-" + strconv.Itoa(os.Getpid())
 	rt := tmux.New(tmux.Options{Timeout: 10 * time.Second})
 	handle, err := rt.Create(context.Background(), ports.RuntimeConfig{
 		SessionID:     domain.SessionID(name),

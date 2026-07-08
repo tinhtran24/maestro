@@ -65,7 +65,7 @@ func FileExists(path string) bool {
 // followed by a rename, so a crash or signal mid-write can't leave a truncated
 // or empty file that the agent then fails to parse (silently disabling hooks).
 func AtomicWriteFile(path string, data []byte, perm os.FileMode) error {
-	tmp, err := os.CreateTemp(filepath.Dir(path), ".ao-tmp-*")
+	tmp, err := os.CreateTemp(filepath.Dir(path), ".to-tmp-*")
 	if err != nil {
 		return err
 	}

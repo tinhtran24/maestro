@@ -27,14 +27,14 @@ func TestCLIInvokedRouteEmitsTelemetry(t *testing.T) {
 	if len(sink.events) != 2 {
 		t.Fatalf("events = %d, want 2", len(sink.events))
 	}
-	if sink.events[0].Name != "ao.cli.invoked" {
-		t.Fatalf("event name = %q, want ao.cli.invoked", sink.events[0].Name)
+	if sink.events[0].Name != "to.cli.invoked" {
+		t.Fatalf("event name = %q, want to.cli.invoked", sink.events[0].Name)
 	}
 	if got := sink.events[0].Payload["command_path"]; got != "to status" {
 		t.Fatalf("command_path = %#v, want to status", got)
 	}
-	if sink.events[1].Name != "ao.app.active" {
-		t.Fatalf("second event name = %q, want ao.app.active", sink.events[1].Name)
+	if sink.events[1].Name != "to.app.active" {
+		t.Fatalf("second event name = %q, want to.app.active", sink.events[1].Name)
 	}
 	if got := sink.events[1].Payload["channel"]; got != "cli" {
 		t.Fatalf("channel = %#v, want cli", got)
@@ -70,8 +70,8 @@ func TestCLIUsageErrorRouteEmitsTelemetry(t *testing.T) {
 	if rec.Code != http.StatusAccepted {
 		t.Fatalf("status = %d, want 202", rec.Code)
 	}
-	if len(sink.events) != 1 || sink.events[0].Name != "ao.cli.usage_errors" {
-		t.Fatalf("events = %#v, want one ao.cli.usage_errors event", sink.events)
+	if len(sink.events) != 1 || sink.events[0].Name != "to.cli.usage_errors" {
+		t.Fatalf("events = %#v, want one to.cli.usage_errors event", sink.events)
 	}
 	payload := sink.events[0].Payload
 	if got := payload["component"]; got != "cli" {
@@ -112,17 +112,17 @@ func TestRecoverTelemetryEmitsPanicEvent(t *testing.T) {
 	var panicPayload, fiveXXPayload map[string]any
 	for _, ev := range sink.events {
 		switch ev.Name {
-		case "ao.daemon.panic":
+		case "to.daemon.panic":
 			panicPayload = ev.Payload
-		case "ao.http.5xx":
+		case "to.http.5xx":
 			fiveXXPayload = ev.Payload
 		}
 	}
 	if panicPayload == nil {
-		t.Fatalf("events = %#v, want ao.daemon.panic", sink.events)
+		t.Fatalf("events = %#v, want to.daemon.panic", sink.events)
 	}
 	if fiveXXPayload == nil {
-		t.Fatalf("events = %#v, want ao.http.5xx after recovery", sink.events)
+		t.Fatalf("events = %#v, want to.http.5xx after recovery", sink.events)
 	}
 	if got := panicPayload["component"]; got != "httpd" {
 		t.Fatalf("panic payload.component = %#v, want httpd", got)

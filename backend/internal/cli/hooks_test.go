@@ -56,9 +56,9 @@ func capturedState(t *testing.T, capture *activityCapture) string {
 }
 
 func TestHooks_NotificationReportsWaitingInput(t *testing.T) {
-	t.Setenv("THANOS_SESSION_ID", "ao-7")
+	t.Setenv("THANOS_SESSION_ID", "to-7")
 	cfg := setConfigEnv(t)
-	srv, capture := activityServer(t, http.StatusOK, `{"ok":true,"sessionId":"ao-7","state":"waiting_input"}`)
+	srv, capture := activityServer(t, http.StatusOK, `{"ok":true,"sessionId":"to-7","state":"waiting_input"}`)
 	writeRunFileFor(t, cfg, srv)
 
 	_, errOut, err := executeCLI(t, Deps{
@@ -68,8 +68,8 @@ func TestHooks_NotificationReportsWaitingInput(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unexpected error: %v\nstderr=%s", err, errOut)
 	}
-	if capture.path != "/api/v1/sessions/ao-7/activity" {
-		t.Errorf("path = %q, want /api/v1/sessions/ao-7/activity", capture.path)
+	if capture.path != "/api/v1/sessions/to-7/activity" {
+		t.Errorf("path = %q, want /api/v1/sessions/to-7/activity", capture.path)
 	}
 	if got := capturedState(t, capture); got != "waiting_input" {
 		t.Errorf("state = %q, want waiting_input", got)
@@ -77,7 +77,7 @@ func TestHooks_NotificationReportsWaitingInput(t *testing.T) {
 }
 
 func TestHooks_SessionEndReportsExited(t *testing.T) {
-	t.Setenv("THANOS_SESSION_ID", "ao-7")
+	t.Setenv("THANOS_SESSION_ID", "to-7")
 	cfg := setConfigEnv(t)
 	srv, capture := activityServer(t, http.StatusOK, `{"ok":true}`)
 	writeRunFileFor(t, cfg, srv)
@@ -95,7 +95,7 @@ func TestHooks_SessionEndReportsExited(t *testing.T) {
 }
 
 func TestHooks_StopReportsIdle(t *testing.T) {
-	t.Setenv("THANOS_SESSION_ID", "ao-7")
+	t.Setenv("THANOS_SESSION_ID", "to-7")
 	cfg := setConfigEnv(t)
 	srv, capture := activityServer(t, http.StatusOK, `{"ok":true}`)
 	writeRunFileFor(t, cfg, srv)
@@ -113,7 +113,7 @@ func TestHooks_StopReportsIdle(t *testing.T) {
 }
 
 func TestHooks_CodexPermissionRequestReportsWaitingInput(t *testing.T) {
-	t.Setenv("THANOS_SESSION_ID", "ao-7")
+	t.Setenv("THANOS_SESSION_ID", "to-7")
 	cfg := setConfigEnv(t)
 	srv, capture := activityServer(t, http.StatusOK, `{"ok":true}`)
 	writeRunFileFor(t, cfg, srv)
@@ -131,7 +131,7 @@ func TestHooks_CodexPermissionRequestReportsWaitingInput(t *testing.T) {
 }
 
 func TestHooks_OpenCodeUserPromptReportsActive(t *testing.T) {
-	t.Setenv("THANOS_SESSION_ID", "ao-7")
+	t.Setenv("THANOS_SESSION_ID", "to-7")
 	cfg := setConfigEnv(t)
 	srv, capture := activityServer(t, http.StatusOK, `{"ok":true}`)
 	writeRunFileFor(t, cfg, srv)
@@ -185,7 +185,7 @@ func TestHooks_NoSessionIDIsNoOp(t *testing.T) {
 }
 
 func TestHooks_UntrackedEventIsNoOp(t *testing.T) {
-	t.Setenv("THANOS_SESSION_ID", "ao-7")
+	t.Setenv("THANOS_SESSION_ID", "to-7")
 	cfg := setConfigEnv(t)
 	srv, capture := activityServer(t, http.StatusOK, `{}`)
 	writeRunFileFor(t, cfg, srv)
@@ -203,7 +203,7 @@ func TestHooks_UntrackedEventIsNoOp(t *testing.T) {
 }
 
 func TestHooks_DaemonDownIsBestEffort(t *testing.T) {
-	t.Setenv("THANOS_SESSION_ID", "ao-7")
+	t.Setenv("THANOS_SESSION_ID", "to-7")
 	setConfigEnv(t) // no run-file written: daemon is "not running"
 
 	_, _, err := executeCLI(t, Deps{
@@ -230,7 +230,7 @@ func TestHooks_DeliveryFailureGoesToHooksLog(t *testing.T) {
 			status:  http.StatusInternalServerError,
 			body:    `{"error":"internal","code":"BOOM","message":"boom"}`,
 			wantLog: true,
-			wantIn:  []string{"to hooks claude-code session-end", "session=ao-7"},
+			wantIn:  []string{"to hooks claude-code session-end", "session=to-7"},
 		},
 		{
 			name:   "successful delivery writes nothing",
@@ -240,7 +240,7 @@ func TestHooks_DeliveryFailureGoesToHooksLog(t *testing.T) {
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			t.Setenv("THANOS_SESSION_ID", "ao-7")
+			t.Setenv("THANOS_SESSION_ID", "to-7")
 			cfg := setConfigEnv(t)
 			srv, _ := activityServer(t, tc.status, tc.body)
 			writeRunFileFor(t, cfg, srv)
@@ -277,7 +277,7 @@ func TestHooks_DeliveryFailureGoesToHooksLog(t *testing.T) {
 // a hooks.log already past the cap truncates it first, so a persistently
 // failing hook cannot grow the file without bound.
 func TestHooks_HooksLogTruncatesPastCap(t *testing.T) {
-	t.Setenv("THANOS_SESSION_ID", "ao-7")
+	t.Setenv("THANOS_SESSION_ID", "to-7")
 	cfg := setConfigEnv(t) // no run file written: every delivery fails
 	logPath := filepath.Join(cfg.dataDir, "hooks.log")
 	if err := os.MkdirAll(cfg.dataDir, 0o750); err != nil {
@@ -308,7 +308,7 @@ func TestHooks_HooksLogTruncatesPastCap(t *testing.T) {
 }
 
 func TestHooks_DaemonErrorIsSwallowed(t *testing.T) {
-	t.Setenv("THANOS_SESSION_ID", "ao-7")
+	t.Setenv("THANOS_SESSION_ID", "to-7")
 	cfg := setConfigEnv(t)
 	srv, _ := activityServer(t, http.StatusInternalServerError,
 		`{"error":"internal","code":"BOOM","message":"boom"}`)

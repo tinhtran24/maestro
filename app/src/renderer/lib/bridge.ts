@@ -1,7 +1,7 @@
 import type { AoBridge } from "../../preload";
 
 export const aoBridge: AoBridge =
-	window.ao ??
+	window.to ??
 	({
 		app: {
 			getVersion: async () => "0.0.0-preview",

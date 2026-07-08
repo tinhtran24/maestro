@@ -13,7 +13,7 @@ type CenterPaneProps = {
 	onSelectWorkerTerminal?: () => void;
 };
 
-const terminalFontSizeStorageKey = "ao.terminal.fontSize";
+const terminalFontSizeStorageKey = "to.terminal.fontSize";
 const DEFAULT_TERMINAL_FONT_SIZE = 12;
 const MIN_TERMINAL_FONT_SIZE = 10;
 const MAX_TERMINAL_FONT_SIZE = 20;

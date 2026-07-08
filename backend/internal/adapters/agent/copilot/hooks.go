@@ -18,7 +18,7 @@ const (
 	// (.github/hooks/*.json). Thanos writes a single dedicated file there so it never
 	// disturbs other hook files the user or repo may ship.
 	copilotHooksDir      = ".github/hooks"
-	copilotHooksFileName = "ao.json"
+	copilotHooksFileName = "to.json"
 
 	// copilotHooksVersion is the schema version of the hooks file (Copilot uses 1).
 	copilotHooksVersion = 1
@@ -31,7 +31,7 @@ const (
 	copilotHookTimeoutSec    = 30
 )
 
-// copilotHookFile is the on-disk shape of .github/hooks/ao.json. Thanos owns this
+// copilotHookFile is the on-disk shape of .github/hooks/to.json. Thanos owns this
 // dedicated file outright, so it only models the keys it manages (version,
 // disableAllHooks, hooks); user-defined hooks live in their own .github/hooks/*
 // files and are never touched.
@@ -85,7 +85,7 @@ var copilotManagedHooks = []copilotHookSpec{
 }
 
 // GetAgentHooks installs Thanos's Copilot hooks into the worktree-local
-// .github/hooks/ao.json file (the repository-scope hooks config Copilot CLI
+// .github/hooks/to.json file (the repository-scope hooks config Copilot CLI
 // reads). The hooks report normalized activity-state signals back into Thanos's
 // store. Existing Thanos entries are not duplicated and any unrelated keys are
 // preserved, so the install is idempotent.
@@ -129,7 +129,7 @@ func (p *Plugin) GetAgentHooks(ctx context.Context, cfg ports.WorkspaceHookConfi
 }
 
 // UninstallHooks removes Thanos's Copilot hooks from the workspace-local
-// .github/hooks/ao.json file, leaving user-defined hooks and unrelated keys
+// .github/hooks/to.json file, leaving user-defined hooks and unrelated keys
 // untouched. A missing file is a no-op.
 func (p *Plugin) UninstallHooks(ctx context.Context, workspacePath string) error {
 	if err := ctx.Err(); err != nil {

@@ -8,7 +8,7 @@ import (
 	"github.com/Microsoft/go-winio"
 )
 
-const pipeName = `\\.\pipe\ao-supervise`
+const pipeName = `\\.\pipe\to-supervise`
 
 // Listen creates a Windows named pipe listener for the supervisor watchdog.
 // runFilePath is ignored on Windows: named pipes are global and identified

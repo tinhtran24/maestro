@@ -200,7 +200,7 @@ func runtimeSettingsPath(sessionID string) string {
 	if name == "" {
 		name = "default"
 	}
-	return filepath.Join(os.TempDir(), "ao-droid-"+name+"-settings.json")
+	return filepath.Join(os.TempDir(), "to-droid-"+name+"-settings.json")
 }
 
 // sanitizeSessionID keeps only filename-safe characters so the session id can

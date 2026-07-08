@@ -813,8 +813,8 @@ func TestSpawn_WorkspaceProjectRecordsRootAndChildWorktrees(t *testing.T) {
 	if rec.Metadata.WorkspacePath != managedPath {
 		t.Fatalf("workspace path = %q, want root worktree path", rec.Metadata.WorkspacePath)
 	}
-	if rec.Metadata.Branch != "ao/mer-1" {
-		t.Fatalf("workspace branch = %q, want ao/mer-1", rec.Metadata.Branch)
+	if rec.Metadata.Branch != "to/mer-1" {
+		t.Fatalf("workspace branch = %q, want to/mer-1", rec.Metadata.Branch)
 	}
 	if got := ws.lastProjectCfg.RootRepoPath; got != projectPath {
 		t.Fatalf("root repo path = %q, want %q", got, projectPath)
@@ -999,12 +999,12 @@ func TestKill_WorkspaceProjectDestroysChildrenBeforeRoot(t *testing.T) {
 	st.sessions["mer-1"] = domain.SessionRecord{
 		ID:        "mer-1",
 		ProjectID: "mer",
-		Metadata:  domain.SessionMetadata{WorkspacePath: "/ws/mer-1", Branch: "ao/mer-1", RuntimeHandleID: "h1"},
+		Metadata:  domain.SessionMetadata{WorkspacePath: "/ws/mer-1", Branch: "to/mer-1", RuntimeHandleID: "h1"},
 		Activity:  domain.Activity{State: domain.ActivityActive},
 	}
 	st.worktrees["mer-1"] = []domain.SessionWorktreeRecord{
-		{SessionID: "mer-1", RepoName: domain.RootWorkspaceRepoName, Branch: "ao/mer-1", WorktreePath: "/ws/mer-1"},
-		{SessionID: "mer-1", RepoName: "api", Branch: "ao/mer-1", WorktreePath: "/ws/mer-1/api"},
+		{SessionID: "mer-1", RepoName: domain.RootWorkspaceRepoName, Branch: "to/mer-1", WorktreePath: "/ws/mer-1"},
+		{SessionID: "mer-1", RepoName: "api", Branch: "to/mer-1", WorktreePath: "/ws/mer-1/api"},
 	}
 
 	freed, err := m.Kill(ctx, "mer-1")
@@ -1027,13 +1027,13 @@ func TestKill_WorkspaceProjectFailsClosedOnUnregisteredChildRows(t *testing.T) {
 	st.sessions["mer-1"] = domain.SessionRecord{
 		ID:        "mer-1",
 		ProjectID: "mer",
-		Metadata:  domain.SessionMetadata{WorkspacePath: "/ws/mer-1", Branch: "ao/mer-1", RuntimeHandleID: "h1"},
+		Metadata:  domain.SessionMetadata{WorkspacePath: "/ws/mer-1", Branch: "to/mer-1", RuntimeHandleID: "h1"},
 		Activity:  domain.Activity{State: domain.ActivityActive},
 	}
 	st.worktrees["mer-1"] = []domain.SessionWorktreeRecord{
-		{SessionID: "mer-1", RepoName: domain.RootWorkspaceRepoName, Branch: "ao/mer-1", WorktreePath: "/ws/mer-1"},
-		{SessionID: "mer-1", RepoName: "old-api", Branch: "ao/mer-1", WorktreePath: "/ws/mer-1/old-api"},
-		{SessionID: "mer-1", RepoName: "api", Branch: "ao/mer-1", WorktreePath: "/ws/mer-1/api"},
+		{SessionID: "mer-1", RepoName: domain.RootWorkspaceRepoName, Branch: "to/mer-1", WorktreePath: "/ws/mer-1"},
+		{SessionID: "mer-1", RepoName: "old-api", Branch: "to/mer-1", WorktreePath: "/ws/mer-1/old-api"},
+		{SessionID: "mer-1", RepoName: "api", Branch: "to/mer-1", WorktreePath: "/ws/mer-1/api"},
 	}
 
 	freed, err := m.Kill(ctx, "mer-1")
@@ -1059,12 +1059,12 @@ func TestKill_WorkspaceProjectDirtyRowRefusesRemoval(t *testing.T) {
 	st.sessions["mer-1"] = domain.SessionRecord{
 		ID:        "mer-1",
 		ProjectID: "mer",
-		Metadata:  domain.SessionMetadata{WorkspacePath: "/ws/mer-1", Branch: "ao/mer-1", RuntimeHandleID: "h1"},
+		Metadata:  domain.SessionMetadata{WorkspacePath: "/ws/mer-1", Branch: "to/mer-1", RuntimeHandleID: "h1"},
 		Activity:  domain.Activity{State: domain.ActivityActive},
 	}
 	st.worktrees["mer-1"] = []domain.SessionWorktreeRecord{
-		{SessionID: "mer-1", RepoName: domain.RootWorkspaceRepoName, Branch: "ao/mer-1", WorktreePath: "/ws/mer-1"},
-		{SessionID: "mer-1", RepoName: "api", Branch: "ao/mer-1", WorktreePath: "/ws/mer-1/api"},
+		{SessionID: "mer-1", RepoName: domain.RootWorkspaceRepoName, Branch: "to/mer-1", WorktreePath: "/ws/mer-1"},
+		{SessionID: "mer-1", RepoName: "api", Branch: "to/mer-1", WorktreePath: "/ws/mer-1/api"},
 	}
 
 	freed, err := m.Kill(ctx, "mer-1")
@@ -1119,7 +1119,7 @@ func TestRestore_WorkspaceProjectRestoresChildrenAndRecordsInventory(t *testing.
 	m, st, rt, ws := newManager()
 	st.projects["mer"] = domain.ProjectRecord{ID: "mer", Path: "/repo/mer", Kind: domain.ProjectKindWorkspace, Config: testRoleAgents()}
 	st.workspaceRepo["mer"] = []domain.WorkspaceRepoRecord{{Name: "api", RelativePath: "services/api"}}
-	seedTerminal(st, "mer-1", domain.SessionMetadata{WorkspacePath: "/ws/mer-1", Branch: "ao/mer-1", AgentSessionID: "agent-x"})
+	seedTerminal(st, "mer-1", domain.SessionMetadata{WorkspacePath: "/ws/mer-1", Branch: "to/mer-1", AgentSessionID: "agent-x"})
 
 	if _, err := m.Restore(ctx, "mer-1"); err != nil {
 		t.Fatal(err)
@@ -1233,10 +1233,10 @@ func TestCleanup_WorkspaceProjectDestroysChildrenBeforeRoot(t *testing.T) {
 	m, st, _, ws := newManager()
 	st.projects["mer"] = domain.ProjectRecord{ID: "mer", Path: "/repo/mer", Kind: domain.ProjectKindWorkspace, Config: testRoleAgents()}
 	st.workspaceRepo["mer"] = []domain.WorkspaceRepoRecord{{Name: "api", RelativePath: "api"}}
-	seedTerminal(st, "mer-1", domain.SessionMetadata{WorkspacePath: "/ws/mer-1", Branch: "ao/mer-1"})
+	seedTerminal(st, "mer-1", domain.SessionMetadata{WorkspacePath: "/ws/mer-1", Branch: "to/mer-1"})
 	st.worktrees["mer-1"] = []domain.SessionWorktreeRecord{
-		{SessionID: "mer-1", RepoName: domain.RootWorkspaceRepoName, Branch: "ao/mer-1", WorktreePath: "/ws/mer-1"},
-		{SessionID: "mer-1", RepoName: "api", Branch: "ao/mer-1", WorktreePath: "/ws/mer-1/api"},
+		{SessionID: "mer-1", RepoName: domain.RootWorkspaceRepoName, Branch: "to/mer-1", WorktreePath: "/ws/mer-1"},
+		{SessionID: "mer-1", RepoName: "api", Branch: "to/mer-1", WorktreePath: "/ws/mer-1/api"},
 	}
 
 	res, err := m.Cleanup(ctx, "mer")
@@ -1257,10 +1257,10 @@ func TestCleanup_WorkspaceProjectMarksRetryRemoveAfterTeardownFailure(t *testing
 	ws.destroyErr = errors.New("locked")
 	st.projects["mer"] = domain.ProjectRecord{ID: "mer", Path: "/repo/mer", Kind: domain.ProjectKindWorkspace, Config: testRoleAgents()}
 	st.workspaceRepo["mer"] = []domain.WorkspaceRepoRecord{{Name: "api", RelativePath: "api"}}
-	seedTerminal(st, "mer-1", domain.SessionMetadata{WorkspacePath: "/ws/mer-1", Branch: "ao/mer-1"})
+	seedTerminal(st, "mer-1", domain.SessionMetadata{WorkspacePath: "/ws/mer-1", Branch: "to/mer-1"})
 	st.worktrees["mer-1"] = []domain.SessionWorktreeRecord{
-		{SessionID: "mer-1", RepoName: domain.RootWorkspaceRepoName, Branch: "ao/mer-1", WorktreePath: "/ws/mer-1"},
-		{SessionID: "mer-1", RepoName: "api", Branch: "ao/mer-1", WorktreePath: "/ws/mer-1/api"},
+		{SessionID: "mer-1", RepoName: domain.RootWorkspaceRepoName, Branch: "to/mer-1", WorktreePath: "/ws/mer-1"},
+		{SessionID: "mer-1", RepoName: "api", Branch: "to/mer-1", WorktreePath: "/ws/mer-1/api"},
 	}
 
 	res, err := m.Cleanup(ctx, "mer")
@@ -1284,10 +1284,10 @@ func TestCleanup_WorkspaceProjectDirtyRowsAreSkipped(t *testing.T) {
 	ws.destroyErr = fmt.Errorf("dirty: %w", ports.ErrWorkspaceDirty)
 	st.projects["mer"] = domain.ProjectRecord{ID: "mer", Path: "/repo/mer", Kind: domain.ProjectKindWorkspace, Config: testRoleAgents()}
 	st.workspaceRepo["mer"] = []domain.WorkspaceRepoRecord{{Name: "api", RelativePath: "api"}}
-	seedTerminal(st, "mer-1", domain.SessionMetadata{WorkspacePath: "/ws/mer-1", Branch: "ao/mer-1"})
+	seedTerminal(st, "mer-1", domain.SessionMetadata{WorkspacePath: "/ws/mer-1", Branch: "to/mer-1"})
 	st.worktrees["mer-1"] = []domain.SessionWorktreeRecord{
-		{SessionID: "mer-1", RepoName: domain.RootWorkspaceRepoName, Branch: "ao/mer-1", WorktreePath: "/ws/mer-1"},
-		{SessionID: "mer-1", RepoName: "api", Branch: "ao/mer-1", WorktreePath: "/ws/mer-1/api"},
+		{SessionID: "mer-1", RepoName: domain.RootWorkspaceRepoName, Branch: "to/mer-1", WorktreePath: "/ws/mer-1"},
+		{SessionID: "mer-1", RepoName: "api", Branch: "to/mer-1", WorktreePath: "/ws/mer-1/api"},
 	}
 
 	res, err := m.Cleanup(ctx, "mer")
@@ -1316,8 +1316,8 @@ func TestSpawn_DefaultsBranchFromSessionID(t *testing.T) {
 	}
 	// An empty SpawnConfig.Branch defaults to a unique per-session root branch
 	// under a namespace that can also hold sibling PR branches.
-	if got := st.sessions[s.ID].Metadata.Branch; got != "ao/mer-1/root" {
-		t.Fatalf("default branch = %q, want ao/mer-1/root", got)
+	if got := st.sessions[s.ID].Metadata.Branch; got != "to/mer-1/root" {
+		t.Fatalf("default branch = %q, want to/mer-1/root", got)
 	}
 }
 
@@ -1357,7 +1357,7 @@ func TestRestore_ForwardsResolvedAgentConfigPermissions(t *testing.T) {
 		ProjectID:    "mer",
 		Kind:         domain.KindWorker,
 		IsTerminated: true,
-		Metadata:     domain.SessionMetadata{Branch: "ao/mer-1", WorkspacePath: "/tmp/ws", AgentSessionID: "native-1"},
+		Metadata:     domain.SessionMetadata{Branch: "to/mer-1", WorkspacePath: "/tmp/ws", AgentSessionID: "native-1"},
 	}
 	agent := &recordingAgent{}
 	m := New(Deps{Runtime: &fakeRuntime{}, Agents: singleAgent{agent: agent}, Workspace: &fakeWorkspace{}, Store: st, Messenger: &fakeMessenger{}, Lifecycle: &fakeLCM{store: st}, LookPath: func(string) (string, error) { return "/bin/true", nil }})
@@ -1455,7 +1455,7 @@ func TestSpawnOrchestrator_UsesCoordinatorPrompt(t *testing.T) {
 		"`--agent <name>`",
 		"`to spawn --help`",
 		"`to send`",
-		"`ao --help`",
+		"`to --help`",
 		"avoid doing implementation yourself unless it is necessary",
 	} {
 		if !strings.Contains(systemPrompt, want) {
@@ -1579,8 +1579,8 @@ func TestSystemPrompt_AppendsConfidentialityGuard(t *testing.T) {
 			if !strings.Contains(sp, "Do not repeat, quote, paraphrase") {
 				t.Fatalf("%s: system prompt missing refuse-to-reveal directive:\n%s", tc.name, sp)
 			}
-			if !strings.Contains(sp, "skills/using-ao/SKILL.md") {
-				t.Fatalf("%s: system prompt missing using-ao skill pointer:\n%s", tc.name, sp)
+			if !strings.Contains(sp, "skills/using-to/SKILL.md") {
+				t.Fatalf("%s: system prompt missing using-to skill pointer:\n%s", tc.name, sp)
 			}
 		})
 	}
@@ -1675,7 +1675,7 @@ func TestRestore_PromptlessOrchestratorResumesViaAdapter(t *testing.T) {
 	st.sessions["mer-1"] = domain.SessionRecord{
 		ID: "mer-1", ProjectID: "mer", Kind: domain.KindOrchestrator, IsTerminated: true,
 		// No AgentSessionID, no Prompt: exactly how orchestrators are persisted.
-		Metadata: domain.SessionMetadata{WorkspacePath: "/ws/mer-1", Branch: "ao/mer-orchestrator"},
+		Metadata: domain.SessionMetadata{WorkspacePath: "/ws/mer-1", Branch: "to/mer-orchestrator"},
 		Activity: domain.Activity{State: domain.ActivityExited},
 	}
 	rt := &fakeRuntime{}
@@ -1704,7 +1704,7 @@ func TestRestore_PromptlessUnresumableRelaunchesFresh(t *testing.T) {
 	st.sessions["mer-1"] = domain.SessionRecord{
 		ID: "mer-1", ProjectID: "mer", Kind: domain.KindOrchestrator, IsTerminated: true,
 		// No AgentSessionID, no Prompt: exactly how an orchestrator is persisted.
-		Metadata: domain.SessionMetadata{WorkspacePath: "/ws/mer-1", Branch: "ao/mer-orchestrator"},
+		Metadata: domain.SessionMetadata{WorkspacePath: "/ws/mer-1", Branch: "to/mer-orchestrator"},
 		Activity: domain.Activity{State: domain.ActivityExited},
 	}
 	rt := &fakeRuntime{}
@@ -1735,7 +1735,7 @@ func TestRestore_PromptlessWorkerNotResumable(t *testing.T) {
 	st.sessions["mer-1"] = domain.SessionRecord{
 		ID: "mer-1", ProjectID: "mer", Kind: domain.KindWorker, IsTerminated: true,
 		// No AgentSessionID, no Prompt: promptless worker with no resume handle.
-		Metadata: domain.SessionMetadata{WorkspacePath: "/ws/mer-1", Branch: "ao/mer-1/root"},
+		Metadata: domain.SessionMetadata{WorkspacePath: "/ws/mer-1", Branch: "to/mer-1/root"},
 		Activity: domain.Activity{State: domain.ActivityExited},
 	}
 	rt := &fakeRuntime{}
@@ -1949,12 +1949,12 @@ func pathPinManager(executable func() (string, error)) (*Manager, *fakeStore, *f
 
 // TestSpawnAndRestore_PinHookPATHToDaemonBinary covers the activity-tracking
 // fix: the spawned session's PATH must put the daemon executable's directory
-// first, so the bare `ao` in the workspace hook commands resolves to the
-// daemon that installed them, not a foreign `ao` earlier on the user's PATH
+// first, so the bare `to` in the workspace hook commands resolves to the
+// daemon that installed them, not a foreign `to` earlier on the user's PATH
 // (e.g. the legacy TypeScript CLI, which has no `hooks` command and silently
 // kills activity tracking).
 func TestSpawnAndRestore_PinHookPATHToDaemonBinary(t *testing.T) {
-	daemonExe := filepath.Join(t.TempDir(), "ao")
+	daemonExe := filepath.Join(t.TempDir(), "to")
 	want := filepath.Dir(daemonExe) + string(os.PathListSeparator) + "/usr/bin"
 	executable := func() (string, error) { return daemonExe, nil }
 
@@ -1993,7 +1993,7 @@ func TestSpawnAndRestore_PinHookPATHToDaemonBinary(t *testing.T) {
 }
 
 // TestSpawn_HookPATHPinUnavailable asserts the degraded path is loud, not
-// silent: when the daemon executable cannot anchor `ao` resolution, PATH is
+// silent: when the daemon executable cannot anchor `to` resolution, PATH is
 // left to the runtime's inherited default and a warning is logged.
 func TestSpawn_HookPATHPinUnavailable(t *testing.T) {
 	cases := []struct {
@@ -2001,7 +2001,7 @@ func TestSpawn_HookPATHPinUnavailable(t *testing.T) {
 		executable func() (string, error)
 	}{
 		{"executable unresolvable", func() (string, error) { return "", errors.New("no exe") }},
-		{"executable not named ao", func() (string, error) { return "/opt/aod/ao-daemon", nil }},
+		{"executable not named to", func() (string, error) { return "/opt/aod/to-daemon", nil }},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
@@ -2023,7 +2023,7 @@ func TestSpawn_HookPATHPinUnavailable(t *testing.T) {
 // pin as its base rather than being clobbered or clobbering: the daemon dir
 // still comes first.
 func TestSpawn_ProjectPATHIsPinBase(t *testing.T) {
-	daemonExe := filepath.Join(t.TempDir(), "ao")
+	daemonExe := filepath.Join(t.TempDir(), "to")
 	m, st, rt, _ := pathPinManager(func() (string, error) { return daemonExe, nil })
 	st.projects["mer"] = domain.ProjectRecord{ID: "mer", Config: domain.ProjectConfig{
 		Env:    map[string]string{"PATH": "/proj/bin"},
@@ -2084,12 +2084,12 @@ func TestSaveAndTeardownAll_CaptureOrderAndMarker(t *testing.T) {
 	ws.sharedLog = &sharedLog
 
 	// A live session with a workspace path and runtime handle.
-	ws.stashRef = "refs/ao/preserved/mer-1"
+	ws.stashRef = "refs/to/preserved/mer-1"
 	st.sessions["mer-1"] = domain.SessionRecord{
 		ID:        "mer-1",
 		ProjectID: "mer",
 		Kind:      domain.KindWorker,
-		Metadata:  domain.SessionMetadata{WorkspacePath: "/ws/mer-1", Branch: "ao/mer-1/root", RuntimeHandleID: "h1"},
+		Metadata:  domain.SessionMetadata{WorkspacePath: "/ws/mer-1", Branch: "to/mer-1/root", RuntimeHandleID: "h1"},
 		Activity:  domain.Activity{State: domain.ActivityActive},
 	}
 
@@ -2143,8 +2143,8 @@ func TestSaveAndTeardownAll_CaptureOrderAndMarker(t *testing.T) {
 	if len(rows) == 0 {
 		t.Fatal("UpsertSessionWorktree was not called: no worktree row for mer-1")
 	}
-	if rows[0].PreservedRef != "refs/ao/preserved/mer-1" {
-		t.Fatalf("preserved_ref = %q, want refs/ao/preserved/mer-1", rows[0].PreservedRef)
+	if rows[0].PreservedRef != "refs/to/preserved/mer-1" {
+		t.Fatalf("preserved_ref = %q, want refs/to/preserved/mer-1", rows[0].PreservedRef)
 	}
 
 	// The session must be marked terminated.
@@ -2158,20 +2158,20 @@ func TestRetireForReplacementCapturesAndReleasesWorkspace(t *testing.T) {
 	var sharedLog []string
 	st.sharedLog = &sharedLog
 	ws.sharedLog = &sharedLog
-	ws.stashRef = "refs/ao/preserved/mer-orch"
+	ws.stashRef = "refs/to/preserved/mer-orch"
 	st.sessions["mer-orch"] = domain.SessionRecord{
 		ID:        "mer-orch",
 		ProjectID: "mer",
 		Kind:      domain.KindOrchestrator,
-		Metadata:  domain.SessionMetadata{WorkspacePath: "/ws/mer-orch", Branch: "ao/mer-orchestrator", RuntimeHandleID: "orch-handle"},
+		Metadata:  domain.SessionMetadata{WorkspacePath: "/ws/mer-orch", Branch: "to/mer-orchestrator", RuntimeHandleID: "orch-handle"},
 		Activity:  domain.Activity{State: domain.ActivityActive},
 	}
 	st.worktrees["mer-orch"] = []domain.SessionWorktreeRecord{{
 		SessionID:    "mer-orch",
 		RepoName:     domain.RootWorkspaceRepoName,
-		Branch:       "ao/mer-orchestrator",
+		Branch:       "to/mer-orchestrator",
 		WorktreePath: "/ws/mer-orch",
-		PreservedRef: "refs/ao/preserved/old",
+		PreservedRef: "refs/to/preserved/old",
 	}}
 
 	if err := m.RetireForReplacement(ctx, "mer-orch"); err != nil {
@@ -2212,7 +2212,7 @@ func TestRetireForReplacementWorkspaceProjectCapturesAndReleasesEveryRepo(t *tes
 	var sharedLog []string
 	st.sharedLog = &sharedLog
 	ws.sharedLog = &sharedLog
-	ws.stashRef = "refs/ao/preserved/mer-orch"
+	ws.stashRef = "refs/to/preserved/mer-orch"
 	st.projects["mer"] = domain.ProjectRecord{ID: "mer", Path: "/repos/mer", Kind: domain.ProjectKindWorkspace, Config: testRoleAgents()}
 	st.workspaceRepo["mer"] = []domain.WorkspaceRepoRecord{{
 		ProjectID:    "mer",
@@ -2223,24 +2223,24 @@ func TestRetireForReplacementWorkspaceProjectCapturesAndReleasesEveryRepo(t *tes
 		ID:        "mer-orch",
 		ProjectID: "mer",
 		Kind:      domain.KindOrchestrator,
-		Metadata:  domain.SessionMetadata{WorkspacePath: "/ws/mer-orch", Branch: "ao/mer-orchestrator", RuntimeHandleID: "orch-handle"},
+		Metadata:  domain.SessionMetadata{WorkspacePath: "/ws/mer-orch", Branch: "to/mer-orchestrator", RuntimeHandleID: "orch-handle"},
 		Activity:  domain.Activity{State: domain.ActivityActive},
 	}
 	st.worktrees["mer-orch"] = []domain.SessionWorktreeRecord{
 		{
 			SessionID:    "mer-orch",
 			RepoName:     domain.RootWorkspaceRepoName,
-			Branch:       "ao/mer-orchestrator",
+			Branch:       "to/mer-orchestrator",
 			WorktreePath: "/ws/mer-orch",
-			PreservedRef: "refs/ao/preserved/old-root",
+			PreservedRef: "refs/to/preserved/old-root",
 			State:        "active",
 		},
 		{
 			SessionID:    "mer-orch",
 			RepoName:     "api",
-			Branch:       "ao/mer-orchestrator",
+			Branch:       "to/mer-orchestrator",
 			WorktreePath: "/ws/mer-orch/api",
-			PreservedRef: "refs/ao/preserved/old-api",
+			PreservedRef: "refs/to/preserved/old-api",
 			State:        "active",
 		},
 	}
@@ -2280,7 +2280,7 @@ func TestRetireForReplacementWorkspaceProjectCapturesAndReleasesEveryRepo(t *tes
 func TestRetireForReplacementWorkspaceProjectRuntimeDestroyFailureKeepsRepoInventory(t *testing.T) {
 	m, st, rt, ws := newLifecycleManager()
 	rt.destroyErr = errors.New("tmux transient")
-	ws.stashRef = "refs/ao/preserved/mer-orch"
+	ws.stashRef = "refs/to/preserved/mer-orch"
 	st.projects["mer"] = domain.ProjectRecord{ID: "mer", Path: "/repos/mer", Kind: domain.ProjectKindWorkspace, Config: testRoleAgents()}
 	st.workspaceRepo["mer"] = []domain.WorkspaceRepoRecord{{
 		ProjectID:    "mer",
@@ -2291,12 +2291,12 @@ func TestRetireForReplacementWorkspaceProjectRuntimeDestroyFailureKeepsRepoInven
 		ID:        "mer-orch",
 		ProjectID: "mer",
 		Kind:      domain.KindOrchestrator,
-		Metadata:  domain.SessionMetadata{WorkspacePath: "/ws/mer-orch", Branch: "ao/mer-orchestrator", RuntimeHandleID: "orch-handle"},
+		Metadata:  domain.SessionMetadata{WorkspacePath: "/ws/mer-orch", Branch: "to/mer-orchestrator", RuntimeHandleID: "orch-handle"},
 		Activity:  domain.Activity{State: domain.ActivityActive},
 	}
 	st.worktrees["mer-orch"] = []domain.SessionWorktreeRecord{
-		{SessionID: "mer-orch", RepoName: domain.RootWorkspaceRepoName, Branch: "ao/mer-orchestrator", WorktreePath: "/ws/mer-orch", State: "active"},
-		{SessionID: "mer-orch", RepoName: "api", Branch: "ao/mer-orchestrator", WorktreePath: "/ws/mer-orch/api", State: "active"},
+		{SessionID: "mer-orch", RepoName: domain.RootWorkspaceRepoName, Branch: "to/mer-orchestrator", WorktreePath: "/ws/mer-orch", State: "active"},
+		{SessionID: "mer-orch", RepoName: "api", Branch: "to/mer-orchestrator", WorktreePath: "/ws/mer-orch/api", State: "active"},
 	}
 
 	err := m.RetireForReplacement(ctx, "mer-orch")
@@ -2319,7 +2319,7 @@ func TestRetireForReplacementWorkspaceProjectRuntimeDestroyFailureKeepsRepoInven
 func TestRetireForReplacementWorkspaceProjectForceDestroyFailureKeepsRepoInventory(t *testing.T) {
 	m, st, _, ws := newLifecycleManager()
 	ws.forceDestroyErr = errors.New("worktree still registered")
-	ws.stashRef = "refs/ao/preserved/mer-orch"
+	ws.stashRef = "refs/to/preserved/mer-orch"
 	st.projects["mer"] = domain.ProjectRecord{ID: "mer", Path: "/repos/mer", Kind: domain.ProjectKindWorkspace, Config: testRoleAgents()}
 	st.workspaceRepo["mer"] = []domain.WorkspaceRepoRecord{{
 		ProjectID:    "mer",
@@ -2330,12 +2330,12 @@ func TestRetireForReplacementWorkspaceProjectForceDestroyFailureKeepsRepoInvento
 		ID:        "mer-orch",
 		ProjectID: "mer",
 		Kind:      domain.KindOrchestrator,
-		Metadata:  domain.SessionMetadata{WorkspacePath: "/ws/mer-orch", Branch: "ao/mer-orchestrator", RuntimeHandleID: "orch-handle"},
+		Metadata:  domain.SessionMetadata{WorkspacePath: "/ws/mer-orch", Branch: "to/mer-orchestrator", RuntimeHandleID: "orch-handle"},
 		Activity:  domain.Activity{State: domain.ActivityActive},
 	}
 	st.worktrees["mer-orch"] = []domain.SessionWorktreeRecord{
-		{SessionID: "mer-orch", RepoName: domain.RootWorkspaceRepoName, Branch: "ao/mer-orchestrator", WorktreePath: "/ws/mer-orch", State: "active"},
-		{SessionID: "mer-orch", RepoName: "api", Branch: "ao/mer-orchestrator", WorktreePath: "/ws/mer-orch/api", State: "active"},
+		{SessionID: "mer-orch", RepoName: domain.RootWorkspaceRepoName, Branch: "to/mer-orchestrator", WorktreePath: "/ws/mer-orch", State: "active"},
+		{SessionID: "mer-orch", RepoName: "api", Branch: "to/mer-orchestrator", WorktreePath: "/ws/mer-orch/api", State: "active"},
 	}
 
 	err := m.RetireForReplacement(ctx, "mer-orch")
@@ -2353,20 +2353,20 @@ func TestRetireForReplacementWorkspaceProjectForceDestroyFailureKeepsRepoInvento
 func TestRetireForReplacementForceDestroyFailureLeavesSessionActive(t *testing.T) {
 	m, st, rt, ws := newLifecycleManager()
 	ws.forceDestroyErr = errors.New("worktree still registered")
-	ws.stashRef = "refs/ao/preserved/mer-orch"
+	ws.stashRef = "refs/to/preserved/mer-orch"
 	st.sessions["mer-orch"] = domain.SessionRecord{
 		ID:        "mer-orch",
 		ProjectID: "mer",
 		Kind:      domain.KindOrchestrator,
-		Metadata:  domain.SessionMetadata{WorkspacePath: "/ws/mer-orch", Branch: "ao/mer-orchestrator", RuntimeHandleID: "orch-handle"},
+		Metadata:  domain.SessionMetadata{WorkspacePath: "/ws/mer-orch", Branch: "to/mer-orchestrator", RuntimeHandleID: "orch-handle"},
 		Activity:  domain.Activity{State: domain.ActivityActive},
 	}
 	st.worktrees["mer-orch"] = []domain.SessionWorktreeRecord{{
 		SessionID:    "mer-orch",
 		RepoName:     domain.RootWorkspaceRepoName,
-		Branch:       "ao/mer-orchestrator",
+		Branch:       "to/mer-orchestrator",
 		WorktreePath: "/ws/mer-orch",
-		PreservedRef: "refs/ao/preserved/old",
+		PreservedRef: "refs/to/preserved/old",
 	}}
 
 	err := m.RetireForReplacement(ctx, "mer-orch")
@@ -2387,20 +2387,20 @@ func TestRetireForReplacementForceDestroyFailureLeavesSessionActive(t *testing.T
 func TestRetireForReplacementRuntimeDestroyFailureBlocksWorkspaceRelease(t *testing.T) {
 	m, st, rt, ws := newLifecycleManager()
 	rt.destroyErr = errors.New("tmux transient")
-	ws.stashRef = "refs/ao/preserved/mer-orch"
+	ws.stashRef = "refs/to/preserved/mer-orch"
 	st.sessions["mer-orch"] = domain.SessionRecord{
 		ID:        "mer-orch",
 		ProjectID: "mer",
 		Kind:      domain.KindOrchestrator,
-		Metadata:  domain.SessionMetadata{WorkspacePath: "/ws/mer-orch", Branch: "ao/mer-orchestrator", RuntimeHandleID: "orch-handle"},
+		Metadata:  domain.SessionMetadata{WorkspacePath: "/ws/mer-orch", Branch: "to/mer-orchestrator", RuntimeHandleID: "orch-handle"},
 		Activity:  domain.Activity{State: domain.ActivityActive},
 	}
 	st.worktrees["mer-orch"] = []domain.SessionWorktreeRecord{{
 		SessionID:    "mer-orch",
 		RepoName:     domain.RootWorkspaceRepoName,
-		Branch:       "ao/mer-orchestrator",
+		Branch:       "to/mer-orchestrator",
 		WorktreePath: "/ws/mer-orch",
-		PreservedRef: "refs/ao/preserved/old",
+		PreservedRef: "refs/to/preserved/old",
 	}}
 
 	err := m.RetireForReplacement(ctx, "mer-orch")
@@ -2430,7 +2430,7 @@ func TestSaveAndTeardownAll_CleanWorktreeWritesEmptyRef(t *testing.T) {
 		ID:        "mer-1",
 		ProjectID: "mer",
 		Kind:      domain.KindWorker,
-		Metadata:  domain.SessionMetadata{WorkspacePath: "/ws/mer-1", Branch: "ao/mer-1/root", RuntimeHandleID: "h1"},
+		Metadata:  domain.SessionMetadata{WorkspacePath: "/ws/mer-1", Branch: "to/mer-1/root", RuntimeHandleID: "h1"},
 		Activity:  domain.Activity{State: domain.ActivityActive},
 	}
 
@@ -2480,7 +2480,7 @@ func TestSaveAndTeardownAll_SkipsAlreadyTerminated(t *testing.T) {
 		ProjectID:    "mer",
 		Kind:         domain.KindWorker,
 		IsTerminated: true,
-		Metadata:     domain.SessionMetadata{WorkspacePath: "/ws/mer-1", Branch: "ao/mer-1/root"},
+		Metadata:     domain.SessionMetadata{WorkspacePath: "/ws/mer-1", Branch: "to/mer-1/root"},
 		Activity:     domain.Activity{State: domain.ActivityExited},
 	}
 
@@ -2498,12 +2498,12 @@ func TestSaveAndTeardownAll_NoKindFilter(t *testing.T) {
 	m, st, _, _ := newLifecycleManager()
 	st.sessions["mer-1"] = domain.SessionRecord{
 		ID: "mer-1", ProjectID: "mer", Kind: domain.KindWorker,
-		Metadata: domain.SessionMetadata{WorkspacePath: "/ws/mer-1", Branch: "ao/mer-1/root", RuntimeHandleID: "h1"},
+		Metadata: domain.SessionMetadata{WorkspacePath: "/ws/mer-1", Branch: "to/mer-1/root", RuntimeHandleID: "h1"},
 		Activity: domain.Activity{State: domain.ActivityActive},
 	}
 	st.sessions["mer-2"] = domain.SessionRecord{
 		ID: "mer-2", ProjectID: "mer", Kind: domain.KindOrchestrator,
-		Metadata: domain.SessionMetadata{WorkspacePath: "/ws/mer-2", Branch: "ao/mer-orchestrator", RuntimeHandleID: "h2"},
+		Metadata: domain.SessionMetadata{WorkspacePath: "/ws/mer-2", Branch: "to/mer-orchestrator", RuntimeHandleID: "h2"},
 		Activity: domain.Activity{State: domain.ActivityActive},
 	}
 
@@ -2529,17 +2529,17 @@ func TestSaveAndTeardownAll_WorkspaceProjectPreservesEachRepoAndRemovesChildrenF
 	m, st, _, ws := newLifecycleManager()
 	st.projects["mer"] = domain.ProjectRecord{ID: "mer", Path: "/repo/mer", Kind: domain.ProjectKindWorkspace, Config: testRoleAgents()}
 	st.workspaceRepo["mer"] = []domain.WorkspaceRepoRecord{{Name: "api", RelativePath: "api"}}
-	ws.stashRef = "refs/ao/preserved/mer-1"
+	ws.stashRef = "refs/to/preserved/mer-1"
 	st.sessions["mer-1"] = domain.SessionRecord{
 		ID:        "mer-1",
 		ProjectID: "mer",
 		Kind:      domain.KindWorker,
-		Metadata:  domain.SessionMetadata{WorkspacePath: "/ws/mer-1", Branch: "ao/mer-1", RuntimeHandleID: "h1"},
+		Metadata:  domain.SessionMetadata{WorkspacePath: "/ws/mer-1", Branch: "to/mer-1", RuntimeHandleID: "h1"},
 		Activity:  domain.Activity{State: domain.ActivityActive},
 	}
 	st.worktrees["mer-1"] = []domain.SessionWorktreeRecord{
-		{SessionID: "mer-1", RepoName: domain.RootWorkspaceRepoName, Branch: "ao/mer-1", WorktreePath: "/ws/mer-1", BaseSHA: "root-base"},
-		{SessionID: "mer-1", RepoName: "api", Branch: "ao/mer-1", WorktreePath: "/ws/mer-1/api", BaseSHA: "api-base"},
+		{SessionID: "mer-1", RepoName: domain.RootWorkspaceRepoName, Branch: "to/mer-1", WorktreePath: "/ws/mer-1", BaseSHA: "root-base"},
+		{SessionID: "mer-1", RepoName: "api", Branch: "to/mer-1", WorktreePath: "/ws/mer-1/api", BaseSHA: "api-base"},
 	}
 
 	if err := m.SaveAndTeardownAll(ctx); err != nil {
@@ -2553,7 +2553,7 @@ func TestSaveAndTeardownAll_WorkspaceProjectPreservesEachRepoAndRemovesChildrenF
 	for _, row := range rows {
 		refs[row.RepoName] = row.PreservedRef
 	}
-	if refs[domain.RootWorkspaceRepoName] != "refs/ao/preserved/mer-1/__root__" || refs["api"] != "refs/ao/preserved/mer-1/api" {
+	if refs[domain.RootWorkspaceRepoName] != "refs/to/preserved/mer-1/__root__" || refs["api"] != "refs/to/preserved/mer-1/api" {
 		t.Fatalf("preserved refs = %v", refs)
 	}
 	wantSuffix := []string{"ForceDestroy:api", "ForceDestroy:__root__"}
@@ -2576,12 +2576,12 @@ func TestSaveAndTeardownAll_WorkspaceProjectRegistryDriftPreservesWholeWorkspace
 		ID:        "mer-1",
 		ProjectID: "mer",
 		Kind:      domain.KindWorker,
-		Metadata:  domain.SessionMetadata{WorkspacePath: "/ws/mer-1", Branch: "ao/mer-1/root", RuntimeHandleID: "h1"},
+		Metadata:  domain.SessionMetadata{WorkspacePath: "/ws/mer-1", Branch: "to/mer-1/root", RuntimeHandleID: "h1"},
 		Activity:  domain.Activity{State: domain.ActivityActive},
 	}
 	st.worktrees["mer-1"] = []domain.SessionWorktreeRecord{
-		{SessionID: "mer-1", RepoName: domain.RootWorkspaceRepoName, Branch: "ao/mer-1/root", WorktreePath: "/ws/mer-1", State: "active"},
-		{SessionID: "mer-1", RepoName: "old-child", Branch: "ao/mer-1/root", WorktreePath: "/ws/mer-1/old-child", State: "active"},
+		{SessionID: "mer-1", RepoName: domain.RootWorkspaceRepoName, Branch: "to/mer-1/root", WorktreePath: "/ws/mer-1", State: "active"},
+		{SessionID: "mer-1", RepoName: "old-child", Branch: "to/mer-1/root", WorktreePath: "/ws/mer-1/old-child", State: "active"},
 	}
 
 	if err := m.SaveAndTeardownAll(ctx); err != nil {
@@ -2613,7 +2613,7 @@ func TestRestoreAll_RestoresBothWorkerAndOrchestrator(t *testing.T) {
 		Kind:         domain.KindWorker,
 		Harness:      domain.HarnessClaudeCode,
 		IsTerminated: true,
-		Metadata:     domain.SessionMetadata{WorkspacePath: "/ws/mer-1", Branch: "ao/mer-1/root", AgentSessionID: "agent-w"},
+		Metadata:     domain.SessionMetadata{WorkspacePath: "/ws/mer-1", Branch: "to/mer-1/root", AgentSessionID: "agent-w"},
 		Activity:     domain.Activity{State: domain.ActivityExited},
 	}
 	st.sessions["mer-2"] = domain.SessionRecord{
@@ -2622,7 +2622,7 @@ func TestRestoreAll_RestoresBothWorkerAndOrchestrator(t *testing.T) {
 		Kind:         domain.KindOrchestrator,
 		Harness:      domain.HarnessClaudeCode,
 		IsTerminated: true,
-		Metadata:     domain.SessionMetadata{WorkspacePath: "/ws/mer-2", Branch: "ao/mer-orchestrator", AgentSessionID: "agent-o"},
+		Metadata:     domain.SessionMetadata{WorkspacePath: "/ws/mer-2", Branch: "to/mer-orchestrator", AgentSessionID: "agent-o"},
 		Activity:     domain.Activity{State: domain.ActivityExited},
 	}
 	// Write the shutdown-saved marker rows.
@@ -2652,7 +2652,7 @@ func TestRestoreAll_RestoresLegacyShutdownMarkerWithoutState(t *testing.T) {
 		Kind:         domain.KindWorker,
 		Harness:      domain.HarnessClaudeCode,
 		IsTerminated: true,
-		Metadata:     domain.SessionMetadata{WorkspacePath: "/ws/mer-1", Branch: "ao/mer-1/root", AgentSessionID: "agent-w"},
+		Metadata:     domain.SessionMetadata{WorkspacePath: "/ws/mer-1", Branch: "to/mer-1/root", AgentSessionID: "agent-w"},
 		Activity:     domain.Activity{State: domain.ActivityExited},
 	}
 	st.worktrees["mer-1"] = []domain.SessionWorktreeRecord{
@@ -2687,7 +2687,7 @@ func TestRestoreAll_SkipsSessionsKilledBeforeShutdown(t *testing.T) {
 		Kind:         domain.KindWorker,
 		Harness:      domain.HarnessClaudeCode,
 		IsTerminated: true,
-		Metadata:     domain.SessionMetadata{WorkspacePath: "/ws/mer-1", Branch: "ao/mer-1/root", Prompt: "do it"},
+		Metadata:     domain.SessionMetadata{WorkspacePath: "/ws/mer-1", Branch: "to/mer-1/root", Prompt: "do it"},
 		Activity:     domain.Activity{State: domain.ActivityExited},
 	}
 	// Deliberately no entry in st.worktrees for mer-1.
@@ -2717,7 +2717,7 @@ func TestRestoreAll_DeletesMarkerAfterRelaunch(t *testing.T) {
 		Kind:         domain.KindWorker,
 		Harness:      domain.HarnessClaudeCode,
 		IsTerminated: true,
-		Metadata:     domain.SessionMetadata{WorkspacePath: "/ws/mer-1", Branch: "ao/mer-1/root", AgentSessionID: "agent-w"},
+		Metadata:     domain.SessionMetadata{WorkspacePath: "/ws/mer-1", Branch: "to/mer-1/root", AgentSessionID: "agent-w"},
 		Activity:     domain.Activity{State: domain.ActivityExited},
 	}
 	st.worktrees["mer-1"] = []domain.SessionWorktreeRecord{{SessionID: "mer-1", RepoName: "__root__", State: "removed"}}
@@ -2750,7 +2750,7 @@ func TestRestoreAll_KilledSessionNotResurrectedOnSecondBoot(t *testing.T) {
 		Kind:         domain.KindWorker,
 		Harness:      domain.HarnessClaudeCode,
 		IsTerminated: true,
-		Metadata:     domain.SessionMetadata{WorkspacePath: "/ws/mer-1", Branch: "ao/mer-1/root", AgentSessionID: "agent-w"},
+		Metadata:     domain.SessionMetadata{WorkspacePath: "/ws/mer-1", Branch: "to/mer-1/root", AgentSessionID: "agent-w"},
 		Activity:     domain.Activity{State: domain.ActivityExited},
 	}
 	st.worktrees["mer-1"] = []domain.SessionWorktreeRecord{{SessionID: "mer-1", RepoName: "__root__", State: "removed"}}
@@ -2789,12 +2789,12 @@ func TestRestoreAll_SkipsActiveWorkspaceProjectRowsFromUserKilledSession(t *test
 		Kind:         domain.KindWorker,
 		Harness:      domain.HarnessClaudeCode,
 		IsTerminated: true,
-		Metadata:     domain.SessionMetadata{WorkspacePath: "/ws/mer-1", Branch: "ao/mer-1", Prompt: "do it"},
+		Metadata:     domain.SessionMetadata{WorkspacePath: "/ws/mer-1", Branch: "to/mer-1", Prompt: "do it"},
 		Activity:     domain.Activity{State: domain.ActivityExited},
 	}
 	st.worktrees["mer-1"] = []domain.SessionWorktreeRecord{
-		{SessionID: "mer-1", RepoName: domain.RootWorkspaceRepoName, Branch: "ao/mer-1", WorktreePath: "/ws/mer-1", State: "active"},
-		{SessionID: "mer-1", RepoName: "api", Branch: "ao/mer-1", WorktreePath: "/ws/mer-1/api", State: "active"},
+		{SessionID: "mer-1", RepoName: domain.RootWorkspaceRepoName, Branch: "to/mer-1", WorktreePath: "/ws/mer-1", State: "active"},
+		{SessionID: "mer-1", RepoName: "api", Branch: "to/mer-1", WorktreePath: "/ws/mer-1/api", State: "active"},
 	}
 
 	if err := m.RestoreAll(ctx); err != nil {
@@ -2817,11 +2817,11 @@ func TestRestoreAll_AppliesPreservedRef(t *testing.T) {
 		Kind:         domain.KindWorker,
 		Harness:      domain.HarnessClaudeCode,
 		IsTerminated: true,
-		Metadata:     domain.SessionMetadata{WorkspacePath: "/ws/mer-1", Branch: "ao/mer-1/root", AgentSessionID: "agent-w"},
+		Metadata:     domain.SessionMetadata{WorkspacePath: "/ws/mer-1", Branch: "to/mer-1/root", AgentSessionID: "agent-w"},
 		Activity:     domain.Activity{State: domain.ActivityExited},
 	}
 	st.worktrees["mer-1"] = []domain.SessionWorktreeRecord{
-		{SessionID: "mer-1", RepoName: "__root__", PreservedRef: "refs/ao/preserved/mer-1", State: "removed"},
+		{SessionID: "mer-1", RepoName: "__root__", PreservedRef: "refs/to/preserved/mer-1", State: "removed"},
 	}
 
 	if err := m.RestoreAll(ctx); err != nil {
@@ -2868,11 +2868,11 @@ func TestRestoreAll_ConflictLogsAndContinues(t *testing.T) {
 		Kind:         domain.KindWorker,
 		Harness:      domain.HarnessClaudeCode,
 		IsTerminated: true,
-		Metadata:     domain.SessionMetadata{WorkspacePath: "/ws/mer-1", Branch: "ao/mer-1/root", AgentSessionID: "agent-w"},
+		Metadata:     domain.SessionMetadata{WorkspacePath: "/ws/mer-1", Branch: "to/mer-1/root", AgentSessionID: "agent-w"},
 		Activity:     domain.Activity{State: domain.ActivityExited},
 	}
 	st.worktrees["mer-1"] = []domain.SessionWorktreeRecord{
-		{SessionID: "mer-1", RepoName: "__root__", PreservedRef: "refs/ao/preserved/mer-1", State: "removed"},
+		{SessionID: "mer-1", RepoName: "__root__", PreservedRef: "refs/to/preserved/mer-1", State: "removed"},
 	}
 
 	if err := m.RestoreAll(ctx); err != nil {
@@ -2893,12 +2893,12 @@ func TestRestoreAll_WorkspaceProjectRestoresAndAppliesEachRepo(t *testing.T) {
 		Kind:         domain.KindWorker,
 		Harness:      domain.HarnessClaudeCode,
 		IsTerminated: true,
-		Metadata:     domain.SessionMetadata{WorkspacePath: "/ws/mer-1", Branch: "ao/mer-1", AgentSessionID: "agent-w"},
+		Metadata:     domain.SessionMetadata{WorkspacePath: "/ws/mer-1", Branch: "to/mer-1", AgentSessionID: "agent-w"},
 		Activity:     domain.Activity{State: domain.ActivityExited},
 	}
 	st.worktrees["mer-1"] = []domain.SessionWorktreeRecord{
-		{SessionID: "mer-1", RepoName: domain.RootWorkspaceRepoName, Branch: "ao/mer-1", WorktreePath: "/ws/mer-1", PreservedRef: "refs/ao/preserved/mer-1", State: "removed"},
-		{SessionID: "mer-1", RepoName: "api", Branch: "ao/mer-1", WorktreePath: "/ws/mer-1/api", PreservedRef: "refs/ao/preserved/mer-1", State: "removed"},
+		{SessionID: "mer-1", RepoName: domain.RootWorkspaceRepoName, Branch: "to/mer-1", WorktreePath: "/ws/mer-1", PreservedRef: "refs/to/preserved/mer-1", State: "removed"},
+		{SessionID: "mer-1", RepoName: "api", Branch: "to/mer-1", WorktreePath: "/ws/mer-1/api", PreservedRef: "refs/to/preserved/mer-1", State: "removed"},
 	}
 
 	if err := m.RestoreAll(ctx); err != nil {
@@ -2909,8 +2909,8 @@ func TestRestoreAll_WorkspaceProjectRestoresAndAppliesEachRepo(t *testing.T) {
 		t.Fatalf("restore prefix = %v, want %v; all calls %v", got, wantPrefix, ws.calls)
 	}
 	applied := strings.Join(ws.calls, ",")
-	if !strings.Contains(applied, "ApplyPreserved:__root__:refs/ao/preserved/mer-1") ||
-		!strings.Contains(applied, "ApplyPreserved:api:refs/ao/preserved/mer-1") {
+	if !strings.Contains(applied, "ApplyPreserved:__root__:refs/to/preserved/mer-1") ||
+		!strings.Contains(applied, "ApplyPreserved:api:refs/to/preserved/mer-1") {
 		t.Fatalf("apply calls missing, got %v", ws.calls)
 	}
 	if rt.created != 1 {
@@ -2945,15 +2945,15 @@ func TestRestoreAll_WorkspaceProjectRootOnlyMarkerRestoresRegisteredChildren(t *
 		Kind:         domain.KindWorker,
 		Harness:      domain.HarnessClaudeCode,
 		IsTerminated: true,
-		Metadata:     domain.SessionMetadata{WorkspacePath: "/ws/mer-1", Branch: "ao/mer-1", AgentSessionID: "agent-w"},
+		Metadata:     domain.SessionMetadata{WorkspacePath: "/ws/mer-1", Branch: "to/mer-1", AgentSessionID: "agent-w"},
 		Activity:     domain.Activity{State: domain.ActivityExited},
 	}
 	st.worktrees["mer-1"] = []domain.SessionWorktreeRecord{{
 		SessionID:    "mer-1",
 		RepoName:     domain.RootWorkspaceRepoName,
-		Branch:       "ao/mer-1",
+		Branch:       "to/mer-1",
 		WorktreePath: "/ws/mer-1",
-		PreservedRef: "refs/ao/preserved/root",
+		PreservedRef: "refs/to/preserved/root",
 		State:        "removed",
 	}}
 
@@ -2965,7 +2965,7 @@ func TestRestoreAll_WorkspaceProjectRootOnlyMarkerRestoresRegisteredChildren(t *
 		t.Fatalf("restore prefix = %v, want %v; all calls %v", got, wantPrefix, ws.calls)
 	}
 	applied := strings.Join(ws.calls, ",")
-	if !strings.Contains(applied, "ApplyPreserved:__root__:refs/ao/preserved/root") {
+	if !strings.Contains(applied, "ApplyPreserved:__root__:refs/to/preserved/root") {
 		t.Fatalf("root preserved ref was not applied; calls=%v", ws.calls)
 	}
 	if rt.created != 1 {
@@ -2993,7 +2993,7 @@ func TestRestoreAll_WorkspaceProjectRootOnlyMarkerRestoresRegisteredChildren(t *
 func TestReconcileLive_DeadSessionStashedAndTerminated(t *testing.T) {
 	st := newFakeStore()
 	rt := &fakeRuntime{aliveByHandle: map[string]bool{}} // handle not alive
-	ws := &fakeWorkspace{stashRef: "refs/ao/preserved/s1"}
+	ws := &fakeWorkspace{stashRef: "refs/to/preserved/s1"}
 	lcm := &fakeLCM{store: st}
 	lookPath := func(string) (string, error) { return "/bin/true", nil }
 	m := New(Deps{Runtime: rt, Agents: fakeAgents{}, Workspace: ws, Store: st, Messenger: &fakeMessenger{}, Lifecycle: lcm, LookPath: lookPath})
@@ -3003,7 +3003,7 @@ func TestReconcileLive_DeadSessionStashedAndTerminated(t *testing.T) {
 		ProjectID:    "p1",
 		IsTerminated: false,
 		Metadata: domain.SessionMetadata{
-			Branch: "ao/s1/root", WorkspacePath: "/wt/s1", RuntimeHandleID: "s1",
+			Branch: "to/s1/root", WorkspacePath: "/wt/s1", RuntimeHandleID: "s1",
 		},
 	}
 
@@ -3023,7 +3023,7 @@ func TestReconcileLive_DeadSessionStashedAndTerminated(t *testing.T) {
 	// graceful shutdown: a session_worktrees marker carrying the preserve ref,
 	// and the worktree torn down so RestoreAll re-creates it clean.
 	rows := st.worktrees["s1"]
-	if len(rows) != 1 || rows[0].PreservedRef != "refs/ao/preserved/s1" {
+	if len(rows) != 1 || rows[0].PreservedRef != "refs/to/preserved/s1" {
 		t.Fatalf("session_worktrees marker for s1 = %+v, want one row with the preserve ref", rows)
 	}
 	foundForceDestroy := false
@@ -3047,7 +3047,7 @@ func TestReconcileLive_AliveSessionAdoptedNoop(t *testing.T) {
 
 	rec := domain.SessionRecord{
 		ID: "s2", ProjectID: "p1", IsTerminated: false,
-		Metadata: domain.SessionMetadata{Branch: "ao/s2/root", WorkspacePath: "/wt/s2", RuntimeHandleID: "s2"},
+		Metadata: domain.SessionMetadata{Branch: "to/s2/root", WorkspacePath: "/wt/s2", RuntimeHandleID: "s2"},
 	}
 
 	if err := m.reconcileLive(context.Background(), rec); err != nil {
@@ -3074,7 +3074,7 @@ func TestReconcileLive_ProbeErrorIsNotDeath(t *testing.T) {
 		ProjectID:    "p1",
 		IsTerminated: false,
 		Metadata: domain.SessionMetadata{
-			Branch: "ao/s3/root", WorkspacePath: "/wt/s3", RuntimeHandleID: "s3",
+			Branch: "to/s3/root", WorkspacePath: "/wt/s3", RuntimeHandleID: "s3",
 		},
 	}
 
@@ -3114,7 +3114,7 @@ func TestReconcile_AdoptAcrossDaemonRestart(t *testing.T) {
 		"w-alive": true, // worker runtime survived the daemon exit
 		// "w-dead" is absent -> that worker's runtime died with the daemon.
 	}}
-	ws := &fakeWorkspace{stashRef: "refs/ao/preserved/mer-3"}
+	ws := &fakeWorkspace{stashRef: "refs/to/preserved/mer-3"}
 	lcm := &fakeLCM{store: st}
 	lookPath := func(string) (string, error) { return "/bin/true", nil }
 	m := New(Deps{Runtime: rt, Agents: fakeAgents{}, Workspace: ws, Store: st, Messenger: &fakeMessenger{}, Lifecycle: lcm, LookPath: lookPath})
@@ -3123,23 +3123,23 @@ func TestReconcile_AdoptAcrossDaemonRestart(t *testing.T) {
 	// mint a fresh orchestrator id. It must be adopted in place.
 	st.sessions["mer-1"] = domain.SessionRecord{
 		ID: "mer-1", ProjectID: "mer", Kind: domain.KindOrchestrator, Harness: domain.HarnessClaudeCode,
-		Metadata: domain.SessionMetadata{Branch: "ao/mer-1/root", WorkspacePath: "/ws/mer-1", RuntimeHandleID: "orch"},
+		Metadata: domain.SessionMetadata{Branch: "to/mer-1/root", WorkspacePath: "/ws/mer-1", RuntimeHandleID: "orch"},
 	}
 	// Alive worker: adopted as a no-op.
 	st.sessions["mer-2"] = domain.SessionRecord{
 		ID: "mer-2", ProjectID: "mer", Kind: domain.KindWorker, Harness: domain.HarnessClaudeCode,
-		Metadata: domain.SessionMetadata{Branch: "ao/mer-2/root", WorkspacePath: "/ws/mer-2", RuntimeHandleID: "w-alive", AgentSessionID: "agent-2"},
+		Metadata: domain.SessionMetadata{Branch: "to/mer-2/root", WorkspacePath: "/ws/mer-2", RuntimeHandleID: "w-alive", AgentSessionID: "agent-2"},
 	}
 	// Dead worker: its runtime died with the daemon; capture + relaunch under same id.
 	st.sessions["mer-3"] = domain.SessionRecord{
 		ID: "mer-3", ProjectID: "mer", Kind: domain.KindWorker, Harness: domain.HarnessClaudeCode,
-		Metadata: domain.SessionMetadata{Branch: "ao/mer-3/root", WorkspacePath: "/ws/mer-3", RuntimeHandleID: "w-dead", AgentSessionID: "agent-3"},
+		Metadata: domain.SessionMetadata{Branch: "to/mer-3/root", WorkspacePath: "/ws/mer-3", RuntimeHandleID: "w-dead", AgentSessionID: "agent-3"},
 	}
 	// Truly-dead session the user killed before restart (terminated, no marker).
 	st.sessions["mer-4"] = domain.SessionRecord{
 		ID: "mer-4", ProjectID: "mer", Kind: domain.KindWorker, Harness: domain.HarnessClaudeCode,
 		IsTerminated: true, Activity: domain.Activity{State: domain.ActivityExited},
-		Metadata: domain.SessionMetadata{Branch: "ao/mer-4/root", WorkspacePath: "/ws/mer-4"},
+		Metadata: domain.SessionMetadata{Branch: "to/mer-4/root", WorkspacePath: "/ws/mer-4"},
 	}
 
 	if err := m.Reconcile(ctx); err != nil {

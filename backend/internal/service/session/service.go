@@ -194,7 +194,7 @@ func (s *Service) emitSpawned(rec domain.SessionRecord, durationMs int64) {
 	projectID := rec.ProjectID
 	sessionID := rec.ID
 	s.telemetry.Emit(context.Background(), ports.TelemetryEvent{
-		Name:       "ao.session.spawned",
+		Name:       "to.session.spawned",
 		Source:     "session_service",
 		OccurredAt: s.now(),
 		Level:      ports.TelemetryLevelInfo,
@@ -222,7 +222,7 @@ func (s *Service) emitFirstSessionSpawned(rec domain.SessionRecord, project doma
 		payload["since_first_project_ms"] = s.now().Sub(project.RegisteredAt).Milliseconds()
 	}
 	s.telemetry.Emit(context.Background(), ports.TelemetryEvent{
-		Name:       "ao.onboarding.first_session_spawned",
+		Name:       "to.onboarding.first_session_spawned",
 		Source:     "session_service",
 		OccurredAt: s.now(),
 		Level:      ports.TelemetryLevelInfo,
@@ -252,7 +252,7 @@ func (s *Service) emitSpawnFailed(cfg ports.SpawnConfig, err error, durationMs i
 		payload["error_code"] = errorCode
 	}
 	s.telemetry.Emit(context.Background(), ports.TelemetryEvent{
-		Name:       "ao.session.spawn_failed",
+		Name:       "to.session.spawn_failed",
 		Source:     "session_service",
 		OccurredAt: s.now(),
 		Level:      ports.TelemetryLevelError,
@@ -325,7 +325,7 @@ func verifyOrchestratorReplacement(project domain.ProjectRecord, sess domain.Ses
 	if expected := project.Config.Orchestrator.Harness; expected != "" && sess.Harness != expected {
 		return fmt.Errorf("orchestrator replacement verification failed: new session %s uses harness %q, want %q", sess.ID, sess.Harness, expected)
 	}
-	expectedBranch := "ao/" + serviceSessionPrefix(project) + "-orchestrator"
+	expectedBranch := "to/" + serviceSessionPrefix(project) + "-orchestrator"
 	if sess.Metadata.Branch != "" && sess.Metadata.Branch != expectedBranch {
 		return fmt.Errorf("orchestrator replacement verification failed: new session %s uses branch %q, want %q", sess.ID, sess.Metadata.Branch, expectedBranch)
 	}

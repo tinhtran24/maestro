@@ -23,7 +23,7 @@ prompt}`. The `session_worktrees` table already has a `preserved_ref` column
    (migration 0009) that nothing currently writes. No manifest.json, no new
    migration, no new format. The manifest is a query.
 3. **Uncommitted work is captured as a git commit object pointed to by a ref**
-   `refs/ao/preserved/<session-id>`. Reject the user's original
+   `refs/to/preserved/<session-id>`. Reject the user's original
    `refs/{worktree-path}/uncomit/` naming (worktree paths contain `/`, are not
    valid single ref components, and are not stable identity). The session id is
    the stable key the rest of the system already uses.
@@ -36,7 +36,7 @@ commit-tree`) so tracked + staged + new (non-ignored) files are captured,
    over `git stash create`, which silently drops all untracked files, and over
    `git stash push -u`, which mutates the worktree and the global stash stack.)
 5. **Do not weaken the existing dirty-worktree refusal** used by interactive
-   `to session kill` / `ao cleanup`. Add a separate `ForceDestroy` that the
+   `to session kill` / `to cleanup`. Add a separate `ForceDestroy` that the
    shutdown path calls only AFTER the work is captured. Adding `--force` to the
    shared remove path would silently destroy work in the interactive flows.
 
@@ -46,7 +46,7 @@ commit-tree`) so tracked + staged + new (non-ignored) files are captured,
   overridable). Never `~/Library/Application Support`. The manifest is the
   existing SQLite DB at the configured data dir; preserve refs live in each
   project repo's `.git`.
-- Preserve ref name is exactly `refs/ao/preserved/<session-id>`.
+- Preserve ref name is exactly `refs/to/preserved/<session-id>`.
 - Untracked capture respects `.gitignore` (no `-f`, no force-include). Skipped
   ignored paths are logged with a count.
 - No kind filtering anywhere in the save or restore loops: orchestrator and
@@ -98,7 +98,7 @@ comment that ForceDestroy is only safe after the work is captured.
 - `StashUncommitted(ctx, info) (ref string, err error)`: build the preserve
   commit via a temp index that respects `.gitignore`
   (`GIT_INDEX_FILE=<tmp> git add -A` → `git write-tree` → `git commit-tree`),
-  point `refs/ao/preserved/<id>` at it via `git update-ref`, return the ref name
+  point `refs/to/preserved/<id>` at it via `git update-ref`, return the ref name
   (empty if the worktree is clean — nothing to preserve). Log count of ignored
   paths skipped.
 - `ApplyPreserved(ctx, info, ref) error`: apply the preserve commit's tree onto
@@ -145,7 +145,7 @@ comment that ForceDestroy is only safe after the work is captured.
   from the wiring up to `Run`.
   **Check:** Manual run documented in report — spawn a session, edit a tracked
   file + add a new file, `POST /shutdown`; assert worktree removed and
-  `refs/ao/preserved/<id>` exists; restart daemon; assert worktree re-created and
+  `refs/to/preserved/<id>` exists; restart daemon; assert worktree re-created and
   both edits reapplied. Plus `go build ./backend/...` green.
 
 ### Task 5 — Frontend: call `/shutdown` before kill (`main.ts`)

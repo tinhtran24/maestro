@@ -15,17 +15,17 @@ Triage bugs into well-structured GitHub issues on the upstream **`AgentWrapper/t
 > runtime adapter (ConPTY on Windows). Triage against _this_ Go rewrite, not the old
 > TypeScript thanos implementation.
 
-## ⚠️ Which `ao` are you running?
+## ⚠️ Which `to` are you running?
 
-**A bare `ao` on your PATH may resolve to a different Thanos install** (for example an
-old npm build at `~/.nvm/.../bin/ao` that talks to port **:3000**). Triaging with
+**A bare `to` on your PATH may resolve to a different Thanos install** (for example an
+old npm build at `~/.nvm/.../bin/to` that talks to port **:3000**). Triaging with
 the wrong binary produces bugs that don't exist in this rewrite (and misses ones
 that do).
 
 Before any diagnostics:
 
 ```bash
-which -a ao                      # see every ao on PATH; expect surprises
+which -a to                      # see every to on PATH; expect surprises
 to status 2>/dev/null            # if this shows port 3000, it is NOT this rewrite
 ```
 
@@ -33,18 +33,18 @@ Use a rewrite binary explicitly:
 
 ```bash
 # Option A: build from this repo (preferred during triage)
-cd backend && go build -o /tmp/ao ./cmd/ao
+cd backend && go build -o /tmp/to ./cmd/to
 /tmp/to status                   # must report port: 3001
 
 # Option B: the packaged app's bundled daemon
-"/Applications/Thanos.app/Contents/Resources/daemon/ao" status
+"/Applications/Thanos.app/Contents/Resources/daemon/to" status
 ```
 
 **Confirm `to status` reports `port: 3001` before trusting any output.** Throughout
-this skill, `ao` means _your verified rewrite binary_ (`/tmp/ao` or the bundled
+this skill, `to` means _your verified rewrite binary_ (`/tmp/to` or the bundled
 one), never a bare PATH lookup.
 
-> Note: spawned sessions get a PATH pin so the _session's_ `ao` resolves to the
+> Note: spawned sessions get a PATH pin so the _session's_ `to` resolves to the
 > daemon's own executable (see `hookPATH` in
 > `backend/internal/session_manager/manager.go`). That pin only applies inside
 > sessions; your interactive shell is still on its own PATH, so pin it yourself.
@@ -84,12 +84,12 @@ If insufficient, ask:
 ### 2c. Local diagnostics (if bug is on same machine)
 
 Gather everything yourself before asking the reporter. Use your **verified**
-rewrite binary (`/tmp/ao` here) for every `ao` call:
+rewrite binary (`/tmp/to` here) for every `to` call:
 
 ```bash
 # Environment
 /tmp/to version && go version && echo $SHELL && uname -a
-which -a ao                                         # confirm no rogue ao shadows the build
+which -a to                                         # confirm no rogue to shadows the build
 cat ~/.thanos/running.json                              # PID + port handshake (expect port 3001)
 
 # Daemon health
@@ -123,7 +123,7 @@ looks like a simple `to stop` issue is often a lifecycle/session-manager problem
 one layer down. The layers:
 
 - CLI (Cobra, thin client over daemon HTTP): `backend/internal/cli/`, entrypoint
-  `backend/cmd/ao/main.go`
+  `backend/cmd/to/main.go`
 - Daemon (loopback HTTP on :3001): `backend/internal/daemon/daemon.go`,
   controllers under `backend/internal/httpd/controllers/`
 - Sessions & lifecycle: `backend/internal/session_manager/manager.go`
@@ -357,7 +357,7 @@ any priority/confidence stated in the body), root cause summary.
 
 | Subsystem                       | Collect                                   | Key files                                                                  |
 | ------------------------------- | ----------------------------------------- | -------------------------------------------------------------------------- |
-| **CLI** (`to start/stop/spawn`) | Version, install method, OS, which binary | `backend/internal/cli/`, `backend/cmd/ao/main.go`                          |
+| **CLI** (`to start/stop/spawn`) | Version, install method, OS, which binary | `backend/internal/cli/`, `backend/cmd/to/main.go`                          |
 | **Daemon / HTTP API**           | `to status`, port, daemon.log             | `backend/internal/daemon/daemon.go`, `backend/internal/httpd/controllers/` |
 | **Sessions / Lifecycle**        | Session ID, spawn config, runtime, state  | `backend/internal/session_manager/manager.go`                              |
 | **Runtime (tmux / ConPTY)**     | tmux version, `tmux ls` (macOS/Linux)     | `backend/internal/adapters/runtime/`                                       |
@@ -375,8 +375,8 @@ any priority/confidence stated in the body), root cause summary.
   tmux runtime connection.
 - "Config not saving" → config loading (`backend/internal/config/config.go`) vs
   project registration vs SQLite write (`~/.thanos/data/thanos.db`).
-- "Command does nothing / wrong port" → you're on the wrong `ao` binary (:3000 vs
-  :3001). Re-check `which -a ao` and `to status`.
+- "Command does nothing / wrong port" → you're on the wrong `to` binary (:3000 vs
+  :3001). Re-check `which -a to` and `to status`.
 
 ### B. Remote Code Inspection (no local clone)
 
@@ -393,19 +393,19 @@ Thanos is built from source in this rewrite, not published to npm. Pin the binar
 test and reproduce against a known build:
 
 ```bash
-cd backend && go build -o /tmp/ao ./cmd/ao    # build the binary under test
+cd backend && go build -o /tmp/to ./cmd/to    # build the binary under test
 /tmp/to version                               # record version/commit
 go version                                    # toolchain (build issues are often here)
 git log --oneline upstream/main -1            # the commit you're analyzing against
 ```
 
-To bisect a regression, build `ao` at two commits and compare behavior:
+To bisect a regression, build `to` at two commits and compare behavior:
 
 ```bash
-git checkout <good-sha>; (cd backend && go build -o /tmp/ao-good ./cmd/ao)
-git checkout <bad-sha>;  (cd backend && go build -o /tmp/ao-bad  ./cmd/ao)
+git checkout <good-sha>; (cd backend && go build -o /tmp/to-good ./cmd/to)
+git checkout <bad-sha>;  (cd backend && go build -o /tmp/to-bad  ./cmd/to)
 git checkout -
-# run the repro against /tmp/ao-good vs /tmp/ao-bad
+# run the repro against /tmp/to-good vs /tmp/to-bad
 ```
 
 ## Formatting Rules
@@ -414,7 +414,7 @@ git checkout -
 
 ## Pitfalls
 
-- **Wrong `ao` binary.** A bare `ao` may be a different Thanos install (old npm build on
+- **Wrong `to` binary.** A bare `to` may be a different Thanos install (old npm build on
   :3000). Always pin a rewrite binary and confirm `to status` shows port **3001**.
 - **Verify the bug reproduces against the rewrite (:3001 / Go code path) before
   filing** (symptoms first seen in another Thanos install may not reproduce here).

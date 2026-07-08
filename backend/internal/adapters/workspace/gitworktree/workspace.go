@@ -305,7 +305,7 @@ func (w *Workspace) Destroy(ctx context.Context, info ports.WorkspaceInfo) error
 //
 // ponytail: only safe to call AFTER the session's uncommitted work has been
 // captured via StashUncommitted. Calling it before capture silently
-// discards agent work. For interactive teardown (to session kill, ao cleanup)
+// discards agent work. For interactive teardown (to session kill, to cleanup)
 // use Destroy, which refuses dirty worktrees via ErrWorkspaceDirty.
 func (w *Workspace) ForceDestroy(ctx context.Context, info ports.WorkspaceInfo) error {
 	if info.Path == "" {
@@ -336,13 +336,13 @@ func (w *Workspace) ForceDestroy(ctx context.Context, info ports.WorkspaceInfo) 
 
 // StashUncommitted captures all uncommitted work in the session's worktree
 // into a git commit object WITHOUT mutating the working tree or the global
-// stash stack. The commit is stored at refs/ao/preserved/<session-id>.
+// stash stack. The commit is stored at refs/to/preserved/<session-id>.
 //
 // It builds the preserve commit through a temporary index file so tracked
 // edits AND new non-ignored files are captured while .gitignore-d files are
 // silently skipped (honoured because we never pass -f/--force to git-add).
 //
-// Returns the full ref name (e.g. "refs/ao/preserved/sess-1"). Returns an
+// Returns the full ref name (e.g. "refs/to/preserved/sess-1"). Returns an
 // empty string (and no error) if the worktree is clean.
 func (w *Workspace) StashUncommitted(ctx context.Context, info ports.WorkspaceInfo) (string, error) {
 	if info.Path == "" {
@@ -373,7 +373,7 @@ func (w *Workspace) StashUncommitted(ctx context.Context, info ports.WorkspaceIn
 	// We must NOT pre-create the file: git requires GIT_INDEX_FILE to either not
 	// exist (it creates it) or be a valid git index. os.CreateTemp gives us a
 	// unique name; we close and remove it immediately so git gets an absent path.
-	tmpIdx, err := os.CreateTemp("", "ao-preserve-idx-*")
+	tmpIdx, err := os.CreateTemp("", "to-preserve-idx-*")
 	if err != nil {
 		return "", fmt.Errorf("gitworktree: reserve temp index path: %w", err)
 	}
@@ -424,7 +424,7 @@ func (w *Workspace) StashUncommitted(ctx context.Context, info ports.WorkspaceIn
 	}
 
 	// Create a commit object that wraps the preserve tree.
-	msg := "ao preserved " + string(info.SessionID)
+	msg := "to preserved " + string(info.SessionID)
 	commitOut, err := w.run(ctx, w.binary, commitTreeArgs(info.Path, treeSHA, headSHA, msg)...)
 	if err != nil {
 		return "", fmt.Errorf("gitworktree: commit-tree: %w", err)
@@ -432,7 +432,7 @@ func (w *Workspace) StashUncommitted(ctx context.Context, info ports.WorkspaceIn
 	commitSHA := strings.TrimSpace(string(commitOut))
 
 	// Point the preserve ref at the commit.
-	ref := "refs/ao/preserved/" + string(info.SessionID)
+	ref := "refs/to/preserved/" + string(info.SessionID)
 	if _, err := w.run(ctx, w.binary, updateRefArgs(info.Path, ref, commitSHA)...); err != nil {
 		return "", fmt.Errorf("gitworktree: update-ref %q: %w", ref, err)
 	}
@@ -996,7 +996,7 @@ func resolvedSessionPrefix(cfg ports.WorkspaceConfig) string {
 }
 
 func defaultSessionBranchName(id domain.SessionID) string {
-	return "ao/" + string(id)
+	return "to/" + string(id)
 }
 
 func firstNonEmpty(values ...string) string {

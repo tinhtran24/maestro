@@ -537,14 +537,14 @@ func TestPoll_DiscoversStackedChildByBranchPrefix(t *testing.T) {
 
 func TestPoll_DiscoversSiblingUnderRootSessionNamespace(t *testing.T) {
 	store := testStoreWithSession()
-	store.sessions[0].Metadata.Branch = "ao/p-1/root"
+	store.sessions[0].Metadata.Branch = "to/p-1/root"
 	prObs := testObs(1)
-	prObs.PR.SourceBranch = "ao/p-1/fix"
+	prObs.PR.SourceBranch = "to/p-1/fix"
 	prObs.PR.TargetBranch = "main"
 	provider := &fakeProvider{
 		repoGuards: map[string]ports.SCMGuardResult{prKey(testRepo, 0): {ETag: "v2"}},
 		openPRs: map[string][]ports.SCMPRObservation{prKey(testRepo, 0): {
-			{URL: "https://github.com/o/r/pull/1", Number: 1, SourceBranch: "ao/p-1/fix", HeadRepo: "o/r", TargetBranch: "main", HeadSHA: "sha1"},
+			{URL: "https://github.com/o/r/pull/1", Number: 1, SourceBranch: "to/p-1/fix", HeadRepo: "o/r", TargetBranch: "main", HeadSHA: "sha1"},
 		}},
 		observations: map[string]ports.SCMObservation{prKey(testRepo, 1): prObs},
 	}
@@ -556,8 +556,8 @@ func TestPoll_DiscoversSiblingUnderRootSessionNamespace(t *testing.T) {
 	if len(store.writes) == 0 {
 		t.Fatal("expected discovered PR write")
 	}
-	if got := store.writes[0].pr.SourceBranch; got != "ao/p-1/fix" {
-		t.Fatalf("source branch = %q, want ao/p-1/fix", got)
+	if got := store.writes[0].pr.SourceBranch; got != "to/p-1/fix" {
+		t.Fatalf("source branch = %q, want to/p-1/fix", got)
 	}
 	if got := store.writes[0].pr.SessionID; got != "p-1" {
 		t.Fatalf("session id = %q, want p-1", got)
@@ -569,7 +569,7 @@ func TestPoll_DiscoversSiblingUnderRootSessionNamespace(t *testing.T) {
 
 func TestPoll_DiscoversWorkspaceChildRepoPR(t *testing.T) {
 	store := testStoreWithSession()
-	store.sessions[0].Metadata.Branch = "ao/p-1/root"
+	store.sessions[0].Metadata.Branch = "to/p-1/root"
 	store.projects["p"] = domain.ProjectRecord{
 		ID:            "p",
 		RepoOriginURL: "https://github.com/o/r.git",
@@ -583,7 +583,7 @@ func TestPoll_DiscoversWorkspaceChildRepoPR(t *testing.T) {
 	prObs.PR.URL = "https://github.com/o/api/pull/12"
 	prObs.PR.HTMLURL = "https://github.com/o/api/pull/12"
 	prObs.PR.Number = 12
-	prObs.PR.SourceBranch = "ao/p-1/api-billing"
+	prObs.PR.SourceBranch = "to/p-1/api-billing"
 	prObs.PR.TargetBranch = "main"
 	prObs.PR.HeadSHA = "api-sha"
 	prObs.CI.HeadSHA = "api-sha"
@@ -594,7 +594,7 @@ func TestPoll_DiscoversWorkspaceChildRepoPR(t *testing.T) {
 		},
 		openPRs: map[string][]ports.SCMPRObservation{
 			prKey(testAPIRepo, 0): {
-				{URL: "https://github.com/o/api/pull/12", Number: 12, SourceBranch: "ao/p-1/api-billing", HeadRepo: "o/api", TargetBranch: "main", HeadSHA: "api-sha"},
+				{URL: "https://github.com/o/api/pull/12", Number: 12, SourceBranch: "to/p-1/api-billing", HeadRepo: "o/api", TargetBranch: "main", HeadSHA: "api-sha"},
 			},
 		},
 		observations: map[string]ports.SCMObservation{prKey(testAPIRepo, 12): prObs},
@@ -636,7 +636,7 @@ func TestPoll_DiscoversWorkspaceChildRepoUpstreamPR(t *testing.T) {
 	defer func() { gitRemoteURLsFunc = oldRemoteURLs }()
 
 	store := testStoreWithSession()
-	store.sessions[0].Metadata.Branch = "ao/p-1/api-billing"
+	store.sessions[0].Metadata.Branch = "to/p-1/api-billing"
 	store.projects["p"] = domain.ProjectRecord{
 		ID:            "p",
 		Path:          "/repo/workspace",
@@ -652,7 +652,7 @@ func TestPoll_DiscoversWorkspaceChildRepoUpstreamPR(t *testing.T) {
 	prObs.PR.URL = "https://github.com/upstream/api/pull/44"
 	prObs.PR.HTMLURL = "https://github.com/upstream/api/pull/44"
 	prObs.PR.Number = 44
-	prObs.PR.SourceBranch = "ao/p-1/api-billing"
+	prObs.PR.SourceBranch = "to/p-1/api-billing"
 	prObs.PR.HeadRepo = "o/api"
 	prObs.PR.TargetBranch = "main"
 	prObs.PR.HeadSHA = "api-sha"
@@ -663,7 +663,7 @@ func TestPoll_DiscoversWorkspaceChildRepoUpstreamPR(t *testing.T) {
 		},
 		openPRs: map[string][]ports.SCMPRObservation{
 			prKey(upstreamRepo, 0): {
-				{URL: "https://github.com/upstream/api/pull/44", Number: 44, SourceBranch: "ao/p-1/api-billing", HeadRepo: "o/api", TargetBranch: "main", HeadSHA: "api-sha"},
+				{URL: "https://github.com/upstream/api/pull/44", Number: 44, SourceBranch: "to/p-1/api-billing", HeadRepo: "o/api", TargetBranch: "main", HeadSHA: "api-sha"},
 			},
 		},
 		observations: map[string]ports.SCMObservation{prKey(upstreamRepo, 44): prObs},
@@ -726,14 +726,14 @@ func TestPoll_DiscoversCrossForkPRFromUpstreamRemote(t *testing.T) {
 
 	upstream := ports.SCMRepo{Provider: "github", Host: "github.com", Owner: "up", Name: "r", Repo: "up/r"}
 	store := &fakeStore{
-		sessions: []domain.SessionRecord{{ID: "p-1", ProjectID: "p", Metadata: domain.SessionMetadata{Branch: "ao/p-1/root"}}},
+		sessions: []domain.SessionRecord{{ID: "p-1", ProjectID: "p", Metadata: domain.SessionMetadata{Branch: "to/p-1/root"}}},
 		projects: map[string]domain.ProjectRecord{"p": {ID: "p", Path: dir, RepoOriginURL: "https://github.com/o/r.git"}},
 		prs:      map[domain.SessionID][]domain.PullRequest{},
 		checks:   map[string][]domain.PullRequestCheck{},
 	}
 	crossObs := ports.SCMObservation{
 		Fetched: true, Provider: "github", Host: "github.com", Repo: "up/r",
-		PR:           ports.SCMPRObservation{URL: "https://github.com/up/r/pull/1", Number: 1, State: "open", SourceBranch: "ao/p-1/feat", HeadRepo: "o/r", TargetBranch: "main", HeadSHA: "sha1", Title: "PR"},
+		PR:           ports.SCMPRObservation{URL: "https://github.com/up/r/pull/1", Number: 1, State: "open", SourceBranch: "to/p-1/feat", HeadRepo: "o/r", TargetBranch: "main", HeadSHA: "sha1", Title: "PR"},
 		CI:           ports.SCMCIObservation{Summary: string(domain.CIPassing), HeadSHA: "sha1"},
 		Review:       ports.SCMReviewObservation{Decision: string(domain.ReviewNone)},
 		Mergeability: ports.SCMMergeabilityObservation{State: string(domain.MergeMergeable), Mergeable: true},
@@ -741,7 +741,7 @@ func TestPoll_DiscoversCrossForkPRFromUpstreamRemote(t *testing.T) {
 	provider := &fakeProvider{
 		repoGuards: map[string]ports.SCMGuardResult{prKey(testRepo, 0): {ETag: "origin"}, prKey(upstream, 0): {ETag: "up"}},
 		openPRs: map[string][]ports.SCMPRObservation{
-			prKey(upstream, 0): {{URL: "https://github.com/up/r/pull/1", Number: 1, SourceBranch: "ao/p-1/feat", HeadRepo: "o/r", TargetBranch: "main", HeadSHA: "sha1"}},
+			prKey(upstream, 0): {{URL: "https://github.com/up/r/pull/1", Number: 1, SourceBranch: "to/p-1/feat", HeadRepo: "o/r", TargetBranch: "main", HeadSHA: "sha1"}},
 		},
 		observations: map[string]ports.SCMObservation{prKey(upstream, 1): crossObs},
 	}
@@ -760,8 +760,8 @@ func TestPoll_DiscoversCrossForkPRFromUpstreamRemote(t *testing.T) {
 	if got.Repo != "up/r" {
 		t.Fatalf("pr repo = %q, want up/r (upstream base)", got.Repo)
 	}
-	if got.SourceBranch != "ao/p-1/feat" {
-		t.Fatalf("source branch = %q, want ao/p-1/feat", got.SourceBranch)
+	if got.SourceBranch != "to/p-1/feat" {
+		t.Fatalf("source branch = %q, want to/p-1/feat", got.SourceBranch)
 	}
 	fetched := false
 	for _, batch := range provider.fetchBatches {
@@ -787,7 +787,7 @@ func TestPoll_IgnoresUpstreamPRFromForeignHead(t *testing.T) {
 
 	upstream := ports.SCMRepo{Provider: "github", Host: "github.com", Owner: "up", Name: "r", Repo: "up/r"}
 	store := &fakeStore{
-		sessions: []domain.SessionRecord{{ID: "p-1", ProjectID: "p", Metadata: domain.SessionMetadata{Branch: "ao/p-1/root"}}},
+		sessions: []domain.SessionRecord{{ID: "p-1", ProjectID: "p", Metadata: domain.SessionMetadata{Branch: "to/p-1/root"}}},
 		projects: map[string]domain.ProjectRecord{"p": {ID: "p", Path: dir, RepoOriginURL: "https://github.com/o/r.git"}},
 		prs:      map[domain.SessionID][]domain.PullRequest{},
 		checks:   map[string][]domain.PullRequestCheck{},
@@ -795,7 +795,7 @@ func TestPoll_IgnoresUpstreamPRFromForeignHead(t *testing.T) {
 	provider := &fakeProvider{
 		repoGuards: map[string]ports.SCMGuardResult{prKey(testRepo, 0): {ETag: "origin"}, prKey(upstream, 0): {ETag: "up"}},
 		openPRs: map[string][]ports.SCMPRObservation{
-			prKey(upstream, 0): {{URL: "https://github.com/up/r/pull/9", Number: 9, SourceBranch: "ao/p-1/feat", HeadRepo: "stranger/r", TargetBranch: "main", HeadSHA: "sha9"}},
+			prKey(upstream, 0): {{URL: "https://github.com/up/r/pull/9", Number: 9, SourceBranch: "to/p-1/feat", HeadRepo: "stranger/r", TargetBranch: "main", HeadSHA: "sha9"}},
 		},
 		observations: map[string]ports.SCMObservation{},
 	}

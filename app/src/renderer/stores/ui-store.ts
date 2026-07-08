@@ -26,9 +26,9 @@ type UiState = {
 	setOrchestratorStartupError: (projectId: string, message: string | null) => void;
 };
 
-const sidebarStorageKey = "ao.sidebar.open";
-const inspectorStorageKey = "ao.inspector.open";
-const themeStorageKey = "ao.theme";
+const sidebarStorageKey = "to.sidebar.open";
+const inspectorStorageKey = "to.inspector.open";
+const themeStorageKey = "to.theme";
 
 function getLocalStorage() {
 	if (typeof window === "undefined" || !window.localStorage) return null;

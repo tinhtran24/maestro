@@ -176,7 +176,7 @@ func (m runtimeMessenger) Send(ctx context.Context, id domain.SessionID, message
 	return m.runtime.SendMessage(ctx, ports.RuntimeHandle{ID: handleID}, message)
 }
 
-// newSessionMessenger assembles the per-daemon agent messenger. For now, ao
+// newSessionMessenger assembles the per-daemon agent messenger. For now, to
 // send is intentionally minimal: submit the message to the live runtime pane.
 func newSessionMessenger(store *sqlite.Store, runtime runtimeMessageSender, _ *slog.Logger) ports.AgentMessenger {
 	return runtimeMessenger{store: store, runtime: runtime}

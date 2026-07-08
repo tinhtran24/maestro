@@ -171,11 +171,11 @@ export function Sidebar({
 	const isNightly = typeof appVersion === "string" && appVersion.includes("-nightly.");
 
 	// thanos's sidebar resize: drag the right edge (200-420px,
-	// persisted), double-click to reset to 240px. Drives --ao-sidebar-w on :root,
+	// persisted), double-click to reset to 240px. Drives --to-sidebar-w on :root,
 	// which the provider forwards into shadcn's --sidebar-width.
 	const { onPointerDown: onResizePointerDown, onDoubleClick: onResizeDoubleClick } = useResizable({
-		cssVar: "--ao-sidebar-w",
-		storageKey: "ao-sidebar-w",
+		cssVar: "--to-sidebar-w",
+		storageKey: "to-sidebar-w",
 		defaultWidth: 240,
 		min: 200,
 		max: 420,

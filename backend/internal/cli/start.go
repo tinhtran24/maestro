@@ -584,10 +584,10 @@ func (c *commandContext) openApp(ctx context.Context, appPath string) (bool, err
 	}
 }
 
-// printDeprecationNotice explains the new role of the npm `ao` binary. Keep it
+// printDeprecationNotice explains the new role of the npm `to` binary. Keep it
 // honest: Track B (live auto-update) is not done, so it does not promise it.
 func (c *commandContext) printDeprecationNotice(w io.Writer) {
-	_, _ = fmt.Fprint(w, "Thanos is now a desktop app, and the npm `ao` is just its launcher.\n"+
+	_, _ = fmt.Fprint(w, "Thanos is now a desktop app, and the npm `to` is just its launcher.\n"+
 		"The app is distributed from the website and GitHub Releases; it owns the daemon and updates itself.\n"+
 		"You can keep running `to start` to fetch (if needed) and open it.\n")
 }

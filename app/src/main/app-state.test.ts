@@ -23,7 +23,7 @@ describe("writeAppStateMarker", () => {
 	let dir: string;
 
 	beforeEach(async () => {
-		dir = await mkdtemp(path.join(os.tmpdir(), "ao-app-state-"));
+		dir = await mkdtemp(path.join(os.tmpdir(), "to-app-state-"));
 	});
 
 	afterEach(async () => {
@@ -140,7 +140,7 @@ const fixedNow = () => new Date("2026-06-26T10:00:00.000Z");
 describe("migration marker", () => {
 	const dirs: string[] = [];
 	async function tmp() {
-		const dir = await mkdtemp(path.join(os.tmpdir(), "ao-appstate-"));
+		const dir = await mkdtemp(path.join(os.tmpdir(), "to-appstate-"));
 		dirs.push(dir);
 		return dir;
 	}

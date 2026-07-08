@@ -2,8 +2,8 @@
 -- +goose StatementBegin
 
 -- projects is the durable registry of repos Thanos manages (the SQLite twin of the
--- YAML config). id is a short human/LLM-friendly slug (mer, ao) with a numeric
--- suffix on collision (ao, ao1, ao2). Soft-delete via archived_at keeps the row
+-- YAML config). id is a short human/LLM-friendly slug (mer, to) with a numeric
+-- suffix on collision (to, ao1, ao2). Soft-delete via archived_at keeps the row
 -- so a session's project_id always resolves.
 CREATE TABLE projects (
     id              TEXT PRIMARY KEY,

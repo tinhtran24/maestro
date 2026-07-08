@@ -149,7 +149,7 @@ function reportApiError(operation: string, category: ApiErrorCategory, status?: 
 	const last = lastApiErrorAt.get(key);
 	if (last !== undefined && now - last < API_ERROR_DEDUPE_MS) return;
 	lastApiErrorAt.set(key, now);
-	void captureRendererEvent("ao.renderer.api_error", {
+	void captureRendererEvent("to.renderer.api_error", {
 		operation,
 		error_category: category,
 		status,

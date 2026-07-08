@@ -559,7 +559,7 @@ graph TD
 
 ### `internal/cli`
 
-**Purpose:** User-facing `ao` command. Thin client over the daemon HTTP API.
+**Purpose:** User-facing `to` command. Thin client over the daemon HTTP API.
 
 ```mermaid
 graph LR

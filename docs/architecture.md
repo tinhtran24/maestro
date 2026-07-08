@@ -51,7 +51,7 @@ Display status like `working`, `needs_input`, `ci_failed`, `mergeable` are **com
 graph TB
     subgraph Frontend
         FE[Electron + React UI]
-        CLI[ao CLI]
+        CLI[to CLI]
     end
 
     subgraph HTTP["HTTP Daemon (127.0.0.1)"]

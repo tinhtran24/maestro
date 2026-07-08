@@ -42,7 +42,7 @@ func (c *commandContext) launchAgent(ctx context.Context) error {
 		return launchErr
 	}
 	if launchErr != nil {
-		_, _ = fmt.Fprintf(c.deps.Err, "\r\n[ao launch] agent process exited: %v\r\n", launchErr)
+		_, _ = fmt.Fprintf(c.deps.Err, "\r\n[to launch] agent process exited: %v\r\n", launchErr)
 	}
 	return c.runLaunchCommand(ctx, spec.WorkspacePath, spec.FallbackArgv, env)
 }

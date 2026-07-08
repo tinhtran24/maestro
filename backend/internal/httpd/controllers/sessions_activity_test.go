@@ -45,7 +45,7 @@ func TestSessionsAPI_ActivityAppliesSignal(t *testing.T) {
 	rec := &fakeActivityRecorder{}
 	srv := newActivityTestServer(t, rec)
 
-	body, status, _ := doRequest(t, srv, "POST", "/api/v1/sessions/ao-1/activity", `{"state":"waiting_input"}`)
+	body, status, _ := doRequest(t, srv, "POST", "/api/v1/sessions/to-1/activity", `{"state":"waiting_input"}`)
 	if status != http.StatusOK {
 		t.Fatalf("activity = %d, want 200; body=%s", status, body)
 	}
@@ -55,10 +55,10 @@ func TestSessionsAPI_ActivityAppliesSignal(t *testing.T) {
 		State     string `json:"state"`
 	}
 	mustJSON(t, body, &resp)
-	if !resp.OK || resp.SessionID != "ao-1" || resp.State != "waiting_input" {
+	if !resp.OK || resp.SessionID != "to-1" || resp.State != "waiting_input" {
 		t.Fatalf("activity response = %#v", resp)
 	}
-	if rec.calls != 1 || rec.gotID != "ao-1" {
+	if rec.calls != 1 || rec.gotID != "to-1" {
 		t.Fatalf("recorder calls=%d id=%q", rec.calls, rec.gotID)
 	}
 	if !rec.gotSignal.Valid || rec.gotSignal.State != domain.ActivityWaitingInput {
@@ -70,7 +70,7 @@ func TestSessionsAPI_ActivityRejectsUnknownState(t *testing.T) {
 	rec := &fakeActivityRecorder{}
 	srv := newActivityTestServer(t, rec)
 
-	body, status, _ := doRequest(t, srv, "POST", "/api/v1/sessions/ao-1/activity", `{"state":"napping"}`)
+	body, status, _ := doRequest(t, srv, "POST", "/api/v1/sessions/to-1/activity", `{"state":"napping"}`)
 	assertErrorCode(t, body, status, http.StatusBadRequest, "INVALID_ACTIVITY_STATE")
 	if rec.calls != 0 {
 		t.Fatalf("recorder should not be called for an invalid state; calls=%d", rec.calls)
@@ -80,7 +80,7 @@ func TestSessionsAPI_ActivityRejectsUnknownState(t *testing.T) {
 func TestSessionsAPI_ActivityRejectsBadJSON(t *testing.T) {
 	srv := newActivityTestServer(t, &fakeActivityRecorder{})
 
-	body, status, _ := doRequest(t, srv, "POST", "/api/v1/sessions/ao-1/activity", `{`)
+	body, status, _ := doRequest(t, srv, "POST", "/api/v1/sessions/to-1/activity", `{`)
 	assertErrorCode(t, body, status, http.StatusBadRequest, "INVALID_JSON")
 }
 
@@ -94,13 +94,13 @@ func TestSessionsAPI_ActivityMissingSessionIs404(t *testing.T) {
 func TestSessionsAPI_ActivityRecorderErrorIs500(t *testing.T) {
 	srv := newActivityTestServer(t, &fakeActivityRecorder{err: errors.New("boom")})
 
-	body, status, _ := doRequest(t, srv, "POST", "/api/v1/sessions/ao-1/activity", `{"state":"exited"}`)
+	body, status, _ := doRequest(t, srv, "POST", "/api/v1/sessions/to-1/activity", `{"state":"exited"}`)
 	assertErrorCode(t, body, status, http.StatusInternalServerError, "INTERNAL_ERROR")
 }
 
 func TestSessionsAPI_ActivityWithoutRecorderIs501(t *testing.T) {
 	srv := newActivityTestServer(t, nil)
 
-	body, status, _ := doRequest(t, srv, "POST", "/api/v1/sessions/ao-1/activity", `{"state":"idle"}`)
+	body, status, _ := doRequest(t, srv, "POST", "/api/v1/sessions/to-1/activity", `{"state":"idle"}`)
 	assertErrorCode(t, body, status, http.StatusNotImplemented, "NOT_IMPLEMENTED")
 }

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Fresh-machine install check. The Dockerfile installs `ao` on PATH in a clean
+# Fresh-machine install check. The Dockerfile installs `to` on PATH in a clean
 # image and runs this; it proves a freshly installed binary actually works on a
 # machine with no Go toolchain and no developer state. The COMPREHENSIVE,
 # cross-platform behavioural suite lives in Go (backend/internal/cli/e2e_test.go,
@@ -8,7 +8,7 @@
 
 set -euo pipefail
 
-THANOS_BIN="${THANOS_BIN:-ao}"
+THANOS_BIN="${THANOS_BIN:-to}"
 tmp="$(mktemp -d)"
 export THANOS_RUN_FILE="$tmp/running.json"
 export THANOS_DATA_DIR="$tmp/data"
@@ -16,7 +16,7 @@ trap 'rm -rf "$tmp"' EXIT
 
 fail() { echo "FAIL: $1" >&2; exit 1; }
 
-echo "ao binary : $(command -v "$THANOS_BIN")"
+echo "to binary : $(command -v "$THANOS_BIN")"
 "$THANOS_BIN" version            >/dev/null || fail "version"
 "$THANOS_BIN" doctor             >/dev/null || fail "doctor"
 

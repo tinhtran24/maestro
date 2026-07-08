@@ -3,7 +3,7 @@ const steps = [
 		num: "STEP 01",
 		title: "Install",
 		desc: "One command. No dependencies beyond Node.js.",
-		cmd: "npm i -g @tinhtran/ao",
+		cmd: "npm i -g @tinhtran/to",
 	},
 	{
 		num: "STEP 02",
@@ -11,7 +11,7 @@ const steps = [
 		desc: "Create an thanos.yaml. Pick your agents, tracker, and notifiers.",
 		cmd: "to start",
 	},
-	{ num: "STEP 03", title: "Launch", desc: "Assign issues and watch agents spawn.", cmd: "ao batch-spawn 1 2 3" },
+	{ num: "STEP 03", title: "Launch", desc: "Assign issues and watch agents spawn.", cmd: "to batch-spawn 1 2 3" },
 ];
 
 export function LandingQuickStart() {

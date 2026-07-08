@@ -25,16 +25,16 @@ import (
 const postHogBufferSize = 128
 
 var remotePayloadAllowlist = map[string]map[string]struct{}{
-	"ao.app.active": {
+	"to.app.active": {
 		"channel":      {},
 		"command":      {},
 		"command_path": {},
 	},
-	"ao.cli.invoked": {
+	"to.cli.invoked": {
 		"command":      {},
 		"command_path": {},
 	},
-	"ao.cli.usage_errors": {
+	"to.cli.usage_errors": {
 		"component":    {},
 		"command":      {},
 		"command_path": {},
@@ -42,7 +42,7 @@ var remotePayloadAllowlist = map[string]map[string]struct{}{
 		"fingerprint":  {},
 		"operation":    {},
 	},
-	"ao.daemon.panic": {
+	"to.daemon.panic": {
 		"component":         {},
 		"fingerprint":       {},
 		"method":            {},
@@ -51,11 +51,11 @@ var remotePayloadAllowlist = map[string]map[string]struct{}{
 		"panic_kind":        {},
 		"stack_fingerprint": {},
 	},
-	"ao.daemon.started": {
+	"to.daemon.started": {
 		"agent": {},
 		"port":  {},
 	},
-	"ao.http.5xx": {
+	"to.http.5xx": {
 		"component":     {},
 		"duration":      {},
 		"error_code":    {},
@@ -67,20 +67,20 @@ var remotePayloadAllowlist = map[string]map[string]struct{}{
 		"status":        {},
 		"status_family": {},
 	},
-	"ao.onboarding.first_project_added": {
+	"to.onboarding.first_project_added": {
 		"has_git_remote": {},
 		"kind":           {},
 	},
-	"ao.onboarding.first_session_spawned": {
+	"to.onboarding.first_session_spawned": {
 		"harness":                {},
 		"kind":                   {},
 		"since_first_project_ms": {},
 	},
-	"ao.projects.created": {
+	"to.projects.created": {
 		"has_git_remote": {},
 		"kind":           {},
 	},
-	"ao.session.spawn_failed": {
+	"to.session.spawn_failed": {
 		"component":   {},
 		"duration_ms": {},
 		"error_code":  {},
@@ -90,15 +90,15 @@ var remotePayloadAllowlist = map[string]map[string]struct{}{
 		"kind":        {},
 		"operation":   {},
 	},
-	"ao.session.spawned": {
+	"to.session.spawned": {
 		"duration_ms": {},
 		"harness":     {},
 		"kind":        {},
 	},
-	"ao.session.waiting_input_entered": {
+	"to.session.waiting_input_entered": {
 		"state": {},
 	},
-	"ao.session.waiting_input_exited": {
+	"to.session.waiting_input_exited": {
 		"dwell_ms":  {},
 		"exited_to": {},
 		"state":     {},

@@ -33,7 +33,7 @@ func TestPostHogSinkCapturesEvent(t *testing.T) {
 	projectID := domain.ProjectID("proj-1")
 	sessionID := domain.SessionID("sess-1")
 	sink.Emit(context.Background(), ports.TelemetryEvent{
-		Name:       "ao.session.spawned",
+		Name:       "to.session.spawned",
 		Source:     "session_service",
 		OccurredAt: time.Unix(1700000000, 0).UTC(),
 		Level:      ports.TelemetryLevelInfo,
@@ -50,8 +50,8 @@ func TestPostHogSinkCapturesEvent(t *testing.T) {
 
 	select {
 	case req := <-requests:
-		if got := req["event"]; got != "ao.session.spawned" {
-			t.Fatalf("event = %#v, want ao.session.spawned", got)
+		if got := req["event"]; got != "to.session.spawned" {
+			t.Fatalf("event = %#v, want to.session.spawned", got)
 		}
 		props, ok := req["properties"].(map[string]any)
 		if !ok {
@@ -88,7 +88,7 @@ func TestPostHogSinkSanitizesPayloads(t *testing.T) {
 	}
 
 	sink.Emit(context.Background(), ports.TelemetryEvent{
-		Name:       "ao.daemon.panic",
+		Name:       "to.daemon.panic",
 		Source:     "http",
 		OccurredAt: time.Unix(1700000000, 0).UTC(),
 		Level:      ports.TelemetryLevelError,

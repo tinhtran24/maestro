@@ -19,7 +19,7 @@ description: Deliver notifications through a local OpenClaw gateway — personal
 Run Thanos's interactive helper:
 
 ```bash
-ao setup openclaw
+to setup openclaw
 ```
 
 It will:
@@ -33,14 +33,14 @@ It will:
 Non-interactive variant:
 
 ```bash
-ao setup openclaw --non-interactive --url http://127.0.0.1:18789/hooks/agent --routing-preset urgent-action
+to setup openclaw --non-interactive --url http://127.0.0.1:18789/hooks/agent --routing-preset urgent-action
 ```
 
 Refresh an existing setup or inspect status:
 
 ```bash
-ao setup openclaw --refresh
-ao setup openclaw --status
+to setup openclaw --refresh
+to setup openclaw --status
 ```
 
 ## Use
@@ -92,9 +92,9 @@ Token is read in this order:
 2. `hooks.token` from `openclawConfigPath`
 3. Env var `OPENCLAW_HOOKS_TOKEN` as a legacy fallback
 
-`ao setup openclaw --status` probes the OpenClaw gateway and token. To send a
+`to setup openclaw --status` probes the OpenClaw gateway and token. To send a
 real Thanos test notification through the configured notifier, run:
 
 ```bash
-ao notify test --to openclaw --template basic
+to notify test --to openclaw --template basic
 ```

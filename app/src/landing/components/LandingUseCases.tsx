@@ -15,14 +15,14 @@ type UseCase = {
 	outcome: string;
 };
 
-// Real, grounded use cases — real ao commands, reaction keys, and lifecycle states.
+// Real, grounded use cases — real to commands, reaction keys, and lifecycle states.
 const cases: UseCase[] = [
 	{
 		eyebrow: "Backlog",
 		title: "Clear it overnight",
 		desc: "One agent per issue, each in its own git worktree, all running at once.",
 		prefix: "$",
-		cmd: "ao batch-spawn 142 143 144 145",
+		cmd: "to batch-spawn 142 143 144 145",
 		outcome: "4 worktrees · 4 PRs",
 	},
 	{

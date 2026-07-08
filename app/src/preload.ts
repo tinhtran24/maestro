@@ -114,6 +114,6 @@ const api = {
 	},
 };
 
-contextBridge.exposeInMainWorld("ao", api);
+contextBridge.exposeInMainWorld("to", api);
 
 export type AoBridge = typeof api;

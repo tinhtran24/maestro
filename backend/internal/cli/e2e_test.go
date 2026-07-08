@@ -1,6 +1,6 @@
 //go:build e2e
 
-// Package cli_test holds the end-to-end suite for the `ao` CLI. It builds the
+// Package cli_test holds the end-to-end suite for the `to` CLI. It builds the
 // real binary and drives it (start/status/doctor/stop + the daemon-control HTTP
 // surface) against fully isolated state — a per-test temp run-file, data dir,
 // and an OS-assigned free loopback port — so it never touches a developer's real
@@ -33,19 +33,19 @@ import (
 var aoBin string
 
 func TestMain(m *testing.M) {
-	dir, err := os.MkdirTemp("", "ao-e2e-bin")
+	dir, err := os.MkdirTemp("", "to-e2e-bin")
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "e2e: mktemp:", err)
 		os.Exit(1)
 	}
-	aoBin = filepath.Join(dir, "ao")
+	aoBin = filepath.Join(dir, "to")
 	if runtime.GOOS == "windows" {
 		aoBin += ".exe"
 	}
 	build := exec.Command("go", "build", "-o", aoBin, "github.com/tinhtran/thanos/backend/cmd/to")
 	build.Stdout, build.Stderr = os.Stderr, os.Stderr
 	if err := build.Run(); err != nil {
-		fmt.Fprintln(os.Stderr, "e2e: build ao:", err)
+		fmt.Fprintln(os.Stderr, "e2e: build to:", err)
 		os.Exit(1)
 	}
 	code := m.Run()
@@ -102,7 +102,7 @@ func freePort(t *testing.T) int {
 	return l.Addr().(*net.TCPAddr).Port
 }
 
-// run executes `ao args...` in env e and returns combined output + exit code.
+// run executes `to args...` in env e and returns combined output + exit code.
 func (e env) run(t *testing.T, args ...string) (string, int) {
 	t.Helper()
 	return e.runEnv(t, e.environ(""), args...)
@@ -123,7 +123,7 @@ func (e env) runEnv(t *testing.T, environ []string, args ...string) (string, int
 			t.Fatalf("run %v: %v\n%s", args, err, out)
 		}
 	}
-	t.Logf("$ ao %s\n%s(exit %d)", strings.Join(args, " "), out, code)
+	t.Logf("$ to %s\n%s(exit %d)", strings.Join(args, " "), out, code)
 	return out, code
 }
 

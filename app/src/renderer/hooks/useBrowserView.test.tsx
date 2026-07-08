@@ -59,7 +59,7 @@ function setupBridge() {
 			listeners.forEach((listener) => listener(state));
 		},
 	};
-	window.ao = { ...window.ao!, browser: bridge };
+	window.to = { ...window.to!, browser: bridge };
 	return bridge;
 }
 

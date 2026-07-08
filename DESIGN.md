@@ -51,7 +51,7 @@ resizable`, react-resizable-panels v4 `collapsible` panel + imperative API,
 ## Product Context
 
 - **What this is:** ReverbCode is an Electron desktop app for supervising many parallel
-  AI coding-agent sessions, backed by a Go daemon (`backend/`). The `ao` CLI is the
+  AI coding-agent sessions, backed by a Go daemon (`backend/`). The `to` CLI is the
   thin client over the same daemon.
 - **Who it's for:** professional software engineers running multiple coding agents at
   once who need to delegate, watch, intervene, and ship PRs.

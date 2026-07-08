@@ -127,7 +127,7 @@ type Workspace interface {
 	// Never call it from interactive teardown paths.
 	ForceDestroy(ctx context.Context, info WorkspaceInfo) error
 	// StashUncommitted captures all uncommitted work in the worktree as a git
-	// commit object stored at refs/ao/preserved/<session-id>, WITHOUT mutating
+	// commit object stored at refs/to/preserved/<session-id>, WITHOUT mutating
 	// the working tree or the global stash stack. Tracked edits and new
 	// non-ignored files are captured; .gitignore-d files are skipped (the count
 	// of skipped ignored paths is logged). Returns the ref name on success, or

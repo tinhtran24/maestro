@@ -136,7 +136,7 @@ func mountTelemetry(r chi.Router, sink ports.EventSink) {
 		}
 
 		sink.Emit(req.Context(), ports.TelemetryEvent{
-			Name:       "ao.cli.invoked",
+			Name:       "to.cli.invoked",
 			Source:     "cli",
 			OccurredAt: time.Now().UTC(),
 			Level:      ports.TelemetryLevelInfo,
@@ -147,7 +147,7 @@ func mountTelemetry(r chi.Router, sink ports.EventSink) {
 			},
 		})
 		sink.Emit(req.Context(), ports.TelemetryEvent{
-			Name:       "ao.app.active",
+			Name:       "to.app.active",
 			Source:     "cli",
 			OccurredAt: time.Now().UTC(),
 			Level:      ports.TelemetryLevelInfo,
@@ -182,7 +182,7 @@ func mountTelemetry(r chi.Router, sink ports.EventSink) {
 		}
 
 		sink.Emit(req.Context(), ports.TelemetryEvent{
-			Name:       "ao.cli.usage_errors",
+			Name:       "to.cli.usage_errors",
 			Source:     "cli",
 			OccurredAt: time.Now().UTC(),
 			Level:      ports.TelemetryLevelWarn,

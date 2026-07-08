@@ -54,7 +54,7 @@ if (typeof window !== "undefined") {
 	Element.prototype.releasePointerCapture = (() => undefined) as typeof Element.prototype.releasePointerCapture;
 	Element.prototype.scrollIntoView = (() => undefined) as typeof Element.prototype.scrollIntoView;
 
-	window.ao = {
+	window.to = {
 		app: {
 			getVersion: async () => "0.0.0-test",
 			chooseDirectory: async () => null,

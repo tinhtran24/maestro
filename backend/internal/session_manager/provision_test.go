@@ -29,7 +29,7 @@ func TestSpawnEnvProjectVarsCannotOverrideInternal(t *testing.T) {
 
 func TestHookPATH(t *testing.T) {
 	sep := string(os.PathListSeparator)
-	daemonExe := filepath.Join("/opt", "aod", "ao")
+	daemonExe := filepath.Join("/opt", "aod", "to")
 	daemonDir := filepath.Dir(daemonExe)
 	exeOK := func() (string, error) { return daemonExe, nil }
 
@@ -66,10 +66,10 @@ func TestHookPATH(t *testing.T) {
 			wantErr:    true,
 		},
 		{
-			// A daemon binary not named "ao" cannot anchor `ao` resolution by
+			// A daemon binary not named "to" cannot anchor `to` resolution by
 			// having its directory prepended, so the pin must be refused.
-			name:       "executable not named ao fails",
-			executable: func() (string, error) { return filepath.Join("/opt", "aod", "ao-daemon"), nil },
+			name:       "executable not named to fails",
+			executable: func() (string, error) { return filepath.Join("/opt", "aod", "to-daemon"), nil },
 			daemonPATH: "/usr/bin",
 			wantErr:    true,
 		},

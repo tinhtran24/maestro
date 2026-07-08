@@ -11,7 +11,7 @@ function joinPath(...segments: string[]): string {
 }
 
 export function bundledDaemonBinaryName(platform: NodeJS.Platform): string {
-	return platform === "win32" ? "ao.exe" : "ao";
+	return platform === "win32" ? "to.exe" : "to";
 }
 
 export function resolveDaemonLaunch(

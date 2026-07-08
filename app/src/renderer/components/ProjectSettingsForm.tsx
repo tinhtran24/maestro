@@ -121,7 +121,7 @@ function SettingsBody({ project, projectId, onSaved }: { project: Project; proje
 
 	const mutation = useMutation({
 		mutationFn: async () => {
-			void captureRendererEvent("ao.renderer.settings_save_requested", { project_id: projectId });
+			void captureRendererEvent("to.renderer.settings_save_requested", { project_id: projectId });
 			// PUT replaces the whole config; merge the edited fields over what loaded
 			// so we don't drop env/symlinks/postCreate the form doesn't expose.
 			const next: ProjectConfig = {
@@ -158,7 +158,7 @@ function SettingsBody({ project, projectId, onSaved }: { project: Project; proje
 			return { replacementError: null };
 		},
 		onSuccess: (result) => {
-			void captureRendererEvent("ao.renderer.settings_save_succeeded", { project_id: projectId });
+			void captureRendererEvent("to.renderer.settings_save_succeeded", { project_id: projectId });
 			setSavedAt(Date.now());
 			setReplacementError(result.replacementError);
 			setValidationError(null);
@@ -166,7 +166,7 @@ function SettingsBody({ project, projectId, onSaved }: { project: Project; proje
 			onSaved();
 		},
 		onError: () => {
-			void captureRendererEvent("ao.renderer.settings_save_failed", { project_id: projectId });
+			void captureRendererEvent("to.renderer.settings_save_failed", { project_id: projectId });
 		},
 	});
 
@@ -247,7 +247,7 @@ function SettingsBody({ project, projectId, onSaved }: { project: Project; proje
 							className="h-8 w-full rounded-md border border-input bg-transparent px-2.5 text-[13px] text-foreground placeholder:text-passive focus-visible:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-weak"
 							value={form.sessionPrefix}
 							onChange={(e) => setForm((f) => ({ ...f, sessionPrefix: e.target.value }))}
-							placeholder="ao"
+							placeholder="to"
 						/>
 					</Field>
 				</CardContent>

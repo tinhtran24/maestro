@@ -39,7 +39,7 @@ and behavior verbatim (per Thanos's `DESIGN.md` "clone verbatim" rule).
 ```
 ┌─ Electron main (Node) ────────────────────────────────────────────┐
 │  • daemon-owner / daemon-launch / daemon-attach / daemon-takeover  │
-│    → discover, spawn, adopt the local `ao` daemon                  │
+│    → discover, spawn, adopt the local `to` daemon                  │
 │  • browser-view-host → embedded BrowserView for `preview`/inspector │
 │  • auto-updater → electron-updater                                 │
 │  • supervisor-link → renderer ↔ main IPC bridge (preload)          │

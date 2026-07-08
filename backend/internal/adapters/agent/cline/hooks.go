@@ -33,7 +33,7 @@ const (
 
 	// clineHookMarker tags Thanos-generated hook scripts so install/uninstall can
 	// distinguish them from user-authored Cline hooks in the same directory.
-	clineHookMarker = "# ao-managed-cline-hook"
+	clineHookMarker = "# to-managed-cline-hook"
 )
 
 // clineHookSpec describes one hook Thanos installs: the native Cline hook event
@@ -163,7 +163,7 @@ func renderClineHookScript(subcommand string) string {
 	b.WriteString("#!/usr/bin/env bash\n")
 	b.WriteString(clineHookMarker + "\n")
 	// Forward stdin to the Thanos dispatcher; ignore its exit code so a missing/old
-	// `ao` binary can never block Cline's own execution.
+	// `to` binary can never block Cline's own execution.
 	b.WriteString(clineHookCommandPrefix + subcommand + " || true\n")
 	// Cline requires a JSON result on stdout; never block the agent.
 	b.WriteString(`echo '{"cancel": false}'` + "\n")

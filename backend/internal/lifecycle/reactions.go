@@ -232,7 +232,7 @@ func (m *Manager) ApplyReviewResult(ctx context.Context, workerID domain.Session
 	if r.Body != "" {
 		msg += "\n\nReview body:\n" + domain.SanitizeControlChars(r.Body)
 	}
-	key := "review:" + r.PRURL + ":ao:" + r.RunID
+	key := "review:" + r.PRURL + ":to:" + r.RunID
 	sig := strings.Join([]string{r.TargetSHA, r.RunID, r.GithubReviewID, r.Body}, "\x00")
 	err = m.sendOnce(ctx, workerID, r.PRURL, key, sig, msg, reviewMaxNudge)
 	if err != nil {

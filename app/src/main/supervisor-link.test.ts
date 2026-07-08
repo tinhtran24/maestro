@@ -23,7 +23,7 @@ function withTimeout<T>(promise: Promise<T>, timeoutMs: number, label: string): 
 }
 
 function tmpSocketPath(): string {
-	return path.join(os.tmpdir(), `ao-svlink-test-${process.pid}-${Date.now()}.sock`);
+	return path.join(os.tmpdir(), `to-svlink-test-${process.pid}-${Date.now()}.sock`);
 }
 
 // Promisify: resolves the next time server.on("connection") fires.

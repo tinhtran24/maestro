@@ -21,7 +21,7 @@ import (
 
 const (
 	defaultBaseURL   = "https://api.github.com"
-	defaultUserAgent = "ao-thanos/tracker-github"
+	defaultUserAgent = "to-thanos/tracker-github"
 
 	// Status labels used by humans (and other tooling) on GitHub Issues.
 	// Get's reverse mapping recognizes them so an externally-labeled issue

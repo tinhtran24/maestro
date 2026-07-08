@@ -12,7 +12,7 @@ name: Testing build (all platforms)
 # Unsigned: macOS is quarantined/Gatekeeper-blocked once downloaded
 # (xattr -dr com.apple.quarantine "Thanos.app"); Windows SmartScreen
 # warns ("More info" -> "Run anyway"). Each OS builds on its own native runner so
-# build-daemon.mjs compiles the bundled ao for that platform (host == target).
+# build-daemon.mjs compiles the bundled to for that platform (host == target).
 
 on:
   workflow_dispatch:

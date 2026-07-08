@@ -5,6 +5,6 @@
 # this whole directory tree (including the JS shim). Re-include the dirs and the
 # shim, then ignore only the compiled binaries.
 !*/bin/
-!ao/bin/ao.js
-*/bin/ao
-*/bin/ao.exe
+!to/bin/to.js
+*/bin/to
+*/bin/to.exe

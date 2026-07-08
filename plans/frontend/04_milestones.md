@@ -2,7 +2,7 @@
 
 Phased plan to clone the Thanos frontend onto the already-cloned Thanos backend. Each
 phase ends with a runnable, testable increment. "Port" = copy from
-`thanos-main/frontend/src/**` and adjust names/paths (`ao` → thanos,
+`thanos-main/frontend/src/**` and adjust names/paths (`to` → thanos,
 `~/.thanos` → `~/.thanos`, backend module path).
 
 ## Phase 0 — Scaffold (foundation)
@@ -13,14 +13,14 @@ phase ends with a runnable, testable increment. "Port" = copy from
 - [ ] Install deps (npm or pnpm — match Thanos's lockfile choice).
 - [ ] Generate API types: `npm run api:ts` → `src/api/schema.ts` from
       `backend/internal/httpd/apispec/openapi.yaml`. Fix the script's relative path.
-- [ ] Update `scripts/build-daemon.mjs` to build `thanos/backend/cmd/ao`.
+- [ ] Update `scripts/build-daemon.mjs` to build `thanos/backend/cmd/to`.
 - **Done when**: `npm run dev:web` serves an empty shell; `npm run typecheck` passes.
 
 ## Phase 1 — Electron shell + daemon lifecycle
 
 - [ ] Port `src/main/*`, `src/preload.ts`, `src/shared/daemon-*`, `shell-env`.
 - [ ] Pin `userData` to `~/.thanos/electron`.
-- [ ] Wire discover → attach → launch (bundled `ao`) → takeover.
+- [ ] Wire discover → attach → launch (bundled `to`) → takeover.
 - [ ] Port `useDaemonStatus` + `lib/daemon-status`.
 - **Done when**: `npm run dev` opens the window, spawns/attaches the daemon, and the
       status indicator shows "connected". Main-process tests pass.

@@ -144,7 +144,7 @@ func TestProjectsAPI_ListAddGet(t *testing.T) {
 
 	}
 
-	body, status, _ = doRequest(t, srv, "POST", "/api/v1/projects", `{"path":`+quote(repo)+`,"projectId":"ao","name":"Thanos"}`)
+	body, status, _ = doRequest(t, srv, "POST", "/api/v1/projects", `{"path":`+quote(repo)+`,"projectId":"to","name":"Thanos"}`)
 
 	if status != http.StatusCreated {
 
@@ -158,13 +158,13 @@ func TestProjectsAPI_ListAddGet(t *testing.T) {
 
 	mustJSON(t, body, &add)
 
-	if add.Project.ID != "ao" || add.Project.Name != "Thanos" || add.Project.DefaultBranch != "main" {
+	if add.Project.ID != "to" || add.Project.Name != "Thanos" || add.Project.DefaultBranch != "main" {
 
 		t.Fatalf("created project = %#v", add.Project)
 
 	}
 
-	body, status, _ = doRequest(t, srv, "GET", "/api/v1/projects/ao", "")
+	body, status, _ = doRequest(t, srv, "GET", "/api/v1/projects/to", "")
 
 	if status != http.StatusOK {
 
@@ -180,7 +180,7 @@ func TestProjectsAPI_ListAddGet(t *testing.T) {
 
 	mustJSON(t, body, &get)
 
-	if get.Status != "ok" || get.Project.ID != "ao" {
+	if get.Status != "ok" || get.Project.ID != "to" {
 
 		t.Fatalf("get response = %#v", get)
 

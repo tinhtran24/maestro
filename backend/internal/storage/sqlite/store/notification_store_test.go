@@ -142,14 +142,14 @@ func TestNotificationStore_ListUnreadNewestFirstAcrossProjects(t *testing.T) {
 	s := newTestStore(t)
 	ctx := context.Background()
 	seedProject(t, s, "mer")
-	seedProject(t, s, "ao")
+	seedProject(t, s, "to")
 	mer, _ := s.CreateSession(ctx, sampleRecord("mer"))
-	ao, _ := s.CreateSession(ctx, sampleRecord("ao"))
+	to, _ := s.CreateSession(ctx, sampleRecord("to"))
 	base := time.Now().UTC().Truncate(time.Second)
 	for _, rec := range []domain.NotificationRecord{
 		{ID: "old", SessionID: mer.ID, ProjectID: mer.ProjectID, Type: domain.NotificationNeedsInput, Title: "old", Status: domain.NotificationUnread, CreatedAt: base},
 		{ID: "new", SessionID: mer.ID, ProjectID: mer.ProjectID, PRURL: "https://github.com/o/r/pull/1", Type: domain.NotificationReadyToMerge, Title: "new", Status: domain.NotificationUnread, CreatedAt: base.Add(time.Minute)},
-		{ID: "other", SessionID: ao.ID, ProjectID: ao.ProjectID, Type: domain.NotificationNeedsInput, Title: "other", Status: domain.NotificationUnread, CreatedAt: base.Add(2 * time.Minute)},
+		{ID: "other", SessionID: to.ID, ProjectID: to.ProjectID, Type: domain.NotificationNeedsInput, Title: "other", Status: domain.NotificationUnread, CreatedAt: base.Add(2 * time.Minute)},
 	} {
 		if _, inserted, err := s.CreateNotification(ctx, rec); err != nil || !inserted {
 			t.Fatalf("insert %s inserted=%v err=%v", rec.ID, inserted, err)

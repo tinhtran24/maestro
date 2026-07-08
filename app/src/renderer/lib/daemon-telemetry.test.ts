@@ -42,10 +42,10 @@ describe("daemon failure telemetry", () => {
 	it("reports a failing status with coarse fields only", () => {
 		stop = startDaemonFailureTelemetry();
 
-		pushStatus({ state: "error", message: "spawn /Users/alice/ao failed", code: "spawn_failed" });
+		pushStatus({ state: "error", message: "spawn /Users/alice/to failed", code: "spawn_failed" });
 
 		expect(captureMock).toHaveBeenCalledTimes(1);
-		expect(captureMock).toHaveBeenCalledWith("ao.renderer.daemon_failure", {
+		expect(captureMock).toHaveBeenCalledWith("to.renderer.daemon_failure", {
 			daemon_state: "error",
 			code: "spawn_failed",
 			exit_code: undefined,
@@ -58,7 +58,7 @@ describe("daemon failure telemetry", () => {
 
 		pushStatus({ state: "stopped", code: "exited", exitCode: 1, signal: "SIGKILL" });
 
-		expect(captureMock).toHaveBeenCalledWith("ao.renderer.daemon_failure", {
+		expect(captureMock).toHaveBeenCalledWith("to.renderer.daemon_failure", {
 			daemon_state: "stopped",
 			code: "exited",
 			exit_code: 1,
@@ -106,7 +106,7 @@ describe("daemon failure telemetry", () => {
 		stop = startDaemonFailureTelemetry();
 		await vi.waitFor(() => expect(captureMock).toHaveBeenCalledTimes(1));
 
-		expect(captureMock).toHaveBeenCalledWith("ao.renderer.daemon_failure", {
+		expect(captureMock).toHaveBeenCalledWith("to.renderer.daemon_failure", {
 			daemon_state: "error",
 			code: "binary_missing",
 			exit_code: undefined,

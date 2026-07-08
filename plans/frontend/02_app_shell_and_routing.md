@@ -22,10 +22,10 @@ Port these modules verbatim (each has a `.test.ts` alongside — port those too)
 Port: `daemon-discovery.ts`, `daemon-launch.ts`, `daemon-attach.ts`,
 `daemon-takeover.ts`, `daemon-status.ts`, `shell-env.ts`, `telemetry.ts`,
 `posthog-config.ts`. These implement: find a running daemon → attach, else launch
-the bundled `ao` binary, else take over a stale one.
+the bundled `to` binary, else take over a stale one.
 
 > The daemon binary is built by `scripts/build-daemon.mjs` and bundled. Point it at
-> `thanos/backend` (`go build ./cmd/ao`). Update the script's source path.
+> `thanos/backend` (`go build ./cmd/to`). Update the script's source path.
 
 ### Preload bridge (`src/preload.ts`, `src/renderer/lib/bridge.ts`)
 

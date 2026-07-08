@@ -15,9 +15,9 @@ func live() domain.SessionRecord {
 func TestBuildStacksMarksBlockedChildren(t *testing.T) {
 	// #142 (root → main), #143 stacked on #142, #144 stacked on #143.
 	prs := []domain.PRFacts{
-		{URL: "p142", SourceBranch: "ao/abc", TargetBranch: "main"},
-		{URL: "p143", SourceBranch: "ao/abc/auth", TargetBranch: "ao/abc"},
-		{URL: "p144", SourceBranch: "ao/abc/tests", TargetBranch: "ao/abc/auth"},
+		{URL: "p142", SourceBranch: "to/abc", TargetBranch: "main"},
+		{URL: "p143", SourceBranch: "to/abc/auth", TargetBranch: "to/abc"},
+		{URL: "p144", SourceBranch: "to/abc/tests", TargetBranch: "to/abc/auth"},
 	}
 	st := buildStacks(prs)
 	if st["p142"].Blocked || !st["p142"].BottomOfStack {
@@ -33,8 +33,8 @@ func TestBuildStacksMarksBlockedChildren(t *testing.T) {
 
 func TestBuildStacksMergedParentUnblocksChild(t *testing.T) {
 	prs := []domain.PRFacts{
-		{URL: "p142", SourceBranch: "ao/abc", TargetBranch: "main", Merged: true},
-		{URL: "p143", SourceBranch: "ao/abc/auth", TargetBranch: "ao/abc"},
+		{URL: "p142", SourceBranch: "to/abc", TargetBranch: "main", Merged: true},
+		{URL: "p143", SourceBranch: "to/abc/auth", TargetBranch: "to/abc"},
 	}
 	st := buildStacks(prs)
 	if st["p143"].Blocked {
@@ -46,8 +46,8 @@ func TestDeriveStatusWorstWinsAcrossIndependentPRs(t *testing.T) {
 	// Two independent open PRs (both target main): mergeable vs ci_failed.
 	// CI failure is more urgent, so the session reports ci_failed.
 	prs := []domain.PRFacts{
-		{URL: "a", SourceBranch: "ao/a", TargetBranch: "main", Mergeability: domain.MergeMergeable},
-		{URL: "b", SourceBranch: "ao/b", TargetBranch: "main", CI: domain.CIFailing},
+		{URL: "a", SourceBranch: "to/a", TargetBranch: "main", Mergeability: domain.MergeMergeable},
+		{URL: "b", SourceBranch: "to/b", TargetBranch: "main", CI: domain.CIFailing},
 	}
 	if got := deriveStatus(live(), prs, statusNow, true); got != domain.StatusCIFailed {
 		t.Fatalf("got %q want ci_failed", got)
@@ -56,8 +56,8 @@ func TestDeriveStatusWorstWinsAcrossIndependentPRs(t *testing.T) {
 
 func TestDeriveStatusAllMergeableReportsMergeable(t *testing.T) {
 	prs := []domain.PRFacts{
-		{URL: "a", SourceBranch: "ao/a", TargetBranch: "main", Mergeability: domain.MergeMergeable},
-		{URL: "b", SourceBranch: "ao/b", TargetBranch: "main", Mergeability: domain.MergeMergeable},
+		{URL: "a", SourceBranch: "to/a", TargetBranch: "main", Mergeability: domain.MergeMergeable},
+		{URL: "b", SourceBranch: "to/b", TargetBranch: "main", Mergeability: domain.MergeMergeable},
 	}
 	if got := deriveStatus(live(), prs, statusNow, true); got != domain.StatusMergeable {
 		t.Fatalf("got %q want mergeable", got)
@@ -68,8 +68,8 @@ func TestDeriveStatusStackedChildExemptFromAggregation(t *testing.T) {
 	// Root mergeable; blocked child is pr_open. Child is exempt, so the session
 	// reports mergeable rather than being dragged down to pr_open.
 	prs := []domain.PRFacts{
-		{URL: "root", SourceBranch: "ao/abc", TargetBranch: "main", Mergeability: domain.MergeMergeable},
-		{URL: "child", SourceBranch: "ao/abc/x", TargetBranch: "ao/abc"},
+		{URL: "root", SourceBranch: "to/abc", TargetBranch: "main", Mergeability: domain.MergeMergeable},
+		{URL: "child", SourceBranch: "to/abc/x", TargetBranch: "to/abc"},
 	}
 	if got := deriveStatus(live(), prs, statusNow, true); got != domain.StatusMergeable {
 		t.Fatalf("got %q want mergeable (child exempt)", got)
@@ -80,8 +80,8 @@ func TestDeriveStatusMergedParentOpenChildStaysOnChild(t *testing.T) {
 	// Parent merged, child now unblocked and review_pending: still alive, status
 	// follows the open child.
 	prs := []domain.PRFacts{
-		{URL: "root", SourceBranch: "ao/abc", TargetBranch: "main", Merged: true},
-		{URL: "child", SourceBranch: "ao/abc/x", TargetBranch: "main", Review: domain.ReviewRequired},
+		{URL: "root", SourceBranch: "to/abc", TargetBranch: "main", Merged: true},
+		{URL: "child", SourceBranch: "to/abc/x", TargetBranch: "main", Review: domain.ReviewRequired},
 	}
 	if got := deriveStatus(live(), prs, statusNow, true); got != domain.StatusReviewPending {
 		t.Fatalf("got %q want review_pending", got)

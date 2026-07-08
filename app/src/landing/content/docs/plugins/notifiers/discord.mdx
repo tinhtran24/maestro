@@ -17,7 +17,7 @@ description: Discord webhook with rich embeds, retry handling, and thread suppor
 Run the setup command:
 
 ```bash
-ao setup discord
+to setup discord
 ```
 
 If Discord is already configured, the command asks whether to keep the existing
@@ -42,8 +42,8 @@ Before saving, Thanos also asks which notification priorities Discord should rec
 Useful setup checks:
 
 ```bash
-ao setup discord --status
-ao setup discord --refresh
+to setup discord --status
+to setup discord --refresh
 ```
 
 ```yaml title="thanos.yaml"
@@ -88,6 +88,6 @@ Handles Discord's `Retry-After` header on 429 responses — waits the requested 
 ## Testing
 
 ```bash
-ao notify test --to discord --template basic
-ao notify test --to discord --template merge-ready --actions
+to notify test --to discord --template basic
+to notify test --to discord --template merge-ready --actions
 ```

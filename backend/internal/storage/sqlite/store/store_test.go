@@ -122,16 +122,16 @@ func TestSessionCreateAssignsPerProjectID(t *testing.T) {
 	s := newTestStore(t)
 	ctx := context.Background()
 	seedProject(t, s, "mer")
-	seedProject(t, s, "ao")
+	seedProject(t, s, "to")
 
 	r1, err := s.CreateSession(ctx, sampleRecord("mer"))
 	if err != nil {
 		t.Fatal(err)
 	}
 	r2, _ := s.CreateSession(ctx, sampleRecord("mer"))
-	r3, _ := s.CreateSession(ctx, sampleRecord("ao"))
-	if r1.ID != "mer-1" || r2.ID != "mer-2" || r3.ID != "ao-1" {
-		t.Fatalf("ids = %s, %s, %s; want mer-1, mer-2, ao-1", r1.ID, r2.ID, r3.ID)
+	r3, _ := s.CreateSession(ctx, sampleRecord("to"))
+	if r1.ID != "mer-1" || r2.ID != "mer-2" || r3.ID != "to-1" {
+		t.Fatalf("ids = %s, %s, %s; want mer-1, mer-2, to-1", r1.ID, r2.ID, r3.ID)
 	}
 	got, ok, err := s.GetSession(ctx, "mer-1")
 	if err != nil || !ok {
@@ -752,8 +752,8 @@ func TestSessionWorktreesRoundTrip(t *testing.T) {
 		t.Fatalf("create session: %v", err)
 	}
 	rows := []domain.SessionWorktreeRecord{
-		{SessionID: rec.ID, RepoName: domain.RootWorkspaceRepoName, Branch: "ao/ws-1", BaseSHA: "root-base", WorktreePath: "/managed/ws/ws-1", State: "active"},
-		{SessionID: rec.ID, RepoName: "api", Branch: "ao/ws-1", BaseSHA: "api-base", WorktreePath: "/managed/ws/ws-1/api", PreservedRef: "refs/ao/preserved/ws-1", State: "removed"},
+		{SessionID: rec.ID, RepoName: domain.RootWorkspaceRepoName, Branch: "to/ws-1", BaseSHA: "root-base", WorktreePath: "/managed/ws/ws-1", State: "active"},
+		{SessionID: rec.ID, RepoName: "api", Branch: "to/ws-1", BaseSHA: "api-base", WorktreePath: "/managed/ws/ws-1/api", PreservedRef: "refs/to/preserved/ws-1", State: "removed"},
 	}
 	for _, row := range rows {
 		if err := s.UpsertSessionWorktree(ctx, row); err != nil {
@@ -768,7 +768,7 @@ func TestSessionWorktreesRoundTrip(t *testing.T) {
 		t.Fatalf("worktrees = %#v, want %#v", got, rows)
 	}
 	one, ok, err := s.GetSessionWorktree(ctx, rec.ID, "api")
-	if err != nil || !ok || one.PreservedRef != "refs/ao/preserved/ws-1" {
+	if err != nil || !ok || one.PreservedRef != "refs/to/preserved/ws-1" {
 		t.Fatalf("get api = %#v ok=%v err=%v", one, ok, err)
 	}
 	rows[1].State = "active"
@@ -807,7 +807,7 @@ func TestUpsertSessionWorktreeEmptyStateDefaultsToActive(t *testing.T) {
 	row := domain.SessionWorktreeRecord{
 		SessionID:    rec.ID,
 		RepoName:     domain.RootWorkspaceRepoName,
-		Branch:       "ao/sw-1",
+		Branch:       "to/sw-1",
 		BaseSHA:      "abc123",
 		WorktreePath: "/managed/sw/sw-1",
 	}

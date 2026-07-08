@@ -10,7 +10,7 @@ name: Desktop testing build
 #   - Linux   → .deb and .rpm
 #
 # Each OS builds on its own native runner because build-daemon.mjs compiles the
-# bundled `ao` daemon for the build host's platform; cross-OS packaging would
+# bundled `to` daemon for the build host's platform; cross-OS packaging would
 # ship the wrong daemon (issues #235/#256). The macOS runner is arm64, so the
 # macOS artifact is arm64-only until per-arch builds are wired.
 #

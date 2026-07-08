@@ -214,7 +214,7 @@ export function useTerminalSession(session: WorkspaceSession | undefined, option
 				terminal.writeln(`\r\n\x1b[2m[terminal error] ${message}\x1b[0m`);
 				setError(message);
 				transition("error");
-				void captureRendererEvent("ao.renderer.terminal_attach_failed", { reason: "pane_error" });
+				void captureRendererEvent("to.renderer.terminal_attach_failed", { reason: "pane_error" });
 				invalidateWorkspaces();
 			}),
 			mux.onConnectionChange((connectionState) => {
@@ -273,7 +273,7 @@ export function useTerminalSession(session: WorkspaceSession | undefined, option
 			// Only the first timeout of a reattach sequence is reported; the
 			// backoff loop retrying against a restarting daemon is not news.
 			if (r.attempts === 0) {
-				void captureRendererEvent("ao.renderer.terminal_attach_failed", { reason: "open_timeout" });
+				void captureRendererEvent("to.renderer.terminal_attach_failed", { reason: "open_timeout" });
 			}
 			transition("reattaching");
 			teardownMux();

@@ -28,7 +28,7 @@ describe("resolveDaemonLaunch", () => {
 		expect(
 			resolveDaemonLaunch({}, true, "/Applications/Thanos.app/Contents/Resources", "/app", "darwin"),
 		).toEqual({
-			command: "/Applications/Thanos.app/Contents/Resources/daemon/ao",
+			command: "/Applications/Thanos.app/Contents/Resources/daemon/to",
 			args: ["daemon"],
 			cwd: "/Applications/Thanos.app/Contents/Resources",
 			shell: false,
@@ -46,7 +46,7 @@ describe("resolveDaemonLaunch", () => {
 				"win32",
 			),
 		).toEqual({
-			command: "C:\\Program Files\\Thanos\\resources/daemon/ao.exe",
+			command: "C:\\Program Files\\Thanos\\resources/daemon/to.exe",
 			args: ["daemon"],
 			cwd: "C:\\Program Files\\Thanos\\resources",
 			shell: false,
