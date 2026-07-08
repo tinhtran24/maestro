@@ -5,13 +5,15 @@ The agent-orchestrator is being rebuilt as a long-running Go backend daemon
 supervises coding-agent sessions and exposes daemon control, project/session
 state, terminal streaming, and CDC/event infrastructure.
 
-Start with [architecture.md](architecture.md) for the current backend model and
-[cli/README.md](cli/README.md) for the CLI surface.
+New here? See [running.md](running.md) for how to build and run the project.
+Then start with [architecture.md](architecture.md) for the current backend model
+and [cli/README.md](cli/README.md) for the CLI surface.
 
 ## Reference docs
 
 | Doc                                                    | What it covers                                                                                                        |
 | ------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------- |
+| [running.md](running.md)                               | Prerequisites and how to build/run the backend daemon, the `to` CLI, and the desktop app.                             |
 | [architecture.md](architecture.md)                     | Current backend model, package layout, status derivation, persistence/CDC, and load-bearing rules.                    |
 | [backend-code-structure.md](backend-code-structure.md) | Package ownership rules for the Go backend: domain, services, ports, adapters, storage, HTTP, CLI, and daemon wiring. |
 | [cli/README.md](cli/README.md)                         | CLI commands and daemon control surface.                                                                              |

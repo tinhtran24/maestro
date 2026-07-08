@@ -5,203 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="ab904008-d3c3-488d-a287-421dd9b93abe" name="Changes" comment="feature: test update plan">
-      <change beforePath="$PROJECT_DIR$/.agents/skills/brandkit/SKILL.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.agents/skills/design-taste-frontend-v1/SKILL.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.agents/skills/full-output-enforcement/SKILL.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.agents/skills/gpt-taste/SKILL.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.agents/skills/high-end-visual-design/SKILL.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.agents/skills/image-to-code/SKILL.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.agents/skills/imagegen-frontend-web/SKILL.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.agents/skills/minimalist-ui/SKILL.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.agents/skills/redesign-existing-projects/SKILL.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.goreleaser.yml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/thanos.iml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.thanos/automation.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.thanos/events.jsonl" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.thanos/specs/typography-rules.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.thanos/specs/typography-rules.md.meta.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.thanos/tasks/task-1783394062133191000-implement-milestone-1.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.thanos/tasks/task-1783411033694975000-typography-rules.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/AGENTS.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CLAUDES.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Makefile" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.vi.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Technical.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/app/agent_provider.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/app/app.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/app/file_explorer.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/app/provider.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/app/provider_test.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/app/store.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/app/terminal.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/app/terminal_test.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/app/workspace_registry.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/frontend/README.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/frontend/index.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/frontend/package-lock.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/frontend/package.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/frontend/package.json.md5" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/frontend/postcss.config.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/frontend/public/favicon/README.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/frontend/public/favicon/public/android-chrome-192x192.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/frontend/public/favicon/public/android-chrome-512x512.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/frontend/public/favicon/public/apple-touch-icon.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/frontend/public/favicon/public/favicon-128x128.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/frontend/public/favicon/public/favicon-16x16.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/frontend/public/favicon/public/favicon-256x256.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/frontend/public/favicon/public/favicon-32x32.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/frontend/public/favicon/public/favicon-48x48.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/frontend/public/favicon/public/favicon-64x64.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/frontend/public/favicon/public/favicon-96x96.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/frontend/public/favicon/public/favicon.ico" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/frontend/public/favicon/public/site.webmanifest" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/frontend/public/logo.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/frontend/src/app/App.tsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/frontend/src/app/data.test.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/frontend/src/app/types.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/frontend/src/app/viewRegistry.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/frontend/src/flows/AgentGraphView.tsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/frontend/src/flows/BoardView.tsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/frontend/src/flows/MissionView.tsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/frontend/src/flows/PlanView.tsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/frontend/src/flows/UtilityViews.tsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/frontend/src/flows/boardActions.test.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/frontend/src/flows/boardActions.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/frontend/src/flows/missionGraph.test.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/frontend/src/flows/missionGraph.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/frontend/src/hooks/useWorkspaceController.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/frontend/src/i18n/en.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/frontend/src/i18n/i18n.test.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/frontend/src/i18n/index.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/frontend/src/main.tsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/frontend/src/services/wails.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/frontend/src/shared/Badge.tsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/frontend/src/shared/Layout.tsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/frontend/src/shared/Panel.tsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/frontend/src/stores/workspaceStore.test.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/frontend/src/stores/workspaceStore.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/frontend/src/styles.css" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/frontend/src/styles/shell.css" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/frontend/src/styles/tokens.css" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/frontend/src/styles/views.css" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/frontend/src/views/index.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/frontend/src/vite-env.d.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/frontend/tsconfig.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/frontend/vite.config.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/frontend/wailsjs/go/app/App.d.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/frontend/wailsjs/go/app/App.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/frontend/wailsjs/go/models.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/frontend/wailsjs/runtime/package.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/frontend/wailsjs/runtime/runtime.d.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/frontend/wailsjs/runtime/runtime.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/go.mod" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/go.sum" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/main.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/wails.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/development.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/go.mod" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/go.sum" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/agents/adapter.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/agents/adapter_registry.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/agents/adapter_test.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/agents/detector.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/agents/events.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/agents/registry.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/agents/workflow_config.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/board/board.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/codegraph/graph.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/codegraph/graph_test.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/desktop/bridge/dto.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/desktop/bridge/service.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/desktop/bridge/service_test.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/events/change_log.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/events/change_log_test.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/events/hub.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/events/hub_test.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/events/runtime_events.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/events/runtime_events_test.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/events/websocket.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/featuregraph/graph.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/featuregraph/graph_test.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/mcp/bridge.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/mcp/bridge_test.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/model/model.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/orchestrator/orchestrator.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/orchestrator/orchestrator_test.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/orchestrator/skill_gate.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/orchestrator/skill_gate_test.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/orchestrator/workbench_workflow.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/orchestrator/workbench_workflow_test.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/project/project.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/project/project_test.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/projects/repository.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/projects/service.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/projects/service_test.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/prompts/acceptor.md.tmpl" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/prompts/coder.md.tmpl" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/prompts/deep-reviewer.md.tmpl" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/prompts/design-reviewer.md.tmpl" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/prompts/designer.md.tmpl" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/prompts/gate.md.tmpl" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/prompts/locale.tmpl" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/prompts/mini-coder.md.tmpl" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/prompts/planner.md.tmpl" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/prompts/profiles/api.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/prompts/profiles/e2e.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/prompts/profiles/unit.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/prompts/profiles/web.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/prompts/prompts.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/prompts/prompts_test.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/prompts/re-verifier.md.tmpl" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/prompts/reviewer.md.tmpl" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/prompts/synthesizer.md.tmpl" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/prompts/tester.md.tmpl" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/runner/runner.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/runtime/events.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/runtime/facts.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/runtime/status.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/runtime/status_test.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/skills/executor.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/skills/executor_test.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/skills/loader.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/skills/loader_test.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/skills/matcher.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/skills/registry.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/skills/registry_test.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/skills/validator.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/state/machine.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/state/machine_test.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/taskworkflow/workflow.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/taskworkflow/workflow_test.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/terminal/pty_manager.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/terminal/session.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/terminal/transcript.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/workbench/board.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/workbench/board_test.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/workbench/model.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/workbench/schema.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/workbench/schema.sql" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/workbench/schema_test.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/workflow/approval_gate.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/workflow/step_runner.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/workspace/workspace.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/workspace/workspace_test.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/workspace/worktree.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/workspace/worktree_test.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/plans/00_structure.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/plans/01_refactor.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/plans/boards/Thanos-Board-UI-Spec.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/plans/boards/board_ui.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/plans/native-agent-provider-integration.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/plans/task-layout-copy.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/plans/task-wallfacer-production-parity.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/skills-lock.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/usage.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -232,31 +36,31 @@
     <option name="sortByType" value="true" />
     <option name="sortKey" value="BY_TYPE" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ASKED_MARK_IGNORED_FILES_AS_EXCLUDED": "true",
-    "ASKED_SHARE_PROJECT_CONFIGURATION_FILES": "true",
-    "JavaScript Debug.index.html.executor": "Run",
-    "JavaScript Debug.localhost:34115.executor": "Debug",
-    "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "RunOnceActivity.MCP Project settings loaded": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
-    "codeWithMe.voiceChat.enabledByDefault": "false",
-    "git-widget-placeholder": "feature/v2-with-ui",
-    "javascript.preferred.runtime.type.id": "node",
-    "last_opened_file_path": "/Users/trantinh/tool/thanos/docs",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "ts.external.directory.path": "/Users/trantinh/tool/thanos/apps/thanos-desktop/node_modules/typescript/lib",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ASKED_MARK_IGNORED_FILES_AS_EXCLUDED&quot;: &quot;true&quot;,
+    &quot;ASKED_SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;JavaScript Debug.index.html.executor&quot;: &quot;Run&quot;,
+    &quot;JavaScript Debug.localhost:34115.executor&quot;: &quot;Debug&quot;,
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.MCP Project settings loaded&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
+    &quot;codeWithMe.voiceChat.enabledByDefault&quot;: &quot;false&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;feature/v2-to&quot;,
+    &quot;javascript.preferred.runtime.type.id&quot;: &quot;node&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/Users/trantinh/tool/thanos/docs&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;ts.external.directory.path&quot;: &quot;/Users/trantinh/tool/thanos/apps/thanos-desktop/node_modules/typescript/lib&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/docs" />
@@ -303,7 +107,7 @@
       <workItem from="1782868480825" duration="54000" />
       <workItem from="1782869620105" duration="11889000" />
       <workItem from="1783042083989" duration="13797000" />
-      <workItem from="1783473862987" duration="5067000" />
+      <workItem from="1783473862987" duration="6173000" />
     </task>
     <task id="LOCAL-00001" summary="feature: update layout ui">
       <option name="closed" value="true" />
