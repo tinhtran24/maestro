@@ -1,8 +1,14 @@
 # Plan: Clone the AO Frontend into `app/` — Shell Choice (Wails vs. Electron)
 
+> **DECISION (locked): Option B — Wails v3 (Go-native shell).** The app in `app/`
+> reuses AO's React renderer verbatim but rebuilds the shell in Go with Wails; the
+> preview browser and auto-updater are reimplemented natively. See Option B below
+> for the responsibility mapping and `04_milestones.md` (shell phases now target
+> Wails, not Electron).
+
 > Task: clone `agent-orchestrator-main/frontend/` into `thanos/app/`, driving the
-> cloned `to` daemon (`thanos/backend`). Open question the user raised: **build the
-> app with Wails, or clone AO's same tech structure (Electron) verbatim?**
+> cloned `to` daemon (`thanos/backend`). Resolved question: **build the app with
+> Wails** (Go-native), not Electron.
 
 ## Key insight that makes both viable
 
