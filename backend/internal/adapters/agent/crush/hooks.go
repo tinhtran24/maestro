@@ -8,7 +8,7 @@ import (
 
 // GetAgentHooks is a no-op for Crush since it doesn't have full hooks support
 // like Claude Code and Codex. Crush doesn't have a native hook configuration system
-// that AO can integrate with for session metadata tracking.
+// that Thanos can integrate with for session metadata tracking.
 //
 // TODO(crush): Implement hook installation once Crush has native hook support.
 // Until then, session metadata tracking is not available.

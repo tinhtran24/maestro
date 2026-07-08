@@ -42,7 +42,7 @@ func (s StaticTokenSource) Token(context.Context) (string, error) {
 
 // EnvTokenSource reads the first non-empty value from the listed env vars,
 // falling back to GITHUB_TOKEN. Order matters: a project-scoped variable
-// (AO_GITHUB_TOKEN) should win over the global default.
+// (THANOS_GITHUB_TOKEN) should win over the global default.
 type EnvTokenSource struct {
 	EnvVars []string
 }

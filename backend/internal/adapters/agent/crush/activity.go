@@ -2,7 +2,7 @@ package crush
 
 import "github.com/tinhtran/thanos/backend/internal/domain"
 
-// DeriveActivityState maps a Crush hook event onto an AO activity state.
+// DeriveActivityState maps a Crush hook event onto an Thanos activity state.
 // Currently a no-op since Crush doesn't have full hooks support like Claude Code and Codex.
 // The bool is false to indicate no activity signal is available.
 //

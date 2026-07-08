@@ -17,7 +17,7 @@ interface UseResizableOptions {
 }
 
 /**
- * Pointer-driven panel resize, cloned from agent-orchestrator's useResizable.
+ * Pointer-driven panel resize, cloned from thanos's useResizable.
  * Persists the width to localStorage and applies it via a CSS custom property
  * on :root (so the consuming layout reads it with `width: var(--cssVar, default)`),
  * avoiding any inline `style=`.

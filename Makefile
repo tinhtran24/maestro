@@ -1,7 +1,7 @@
 # Thanos — build & run
 #
 # Two parts:
-#   backend/  Go daemon + `to` CLI (Thanos Orchestrator)
+#   backend/  Go daemon + `to` CLI (Thanos)
 #   app/      Electron + Vite + React desktop app
 #
 # Override the package manager with `make PM=npm <target>` if you don't use pnpm.

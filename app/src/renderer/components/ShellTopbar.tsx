@@ -24,7 +24,7 @@ const isMac = typeof navigator !== "undefined" && /Mac|iPod|iPhone|iPad/.test(na
 const dragStyle = isMac ? ({ WebkitAppRegion: "drag" } as React.CSSProperties) : undefined;
 const noDragStyle = isMac ? ({ WebkitAppRegion: "no-drag" } as React.CSSProperties) : undefined;
 
-// Session status → pill tone, mirroring agent-orchestrator's StatusBadge
+// Session status → pill tone, mirroring thanos's StatusBadge
 // (working=orange & breathing, input=amber, fail=red, ready=green, done=neutral).
 // Tones are theme vars so the pill tracks the light/dark status palettes.
 const STATUS_PILL: Record<WorkerDisplayStatus, { label: string; tone: string; breathe: boolean }> = {
@@ -48,7 +48,7 @@ const STATUS_PILL: Record<WorkerDisplayStatus, { label: string; tone: string; br
 // controls (orchestrators open the Kanban board; workers open their orchestrator);
 // otherwise it's the dashboard crumb plus the Orchestrator launcher when a
 // project is in scope. Merges the old DashboardTopbar/Topbar pair —
-// agent-orchestrator keeps those as two components aligned only by CSS.
+// thanos keeps those as two components aligned only by CSS.
 export function ShellTopbar() {
 	const navigate = useNavigate();
 	const queryClient = useQueryClient();
@@ -69,11 +69,11 @@ export function ShellTopbar() {
 	// cross-project /sessions/$sessionId route still resolves a crumb. A
 	// projectId that no longer resolves (stale route after the project was
 	// removed, or data still loading) shows an empty crumb — never the raw
-	// route slug. "agent-orchestrator" is the root-board crumb only.
+	// route slug. "thanos" is the root-board crumb only.
 	const projectId = session?.workspaceId ?? params.projectId;
 	const isProjectBoardRoute = !isSessionRoute && Boolean(projectId);
 	const project = projectId ? all.find((workspace) => workspace.id === projectId) : undefined;
-	const projectLabel = project?.name ?? session?.workspaceName ?? (projectId ? "" : "agent-orchestrator");
+	const projectLabel = project?.name ?? session?.workspaceName ?? (projectId ? "" : "thanos");
 	const orchestrator = projectId ? findProjectOrchestrator(all, projectId) : undefined;
 	const isProjectRestarting = projectId ? restartingProjectIds.has(projectId) : false;
 

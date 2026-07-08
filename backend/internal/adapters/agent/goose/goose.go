@@ -6,7 +6,7 @@
 // native Claude-Code-style lifecycle hook system (released 2026-05): a plugin
 // directory under <workspace>/.agents/plugins/<name>/hooks/hooks.json is
 // auto-discovered at startup and its commands run on SessionStart /
-// UserPromptSubmit / Stop / etc. AO installs its hooks there, so AO derives
+// UserPromptSubmit / Stop / etc. Thanos installs its hooks there, so Thanos derives
 // native session identity and activity from Goose hooks (Tier A), the same way
 // the Codex adapter does.
 //
@@ -16,7 +16,7 @@
 // the opencode adapter uses for OPENCODE_PERMISSION). The default mode emits no
 // prefix so Goose defers to the user's own config.
 //
-// Note: the AO repo also vendors pressly/goose as its SQLite migration tool,
+// Note: the Thanos repo also vendors pressly/goose as its SQLite migration tool,
 // but that is a different Go import path; this package's name `goose` only
 // collides at the import-alias level, which central wiring resolves.
 package goose
@@ -79,7 +79,7 @@ func (p *Plugin) Manifest() adapters.Manifest {
 // rendered as an `env GOOSE_MODE=<mode>` prefix because Goose reads its approval
 // mode from the environment, not from a flag. System instructions, when present,
 // are passed via `--system`. Goose requires one of --instructions, --text, or
-// --recipe even when AO intentionally starts a promptless orchestrator, so empty
+// --recipe even when Thanos intentionally starts a promptless orchestrator, so empty
 // prompts are delivered as `-t "" --interactive` to land in an input-ready
 // terminal without inventing an initial task.
 func (p *Plugin) GetLaunchCommand(ctx context.Context, cfg ports.LaunchConfig) (cmd []string, err error) {
@@ -147,7 +147,7 @@ func (p *Plugin) SessionInfo(ctx context.Context, session ports.SessionRef) (por
 // SystemPrompt string; only an empty-after-trim file falls back.
 func systemPromptText(cfg ports.LaunchConfig) (string, error) {
 	if cfg.SystemPromptFile != "" {
-		data, err := os.ReadFile(cfg.SystemPromptFile) //nolint:gosec // path is AO-owned launch config
+		data, err := os.ReadFile(cfg.SystemPromptFile) //nolint:gosec // path is Thanos-owned launch config
 		if err != nil {
 			return "", fmt.Errorf("read %s: %w", cfg.SystemPromptFile, err)
 		}
@@ -175,7 +175,7 @@ func gooseModeEnvPrefix(mode ports.PermissionMode) []string {
 	return []string{"env", gooseModeEnvVar + "=" + value}
 }
 
-// gooseMode maps an AO permission mode onto Goose's GOOSE_MODE value.
+// gooseMode maps an Thanos permission mode onto Goose's GOOSE_MODE value.
 //
 //   - default            → "": no env; Goose's own config decides approvals.
 //   - accept-edits       → smart_approve: auto-approves safe edits, asks on risk.

@@ -277,13 +277,13 @@ func TestGetAgentHooksInstallsKiroHooks(t *testing.T) {
 	cfg := ports.WorkspaceHookConfig{
 		DataDir:       t.TempDir(),
 		SessionID:     "sess-1",
-		SystemPrompt:  "standing AO instructions",
+		SystemPrompt:  "standing Thanos instructions",
 		WorkspacePath: workspace,
 	}
 	if err := plugin.GetAgentHooks(context.Background(), cfg); err != nil {
 		t.Fatal(err)
 	}
-	// A second install must not duplicate AO hook commands.
+	// A second install must not duplicate Thanos hook commands.
 	if err := plugin.GetAgentHooks(context.Background(), cfg); err != nil {
 		t.Fatal(err)
 	}
@@ -307,7 +307,7 @@ func TestGetAgentHooksInstallsKiroHooks(t *testing.T) {
 	if err := json.Unmarshal(topLevel["prompt"], &prompt); err != nil {
 		t.Fatalf("decode prompt from %s: %v", data, err)
 	}
-	if prompt != "standing AO instructions" {
+	if prompt != "standing Thanos instructions" {
 		t.Fatalf("prompt = %q, want system prompt", prompt)
 	}
 
@@ -378,7 +378,7 @@ func TestGetAgentHooksWritesConfiguredModel(t *testing.T) {
 		Config:        ports.AgentConfig{Model: "claude-sonnet-4-5"},
 		DataDir:       t.TempDir(),
 		SessionID:     "sess-1",
-		SystemPrompt:  "standing AO instructions",
+		SystemPrompt:  "standing Thanos instructions",
 		WorkspacePath: workspace,
 	}
 	if err := plugin.GetAgentHooks(context.Background(), cfg); err != nil {
@@ -418,7 +418,7 @@ func TestGetAgentHooksOverwritesStaleConfiguredModel(t *testing.T) {
 		Config:        ports.AgentConfig{Model: "project-model"},
 		DataDir:       t.TempDir(),
 		SessionID:     "sess-1",
-		SystemPrompt:  "standing AO instructions",
+		SystemPrompt:  "standing Thanos instructions",
 		WorkspacePath: workspace,
 	}
 	if err := plugin.GetAgentHooks(context.Background(), cfg); err != nil {
@@ -464,7 +464,7 @@ func TestGetAgentHooksClearsStaleModelWhenConfigRemoved(t *testing.T) {
 	cfg := ports.WorkspaceHookConfig{
 		DataDir:       t.TempDir(),
 		SessionID:     "sess-1",
-		SystemPrompt:  "standing AO instructions",
+		SystemPrompt:  "standing Thanos instructions",
 		WorkspacePath: workspace,
 	}
 	if err := plugin.GetAgentHooks(context.Background(), cfg); err != nil {

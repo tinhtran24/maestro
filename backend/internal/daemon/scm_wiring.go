@@ -31,7 +31,7 @@ func startSCMObserver(ctx context.Context, store *sqlite.Store, lcm *lifecycle.M
 
 func newGitHubSCMProvider(logger *slog.Logger) (*scmgithub.Provider, error) {
 	tokens := scmgithub.FallbackTokenSource{
-		scmgithub.EnvTokenSource{EnvVars: []string{"AO_GITHUB_TOKEN"}},
+		scmgithub.EnvTokenSource{EnvVars: []string{"THANOS_GITHUB_TOKEN"}},
 		&scmgithub.GHTokenSource{},
 	}
 	// Avoid token preflight on daemon startup and session service construction.

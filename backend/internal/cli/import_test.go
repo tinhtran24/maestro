@@ -14,7 +14,7 @@ import (
 
 func writeLegacyProject(t *testing.T) string {
 	t.Helper()
-	root := filepath.Join(t.TempDir(), ".agent-orchestrator")
+	root := filepath.Join(t.TempDir(), ".thanos")
 	if err := os.MkdirAll(filepath.Join(root, "projects", "alpha", "sessions"), 0o750); err != nil {
 		t.Fatal(err)
 	}

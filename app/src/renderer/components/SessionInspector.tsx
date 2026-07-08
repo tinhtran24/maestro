@@ -551,7 +551,7 @@ function mockReviewsResponse(session: WorkspaceSession): ReviewsResponse {
 function mockReviewTitle(prNumber: number): string {
 	switch (prNumber) {
 		case 319:
-			return "Browser preview rail renders inside AO";
+			return "Browser preview rail renders inside Thanos";
 		case 320:
 			return "Review tab keeps stacked PR rows visible";
 		case 321:

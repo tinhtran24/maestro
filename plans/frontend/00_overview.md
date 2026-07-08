@@ -1,7 +1,7 @@
 # Frontend App — Overview & Architecture
 
 > Goal: build a desktop frontend on Thanos that is a **verbatim clone** of the
-> agent-orchestrator (AO) frontend, driving the AO backend that now lives under
+> thanos (Thanos) frontend, driving the Thanos backend that now lives under
 > `thanos/backend/` (module `github.com/tinhtran/thanos/backend`).
 >
 > The backend has already been cloned in full (474 Go files, all features). These
@@ -9,13 +9,13 @@
 
 ## What we are cloning
 
-The AO frontend is an **Electron desktop app** whose renderer is a React SPA. It
-talks to the local Go daemon (`ao daemon`) over HTTP + SSE + WebSocket. The
+The Thanos frontend is an **Electron desktop app** whose renderer is a React SPA. It
+talks to the local Go daemon (`to daemon`) over HTTP + SSE + WebSocket. The
 Electron main process owns daemon lifecycle, an embedded browser panel, and
 auto-updates.
 
-Source of truth: `agent-orchestrator-main/frontend/`. Clone its looks, structure,
-and behavior verbatim (per AO's `DESIGN.md` "clone verbatim" rule).
+Source of truth: `thanos-main/frontend/`. Clone its looks, structure,
+and behavior verbatim (per Thanos's `DESIGN.md` "clone verbatim" rule).
 
 ## Tech stack (match exactly)
 
@@ -43,7 +43,7 @@ and behavior verbatim (per AO's `DESIGN.md` "clone verbatim" rule).
 │  • browser-view-host → embedded BrowserView for `preview`/inspector │
 │  • auto-updater → electron-updater                                 │
 │  • supervisor-link → renderer ↔ main IPC bridge (preload)          │
-│  userData pinned to ~/.thanos/electron (mirror AO's ~/.ao rule)    │
+│  userData pinned to ~/.thanos/electron (mirror Thanos's ~/.thanos rule)    │
 └───────────────────────────────────────────────────────────────────┘
         │ IPC (preload bridge)          │ HTTP/SSE/WS (localhost daemon)
 ┌───────▼───────────────────────────────▼───────────────────────────┐
@@ -65,7 +65,7 @@ openapi-typescript backend/internal/httpd/apispec/openapi.yaml -o src/api/schema
 This is the single source of truth for request/response shapes — **do not
 hand-write API types**.
 
-## State-dir rule (mirror AO's hard rule)
+## State-dir rule (mirror Thanos's hard rule)
 
 All app state must resolve under `~/.thanos` (the backend's data dir; overridable
 via the backend's data-dir env). Pin Electron `userData` to `~/.thanos/electron`.

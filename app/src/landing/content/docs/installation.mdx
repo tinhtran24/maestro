@@ -1,6 +1,6 @@
 ---
 title: Installation
-description: Install AO, authenticate the tools it controls, and verify your first project.
+description: Install Thanos, authenticate the tools it controls, and verify your first project.
 ---
 
 import { Callout } from "fumadocs-ui/components/callout";
@@ -8,10 +8,10 @@ import { Tab, Tabs } from "fumadocs-ui/components/tabs";
 import { Step, Steps } from "fumadocs-ui/components/steps";
 import { Accordions, Accordion } from "fumadocs-ui/components/accordion";
 
-This page gets your machine ready to run Agent Orchestrator. By the end, the `ao` command should be on your `PATH`, your source-control CLI should be authenticated, and `ao doctor` should be able to explain what is ready or missing.
+This page gets your machine ready to run Thanos. By the end, the `ao` command should be on your `PATH`, your source-control CLI should be authenticated, and `to doctor` should be able to explain what is ready or missing.
 
-<Callout type="info" title="What AO installs">
-	The published package is `@aoagents/ao`. It provides the global `ao` command and includes the built-in CLI, dashboard,
+<Callout type="info" title="What Thanos installs">
+	The published package is `@tinhtran/ao`. It provides the global `ao` command and includes the built-in CLI, dashboard,
 	and plugin packages.
 </Callout>
 
@@ -29,11 +29,11 @@ This page gets your machine ready to run Agent Orchestrator. By the end, the `ao
 	}
 />
 
-Install these before running AO:
+Install these before running Thanos:
 
-| Tool            | Required               | Why AO needs it                                                                      |
+| Tool            | Required               | Why Thanos needs it                                                                      |
 | --------------- | ---------------------- | ------------------------------------------------------------------------------------ |
-| Node.js 20+     | Yes                    | Runs the AO CLI, dashboard, and plugins.                                             |
+| Node.js 20+     | Yes                    | Runs the Thanos CLI, dashboard, and plugins.                                             |
 | Git             | Yes                    | Creates worktrees, branches, commits, and cleanup operations.                        |
 | GitHub CLI `gh` | For GitHub projects    | Reads issues, PRs, reviews, and CI status as your user.                              |
 | tmux            | Default on macOS/Linux | Keeps long-running agent sessions attachable and recoverable.                        |
@@ -41,15 +41,15 @@ Install these before running AO:
 
 If you plan to use GitLab or Linear, install and authenticate their CLIs or credentials as described on the related plugin pages. A GitHub-only setup only needs `gh`.
 
-## Install AO
+## Install Thanos
 
 <Tabs items={["npm", "pnpm", "yarn", "from source"]}>
-	<Tab value="npm">```bash npm install -g @aoagents/ao ```</Tab>
-	<Tab value="pnpm">```bash pnpm add -g @aoagents/ao ```</Tab>
-	<Tab value="yarn">```bash yarn global add @aoagents/ao ```</Tab>
+	<Tab value="npm">```bash npm install -g @tinhtran/ao ```</Tab>
+	<Tab value="pnpm">```bash pnpm add -g @tinhtran/ao ```</Tab>
+	<Tab value="yarn">```bash yarn global add @tinhtran/ao ```</Tab>
 	<Tab value="from source">
-		```bash git clone https://github.com/ComposioHQ/agent-orchestrator cd agent-orchestrator pnpm install pnpm build
-		pnpm --filter @aoagents/ao link --global ```
+		```bash git clone https://github.com/ComposioHQ/thanos cd thanos pnpm install pnpm build
+		pnpm --filter @tinhtran/ao link --global ```
 	</Tab>
 </Tabs>
 
@@ -66,7 +66,7 @@ ao --version
 
 ### Authenticate source control
 
-For GitHub projects, AO uses `gh` for issue lookup, PR discovery, reviews, CI checks, and merge readiness.
+For GitHub projects, Thanos uses `gh` for issue lookup, PR discovery, reviews, CI checks, and merge readiness.
 
 ```bash
 gh auth login
@@ -80,7 +80,7 @@ The authenticated account must be able to read the repository, create branches, 
 
 ### Install and sign in to one agent
 
-AO launches an agent CLI inside each worker session. Start with the one you already use, then add more later if you want per-project or per-role choices.
+Thanos launches an agent CLI inside each worker session. Start with the one you already use, then add more later if you want per-project or per-role choices.
 
 <Tabs items={["Claude Code", "Codex", "Cursor", "Aider", "OpenCode"]}>
 	<Tab value="Claude Code">```bash npm install -g @anthropic-ai/claude-code claude ```</Tab>
@@ -93,22 +93,22 @@ AO launches an agent CLI inside each worker session. Start with the one you alre
 </Step>
 <Step>
 
-### Start AO in a repo
+### Start Thanos in a repo
 
-Run `ao start` from a repository you want AO to manage:
+Run `to start` from a repository you want Thanos to manage:
 
 ```bash
 cd ~/code/my-repo
-ao start
+to start
 ```
 
-If there is no `agent-orchestrator.yaml`, AO creates one. It also starts the dashboard and an orchestrator session for the project.
+If there is no `thanos.yaml`, Thanos creates one. It also starts the dashboard and an orchestrator session for the project.
 
 You can also start from a path or clone from a URL:
 
 ```bash
-ao start ~/code/my-repo
-ao start https://github.com/your-org/your-repo
+to start ~/code/my-repo
+to start https://github.com/your-org/your-repo
 ```
 
 </Step>
@@ -117,13 +117,13 @@ ao start https://github.com/your-org/your-repo
 ### Run the doctor check
 
 ```bash
-ao doctor
+to doctor
 ```
 
-`ao doctor` checks the launcher, config, plugin resolution, runtime tools, source-control authentication, notifier setup, and stale temporary files. If it reports a fixable issue, run:
+`to doctor` checks the launcher, config, plugin resolution, runtime tools, source-control authentication, notifier setup, and stale temporary files. If it reports a fixable issue, run:
 
 ```bash
-ao doctor --fix
+to doctor --fix
 ```
 
 </Step>
@@ -133,7 +133,7 @@ ao doctor --fix
 
 Windows support is in progress. Use the process runtime instead of tmux:
 
-```yaml title="agent-orchestrator.yaml"
+```yaml title="thanos.yaml"
 defaults:
   runtime: process
 ```
@@ -148,17 +148,17 @@ Use Slack, Discord, webhook, or another network notifier for alerts. Desktop not
 		shell and run `ao --version` again.
 	</Accordion>
 	<Accordion title="`gh` is not authenticated">
-		Run `gh auth login`, then `gh auth status`. AO cannot read GitHub issues, PRs, reviews, or CI checks until `gh` is
+		Run `gh auth login`, then `gh auth status`. Thanos cannot read GitHub issues, PRs, reviews, or CI checks until `gh` is
 		authenticated.
 	</Accordion>
 	<Accordion title="tmux is missing">
 		Install tmux on macOS or Linux, or set `defaults.runtime: process` if you are on Windows or running in a container.
 	</Accordion>
 	<Accordion title="No agent runtime is detected">
-		Install one supported agent CLI and run it once outside AO so it can complete its own sign-in flow.
+		Install one supported agent CLI and run it once outside Thanos so it can complete its own sign-in flow.
 	</Accordion>
 	<Accordion title="Port 3000 is already in use">
-		`ao start` scans for a free port and prints the final dashboard URL. Use the URL in the command output.
+		`to start` scans for a free port and prints the final dashboard URL. Use the URL in the command output.
 	</Accordion>
 	<Accordion title="The dashboard fails after an update">
 		Run `ao dashboard --rebuild` to clean stale dashboard build artifacts and start again.
@@ -171,7 +171,7 @@ Use Slack, Discord, webhook, or another network notifier for alerts. Desktop not
 	<Card title="Quickstart" description="Run one worker session from start to pull request." href="/docs/quickstart" />
 	<Card
 		title="Configuration"
-		description="Understand the generated `agent-orchestrator.yaml`."
+		description="Understand the generated `thanos.yaml`."
 		href="/docs/configuration"
 	/>
 	<Card title="Platforms" description="Choose the right runtime and notifier for your OS." href="/docs/platforms" />

@@ -5,15 +5,15 @@
 > - Radix/shadcn + xterm, in `frontend/src/renderer`). Read this before any visual
 >   or UI change. Created by `/design-consultation` on 2026-06-09.
 
-## ⚠️ Design direction — clone agent-orchestrator verbatim (SUPERSEDES emdash · 2026-06-10)
+## ⚠️ Design direction — clone thanos verbatim (SUPERSEDES emdash · 2026-06-10)
 
 By explicit user decision (2026-06-10), the renderer **clones the
-agent-orchestrator web app verbatim** in looks and design. This **supersedes the
+thanos web app verbatim** in looks and design. This **supersedes the
 "match emdash" direction** documented in _Aesthetic Direction_ and the palette
-sections below — where they conflict, **agent-orchestrator wins**. Do not re-flag
-"this doesn't match emdash" in QA/review; flag divergence from **agent-orchestrator**.
+sections below — where they conflict, **thanos wins**. Do not re-flag
+"this doesn't match emdash" in QA/review; flag divergence from **thanos**.
 
-- **Reference (the user's own app):** `~/Projects/agent-orchestrator/packages/web/src`
+- **Reference (the user's own app):** `~/Projects/thanos/packages/web/src`
   — `app/globals.css`, `app/mc-board.css`, `app/mc-sidebar.css`,
   `components/{ProjectSidebar,Dashboard,SessionCard,SessionDetailHeader,SessionInspector,StatusBadge}.tsx`.
 - **Palette (live in `frontend/src/renderer/styles.css` `:root`):** `--bg #0a0b0d`,
@@ -27,10 +27,10 @@ sections below — where they conflict, **agent-orchestrator wins**. Do not re-f
   the shared `DashboardTopbar`/`DashboardSubhead` chrome (Coding/Reviews tabs · "N
   working" pill · subhead) reused across board/review/PR/settings.
 - **Build with shadcn primitives** where a component fits (`components/ui/*`:
-  dropdown-menu, select, card, table, tooltip, …); agent-orchestrator's own
+  dropdown-menu, select, card, table, tooltip, …); thanos's own
   hand-rolled CSS components are structure/behaviour reference only.
 - The one carried-over divergence still holds: the **accent is refined blue**, and
-  the **terminal keeps its own palette**. Everything else tracks agent-orchestrator.
+  the **terminal keeps its own palette**. Everything else tracks thanos.
 - **Approved divergence (2026-06-10):** on macOS, a titlebar cluster (sidebar toggle +
   back/forward history arrows, `TitlebarNav`) sits beside the traffic lights,
   VS Code-style — the web reference has no window chrome, so no analogue exists.
@@ -40,11 +40,11 @@ resizable`, react-resizable-panels v4 `collapsible` panel + imperative API,
   user-requested). The panel animates to 0% via a flex-grow transition while the
   content keeps a stable min-width (yyork-style, no mid-animation reflow). Toggled
   by a `PanelRight` icon button in the session topbar and ⌘⇧B; open state + split
-  width persist. The AO reference keeps the rail always visible.
+  width persist. The Thanos reference keeps the rail always visible.
 - **Approved divergence (2026-06-12):** the shell topbar spans the full window
   width and the sidebar is pinned below it (`top-14`), so the sidebar's right
   border stops at the header instead of cutting through the macOS traffic-light
-  strip (user-requested). The AO reference keeps a full-height sidebar with the
+  strip (user-requested). The Thanos reference keeps a full-height sidebar with the
   header beside it. On macOS the header always pads past the lights + TitlebarNav
   cluster (`.is-under-titlebar-nav`, 180px).
 
@@ -74,7 +74,7 @@ ReverbCode is **orchestrator-led**, which is the one thing that differs from emd
   `is_terminated`, PR facts); they differ only by `Kind` (`KindOrchestrator` vs the
   default worker). A project may run the orchestrator on a different agent than its workers.
 - The **Orchestrator is the human-facing coordinator**: you talk to it; it spawns
-  workers (`ao spawn`), messages them (`ao send`), tracks progress, and synthesizes
+  workers (`to spawn`), messages them (`to send`), tracks progress, and synthesizes
   results. It avoids implementing unless necessary.
 - A **Worker is a normal agent session** — nothing special-cased. It runs one focused
   task in an isolated git worktree + branch, with the agent CLI in a terminal as the
@@ -87,9 +87,9 @@ ReverbCode is **orchestrator-led**, which is the one thing that differs from emd
 
 ## Aesthetic Direction
 
-> **Superseded (2026-06-10):** see the _Design direction — clone agent-orchestrator
+> **Superseded (2026-06-10):** see the _Design direction — clone thanos
 > verbatim_ banner at the top. The emdash framing below is retained for history; the
-> live look tracks agent-orchestrator (same flat near-black / hairline family, so most
+> live look tracks thanos (same flat near-black / hairline family, so most
 > of this still reads true).
 
 - **Direction:** match **emdash** exactly — flat, near-black, hairline-bordered,
@@ -221,13 +221,13 @@ left rail stay name-only — no glyph.)
 - **Right — worker session:** a **PR/CI status pill** that is the action
   (`PR #156 · mergeable` green / `CI failed` red / `review requested` amber /
   `Open PR` when none) → **Changes / Files / Terminal** view toggles → **⋯ session menu**
-  (rename, restart, kill, claim PR — the `ao session …` commands).
+  (rename, restart, kill, claim PR — the `to session …` commands).
 - **Right — orchestrator:** **+ New worker** → Terminal toggle → **⋯ menu**. No diff toggles.
 
 ### Spawn-worker modal (mirrors emdash's Create Task)
 
 You mostly let the orchestrator spawn workers from its conversation; the manual paths
-(the topbar `+ New worker`, a project row's hover `+`, or `ao spawn`) open a modal that
+(the topbar `+ New worker`, a project row's hover `+`, or `to spawn`) open a modal that
 mirrors emdash exactly. Launching from a project row pre-fills the Project field:
 
 - Centered dialog, **12px radius**, `max-w` ~512px, `bg` canvas, `ring-1` at 10% fg,
@@ -258,7 +258,7 @@ mirrors emdash exactly. Launching from a project row pre-fills the Project field
 - Keep tokens as CSS custom properties under `:root` (dark) and `:root[data-theme="light"]`.
 - A faithful HTML reference of all of the above (both views + topbar + spawn modal,
   light/dark) is saved under
-  `~/.gstack/projects/aoagents-agent-orchestrator/designs/design-system-20260609/`.
+  `~/.gstack/projects/tinhtran-thanos/designs/design-system-20260609/`.
 
 ## Decisions Log
 
@@ -271,4 +271,4 @@ mirrors emdash exactly. Launching from a project row pre-fills the Project field
 | 2026-06-09 | **Name-only** worker rows                                              | User direction; status/branch/diff live in panes + topbar, not the row.                            |
 | 2026-06-09 | Removed **Library** from the rail footer                               | User direction; footer is Search + Settings only.                                                  |
 | 2026-06-09 | Topbar right = PR/CI pill + view toggles + ⋯ menu (worker)             | Surfaces the actionable PR/CI state from the daemon; emdash/PostHog Code precedent.                |
-| 2026-06-09 | Spawn modal mirrors emdash's Create Task                               | Consistency with the reference; mapped to `ao spawn` params.                                       |
+| 2026-06-09 | Spawn modal mirrors emdash's Create Task                               | Consistency with the reference; mapped to `to spawn` params.                                       |

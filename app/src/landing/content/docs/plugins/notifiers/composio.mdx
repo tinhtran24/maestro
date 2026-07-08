@@ -22,7 +22,7 @@ Run the interactive Composio setup hub:
 ao setup composio
 ```
 
-The hub lets you choose Slack, Discord webhook, Discord bot, or Gmail. AO asks for the Composio API key, `userId`, required target details, which notification priorities the notifier should receive, then reviews the config before writing. When you run `ao setup composio`, the selected app is written to the canonical `notifiers.composio` target. You can skip the app picker with `--slack`, `--discord-webhook`, `--discord-bot`, or `--gmail`. Discord webhook mode does not need a Composio connected account; Discord bot mode uses a bot token once to create a connected account and stores only the resulting `connectedAccountId`. Gmail mode uses an existing Gmail connected account, or creates a Composio connect link from an existing Gmail auth config.
+The hub lets you choose Slack, Discord webhook, Discord bot, or Gmail. Thanos asks for the Composio API key, `userId`, required target details, which notification priorities the notifier should receive, then reviews the config before writing. When you run `ao setup composio`, the selected app is written to the canonical `notifiers.composio` target. You can skip the app picker with `--slack`, `--discord-webhook`, `--discord-bot`, or `--gmail`. Discord webhook mode does not need a Composio connected account; Discord bot mode uses a bot token once to create a connected account and stores only the resulting `connectedAccountId`. Gmail mode uses an existing Gmail connected account, or creates a Composio connect link from an existing Gmail auth config.
 
 Dedicated commands use the same guided setup but write app-specific targets:
 
@@ -63,28 +63,28 @@ export COMPOSIO_API_KEY=ak_...
 ao setup composio-discord-bot --channel-id "1234567890" --bot-token "$DISCORD_BOT_TOKEN" --non-interactive
 ```
 
-The bot token is used once to create a Composio connected account. AO writes only the resulting `connectedAccountId`.
+The bot token is used once to create a Composio connected account. Thanos writes only the resulting `connectedAccountId`.
 
-Run the Gmail setup when you want AO notifications by email:
+Run the Gmail setup when you want Thanos notifications by email:
 
 ```bash
 export COMPOSIO_API_KEY=ak_...
 ao setup composio-mail --email-to alerts@example.com --non-interactive
 ```
 
-Connect Gmail in Composio first, or choose Gmail in `ao setup composio` and generate a connect link from an existing Gmail auth config. AO does not create Gmail OAuth/auth configs. The setup command finds an active Gmail connected account for the configured `userId` and writes its `connectedAccountId`. If multiple Gmail accounts are available, pass the one AO should use:
+Connect Gmail in Composio first, or choose Gmail in `ao setup composio` and generate a connect link from an existing Gmail auth config. Thanos does not create Gmail OAuth/auth configs. The setup command finds an active Gmail connected account for the configured `userId` and writes its `connectedAccountId`. If multiple Gmail accounts are available, pass the one Thanos should use:
 
 ```bash
 ao setup composio-mail --email-to alerts@example.com --connected-account-id ca_...
 ```
 
-You can also ask AO to print a Composio Gmail connect URL:
+You can also ask Thanos to print a Composio Gmail connect URL:
 
 ```bash
 ao setup composio-mail --email-to alerts@example.com --connect
 ```
 
-AO uses an existing Composio Gmail auth config for that link. If you need a specific custom Gmail auth config, pass it explicitly:
+Thanos uses an existing Composio Gmail auth config for that link. If you need a specific custom Gmail auth config, pass it explicitly:
 
 ```bash
 ao setup composio-mail --email-to alerts@example.com --connect --auth-config-id ac_...
@@ -94,7 +94,7 @@ If Google blocks a Gmail connection, fix the Gmail auth config in Composio, then
 
 ## Use
 
-```yaml title="agent-orchestrator.yaml"
+```yaml title="thanos.yaml"
 notifiers:
   composio:
     plugin: composio
@@ -154,7 +154,7 @@ notifiers:
 | `toolVersions`       | optional        | —                      | App-specific tool versions, for example `{ slack: "20260508_00" }`   |
 
 Slack defaults to `20260508_00`; Discord defaults to `20260429_01`; Gmail defaults to `20260506_01`. Discord uses Composio's `discordbot` toolkit for both webhook and bot modes. Webhook mode calls `DISCORDBOT_EXECUTE_WEBHOOK` with the Discord webhook id/token from `webhookUrl`, so no Composio Discord connect link is required.
-If `mode` is omitted for Discord, AO uses `webhook` when `webhookUrl` is present and `bot` otherwise.
+If `mode` is omitted for Discord, Thanos uses `webhook` when `webhookUrl` is present and `bot` otherwise.
 
 ## When to use
 

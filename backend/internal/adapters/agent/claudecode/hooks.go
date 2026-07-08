@@ -11,7 +11,7 @@ import (
 const (
 	claudeSettingsDirName   = ".claude"
 	claudeSettingsFileName  = "settings.local.json"
-	claudeHookCommandPrefix = "ao hooks claude-code "
+	claudeHookCommandPrefix = "to hooks claude-code "
 	claudeHookTimeout       = 30
 )
 
@@ -19,7 +19,7 @@ const (
 // its required "startup" matcher.
 var claudeStartupMatcher = "startup"
 
-// claudeManagedHooks is the source of truth for the hooks AO installs.
+// claudeManagedHooks is the source of truth for the hooks Thanos installs.
 var claudeManagedHooks = []hooksjson.HookSpec{
 	{Event: "SessionStart", Matcher: &claudeStartupMatcher, Command: claudeHookCommandPrefix + "session-start"},
 	{Event: "UserPromptSubmit", Command: claudeHookCommandPrefix + "user-prompt-submit"},
@@ -28,7 +28,7 @@ var claudeManagedHooks = []hooksjson.HookSpec{
 	{Event: "SessionEnd", Command: claudeHookCommandPrefix + "session-end"},
 }
 
-// claudeHooks manages AO's hooks in the workspace-local
+// claudeHooks manages Thanos's hooks in the workspace-local
 // .claude/settings.local.json file.
 var claudeHooks = hooksjson.Manager{
 	Label:         "claude-code",
@@ -42,17 +42,17 @@ func claudeSettingsPath(workspacePath string) string {
 	return filepath.Join(workspacePath, claudeSettingsDirName, claudeSettingsFileName)
 }
 
-// GetAgentHooks installs AO's Claude Code hooks, preserving user-defined hooks and unrelated settings.
+// GetAgentHooks installs Thanos's Claude Code hooks, preserving user-defined hooks and unrelated settings.
 func (p *Plugin) GetAgentHooks(ctx context.Context, cfg ports.WorkspaceHookConfig) error {
 	return claudeHooks.Install(ctx, cfg.WorkspacePath)
 }
 
-// UninstallHooks removes AO's Claude Code hooks, leaving user-defined hooks untouched.
+// UninstallHooks removes Thanos's Claude Code hooks, leaving user-defined hooks untouched.
 func (p *Plugin) UninstallHooks(ctx context.Context, workspacePath string) error {
 	return claudeHooks.Uninstall(ctx, workspacePath)
 }
 
-// AreHooksInstalled reports whether any AO Claude Code hook is present.
+// AreHooksInstalled reports whether any Thanos Claude Code hook is present.
 func (p *Plugin) AreHooksInstalled(ctx context.Context, workspacePath string) (bool, error) {
 	return claudeHooks.AreInstalled(ctx, workspacePath)
 }

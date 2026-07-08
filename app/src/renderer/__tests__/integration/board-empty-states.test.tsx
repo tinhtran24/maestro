@@ -111,7 +111,7 @@ describe("global board first launch", () => {
 		respondWith([], []);
 		renderBoard(<SessionsBoard />);
 
-		expect(await screen.findByText("Welcome to Agent Orchestrator")).toBeInTheDocument();
+		expect(await screen.findByText("Welcome to Thanos")).toBeInTheDocument();
 		expect(screen.getByRole("button", { name: "Add your first project" })).toBeInTheDocument();
 		// The three orientation steps and the column legend are present.
 		expect(screen.getByText("Add a project")).toBeInTheDocument();
@@ -146,7 +146,7 @@ describe("global board first launch", () => {
 		renderBoard(<SessionsBoard />);
 
 		expect(await screen.findByText("fix the bug")).toBeInTheDocument();
-		expect(screen.queryByText("Welcome to Agent Orchestrator")).not.toBeInTheDocument();
+		expect(screen.queryByText("Welcome to Thanos")).not.toBeInTheDocument();
 		expect(columnCount()).toBe(4);
 	});
 });
@@ -160,7 +160,7 @@ describe("project board with no sessions", () => {
 		// Board header + empty state each offer the pair; the orchestrator is primary in both.
 		expect(screen.getAllByRole("button", { name: "Spawn Orchestrator" }).length).toBeGreaterThan(0);
 		expect(screen.getAllByRole("button", { name: "New task" }).length).toBeGreaterThan(0);
-		expect(screen.queryByText("Welcome to Agent Orchestrator")).not.toBeInTheDocument();
+		expect(screen.queryByText("Welcome to Thanos")).not.toBeInTheDocument();
 		expect(columnCount()).toBe(0);
 	});
 

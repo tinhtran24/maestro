@@ -95,9 +95,9 @@ func normalizePermissionMode(mode ports.PermissionMode) ports.PermissionMode {
 	return mode
 }
 
-// appendApprovalFlags maps AO's permission modes onto Aider's flags. The mapping
+// appendApprovalFlags maps Thanos's permission modes onto Aider's flags. The mapping
 // is lossy: Aider has no graduated approval ladder and no sandbox, so multiple
-// AO modes collapse onto the same Aider behavior.
+// Thanos modes collapse onto the same Aider behavior.
 func appendApprovalFlags(cmd *[]string, mode ports.PermissionMode) {
 	switch normalizePermissionMode(mode) {
 	case ports.PermissionModeDefault:

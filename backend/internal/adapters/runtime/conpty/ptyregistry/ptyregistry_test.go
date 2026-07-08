@@ -21,7 +21,7 @@ func setupHome(t *testing.T) string {
 	t.Helper()
 	dir := t.TempDir()
 	t.Setenv("HOME", dir)
-	return dir + "/.ao/windows-pty-hosts.json"
+	return dir + "/.thanos/windows-pty-hosts.json"
 }
 
 func nowRFC3339() string {

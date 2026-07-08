@@ -70,9 +70,9 @@ function workerPreviewLines(session: WorkspaceSession | undefined, provider: str
 	if (session?.id === "demo-review-stack") {
 		return [
 			'$ rg "previewUrl|Browser" frontend/src/renderer',
-			"frontend/src/renderer/components/SessionInspector.tsx: Browser tab selected after ao preview",
+			"frontend/src/renderer/components/SessionInspector.tsx: Browser tab selected after to preview",
 			"frontend/src/renderer/hooks/useBrowserView.ts: preview revision re-navigates the view",
-			"$ ao preview http://localhost:5173",
+			"$ to preview http://localhost:5173",
 			"DONE preview target set for demo-review-stack",
 			"$ npm --prefix frontend run typecheck",
 			"PASS TypeScript project references are clean",
@@ -108,8 +108,8 @@ function workerPreviewLines(session: WorkspaceSession | undefined, provider: str
 
 function reviewerPreviewLines(session: WorkspaceSession | undefined): string[] {
 	return [
-		"$ ao review submit --session " + (session?.id ?? "demo-session"),
-		"Reviewing PR #319: browser preview rail renders inside AO",
+		"$ to review submit --session " + (session?.id ?? "demo-session"),
+		"Reviewing PR #319: browser preview rail renders inside Thanos",
 		"PASS implementation matches the requested README screenshot flow",
 		"Reviewing PR #320: stacked PR review rows",
 		"WARN keep multiple review rows visible before taking the screenshot",
@@ -231,7 +231,7 @@ function AttachedTerminal({ session, theme, daemonReady, terminalTarget, fontSiz
 				{showEmptyState && (
 					<div className="absolute inset-0 grid place-items-center bg-terminal font-mono text-[13px]">
 						<div className="text-center">
-							<div className="text-[var(--term-fg)]">Agent Orchestrator</div>
+							<div className="text-[var(--term-fg)]">Thanos</div>
 							<div className="mt-2 text-[var(--term-dim)]">
 								No session selected. Pick a worker to attach its terminal.
 							</div>

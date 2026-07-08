@@ -8,7 +8,7 @@ import (
 )
 
 // EnvSpecPath is the environment variable that holds the path to the launch spec file.
-const EnvSpecPath = "AO_LAUNCH_SPEC"
+const EnvSpecPath = "THANOS_LAUNCH_SPEC"
 
 // Spec describes the agent process the launcher trampoline should exec.
 type Spec struct {

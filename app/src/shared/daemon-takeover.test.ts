@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 import { DAEMON_SERVICE_NAME, type DaemonProbe } from "./daemon-attach";
 import { shouldReplacePortHolder } from "./daemon-takeover";
 
-// A minimal valid DaemonProbe (non-null means the AO daemon answered /healthz).
+// A minimal valid DaemonProbe (non-null means the Thanos daemon answered /healthz).
 const healthyProbe: DaemonProbe = {
 	status: "ok",
 	service: DAEMON_SERVICE_NAME,

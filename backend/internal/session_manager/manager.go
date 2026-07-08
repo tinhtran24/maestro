@@ -51,15 +51,15 @@ var (
 
 // Env vars a spawned process reads to learn who it is.
 const (
-	EnvSessionID = "AO_SESSION_ID"
-	EnvProjectID = "AO_PROJECT_ID"
-	EnvIssueID   = "AO_ISSUE_ID"
-	// EnvDataDir tells a spawned agent's AO hook commands where the store lives.
-	EnvDataDir = "AO_DATA_DIR"
+	EnvSessionID = "THANOS_SESSION_ID"
+	EnvProjectID = "THANOS_PROJECT_ID"
+	EnvIssueID   = "THANOS_ISSUE_ID"
+	// EnvDataDir tells a spawned agent's Thanos hook commands where the store lives.
+	EnvDataDir = "THANOS_DATA_DIR"
 )
 
 // hookBinaryName is the executable name the workspace hook commands invoke:
-// every agent adapter installs a bare `ao hooks <agent> <event>`. The session
+// every agent adapter installs a bare `to hooks <agent> <event>`. The session
 // PATH pin (hookPATH) only works when the daemon's own executable carries this
 // name, since prepending its directory must change what `ao` resolves to.
 const hookBinaryName = "ao"
@@ -139,7 +139,7 @@ type Deps struct {
 	Store     Store
 	Messenger ports.AgentMessenger
 	Lifecycle lifecycleRecorder
-	// DataDir is exported to spawned agents as AO_DATA_DIR so their hook
+	// DataDir is exported to spawned agents as THANOS_DATA_DIR so their hook
 	// commands can open the same store.
 	DataDir string
 	Clock   func() time.Time
@@ -175,7 +175,7 @@ func New(d Deps) *Manager {
 	if m.clock == nil {
 		// UTC so spawn-stamped CreatedAt/UpdatedAt match every other session
 		// write (rename, activity) — all of which use time.Now().UTC(). A local
-		// default produced mixed-timezone timestamps in `ao session get`.
+		// default produced mixed-timezone timestamps in `to session get`.
 		m.clock = func() time.Time { return time.Now().UTC() }
 	}
 	if m.lookPath == nil {
@@ -1542,7 +1542,7 @@ func (m *Manager) buildSystemPrompt(ctx context.Context, kind domain.SessionKind
 // aoSkillPointer is appended to every agent system prompt. It points the agent
 // at the using-ao skill the daemon installs under the data dir, rather than
 // inlining the whole CLI catalog. The path is absolute so it resolves from any
-// project's worktree, not just the AO repo (the only place a repo-relative
+// project's worktree, not just the Thanos repo (the only place a repo-relative
 // skills/ path would exist). The skill file carries exact flags and examples,
 // so the standing prompt stays a short pointer rather than a command dump.
 func (m *Manager) aoSkillPointer() string {
@@ -1602,15 +1602,15 @@ func orchestratorPrompt(project domain.ProjectID) string {
 You are the human-facing coordinator for project %s. Coordinate work for the human, keep the project moving, and avoid doing implementation yourself unless it is necessary.
 
 Spawn worker sessions for implementation with:
-`+"`ao spawn --project %s --name \"<label, max 20 chars>\" --prompt \"<clear worker task>\"`"+`
+`+"`to spawn --project %s --name \"<label, max 20 chars>\" --prompt \"<clear worker task>\"`"+`
 Both --project and --name are required.
 
-To run a worker on a specific agent, add `+"`--agent <name>`"+` (an alias for `+"`--harness`"+`) — for example `+"`--agent codex`"+` or `+"`--agent claude-code`"+`. If you omit it, the project's default worker agent is used. Run `+"`ao spawn --help`"+` for the full list of agents and every flag.
+To run a worker on a specific agent, add `+"`--agent <name>`"+` (an alias for `+"`--harness`"+`) — for example `+"`--agent codex`"+` or `+"`--agent claude-code`"+`. If you omit it, the project's default worker agent is used. Run `+"`to spawn --help`"+` for the full list of agents and every flag.
 
-Message workers with `+"`ao send`"+`, for example:
-`+"`ao send --session <worker-session-id> --message \"<your message>\"`"+`
+Message workers with `+"`to send`"+`, for example:
+`+"`to send --session <worker-session-id> --message \"<your message>\"`"+`
 
-To discover any other AO command, run `+"`ao --help`"+` (and `+"`ao <command> --help`"+` for details on one).
+To discover any other Thanos command, run `+"`ao --help`"+` (and `+"`ao <command> --help`"+` for details on one).
 
 Use workers for focused implementation tasks, track their progress, synthesize their results, and only step into implementation directly for true emergencies or small coordination fixes.`, project, project)
 }
@@ -1650,13 +1650,13 @@ func workerOrchestratorPrompt(orchestratorID domain.SessionID) string {
 	return fmt.Sprintf(`## Orchestrator coordination
 
 An active orchestrator session exists for this project. If you hit a true blocker or need cross-session coordination, message it with:
-`+"`ao send --session %s --message \"<your message>\"`"+`
+`+"`to send --session %s --message \"<your message>\"`"+`
 
 Only ping the orchestrator for true blockers, cross-session coordination, or decisions that cannot be resolved within your own task.`, orchestratorID)
 }
 
-// workerMultiPRPrompt explains the branch convention AO uses to attribute pull
-// requests to this session. A worker may open several PRs in one session: AO
+// workerMultiPRPrompt explains the branch convention Thanos uses to attribute pull
+// requests to this session. A worker may open several PRs in one session: Thanos
 // tracks every open PR whose source branch is the session's own branch or lives
 // in the same session namespace. Stacking a PR on top of another therefore only
 // requires branching off with a `<session-namespace>/<topic>` name; PRs on
@@ -1664,18 +1664,18 @@ Only ping the orchestrator for true blockers, cross-session coordination, or dec
 func workerMultiPRPrompt() string {
 	return `## Pull requests for this session
 
-You can open more than one pull request from this session. AO attributes a PR to you when its source branch is your session's working branch or another branch in the same session namespace.
+You can open more than one pull request from this session. Thanos attributes a PR to you when its source branch is your session's working branch or another branch in the same session namespace.
 
 - If your current branch ends in ` + "`/root`" + `, create independent PR branches as siblings under the same namespace, for example ` + "`<namespace>/<topic>`" + ` from ` + "`<namespace>/root`" + `. Do not create ` + "`<namespace>/root/<topic>`" + `.
-- Otherwise, create each source branch as a child of your session branch (` + "`your-branch/<topic>`" + `) so it stays in this session's namespace, then open the PR targeting your base branch as usual. The PR can target the base branch; only the source branch needs to stay under your session namespace for AO to track it.
-- To stack a PR on top of another (so it merges after its parent), create the child branch from the parent branch and name it ` + "`<parent-branch>/<topic>`" + `, then target the parent branch in the PR. AO recognizes the stack from the branch relationship and will only nudge you to resolve conflicts on the bottom-most PR.
+- Otherwise, create each source branch as a child of your session branch (` + "`your-branch/<topic>`" + `) so it stays in this session's namespace, then open the PR targeting your base branch as usual. The PR can target the base branch; only the source branch needs to stay under your session namespace for Thanos to track it.
+- To stack a PR on top of another (so it merges after its parent), create the child branch from the parent branch and name it ` + "`<parent-branch>/<topic>`" + `, then target the parent branch in the PR. Thanos recognizes the stack from the branch relationship and will only nudge you to resolve conflicts on the bottom-most PR.
 
-Keep branch names within your session's branch namespace so AO can track every PR you open.`
+Keep branch names within your session's branch namespace so Thanos can track every PR you open.`
 }
 
 // spawnEnv builds the runtime environment: the per-project env vars first, then
-// the AO-internal vars last so they always win (a project cannot override
-// AO_SESSION_ID and friends).
+// the Thanos-internal vars last so they always win (a project cannot override
+// THANOS_SESSION_ID and friends).
 func spawnEnv(id domain.SessionID, project domain.ProjectID, issue domain.IssueID, dataDir string, projectEnv map[string]string) map[string]string {
 	env := make(map[string]string, len(projectEnv)+4)
 	for k, v := range projectEnv {
@@ -1699,7 +1699,7 @@ func (m *Manager) runtimeEnv(id domain.SessionID, project domain.ProjectID, issu
 	env := spawnEnv(id, project, issue, m.dataDir, projectEnv)
 	path, err := HookPATH(m.executable, os.Getenv, projectEnv)
 	if err != nil {
-		m.logger.Warn("session PATH not pinned to the daemon binary; `ao hooks` callbacks may resolve to a different ao and activity tracking will stall",
+		m.logger.Warn("session PATH not pinned to the daemon binary; `to hooks` callbacks may resolve to a different ao and activity tracking will stall",
 			"session", id, "error", err)
 		return env
 	}

@@ -1,11 +1,11 @@
 ---
 title: Remote Access
-description: Access the AO dashboard from another device or over Tailscale. Covers ports, binding, reverse proxies, power management, and security.
+description: Access the Thanos dashboard from another device or over Tailscale. Covers ports, binding, reverse proxies, power management, and security.
 ---
 
 # Remote Access
 
-By default the AO dashboard binds to `localhost:3000` and is only accessible from the machine it runs on. This page explains how to access it from another device — your phone, a second laptop, or a remote machine — using Tailscale or direct network binding.
+By default the Thanos dashboard binds to `localhost:3000` and is only accessible from the machine it runs on. This page explains how to access it from another device — your phone, a second laptop, or a remote machine — using Tailscale or direct network binding.
 
 ## Tailscale (recommended)
 
@@ -13,7 +13,7 @@ By default the AO dashboard binds to `localhost:3000` and is only accessible fro
 
 ### Setup
 
-1. Install Tailscale on both the machine running AO and the device you want to access it from.
+1. Install Tailscale on both the machine running Thanos and the device you want to access it from.
 
    ```bash
    # macOS
@@ -36,17 +36,17 @@ By default the AO dashboard binds to `localhost:3000` and is only accessible fro
    # e.g. 100.64.0.1
    ```
 
-4. Bind AO to all interfaces so Tailscale traffic can reach it:
+4. Bind Thanos to all interfaces so Tailscale traffic can reach it:
 
    ```yaml
-   # agent-orchestrator.yaml
+   # thanos.yaml
    port: 3000
    ```
 
-   Then start AO with `HOST=0.0.0.0` so it listens on all interfaces (not just localhost):
+   Then start Thanos with `HOST=0.0.0.0` so it listens on all interfaces (not just localhost):
 
    ```bash
-   HOST=0.0.0.0 ao start
+   HOST=0.0.0.0 to start
    ```
 
    Access the dashboard from another Tailscale device at:
@@ -73,44 +73,44 @@ This makes the dashboard available at `https://my-laptop.tail1234.ts.net` with a
 
 ## Binding to a specific interface
 
-AO uses Next.js for the dashboard. To bind to all interfaces (required for any remote access without Tailscale serve), set the `HOST` environment variable:
+Thanos uses Next.js for the dashboard. To bind to all interfaces (required for any remote access without Tailscale serve), set the `HOST` environment variable:
 
 ```bash
 # Bind to all interfaces
-HOST=0.0.0.0 ao start
+HOST=0.0.0.0 to start
 ```
 
 Or set it in your shell profile:
 
 ```bash
 export HOST=0.0.0.0
-ao start
+to start
 ```
 
 To bind to a specific IP only (e.g. your Tailscale IP):
 
 ```bash
-HOST=100.64.0.1 ao start
+HOST=100.64.0.1 to start
 ```
 
 The terminal WebSocket ports (`terminalPort` and `directTerminalPort`) also need to be reachable. If you're using Tailscale, the mesh handles this transparently as long as the ports are not firewalled locally.
 
 ## macOS: preventing sleep
 
-If you run AO on a Mac, the machine going to sleep will kill the agents and the dashboard. Use `caffeinate` to prevent sleep while AO is running:
+If you run Thanos on a Mac, the machine going to sleep will kill the agents and the dashboard. Use `caffeinate` to prevent sleep while Thanos is running:
 
 ```bash
-caffeinate -i ao start
+caffeinate -i to start
 ```
 
 `caffeinate -i` prevents idle sleep (triggered by inactivity) but still allows display sleep. For a machine you want to run headlessly overnight:
 
 ```bash
 # Prevent all sleep (including display)
-caffeinate -dims ao start
+caffeinate -dims to start
 ```
 
-To run AO persistently in the background as a launchd service, create a plist at `~/Library/LaunchAgents/com.ao.orchestrator.plist`:
+To run Thanos persistently in the background as a launchd service, create a plist at `~/Library/LaunchAgents/com.ao.orchestrator.plist`:
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
@@ -146,9 +146,9 @@ launchctl load ~/Library/LaunchAgents/com.ao.orchestrator.plist
 
 ## Reverse proxy
 
-If you want to expose AO over a domain name with TLS, or place it behind an authentication layer, you can front it with nginx or Caddy.
+If you want to expose Thanos over a domain name with TLS, or place it behind an authentication layer, you can front it with nginx or Caddy.
 
-**Important:** AO uses two WebSocket servers (one for tmux-attached terminals, one for direct PTY terminals). Your proxy must forward HTTP upgrade headers for both.
+**Important:** Thanos uses two WebSocket servers (one for tmux-attached terminals, one for direct PTY terminals). Your proxy must forward HTTP upgrade headers for both.
 
 ### Environment variables for proxied setups
 
@@ -196,10 +196,10 @@ server {
 }
 ```
 
-Then start AO with the matching path env var so the browser client dials through the proxy:
+Then start Thanos with the matching path env var so the browser client dials through the proxy:
 
 ```bash
-HOST=0.0.0.0 NEXT_PUBLIC_TERMINAL_WS_PATH=/ws/terminal ao start
+HOST=0.0.0.0 NEXT_PUBLIC_TERMINAL_WS_PATH=/ws/terminal to start
 ```
 
 ### Caddy
@@ -214,15 +214,15 @@ ao.example.com {
 }
 ```
 
-Start AO the same way:
+Start Thanos the same way:
 
 ```bash
-HOST=0.0.0.0 NEXT_PUBLIC_TERMINAL_WS_PATH=/ws/terminal ao start
+HOST=0.0.0.0 NEXT_PUBLIC_TERMINAL_WS_PATH=/ws/terminal to start
 ```
 
 ### Pinning WebSocket ports
 
-By default AO auto-detects available ports for the WebSocket servers starting at 14800/14801. To pin them (required when configuring a reverse proxy), set them in `agent-orchestrator.yaml`:
+By default Thanos auto-detects available ports for the WebSocket servers starting at 14800/14801. To pin them (required when configuring a reverse proxy), set them in `thanos.yaml`:
 
 ```yaml
 port: 3000
@@ -233,12 +233,12 @@ directTerminalPort: 14801
 Or pass them as environment variables when starting:
 
 ```bash
-HOST=0.0.0.0 TERMINAL_PORT=14800 DIRECT_TERMINAL_PORT=14801 ao start
+HOST=0.0.0.0 TERMINAL_PORT=14800 DIRECT_TERMINAL_PORT=14801 to start
 ```
 
 ## Accessing the dashboard from mobile
 
-The AO dashboard is a responsive web app — it works on mobile browsers. Connect over Tailscale and open the URL in Safari or Chrome. The Kanban board and session detail views are usable on a phone screen.
+The Thanos dashboard is a responsive web app — it works on mobile browsers. Connect over Tailscale and open the URL in Safari or Chrome. The Kanban board and session detail views are usable on a phone screen.
 
 **Limitations on mobile:**
 
@@ -247,12 +247,12 @@ The AO dashboard is a responsive web app — it works on mobile browsers. Connec
 
 ## Security considerations
 
-**AO has no authentication.** Anyone who can reach the HTTP port can view all sessions, read terminal output, send messages to agents, and trigger merges. Never expose the dashboard port to the public internet.
+**Thanos has no authentication.** Anyone who can reach the HTTP port can view all sessions, read terminal output, send messages to agents, and trigger merges. Never expose the dashboard port to the public internet.
 
 Mitigations:
 
 - Use Tailscale — the mesh is authenticated and encrypted end-to-end. Only your devices can reach the IP.
-- If you must use a public host, put a reverse proxy with HTTP Basic Auth (nginx, Caddy) in front of AO. See the [Reverse proxy](#reverse-proxy) section above.
+- If you must use a public host, put a reverse proxy with HTTP Basic Auth (nginx, Caddy) in front of Thanos. See the [Reverse proxy](#reverse-proxy) section above.
 - Firewall the port at the OS level and only allow Tailscale traffic:
 
   ```bash
@@ -261,7 +261,7 @@ Mitigations:
   sudo ufw deny 3000
   ```
 
-**Environment variables and secrets** in agent processes are visible to anyone with dashboard access. Do not run AO on a shared machine without Tailscale or auth.
+**Environment variables and secrets** in agent processes are visible to anyone with dashboard access. Do not run Thanos on a shared machine without Tailscale or auth.
 
 **Webhook endpoint:** If you expose the dashboard publicly and have GitHub (or another tracker) configured, the `/api/webhooks` endpoint receives push events from GitHub. This endpoint is protected by a webhook secret configured in your tracker settings — verify the secret is set before exposing the port publicly.
 
@@ -275,16 +275,16 @@ For more on project identity, local config, and runtime data, see [Configuration
 | `14800` | tmux terminal WS   | `terminalPort`       | `TERMINAL_PORT`        | WebSocket for tmux-attached terminal |
 | `14801` | direct terminal WS | `directTerminalPort` | `DIRECT_TERMINAL_PORT` | WebSocket for direct PTY terminal    |
 
-If you run multiple AO instances on the same machine, change all three ports to avoid `EADDRINUSE` errors:
+If you run multiple Thanos instances on the same machine, change all three ports to avoid `EADDRINUSE` errors:
 
 ```yaml
-# Second AO instance
+# Second Thanos instance
 port: 3001
 terminalPort: 14810
 directTerminalPort: 14811
 ```
 
-Note: When `terminalPort` and `directTerminalPort` are not set in the config or as env vars, AO auto-detects a free port pair starting from 14800. Set them explicitly whenever you configure a reverse proxy or firewall rules.
+Note: When `terminalPort` and `directTerminalPort` are not set in the config or as env vars, Thanos auto-detects a free port pair starting from 14800. Set them explicitly whenever you configure a reverse proxy or firewall rules.
 
 ## See also
 

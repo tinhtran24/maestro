@@ -1,6 +1,6 @@
 # Feature Clone Checklist
 
-Every AO frontend feature, the components/hooks/lib that implement it, and the
+Every Thanos frontend feature, the components/hooks/lib that implement it, and the
 backend endpoints it drives. Port components **and their `.test.tsx`** files.
 
 ## 1. Dashboard / Sessions Board
@@ -36,7 +36,7 @@ backend endpoints it drives. Port components **and their `.test.tsx`** files.
 - **Data**: `useTerminalSession.ts`, `lib/terminal-mux.ts`, `lib/terminal-themes.ts`.
 - **Backend**: `GET /mux` (WebSocket multiplexer).
 - One WS multiplexes all session PTYs; xterm + fit/webgl/search/web-links/unicode11
-  addons. Preserve AO's terminal palette.
+  addons. Preserve Thanos's terminal palette.
 
 ## 5. Embedded Browser / Preview
 
@@ -45,7 +45,7 @@ backend endpoints it drives. Port components **and their `.test.tsx`** files.
 - **Backend**: `POST/GET/DELETE /sessions/{id}/preview`,
   `GET /sessions/{id}/preview/files/*`.
 - Inspector "Browser" tab renders a preview URL (or workspace `index.html`) in an
-  Electron BrowserView. Mirrors the `ao preview` CLI command.
+  Electron BrowserView. Mirrors the `to preview` CLI command.
 
 ## 6. Pull Requests & Reviews
 
@@ -54,7 +54,7 @@ backend endpoints it drives. Port components **and their `.test.tsx`** files.
 - **Backend**: `GET /sessions/{id}/pr`, `POST /sessions/{id}/pr/claim`,
   `GET /sessions/{id}/reviews`, `POST /sessions/{id}/reviews/trigger|submit`,
   `POST /prs/{id}/merge`, `POST /prs/{id}/resolve-comments`.
-- List PRs, view summary, claim, trigger AO review, submit, merge, resolve comments.
+- List PRs, view summary, claim, trigger Thanos review, submit, merge, resolve comments.
 
 ## 7. Orchestrators
 
@@ -89,7 +89,7 @@ backend endpoints it drives. Port components **and their `.test.tsx`** files.
 - **UI**: `MigrationPopup.tsx`, `MigrationSection.tsx`.
 - **Data**: `useMigrationOffer.ts`.
 - **Backend**: `GET /import`, `POST /import`.
-- Detect a legacy AO install and offer to import projects/sessions.
+- Detect a legacy Thanos install and offer to import projects/sessions.
 
 ## 12. Daemon status & connection
 

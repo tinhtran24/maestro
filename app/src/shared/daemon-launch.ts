@@ -21,7 +21,7 @@ export function resolveDaemonLaunch(
 	appPath: string,
 	platform: NodeJS.Platform,
 ): DaemonLaunchSpec | null {
-	const configuredCommand = env.AO_DAEMON_COMMAND?.trim();
+	const configuredCommand = env.THANOS_DAEMON_COMMAND?.trim();
 	if (configuredCommand) {
 		return {
 			command: configuredCommand,

@@ -63,7 +63,7 @@ mounted under `/api/v1` (see `backend/internal/httpd/router.go`). Types come fro
 | Method | Path                                          | Purpose                    |
 | ------ | --------------------------------------------- | -------------------------- |
 | GET    | `/sessions/{sessionId}/reviews`               | list reviews               |
-| POST   | `/sessions/{sessionId}/reviews/trigger`       | trigger AO review          |
+| POST   | `/sessions/{sessionId}/reviews/trigger`       | trigger Thanos review          |
 | POST   | `/sessions/{sessionId}/reviews/submit`        | submit review              |
 | GET    | `/sessions/{sessionId}/pr`                    | PR summary for session     |
 | POST   | `/sessions/{sessionId}/pr/claim`              | claim PR for session       |
@@ -99,7 +99,7 @@ mounted under `/api/v1` (see `backend/internal/httpd/router.go`). Types come fro
 
 | Method | Path          | Purpose                            |
 | ------ | ------------- | ---------------------------------- |
-| GET    | `/import`     | discover legacy AO install to import |
+| GET    | `/import`     | discover legacy Thanos install to import |
 | POST   | `/import`     | run import                         |
 
 ## Streaming & telemetry internals

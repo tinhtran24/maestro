@@ -170,7 +170,7 @@ export function Sidebar({
 	});
 	const isNightly = typeof appVersion === "string" && appVersion.includes("-nightly.");
 
-	// agent-orchestrator's sidebar resize: drag the right edge (200-420px,
+	// thanos's sidebar resize: drag the right edge (200-420px,
 	// persisted), double-click to reset to 240px. Drives --ao-sidebar-w on :root,
 	// which the provider forwards into shadcn's --sidebar-width.
 	const { onPointerDown: onResizePointerDown, onDoubleClick: onResizeDoubleClick } = useResizable({
@@ -216,7 +216,7 @@ export function Sidebar({
 						</TooltipContent>
 					</Tooltip>
 					<span className="min-w-0 flex-1 truncate text-[14px] font-bold tracking-[-0.015em] text-foreground group-data-[collapsible=icon]:hidden">
-						Agent Orchestrator
+						Thanos
 					</span>
 					{isNightly && (
 						<span
@@ -921,7 +921,7 @@ function CreateProjectModeDialog({
 					<div className="flex shrink-0 items-start justify-between gap-4 px-4 pb-3 pt-4 sm:px-6 sm:pb-4 sm:pt-5">
 						<div className="min-w-0">
 							<Dialog.Title className="text-[18px] font-semibold text-foreground">
-								Import to Agent Orchestrator
+								Import to Thanos
 							</Dialog.Title>
 							<Dialog.Description className="mt-1 text-[13px] font-medium text-muted-foreground">
 								What are you importing?

@@ -3,16 +3,16 @@
 // is known.
 //
 // Kimi CLI (binary "kimi") is Moonshot AI's terminal-native agentic coding
-// agent. AO launches Kimi sessions interactively as `kimi [--auto|-y]` and
+// agent. Thanos launches Kimi sessions interactively as `kimi [--auto|-y]` and
 // delivers prompted worker tasks after startup through the runtime pane. Kimi's
-// `-p/--prompt` mode is intentionally avoided for AO workers because it is
+// `-p/--prompt` mode is intentionally avoided for Thanos workers because it is
 // non-interactive and streams transcript output without opening the TUI.
 // Sessions are resumed by id with `kimi --session <id>`.
 //
 // Kimi exposes no native lifecycle/hook system and is not documented as
 // Claude Code hook-compatible, so this is a Tier C adapter: hook installation
 // and SessionInfo are intentionally no-ops, and activity is left to the
-// lifecycle reaper. There is also no documented system-prompt flag, so AO's
+// lifecycle reaper. There is also no documented system-prompt flag, so Thanos's
 // system prompt is not injected. Both should be upgraded if/when Kimi adds the
 // corresponding CLI surface.
 package kimi
@@ -78,7 +78,7 @@ func (p *Plugin) GetLaunchCommand(ctx context.Context, cfg ports.LaunchConfig) (
 	return cmd, nil
 }
 
-// GetPromptDeliveryStrategy reports that AO should inject prompted Kimi tasks
+// GetPromptDeliveryStrategy reports that Thanos should inject prompted Kimi tasks
 // into the interactive terminal after startup. Kimi's `-p/--prompt` mode is
 // non-interactive and does not open the TUI.
 func (p *Plugin) GetPromptDeliveryStrategy(ctx context.Context, _ ports.LaunchConfig) (ports.PromptDeliveryStrategy, error) {
@@ -97,7 +97,7 @@ func (p *Plugin) GetPromptDeliveryStrategy(ctx context.Context, _ ports.LaunchCo
 // to fresh launch behavior. Per Kimi docs, `--yolo` and `--auto` cannot be
 // combined with `--session` (or `--continue`) -- resumed sessions inherit the
 // approval settings of the original session -- so cfg.Permissions is
-// intentionally ignored here. Kimi has no lifecycle hook for AO to capture the
+// intentionally ignored here. Kimi has no lifecycle hook for Thanos to capture the
 // native session id from yet, so in practice this returns ok=false today.
 func (p *Plugin) GetRestoreCommand(ctx context.Context, cfg ports.RestoreConfig) (cmd []string, ok bool, err error) {
 	if err := ctx.Err(); err != nil {
@@ -116,7 +116,7 @@ func (p *Plugin) GetRestoreCommand(ctx context.Context, cfg ports.RestoreConfig)
 	return cmd, true, nil
 }
 
-// appendApprovalFlags maps AO's permission modes onto Kimi's approval flags
+// appendApprovalFlags maps Thanos's permission modes onto Kimi's approval flags
 // for interactive launches. Per Kimi docs these flags cannot be combined with
 // `--prompt`, `--session`, or `--continue`, so callers on those paths must
 // skip this mapping.

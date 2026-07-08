@@ -1,11 +1,11 @@
-# ao status
+# to status
 
-Show AO daemon status. Use this to verify the daemon is up and check which port it is bound to.
+Show Thanos daemon status. Use this to verify the daemon is up and check which port it is bound to.
 
 ## Syntax
 
 ```
-ao status [flags]
+to status [flags]
 ```
 
 ## Flags
@@ -18,10 +18,10 @@ ao status [flags]
 
 ```bash
 # Check daemon status
-ao status
+to status
 ```
 
 ```bash
 # Get status as JSON (e.g. to check port programmatically)
-ao status --json
+to status --json
 ```

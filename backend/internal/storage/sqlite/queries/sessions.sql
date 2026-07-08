@@ -41,7 +41,7 @@ UPDATE sessions SET display_name = ?, updated_at = ? WHERE id = ?;
 
 -- name: SetSessionPreviewURL :execrows
 -- preview_revision is bumped on every call (even when preview_url is unchanged)
--- so a repeated `ao preview <same-url>` still trips the sessions_cdc_update
+-- so a repeated `to preview <same-url>` still trips the sessions_cdc_update
 -- trigger and the desktop browser panel re-navigates / refreshes.
 UPDATE sessions SET preview_url = ?, preview_revision = preview_revision + 1, updated_at = ? WHERE id = ?;
 

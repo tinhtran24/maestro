@@ -16,7 +16,7 @@ The default workspace plugin. Each session gets a [git worktree](https://git-scm
 
 ## Use
 
-```yaml title="agent-orchestrator.yaml"
+```yaml title="thanos.yaml"
 workspace: worktree
 workspaceConfig:
   worktreeDir: ~/.worktrees # default
@@ -28,9 +28,9 @@ workspaceConfig:
 
 ## How it works
 
-- On spawn, AO runs `git worktree add <worktreeDir>/{sessionId} -b <branch>` against the project's upstream.
+- On spawn, Thanos runs `git worktree add <worktreeDir>/{sessionId} -b <branch>` against the project's upstream.
 - The agent works inside that worktree. Commits land on its dedicated branch.
-- On cleanup, AO runs `git worktree remove` and prunes the branch if it was never pushed.
+- On cleanup, Thanos runs `git worktree remove` and prunes the branch if it was never pushed.
 
 ## Per-project knobs
 
@@ -53,5 +53,5 @@ projects:
 
 ## Troubleshooting
 
-- **"fatal: working tree already exists".** A previous session didn't clean up. `ao session cleanup` or manually `git worktree remove --force <path>`.
+- **"fatal: working tree already exists".** A previous session didn't clean up. `to session cleanup` or manually `git worktree remove --force <path>`.
 - **Branch protection rejects the agent's push.** Expected — the agent pushes its own branch, not to your protected `main`.

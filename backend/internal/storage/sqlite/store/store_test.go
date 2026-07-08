@@ -692,7 +692,7 @@ func TestSetSessionPreviewURLBumpsRevisionAndFiresCDCOnSameURL(t *testing.T) {
 	}
 
 	// Both sets fire session_updated even though the URL never changed — the
-	// revision bump is what trips the trigger, so a same-URL `ao preview` re-run
+	// revision bump is what trips the trigger, so a same-URL `to preview` re-run
 	// still reaches the browser panel.
 	evs, err := s.EventsAfter(ctx, base, 100)
 	if err != nil {

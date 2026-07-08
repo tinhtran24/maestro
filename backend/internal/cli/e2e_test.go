@@ -4,7 +4,7 @@
 // real binary and drives it (start/status/doctor/stop + the daemon-control HTTP
 // surface) against fully isolated state — a per-test temp run-file, data dir,
 // and an OS-assigned free loopback port — so it never touches a developer's real
-// AO install. Unlike the Linux-only container smoke test, this runs natively on
+// Thanos install. Unlike the Linux-only container smoke test, this runs natively on
 // every OS in CI (ubuntu/macos/windows), which is the only way to exercise the
 // unix setsid vs Windows CREATE_NEW_PROCESS_GROUP detach paths and the per-OS
 // os.UserConfigDir resolution.
@@ -71,8 +71,8 @@ func newEnv(t *testing.T) env {
 }
 
 // environ builds the child env: the ambient environment with every inherited
-// AO_* var stripped (so a real daemon's AO_PORT can't leak in) plus our isolated
-// settings. portOverride, when non-empty, replaces the numeric AO_PORT — used to
+// AO_* var stripped (so a real daemon's THANOS_PORT can't leak in) plus our isolated
+// settings. portOverride, when non-empty, replaces the numeric THANOS_PORT — used to
 // inject an invalid value.
 func (e env) environ(portOverride string) []string {
 	out := make([]string, 0, len(os.Environ())+3)
@@ -89,7 +89,7 @@ func (e env) environ(portOverride string) []string {
 	if portOverride != "" {
 		port = portOverride
 	}
-	return append(out, "AO_RUN_FILE="+e.runFile, "AO_DATA_DIR="+e.dataDir, "AO_PORT="+port, "GH_CONFIG_DIR="+filepath.Join(e.dataDir, "gh-config"))
+	return append(out, "THANOS_RUN_FILE="+e.runFile, "THANOS_DATA_DIR="+e.dataDir, "THANOS_PORT="+port, "GH_CONFIG_DIR="+filepath.Join(e.dataDir, "gh-config"))
 }
 
 func freePort(t *testing.T) int {
@@ -135,15 +135,15 @@ func asExit(err error, target **exec.ExitError) bool {
 	return false
 }
 
-// startDaemon brings the daemon up and registers a stop on cleanup. `ao start`
+// startDaemon brings the daemon up and registers a stop on cleanup. `to start`
 // no longer spawns the daemon (the desktop app owns it now), so the e2e suite
-// drives the hidden `ao daemon` command directly and polls for readiness.
+// drives the hidden `to daemon` command directly and polls for readiness.
 func (e env) startDaemon(t *testing.T) {
 	t.Helper()
 	cmd := exec.Command(aoBin, "daemon")
 	cmd.Env = e.environ("")
 	if err := cmd.Start(); err != nil {
-		t.Fatalf("spawn ao daemon: %v", err)
+		t.Fatalf("spawn to daemon: %v", err)
 	}
 	t.Cleanup(func() {
 		e.run(t, "stop")
@@ -211,8 +211,8 @@ func TestE2E_DoctorDoesNotTouchTheStore(t *testing.T) {
 	mustContain(t, out, "database not created yet") // sqlite WARN, never migrated
 
 	// doctor must NOT create/migrate the DB — the daemon is the sole writer.
-	if _, err := os.Stat(filepath.Join(e.dataDir, "ao.db")); err == nil {
-		t.Fatal("doctor created ao.db; the CLI must not open/migrate the store")
+	if _, err := os.Stat(filepath.Join(e.dataDir, "thanos.db")); err == nil {
+		t.Fatal("doctor created thanos.db; the CLI must not open/migrate the store")
 	}
 
 	if out, code := e.run(t, "doctor", "--json"); code != 0 || !strings.Contains(out, `"ok": true`) {
@@ -243,15 +243,15 @@ func TestE2E_Lifecycle(t *testing.T) {
 	mustContain(t, out, fmt.Sprintf(`"port": %d`, e.port))
 
 	// the daemon (not the CLI) has created + migrated the store
-	if _, err := os.Stat(filepath.Join(e.dataDir, "ao.db")); err != nil {
-		t.Fatalf("daemon should have created ao.db: %v", err)
+	if _, err := os.Stat(filepath.Join(e.dataDir, "thanos.db")); err != nil {
+		t.Fatalf("daemon should have created thanos.db: %v", err)
 	}
 	out, _ = e.run(t, "doctor")
 	mustContain(t, out, "migrations are applied by the daemon")
 
 	// /healthz identity
 	body := httpGet(t, e.port, "/healthz")
-	mustContain(t, body, "agent-orchestrator-daemon")
+	mustContain(t, body, "thanos-daemon")
 
 	if out, code := e.run(t, "stop"); code != 0 || !strings.Contains(out, "stopped") {
 		t.Fatalf("stop: exit %d, out %s", code, out)
@@ -314,7 +314,7 @@ func TestE2E_ExitCodes(t *testing.T) {
 	}
 	// invalid config is a runtime error (1), not a usage error (2).
 	if _, code := e.runEnv(t, e.environ("notaport"), "status"); code != 1 {
-		t.Fatalf("invalid AO_PORT exit %d, want 1", code)
+		t.Fatalf("invalid THANOS_PORT exit %d, want 1", code)
 	}
 }
 

@@ -8,10 +8,10 @@ const NAMES = [
 	"Agent.Orchestrator-0.10.4.AppImage", // linux versioned
 	"Agent.Orchestrator-darwin-arm64-0.10.4.zip", // mac arm64 versioned
 	"Agent.Orchestrator-darwin-x64-0.10.4.zip", // mac x64 versioned
-	"agent-orchestrator-darwin-arm64.zip", // ao-start alias (no version) -> excluded
-	"agent-orchestrator-win32-x64.exe", // alias (no version) -> excluded
-	"agent-orchestrator_0.10.4_amd64.deb", // deb -> excluded by extension
-	"agent-orchestrator-0.10.4.x86_64.rpm", // rpm -> excluded by extension
+	"thanos-darwin-arm64.zip", // ao-start alias (no version) -> excluded
+	"thanos-win32-x64.exe", // alias (no version) -> excluded
+	"thanos_0.10.4_amd64.deb", // deb -> excluded by extension
+	"thanos-0.10.4.x86_64.rpm", // rpm -> excluded by extension
 ];
 
 describe("selectInstallers", () => {

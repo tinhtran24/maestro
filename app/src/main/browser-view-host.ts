@@ -185,7 +185,7 @@ export function createBrowserViewHost(options: BrowserViewHostOptions): BrowserV
 		return pushNavState(options, entry);
 	};
 
-	// clear resets the view to a blank page (`ao preview clear`). about:blank is
+	// clear resets the view to a blank page (`to preview clear`). about:blank is
 	// loaded directly, bypassing the URL allowlist — it carries no content and
 	// readNavState normalizes it back to an empty url so the panel shows its
 	// empty state.

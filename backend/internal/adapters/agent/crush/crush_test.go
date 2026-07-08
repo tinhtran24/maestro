@@ -21,7 +21,7 @@ func TestGetLaunchCommandBuildsCrossPlatformArgv(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	// cfg.SessionID is the AO-internal id and must NOT be passed as --session on
+	// cfg.SessionID is the Thanos-internal id and must NOT be passed as --session on
 	// launch; Crush mints its own native id, which GetRestoreCommand resumes by.
 	want := []string{
 		"crush",

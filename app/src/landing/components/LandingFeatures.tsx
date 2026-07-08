@@ -333,7 +333,7 @@ function PluginsBack() {
 	return (
 		<div className="p-5 h-full flex flex-col">
 			<div className="flex items-center justify-between mb-3 pb-3 border-b border-[var(--landing-border-subtle)]">
-				<span className="font-mono text-[0.6875rem] text-[var(--landing-fg)]/80">agent-orchestrator.yaml</span>
+				<span className="font-mono text-[0.6875rem] text-[var(--landing-fg)]/80">thanos.yaml</span>
 				<span className="font-mono text-[0.5625rem] tracking-[0.1em] uppercase text-[var(--landing-muted-dim)]">
 					7 slots
 				</span>

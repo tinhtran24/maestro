@@ -489,7 +489,7 @@ func TestSpawn_ResolvesProjectConfig(t *testing.T) {
 		t.Fatalf("runtime env FOO = %q, want bar", rt.lastCfg.Env["FOO"])
 	}
 	if rt.lastCfg.Env[EnvSessionID] == "" {
-		t.Fatal("runtime env missing AO_SESSION_ID")
+		t.Fatal("runtime env missing THANOS_SESSION_ID")
 	}
 
 	// A project with no stored config yields a zero AgentConfig (adapter defaults)
@@ -720,7 +720,7 @@ func TestSpawn_PromptDeliveryStrategyFailureCleansUpWorkspaceProjectRows(t *test
 // TestSpawn_StampsUTCTimestamps locks the default clock to UTC so spawn-stamped
 // CreatedAt/UpdatedAt match every other session write (rename, activity), which
 // all use time.Now().UTC(). A local default produced mixed-timezone timestamps
-// in `ao session get` (created in local time, updated in UTC).
+// in `to session get` (created in local time, updated in UTC).
 func TestSpawn_StampsUTCTimestamps(t *testing.T) {
 	m, st, _, _ := newManager()
 	if _, err := m.Spawn(ctx, ports.SpawnConfig{ProjectID: "mer", Kind: domain.KindWorker}); err != nil {
@@ -1400,7 +1400,7 @@ func TestSpawnWorker_AppendsActiveOrchestratorContact(t *testing.T) {
 	systemPrompt := agent.lastLaunch.SystemPrompt
 	for _, want := range []string{
 		"## Orchestrator coordination",
-		`ao send --session mer-1 --message "<your message>"`,
+		`to send --session mer-1 --message "<your message>"`,
 		"Only ping the orchestrator for true blockers, cross-session coordination",
 	} {
 		if !strings.Contains(systemPrompt, want) {
@@ -1428,7 +1428,7 @@ func TestSpawnWorker_SkipsTerminatedOrchestratorContact(t *testing.T) {
 		t.Fatal(err)
 	}
 	systemPrompt := agent.lastLaunch.SystemPrompt
-	if strings.Contains(systemPrompt, "## Orchestrator coordination") || strings.Contains(systemPrompt, "ao send --session mer-1") {
+	if strings.Contains(systemPrompt, "## Orchestrator coordination") || strings.Contains(systemPrompt, "to send --session mer-1") {
 		t.Fatalf("terminated orchestrator should not be added to system prompt:\n%s", systemPrompt)
 	}
 }
@@ -1451,10 +1451,10 @@ func TestSpawnOrchestrator_UsesCoordinatorPrompt(t *testing.T) {
 	systemPrompt := agent.lastLaunch.SystemPrompt
 	for _, want := range []string{
 		"You are the human-facing coordinator for project mer",
-		`ao spawn --project mer --name "<label, max 20 chars>" --prompt "<clear worker task>"`,
+		`to spawn --project mer --name "<label, max 20 chars>" --prompt "<clear worker task>"`,
 		"`--agent <name>`",
-		"`ao spawn --help`",
-		"`ao send`",
+		"`to spawn --help`",
+		"`to send`",
 		"`ao --help`",
 		"avoid doing implementation yourself unless it is necessary",
 	} {
@@ -1774,7 +1774,7 @@ func TestRestore_WorkerPointsAtCurrentOrchestrator(t *testing.T) {
 	if _, err := m.Restore(ctx, "mer-1"); err != nil {
 		t.Fatal(err)
 	}
-	if !strings.Contains(agent.lastRestore.SystemPrompt, `ao send --session mer-9`) {
+	if !strings.Contains(agent.lastRestore.SystemPrompt, `to send --session mer-9`) {
 		t.Fatalf("restore system prompt missing current orchestrator contact:\n%s", agent.lastRestore.SystemPrompt)
 	}
 }

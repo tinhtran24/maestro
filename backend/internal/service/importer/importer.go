@@ -1,4 +1,4 @@
-// Package importer is the controller-facing service for the legacy-AO import.
+// Package importer is the controller-facing service for the legacy-Thanos import.
 // It wraps the internal/legacyimport engine with a detection probe (is a legacy
 // install present?) and a trigger that runs the import through the live daemon's
 // store, so the daemon stays the sole writer. Whether to PROMPT for the import
@@ -17,7 +17,7 @@ type Store interface {
 	legacyimport.Store
 }
 
-// Status reports whether a legacy AO install is physically present to import.
+// Status reports whether a legacy Thanos install is physically present to import.
 type Status struct {
 	Available  bool   `json:"available"`
 	LegacyRoot string `json:"legacyRoot"`
@@ -33,7 +33,7 @@ type Service interface {
 type Deps struct {
 	// Store is the rewrite's durable store (the daemon's shared *sqlite.Store).
 	Store Store
-	// Root overrides the legacy AO root to read. Empty -> the default.
+	// Root overrides the legacy Thanos root to read. Empty -> the default.
 	Root string
 }
 

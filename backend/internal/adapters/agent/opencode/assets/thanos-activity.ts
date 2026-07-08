@@ -1,14 +1,14 @@
-// agent-orchestrator: managed opencode activity plugin (do not edit)
+// thanos: managed opencode activity plugin (do not edit)
 //
-// It maps opencode's native lifecycle events onto AO's three normalized
+// It maps opencode's native lifecycle events onto Thanos's three normalized
 // activity events:
-//   session.created                       -> `ao hooks opencode session-start`
-//   message.updated / message.part.updated -> `ao hooks opencode user-prompt-submit`
-//   session.status (status.type == idle)   -> `ao hooks opencode stop`
+//   session.created                       -> `to hooks opencode session-start`
+//   message.updated / message.part.updated -> `to hooks opencode user-prompt-submit`
+//   session.status (status.type == idle)   -> `to hooks opencode stop`
 //
 // The opencode-native session id (and prompt/model where known) is piped to the
-// hook command as JSON on stdin, run with cwd set to the worktree so AO can
-// correlate the opencode session to its AO session. Every invocation is
+// hook command as JSON on stdin, run with cwd set to the worktree so Thanos can
+// correlate the opencode session to its Thanos session. Every invocation is
 // best-effort and must never crash the user's opencode session: a missing `ao`
 // binary is a guarded no-op (`command -v ao`), and spawn exceptions, non-zero
 // exit codes, and malformed event payloads are caught and surfaced through
@@ -19,7 +19,7 @@
 import type { Plugin } from "@opencode-ai/plugin"
 
 export const aoActivity: Plugin = async ({ directory, client }) => {
-  // ao hooks must never be able to hang opencode: cap each invocation, matching
+  // to hooks must never be able to hang opencode: cap each invocation, matching
   // the 30s timeout the claude-code and codex hook entries use.
   const HOOK_TIMEOUT_MS = 30_000
   // A user message is reported at most twice (see reportUserPrompt): an optional
@@ -35,7 +35,7 @@ export const aoActivity: Plugin = async ({ directory, client }) => {
   // Wrap in `sh -c` with a guard so a missing `ao` binary is a silent no-op
   // (exit 0) rather than a per-event error in the user's session.
   function hookCmd(hookName: string): string[] {
-    return ["sh", "-c", `if ! command -v ao >/dev/null 2>&1; then exit 0; fi; exec ao hooks opencode ${hookName}`]
+    return ["sh", "-c", `if ! command -v ao >/dev/null 2>&1; then exit 0; fi; exec to hooks opencode ${hookName}`]
   }
 
   // Report a hook failure through opencode's structured logger. Best-effort: the
@@ -44,7 +44,7 @@ export const aoActivity: Plugin = async ({ directory, client }) => {
   function logHookFailure(hookName: string, detail: string) {
     try {
       void client?.app
-        ?.log?.({ body: { service: "ao-activity", level: "error", message: `hook ${hookName} failed: ${detail}` } })
+        ?.log?.({ body: { service: "thanos-activity", level: "error", message: `hook ${hookName} failed: ${detail}` } })
         ?.catch?.(() => {})
     } catch {
       // The logger itself is unavailable — nothing more we can safely do.
@@ -55,14 +55,14 @@ export const aoActivity: Plugin = async ({ directory, client }) => {
   //   1. Ordering. An async hook yields the event loop; if opencode does not
   //      await the handler's promise, a later event (e.g. message.updated ->
   //      user-prompt-submit) could complete before an in-flight async
-  //      session-start, so AO would see the prompt before the session is
+  //      session-start, so Thanos would see the prompt before the session is
   //      registered. spawnSync blocks opencode's single-threaded loop until the
   //      hook returns, so events are reported strictly in dispatch order.
   //   2. `opencode run` exits on the idle event, so an async stop hook would be
   //      killed before completing.
   //
   // A non-zero exit (the guard makes a missing `ao` exit 0, so this is a real
-  // `ao hooks` failure) or a spawn exception is logged with its stderr and never
+  // `to hooks` failure) or a spawn exception is logged with its stderr and never
   // rethrown, so reporting failures are diagnosable without crashing opencode.
   function callHookSync(hookName: string, payload: Record<string, unknown>) {
     try {
@@ -95,7 +95,7 @@ export const aoActivity: Plugin = async ({ directory, client }) => {
   // Report a user prompt, preferring the one that carries the prompt text.
   // message.updated can arrive before message.part.updated with no text, so an
   // early empty report must NOT dedup away the later text report — otherwise the
-  // prompt never reaches AO and title-from-prompt metadata breaks. Therefore: an
+  // prompt never reaches Thanos and title-from-prompt metadata breaks. Therefore: an
   // empty report fires at most once (so run-mode flows that omit the text part
   // still mark the session active), and a text report fires once and is terminal.
   function reportUserPrompt(sessionID: string, messageID: string, prompt: string) {
@@ -153,7 +153,7 @@ export const aoActivity: Plugin = async ({ directory, client }) => {
           case "session.status": {
             // session.status fires in both TUI and `opencode run`; session.idle
             // is deprecated and not reliably emitted in run mode.
-            // AO's "stop" hook means "the current turn is idle/finished", not
+            // Thanos's "stop" hook means "the current turn is idle/finished", not
             // "the whole native session has terminated", so multi-turn TUI
             // sessions intentionally emit one stop per idle transition.
             const props = (event as any).properties

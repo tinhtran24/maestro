@@ -34,18 +34,18 @@ const (
 // must satisfy. It supplies the argv and process configuration the Session
 // Manager needs to launch, restore, and read back a native agent session.
 type Agent interface {
-	// GetConfigSpec describes the agent-specific config keys AO can
-	// expose to users in the AO config.
+	// GetConfigSpec describes the agent-specific config keys Thanos can
+	// expose to users in the Thanos config.
 	GetConfigSpec(ctx context.Context) (ConfigSpec, error)
 
-	// GetLaunchCommand builds the argv AO should run to start this agent.
+	// GetLaunchCommand builds the argv Thanos should run to start this agent.
 	GetLaunchCommand(ctx context.Context, cfg LaunchConfig) (cmd []string, err error)
 
-	// GetPromptDeliveryStrategy tells AO whether the prompt is included in
+	// GetPromptDeliveryStrategy tells Thanos whether the prompt is included in
 	// the launch command or must be sent after the agent process starts.
 	GetPromptDeliveryStrategy(ctx context.Context, cfg LaunchConfig) (PromptDeliveryStrategy, error)
 
-	// GetAgentHooks installs or merges AO hooks into the agent's
+	// GetAgentHooks installs or merges Thanos hooks into the agent's
 	// native workspace-local hook config. It must preserve user-defined hooks.
 	GetAgentHooks(ctx context.Context, cfg WorkspaceHookConfig) error
 
@@ -99,7 +99,7 @@ const (
 // share one definition without a translation layer.
 type AgentConfig = domain.AgentConfig
 
-// ConfigSpec describes the agent-specific config keys AO can expose to users.
+// ConfigSpec describes the agent-specific config keys Thanos can expose to users.
 type ConfigSpec struct {
 	Fields []ConfigField
 }
@@ -114,7 +114,7 @@ type ConfigField struct {
 	Enum        []string
 }
 
-// ConfigFieldType is the primitive value kind AO expects for a field.
+// ConfigFieldType is the primitive value kind Thanos expects for a field.
 type ConfigFieldType string
 
 // The primitive value kinds a ConfigField can declare.
@@ -170,7 +170,7 @@ type RestoreConfig struct {
 	SystemPrompt string
 }
 
-// SessionRef identifies an AO session whose agent-owned metadata may be read.
+// SessionRef identifies an Thanos session whose agent-owned metadata may be read.
 type SessionRef struct {
 	ID            string
 	Metadata      map[string]string
@@ -216,7 +216,7 @@ func NormalizePermissionMode(mode PermissionMode) PermissionMode {
 	}
 }
 
-// PromptDeliveryStrategy describes how AO should deliver the initial prompt.
+// PromptDeliveryStrategy describes how Thanos should deliver the initial prompt.
 type PromptDeliveryStrategy string
 
 // How the orchestrator hands the initial prompt to a freshly launched agent.

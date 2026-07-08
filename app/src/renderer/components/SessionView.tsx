@@ -72,11 +72,11 @@ export function SessionView({ sessionId }: SessionViewProps) {
 		revealedPreviewRef.current = null;
 	}, [sessionId]);
 
-	// `ao preview` sets session.previewUrl (streamed over CDC); surface the result
+	// `to preview` sets session.previewUrl (streamed over CDC); surface the result
 	// in the inspector rail's Browser tab (opening the rail if collapsed), not the
 	// center pane. Tracked per preview revision so re-revealing fires on every
-	// `ao preview` (even a re-run of the same target) while a manual tab switch
-	// sticks for a given revision. `ao preview clear` (empty url) does not reveal.
+	// `to preview` (even a re-run of the same target) while a manual tab switch
+	// sticks for a given revision. `to preview clear` (empty url) does not reveal.
 	useEffect(() => {
 		const revision = previewRevision ?? 0;
 		if (!previewUrl || revealedPreviewRef.current === revision) return;

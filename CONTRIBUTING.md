@@ -22,6 +22,6 @@ Get your issues verified by core contributors, ask questions, share progress, an
 
 1. **Join the Discord** - Connect with the community and get guidance
 2. **Read the contributor contract** - See [AGENTS.md](AGENTS.md) for repo layout, daemon/API boundaries, and coding conventions
-3. **Pick a focused problem** - Browse [open issues](https://github.com/AgentWrapper/agent-orchestrator/issues) and choose one small enough for a focused PR
+3. **Pick a focused problem** - Browse [open issues](https://github.com/AgentWrapper/thanos/issues) and choose one small enough for a focused PR
 4. **Open a clear PR** - Keep changes narrow, explain user-visible impact, link issues, include tests
 5. **Iterate with contributors** - Use review feedback to tighten the PR until verified

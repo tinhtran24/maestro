@@ -17,7 +17,7 @@ import (
 const reviewMaxNudge = 3
 
 // ReviewDeliveryOutcome reports what ApplyReviewResult did with a completed
-// AO-internal review pass.
+// Thanos-internal review pass.
 type ReviewDeliveryOutcome string
 
 const (
@@ -29,7 +29,7 @@ const (
 	ReviewDeliverySent ReviewDeliveryOutcome = "sent"
 )
 
-// ReviewResult is the already-persisted result of an AO-internal review pass.
+// ReviewResult is the already-persisted result of an Thanos-internal review pass.
 // Lifecycle treats it as input to the reaction reducer; it does not write the
 // review_run row.
 type ReviewResult struct {
@@ -68,7 +68,7 @@ func (m *Manager) ApplyReviewBatch(ctx context.Context, workerID domain.SessionI
 		return results[i].RunID < results[j].RunID
 	})
 	var msg strings.Builder
-	fmt.Fprintf(&msg, "[AO reviewer] AO's internal code reviewer submitted %d review(s) requesting changes.\n", len(results))
+	fmt.Fprintf(&msg, "[Thanos reviewer] Thanos's internal code reviewer submitted %d review(s) requesting changes.\n", len(results))
 	var sigParts []string
 	for i, r := range results {
 		fmt.Fprintf(&msg, "\nReview %d\nPR: %s\nVerdict: %s", i+1, domain.SanitizeControlChars(r.PRURL), domain.SanitizeControlChars(string(r.Verdict)))
@@ -206,7 +206,7 @@ func (m *Manager) ApplyPRObservation(ctx context.Context, id domain.SessionID, o
 	return nil
 }
 
-// ApplyReviewResult reacts to a completed AO-internal review pass after the
+// ApplyReviewResult reacts to a completed Thanos-internal review pass after the
 // review service has persisted the run result. It mirrors ApplyPRObservation:
 // no change_log reads, no review_run writes, only lifecycle side effects.
 func (m *Manager) ApplyReviewResult(ctx context.Context, workerID domain.SessionID, r ReviewResult) (ReviewDeliveryOutcome, error) {
@@ -223,7 +223,7 @@ func (m *Manager) ApplyReviewResult(ctx context.Context, workerID domain.Session
 	if m.messenger == nil {
 		return ReviewDeliveryNoop, nil
 	}
-	msg := fmt.Sprintf("[AO reviewer] AO's internal code reviewer submitted a review.\n\nPR: %s\nVerdict: %s", domain.SanitizeControlChars(r.PRURL), domain.SanitizeControlChars(string(r.Verdict)))
+	msg := fmt.Sprintf("[Thanos reviewer] Thanos's internal code reviewer submitted a review.\n\nPR: %s\nVerdict: %s", domain.SanitizeControlChars(r.PRURL), domain.SanitizeControlChars(string(r.Verdict)))
 	if r.GithubReviewID != "" {
 		safeReviewID := domain.SanitizeControlChars(r.GithubReviewID)
 		msg += fmt.Sprintf("\nGitHub review: %s", safeReviewID)
@@ -451,7 +451,7 @@ func scmToPRObservation(o ports.SCMObservation) ports.PRObservation {
 //     reducer is idempotent — repeat observations on an already-terminated
 //     session are no-ops because MarkTerminated skips when IsTerminated.
 //   - Assignee changed → log only. No session-state reaction yet; the policy
-//     for "assignee changed away from AO" is reserved for the write-side work
+//     for "assignee changed away from Thanos" is reserved for the write-side work
 //     tracked by #40.
 //   - New bot comment → one-time nudge using the same sendOnce + dedup
 //     signature pattern as the SCM lane. Dedup is in-memory only for now;

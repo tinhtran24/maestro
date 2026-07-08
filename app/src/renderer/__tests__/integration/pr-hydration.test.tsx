@@ -45,7 +45,7 @@ function respondWithProjectAndPRs() {
 								{
 									number: 279,
 									state: "draft",
-									url: "https://github.com/aoagents/ReverbCode/pull/279",
+									url: "https://github.com/tinhtran/ReverbCode/pull/279",
 									ci: "pending",
 									review: "pending",
 									mergeability: "unknown",
@@ -55,7 +55,7 @@ function respondWithProjectAndPRs() {
 								{
 									number: 278,
 									state: "open",
-									url: "https://github.com/aoagents/ReverbCode/pull/278",
+									url: "https://github.com/tinhtran/ReverbCode/pull/278",
 									ci: "passing",
 									review: "review_required",
 									mergeability: "clean",
@@ -65,7 +65,7 @@ function respondWithProjectAndPRs() {
 								{
 									number: 280,
 									state: "open",
-									url: "https://github.com/aoagents/ReverbCode/issues/280",
+									url: "https://github.com/tinhtran/ReverbCode/issues/280",
 									ci: "passing",
 									review: "approved",
 									mergeability: "clean",
@@ -75,7 +75,7 @@ function respondWithProjectAndPRs() {
 								{
 									number: 281,
 									state: "merged",
-									url: "https://github.com/aoagents/ReverbCode/pull/281",
+									url: "https://github.com/tinhtran/ReverbCode/pull/281",
 									ci: "passing",
 									review: "approved",
 									mergeability: "mergeable",
@@ -85,7 +85,7 @@ function respondWithProjectAndPRs() {
 								{
 									number: 282,
 									state: "closed",
-									url: "https://github.com/aoagents/ReverbCode/pull/282",
+									url: "https://github.com/tinhtran/ReverbCode/pull/282",
 									ci: "passing",
 									review: "approved",
 									mergeability: "unknown",
@@ -114,13 +114,13 @@ function respondWithAttentionPR() {
 					sessionId: "sess-1",
 					prs: [
 						{
-							url: "https://github.com/aoagents/ReverbCode/pull/278",
-							htmlUrl: "https://github.com/aoagents/ReverbCode/pull/278",
+							url: "https://github.com/tinhtran/ReverbCode/pull/278",
+							htmlUrl: "https://github.com/tinhtran/ReverbCode/pull/278",
 							number: 278,
 							title: "fix the bug",
 							state: "open",
 							provider: "github",
-							repo: "aoagents/ReverbCode",
+							repo: "tinhtran/ReverbCode",
 							author: "worker",
 							sourceBranch: "fix/bug",
 							targetBranch: "main",
@@ -136,10 +136,10 @@ function respondWithAttentionPR() {
 									{
 										reviewerId: "reviewer-a",
 										count: 1,
-										reviewUrl: "https://github.com/aoagents/ReverbCode/pull/278#pullrequestreview-1",
+										reviewUrl: "https://github.com/tinhtran/ReverbCode/pull/278#pullrequestreview-1",
 										links: [
 											{
-												url: "https://github.com/aoagents/ReverbCode/pull/278#discussion_r1",
+												url: "https://github.com/tinhtran/ReverbCode/pull/278#discussion_r1",
 												file: "main.go",
 												line: 12,
 											},
@@ -150,7 +150,7 @@ function respondWithAttentionPR() {
 							mergeability: {
 								state: "conflicting",
 								reasons: ["conflicts"],
-								prUrl: "https://github.com/aoagents/ReverbCode/pull/278",
+								prUrl: "https://github.com/tinhtran/ReverbCode/pull/278",
 								conflictFiles: [],
 							},
 							updatedAt: "2026-06-10T16:15:04Z",
@@ -179,7 +179,7 @@ function respondWithAttentionPR() {
 								{
 									number: 278,
 									state: "open",
-									url: "https://github.com/aoagents/ReverbCode/pull/278",
+									url: "https://github.com/tinhtran/ReverbCode/pull/278",
 									ci: "passing",
 									review: "changes_requested",
 									mergeability: "conflicting",
@@ -214,24 +214,24 @@ describe("PR hydration for a normal project (#251)", () => {
 
 		expect(await screen.findByRole("link", { name: "#278" })).toHaveAttribute(
 			"href",
-			"https://github.com/aoagents/ReverbCode/pull/278",
+			"https://github.com/tinhtran/ReverbCode/pull/278",
 		);
 		expect(screen.getByText("open")).toBeInTheDocument();
 		expect(screen.getByRole("link", { name: "#279" })).toHaveAttribute(
 			"href",
-			"https://github.com/aoagents/ReverbCode/pull/279",
+			"https://github.com/tinhtran/ReverbCode/pull/279",
 		);
 		expect(screen.getByRole("link", { name: "#280" })).toHaveAttribute(
 			"href",
-			"https://github.com/aoagents/ReverbCode/pull/280",
+			"https://github.com/tinhtran/ReverbCode/pull/280",
 		);
 		expect(screen.getByRole("link", { name: "#281" })).toHaveAttribute(
 			"href",
-			"https://github.com/aoagents/ReverbCode/pull/281",
+			"https://github.com/tinhtran/ReverbCode/pull/281",
 		);
 		expect(screen.getByRole("link", { name: "#282" })).toHaveAttribute(
 			"href",
-			"https://github.com/aoagents/ReverbCode/pull/282",
+			"https://github.com/tinhtran/ReverbCode/pull/282",
 		);
 		expect(screen.getByLabelText("#278, #280 open")).toBeInTheDocument();
 		expect(screen.getByLabelText("#279 draft")).toBeInTheDocument();
@@ -252,7 +252,7 @@ describe("PR hydration for a normal project (#251)", () => {
 
 		expect(await screen.findByRole("link", { name: "#278" })).toHaveAttribute(
 			"href",
-			"https://github.com/aoagents/ReverbCode/pull/278",
+			"https://github.com/tinhtran/ReverbCode/pull/278",
 		);
 		expect(screen.getByText("open")).toBeInTheDocument();
 		expect(screen.queryByText("changes requested")).not.toBeInTheDocument();

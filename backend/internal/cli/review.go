@@ -66,7 +66,7 @@ type reviewSubmitOptions struct {
 func newReviewCommand(ctx *commandContext) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "review",
-		Short: "Manage AO code reviews of a worker's PR",
+		Short: "Manage Thanos code reviews of a worker's PR",
 	}
 	cmd.AddCommand(newReviewSubmitCommand(ctx))
 	return cmd

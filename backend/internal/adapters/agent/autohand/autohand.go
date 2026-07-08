@@ -1,11 +1,11 @@
 // Package autohand implements the Autohand Code agent adapter: launching new
-// command-mode sessions, resuming native sessions by id, installing AO's
+// command-mode sessions, resuming native sessions by id, installing Thanos's
 // lifecycle hooks into Autohand's config, and reading hook-derived session info.
 //
 // Autohand ("autohand") is an autonomous coding agent with a non-interactive
 // command mode (`autohand -p <prompt>` / positional prompt), native session
 // resume (`autohand resume <sessionId>`), and a native hook/lifecycle system
-// whose events (session-start, stop, permission-request, ...) AO maps onto
+// whose events (session-start, stop, permission-request, ...) Thanos maps onto
 // activity states. See hooks.go for hook installation.
 package autohand
 
@@ -69,7 +69,7 @@ func (p *Plugin) GetLaunchCommand(ctx context.Context, cfg ports.LaunchConfig) (
 	appendApprovalFlags(&cmd, cfg.Permissions)
 
 	// Autohand's --sys-prompt accepts either an inline string or a file path,
-	// auto-detected by the CLI; prefer the file form when AO provides one.
+	// auto-detected by the CLI; prefer the file form when Thanos provides one.
 	if cfg.SystemPromptFile != "" {
 		cmd = append(cmd, "--sys-prompt", cfg.SystemPromptFile)
 	} else if cfg.SystemPrompt != "" {
@@ -126,7 +126,7 @@ func appendWorkspaceFlag(cmd *[]string, workspacePath string) {
 	}
 }
 
-// appendApprovalFlags maps AO's four permission modes onto Autohand's approval
+// appendApprovalFlags maps Thanos's four permission modes onto Autohand's approval
 // flags. Default emits no flag so Autohand resolves its starting mode from the
 // user's own config (permissions.mode). Autohand has no distinct "accept-edits"
 // mode, so it maps to --yes (auto-confirm risky actions) -- the least-privileged

@@ -1,4 +1,4 @@
-// Command backend is a compatibility wrapper for the Agent Orchestrator daemon.
+// Command backend is a compatibility wrapper for the Thanos daemon.
 // The user-facing CLI lives at cmd/to; keep this wrapper so existing `go run .`
 // development workflows continue to start the daemon while scripts migrate.
 package main

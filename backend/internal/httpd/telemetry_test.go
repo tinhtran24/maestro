@@ -15,7 +15,7 @@ func TestCLIInvokedRouteEmitsTelemetry(t *testing.T) {
 	sink := &captureSink{}
 	r := NewRouterWithControl(config.Config{}, discardLogger(), nil, APIDeps{Telemetry: sink}, ControlDeps{})
 
-	req := httptest.NewRequest(http.MethodPost, "http://127.0.0.1/internal/telemetry/cli-invoked", strings.NewReader(`{"command":"status","commandPath":"ao status"}`))
+	req := httptest.NewRequest(http.MethodPost, "http://127.0.0.1/internal/telemetry/cli-invoked", strings.NewReader(`{"command":"status","commandPath":"to status"}`))
 	req.Host = "127.0.0.1:3001"
 	req.Header.Set("Content-Type", "application/json")
 	rec := httptest.NewRecorder()
@@ -30,8 +30,8 @@ func TestCLIInvokedRouteEmitsTelemetry(t *testing.T) {
 	if sink.events[0].Name != "ao.cli.invoked" {
 		t.Fatalf("event name = %q, want ao.cli.invoked", sink.events[0].Name)
 	}
-	if got := sink.events[0].Payload["command_path"]; got != "ao status" {
-		t.Fatalf("command_path = %#v, want ao status", got)
+	if got := sink.events[0].Payload["command_path"]; got != "to status" {
+		t.Fatalf("command_path = %#v, want to status", got)
 	}
 	if sink.events[1].Name != "ao.app.active" {
 		t.Fatalf("second event name = %q, want ao.app.active", sink.events[1].Name)
@@ -45,7 +45,7 @@ func TestCLIInvokedRouteRequiresLoopback(t *testing.T) {
 	sink := &captureSink{}
 	r := NewRouterWithControl(config.Config{}, discardLogger(), nil, APIDeps{Telemetry: sink}, ControlDeps{})
 
-	req := httptest.NewRequest(http.MethodPost, "http://evil.example/internal/telemetry/cli-invoked", strings.NewReader(`{"command":"status","commandPath":"ao status"}`))
+	req := httptest.NewRequest(http.MethodPost, "http://evil.example/internal/telemetry/cli-invoked", strings.NewReader(`{"command":"status","commandPath":"to status"}`))
 	req.Host = "evil.example"
 	rec := httptest.NewRecorder()
 	r.ServeHTTP(rec, req)
@@ -63,7 +63,7 @@ func TestCLIUsageErrorRouteEmitsTelemetry(t *testing.T) {
 	r := chi.NewRouter()
 	mountTelemetry(r, sink)
 
-	req := httptest.NewRequest(http.MethodPost, "http://127.0.0.1/internal/telemetry/cli-usage-error", strings.NewReader(`{"command":"status","commandPath":"ao status","error":"too many args"}`))
+	req := httptest.NewRequest(http.MethodPost, "http://127.0.0.1/internal/telemetry/cli-usage-error", strings.NewReader(`{"command":"status","commandPath":"to status","error":"too many args"}`))
 	rec := httptest.NewRecorder()
 	r.ServeHTTP(rec, req)
 
@@ -80,8 +80,8 @@ func TestCLIUsageErrorRouteEmitsTelemetry(t *testing.T) {
 	if got := payload["operation"]; got != "command_parse" {
 		t.Fatalf("payload.operation = %#v, want command_parse", got)
 	}
-	if got := payload["command_path"]; got != "ao status" {
-		t.Fatalf("payload.command_path = %#v, want ao status", got)
+	if got := payload["command_path"]; got != "to status" {
+		t.Fatalf("payload.command_path = %#v, want to status", got)
 	}
 	if got := payload["error_kind"]; got != "usage" {
 		t.Fatalf("payload.error_kind = %#v, want usage", got)

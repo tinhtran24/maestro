@@ -14,8 +14,8 @@ afterEach(async () => {
 	);
 });
 
-test("defaultDataDir prefers AO_DATA_DIR", () => {
-	expect(defaultDataDir("linux", { AO_DATA_DIR: "/tmp/custom" }, "/home/test")).toBe("/tmp/custom");
+test("defaultDataDir prefers THANOS_DATA_DIR", () => {
+	expect(defaultDataDir("linux", { THANOS_DATA_DIR: "/tmp/custom" }, "/home/test")).toBe("/tmp/custom");
 });
 
 test("loadOrCreateTelemetryInstallId persists a stable install id", async () => {

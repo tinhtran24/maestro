@@ -103,7 +103,7 @@ type trackerTokenSource struct {
 }
 
 func (s *trackerTokenSource) Token(ctx context.Context) (string, error) {
-	env := trackergithub.EnvTokenSource{EnvVars: []string{"AO_GITHUB_TOKEN"}}
+	env := trackergithub.EnvTokenSource{EnvVars: []string{"THANOS_GITHUB_TOKEN"}}
 	if tok, err := env.Token(ctx); err == nil {
 		return tok, nil
 	} else if !errors.Is(err, trackergithub.ErrNoToken) {

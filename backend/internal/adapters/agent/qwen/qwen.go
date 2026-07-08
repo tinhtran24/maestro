@@ -6,14 +6,14 @@
 // it inherits gemini-cli-shaped flags: `-p/--prompt` (or a positional prompt)
 // for the headless one-shot prompt, `--approval-mode
 // {plan,default,auto-edit,auto,yolo}` for permissions, and `-r/--resume <id>` to
-// continue a specific session. AO starts prompted worker sessions through Qwen's
+// continue a specific session. Thanos starts prompted worker sessions through Qwen's
 // documented `--input-file` remote-input bridge, which submits the task into the
 // interactive TUI after Qwen reports session_start; this avoids Qwen's
 // non-interactive approval behavior in `-p` mode and avoids a blind terminal
 // Enter race. Qwen also has a native Claude-Code-shaped hook system configured
 // in `.qwen/settings.json` (top-level "hooks" key, event arrays of matcher
 // groups with command hooks), and emits a `session_id` in every hook payload —
-// so AO captures native session identity and activity from those hooks rather
+// so Thanos captures native session identity and activity from those hooks rather
 // than from transcript/cache scans.
 package qwen
 
@@ -174,7 +174,7 @@ func (p *Plugin) qwenBinary(ctx context.Context) (string, error) {
 	return binary, nil
 }
 
-// appendApprovalFlags maps AO's four permission modes onto Qwen Code's
+// appendApprovalFlags maps Thanos's four permission modes onto Qwen Code's
 // `--approval-mode` choices (plan|default|auto-edit|auto|yolo). Default emits no
 // flag so Qwen resolves its starting mode from the user's own config.
 func appendApprovalFlags(cmd *[]string, permissions ports.PermissionMode) {

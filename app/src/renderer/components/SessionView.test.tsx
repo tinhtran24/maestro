@@ -315,7 +315,7 @@ describe("SessionView", () => {
 		expect(browserDestroy).not.toHaveBeenCalled();
 	});
 
-	it("reveals an `ao preview` URL in the inspector Browser tab, not the center pane", () => {
+	it("reveals an `to preview` URL in the inspector Browser tab, not the center pane", () => {
 		const worker = workspaces[0].sessions[0];
 		worker.previewUrl = "http://localhost:5173/";
 		try {

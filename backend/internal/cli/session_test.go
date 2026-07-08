@@ -69,7 +69,7 @@ func sessionCommandServer(t *testing.T) (*httptest.Server, *sessionRequestLog) {
 		case r.Method == http.MethodGet && r.URL.Path == "/api/v1/sessions/demo-1":
 			_, _ = io.WriteString(w, `{"session":`+sessionJSON("demo-1", "demo", "worker", "working", false)+`}`)
 		case r.Method == http.MethodGet && r.URL.Path == "/api/v1/projects/demo":
-			_, _ = io.WriteString(w, `{"status":"ok","project":{"id":"demo","name":"Demo","path":"/repo/demo","repo":"https://github.com/aoagents/agent-orchestrator","defaultBranch":"main"}}`)
+			_, _ = io.WriteString(w, `{"status":"ok","project":{"id":"demo","name":"Demo","path":"/repo/demo","repo":"https://github.com/tinhtran/thanos","defaultBranch":"main"}}`)
 		case r.Method == http.MethodPost && r.URL.Path == "/api/v1/sessions/demo-1/pr/claim":
 			var req claimPRRequest
 			if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -472,7 +472,7 @@ func TestSessionClaimPR_ProjectScopeMismatchIsUsage(t *testing.T) {
 	srv, log := sessionCommandServer(t)
 	writeRunFileFor(t, cfg, srv)
 
-	_, _, err := executeCLI(t, Deps{ProcessAlive: func(int) bool { return true }}, "session", "claim-pr", "demo-1", "https://github.com/aoagents/agent-orchestrator/pull/142", "-p", "other")
+	_, _, err := executeCLI(t, Deps{ProcessAlive: func(int) bool { return true }}, "session", "claim-pr", "demo-1", "https://github.com/tinhtran/thanos/pull/142", "-p", "other")
 	if err == nil || ExitCode(err) != 2 || !strings.Contains(err.Error(), "session demo-1 is not in project other") {
 		t.Fatalf("err=%v exit=%d, want project mismatch usage", err, ExitCode(err))
 	}
@@ -487,7 +487,7 @@ func TestSessionClaimPR_JSONAndNoTakeoverError(t *testing.T) {
 	srv, _ := sessionCommandServer(t)
 	writeRunFileFor(t, cfg, srv)
 
-	out, errOut, err := executeCLI(t, Deps{ProcessAlive: func(int) bool { return true }}, "session", "claim-pr", "demo-1", "https://github.com/aoagents/agent-orchestrator/pull/142", "--json")
+	out, errOut, err := executeCLI(t, Deps{ProcessAlive: func(int) bool { return true }}, "session", "claim-pr", "demo-1", "https://github.com/tinhtran/thanos/pull/142", "--json")
 	if err != nil {
 		t.Fatalf("claim-pr --json failed: %v stderr=%s", err, errOut)
 	}
@@ -496,7 +496,7 @@ func TestSessionClaimPR_JSONAndNoTakeoverError(t *testing.T) {
 		t.Fatalf("bad json err=%v got=%#v out=%s", err, got, out)
 	}
 
-	_, _, err = executeCLI(t, Deps{ProcessAlive: func(int) bool { return true }}, "session", "claim-pr", "demo-1", "https://github.com/aoagents/agent-orchestrator/pull/142", "--no-takeover")
+	_, _, err = executeCLI(t, Deps{ProcessAlive: func(int) bool { return true }}, "session", "claim-pr", "demo-1", "https://github.com/tinhtran/thanos/pull/142", "--no-takeover")
 	if err == nil || ExitCode(err) != 1 || !strings.Contains(err.Error(), "PR_CLAIMED_BY_ACTIVE_SESSION") {
 		t.Fatalf("err=%v exit=%d, want takeover refusal runtime error", err, ExitCode(err))
 	}
@@ -531,7 +531,7 @@ func TestSessionClaimPR_GHFallbackWhenProjectRepoMissing(t *testing.T) {
 			if name != "gh" {
 				t.Fatalf("command name=%s", name)
 			}
-			return []byte("https://github.com/aoagents/agent-orchestrator\n"), nil
+			return []byte("https://github.com/tinhtran/thanos\n"), nil
 		},
 	}, "session", "claim-pr", "demo-1", "142")
 	if err != nil {

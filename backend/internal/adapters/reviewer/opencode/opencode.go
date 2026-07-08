@@ -10,7 +10,7 @@ import (
 	"github.com/tinhtran/thanos/backend/internal/ports"
 )
 
-const reviewerConfig = `{"permission":{"*":"deny","read":"allow","glob":"allow","grep":"allow","bash":{"*":"deny","gh api *":"allow","git diff*":"allow","git log*":"allow","git show*":"allow","git status*":"allow","ao review submit *":"allow","printf * | gh api *":"allow","printf * | ao review submit *":"allow"}}}`
+const reviewerConfig = `{"permission":{"*":"deny","read":"allow","glob":"allow","grep":"allow","bash":{"*":"deny","gh api *":"allow","git diff*":"allow","git log*":"allow","git show*":"allow","git status*":"allow","to review submit *":"allow","printf * | gh api *":"allow","printf * | to review submit *":"allow"}}}`
 
 // Reviewer is the opencode code-review adapter.
 type Reviewer struct {

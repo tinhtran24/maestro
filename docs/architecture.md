@@ -1,6 +1,6 @@
-# Agent Orchestrator Architecture
+# Thanos Architecture
 
-Agent Orchestrator is a long-running Go daemon that supervises multiple parallel AI coding agent sessions. Each session runs in an isolated git worktree with its own runtime, while the daemon coordinates lifecycle, observes external state, and routes feedback.
+Thanos is a long-running Go daemon that supervises multiple parallel AI coding agent sessions. Each session runs in an isolated git worktree with its own runtime, while the daemon coordinates lifecycle, observes external state, and routes feedback.
 
 ## Table of Contents
 
@@ -832,7 +832,7 @@ These rules are **load-bearing** — changing them breaks fundamental architectu
 1. **Never store display status** — Status is derived from durable facts at read time
 2. **Never treat failed probes as death** — A failed probe is a fact, not a termination signal
 3. **Never force-delete dirty worktrees** — User data safety over cleanup convenience
-4. **All app state under ~/.ao** — No OS-default app-data locations
+4. **All app state under ~/.thanos** — No OS-default app-data locations
 5. **Daemon binds to 127.0.0.1 only** — No network exposure, ever
 6. **CLI is thin** — All logic lives in the daemon, CLI is just an HTTP client
 7. **CDC is source-truth for events** — DB triggers write to change_log, poller fans out
@@ -844,7 +844,7 @@ These rules are **load-bearing** — changing them breaks fundamental architectu
 
 ## Summary
 
-Agent Orchestrator's architecture is designed around:
+Thanos's architecture is designed around:
 
 - **Separation of concerns** — Observation, persistence, and display are distinct layers
 - **Port-based design** — Core code depends on interfaces, not implementations

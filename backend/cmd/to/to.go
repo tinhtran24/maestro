@@ -1,4 +1,4 @@
-// Command to is the Thanos Orchestrator CLI. It manages the local daemon that
+// Command to is the Thanos CLI. It manages the local daemon that
 // supervises parallel coding-agent sessions.
 package main
 

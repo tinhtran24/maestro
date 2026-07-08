@@ -183,7 +183,7 @@ func TestStopDoesNotShutdownUnverifiedReusedPID(t *testing.T) {
 	}
 	select {
 	case <-shutdownCalled:
-		t.Fatal("stop requested shutdown from a process whose health probe did not prove AO daemon ownership")
+		t.Fatal("stop requested shutdown from a process whose health probe did not prove Thanos daemon ownership")
 	default:
 	}
 	if !strings.Contains(out, `"state": "stopped"`) {
@@ -303,11 +303,11 @@ func setConfigEnv(t *testing.T) testConfig {
 		runFile: filepath.Join(dir, "running.json"),
 		dataDir: filepath.Join(dir, "data"),
 	}
-	t.Setenv("AO_RUN_FILE", cfg.runFile)
-	t.Setenv("AO_DATA_DIR", cfg.dataDir)
-	t.Setenv("AO_PORT", "3001")
-	t.Setenv("AO_REQUEST_TIMEOUT", "")
-	t.Setenv("AO_SHUTDOWN_TIMEOUT", "")
+	t.Setenv("THANOS_RUN_FILE", cfg.runFile)
+	t.Setenv("THANOS_DATA_DIR", cfg.dataDir)
+	t.Setenv("THANOS_PORT", "3001")
+	t.Setenv("THANOS_REQUEST_TIMEOUT", "")
+	t.Setenv("THANOS_SHUTDOWN_TIMEOUT", "")
 	return cfg
 }
 

@@ -1,24 +1,24 @@
-# ao session
+# to session
 
 Manage agent sessions: list, inspect, rename, kill, restore, clean up, and claim PRs.
 
 ## Syntax
 
 ```
-ao session <subcommand> [args] [flags]
+to session <subcommand> [args] [flags]
 ```
 
 ## Subcommands
 
 ---
 
-### ao session ls
+### to session ls
 
 List sessions.
 
 **Syntax:**
 ```
-ao session ls [flags]
+to session ls [flags]
 ```
 
 **Flags:**
@@ -34,23 +34,23 @@ ao session ls [flags]
 
 ```bash
 # List all active worker sessions
-ao session ls
+to session ls
 ```
 
 ```bash
 # List all sessions including terminated, scoped to one project
-ao session ls --include-terminated -p agent-orchestrator
+to session ls --include-terminated -p thanos
 ```
 
 ---
 
-### ao session get
+### to session get
 
 Fetch one session.
 
 **Syntax:**
 ```
-ao session get <id> [flags]
+to session get <id> [flags]
 ```
 
 **Flags:**
@@ -64,23 +64,23 @@ ao session get <id> [flags]
 
 ```bash
 # Get details for session mer-3
-ao session get mer-3
+to session get mer-3
 ```
 
 ```bash
 # Get session details as JSON
-ao session get mer-3 --json
+to session get mer-3 --json
 ```
 
 ---
 
-### ao session kill
+### to session kill
 
 Terminate a session.
 
 **Syntax:**
 ```
-ao session kill <id> [flags]
+to session kill <id> [flags]
 ```
 
 **Flags:**
@@ -93,18 +93,18 @@ ao session kill <id> [flags]
 
 ```bash
 # Kill session mer-3
-ao session kill mer-3
+to session kill mer-3
 ```
 
 ---
 
-### ao session rename
+### to session rename
 
 Rename a session.
 
 **Syntax:**
 ```
-ao session rename <id> <name> [flags]
+to session rename <id> <name> [flags]
 ```
 
 **Flags:**
@@ -117,18 +117,18 @@ ao session rename <id> <name> [flags]
 
 ```bash
 # Rename session mer-3 to a new display name
-ao session rename mer-3 "fix-auth-bug"
+to session rename mer-3 "fix-auth-bug"
 ```
 
 ---
 
-### ao session restore
+### to session restore
 
 Relaunch a terminated session.
 
 **Syntax:**
 ```
-ao session restore <id> [flags]
+to session restore <id> [flags]
 ```
 
 **Flags:**
@@ -141,18 +141,18 @@ ao session restore <id> [flags]
 
 ```bash
 # Restore a terminated session
-ao session restore mer-3
+to session restore mer-3
 ```
 
 ---
 
-### ao session cleanup
+### to session cleanup
 
 Clean up terminated sessions by reclaiming eligible workspaces. Dirty worktrees are skipped by the daemon.
 
 **Syntax:**
 ```
-ao session cleanup [flags]
+to session cleanup [flags]
 ```
 
 **Flags:**
@@ -166,23 +166,23 @@ ao session cleanup [flags]
 
 ```bash
 # Clean up all terminated sessions (skip prompt)
-ao session cleanup -y
+to session cleanup -y
 ```
 
 ```bash
 # Clean up terminated sessions for one project
-ao session cleanup -p agent-orchestrator
+to session cleanup -p thanos
 ```
 
 ---
 
-### ao session claim-pr
+### to session claim-pr
 
 Attach an existing PR to a session.
 
 **Syntax:**
 ```
-ao session claim-pr <session-id> <pr-ref> [flags]
+to session claim-pr <session-id> <pr-ref> [flags]
 ```
 
 **Flags:**
@@ -197,10 +197,10 @@ ao session claim-pr <session-id> <pr-ref> [flags]
 
 ```bash
 # Attach PR 88 to session mer-3
-ao session claim-pr mer-3 88
+to session claim-pr mer-3 88
 ```
 
 ```bash
 # Claim PR 88 but refuse if another session already owns it
-ao session claim-pr mer-3 88 --no-takeover
+to session claim-pr mer-3 88 --no-takeover
 ```

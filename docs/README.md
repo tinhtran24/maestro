@@ -1,6 +1,6 @@
-# agent-orchestrator rewrite docs
+# thanos rewrite docs
 
-The agent-orchestrator is being rebuilt as a long-running Go backend daemon
+The thanos is being rebuilt as a long-running Go backend daemon
 (`backend/`) plus an Electron + TypeScript frontend (`frontend/`). The backend
 supervises coding-agent sessions and exposes daemon control, project/session
 state, terminal streaming, and CDC/event infrastructure.

@@ -12,7 +12,7 @@ import { Accordions, Accordion } from "fumadocs-ui/components/accordion";
 	</span>
 </div>
 
-[OpenCode](https://opencode.ai) is an open-source terminal coding agent. It has a structured session API, which means AO can discover, resume, and track its sessions reliably.
+[OpenCode](https://opencode.ai) is an open-source terminal coding agent. It has a structured session API, which means Thanos can discover, resume, and track its sessions reliably.
 
 <PlatformSupport macos="full" linux="full" windows="full" />
 
@@ -24,7 +24,7 @@ npm install -g opencode-ai
 
 ## Use
 
-```yaml title="agent-orchestrator.yaml"
+```yaml title="thanos.yaml"
 agent: opencode
 ```
 
@@ -32,28 +32,28 @@ No plugin-level config.
 
 ## How it works
 
-- **Launch:** `opencode` starts in the worktree with `AO:<sessionId>` as the session title — this is how AO finds it back later.
-- **Session discovery:** `opencode session list --format json` returns the list; AO matches on the title prefix.
+- **Launch:** `opencode` starts in the worktree with `Thanos:<sessionId>` as the session title — this is how Thanos finds it back later.
+- **Session discovery:** `opencode session list --format json` returns the list; Thanos matches on the title prefix.
 - **Resume:** `opencode --session <id>` rehydrates the state.
-- **Activity tracking:** Primary signal is the OpenCode session's `updatedAt`. AO falls back to its own activity JSONL if the session API doesn't answer.
+- **Activity tracking:** Primary signal is the OpenCode session's `updatedAt`. Thanos falls back to its own activity JSONL if the session API doesn't answer.
 - **PR + git tracking:** PATH wrappers for `gh` / `git`.
 
 ## Environment variables
 
-| Variable        | Set by AO | Purpose                    |
+| Variable        | Set by Thanos | Purpose                    |
 | --------------- | --------- | -------------------------- |
-| `AO_SESSION_ID` | ✓         | AO session id              |
-| `AO_ISSUE_ID`   | ✓         | Issue identifier           |
-| `PATH`          | ✓         | Prepends `~/.ao/bin`       |
+| `THANOS_SESSION_ID` | ✓         | Thanos session id              |
+| `THANOS_ISSUE_ID`   | ✓         | Issue identifier           |
+| `PATH`          | ✓         | Prepends `~/.thanos/bin`       |
 | `GH_PATH`       | ✓         | Absolute path to real `gh` |
 
 ## Troubleshooting
 
 <Accordions>
   <Accordion title="Session can't be found when resuming">
-    `ao session remap <sessionId>` re-discovers and persists the OpenCode session mapping. Use `--force` to override a stale mapping.
+    `to session remap <sessionId>` re-discovers and persists the OpenCode session mapping. Use `--force` to override a stale mapping.
   </Accordion>
   <Accordion title="Activity stuck on `idle`">
-    If the OpenCode session API doesn't respond, AO falls back to the activity JSONL, which uses age-based decay. If even that returns `idle` forever, check that `opencode session list` works on its own.
+    If the OpenCode session API doesn't respond, Thanos falls back to the activity JSONL, which uses age-based decay. If even that returns `idle` forever, check that `opencode session list` works on its own.
   </Accordion>
 </Accordions>

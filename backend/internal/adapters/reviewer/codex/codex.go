@@ -45,8 +45,8 @@ func (r *Reviewer) ReviewCommand(ctx context.Context, inv ports.ReviewInvocation
 	}
 	extra := []string{"--sandbox", "read-only"}
 	// Shell commands inherit only Codex's core environment by default. Preserve
-	// the AO location overrides the reviewer needs to submit to this daemon.
-	for _, name := range []string{"AO_PORT", "AO_DATA_DIR", "AO_RUN_FILE"} {
+	// the Thanos location overrides the reviewer needs to submit to this daemon.
+	for _, name := range []string{"THANOS_PORT", "THANOS_DATA_DIR", "THANOS_RUN_FILE"} {
 		value := os.Getenv(name)
 		if value == "" {
 			continue

@@ -28,7 +28,7 @@ const config = {
 	packagerConfig: {
 		asar: true,
 		appBundleId: "dev.thanos.desktop",
-		name: "Thanos Orchestrator",
+		name: "Thanos",
 		executableName: "thanos",
 		appCategoryType: "public.app-category.developer-tools",
 		// App icon. electron-packager appends the per-platform extension
@@ -80,7 +80,7 @@ const config = {
 		new MakerNSIS(
 			{
 				appId: "dev.thanos.desktop",
-				productName: "Thanos Orchestrator",
+				productName: "Thanos",
 				icon: "assets/icon.ico",
 			},
 			["win32"],
@@ -93,7 +93,7 @@ const config = {
 		new MakerAppImage(
 			{
 				appId: "dev.thanos.desktop",
-				productName: "Thanos Orchestrator",
+				productName: "Thanos",
 				icon: "assets/icon.png",
 			},
 			["linux"],

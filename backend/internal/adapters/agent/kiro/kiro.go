@@ -3,7 +3,7 @@
 // and reading hook-derived session info.
 //
 // Kiro is AWS's agentic coding assistant. Its terminal CLI ships as the
-// `kiro-cli` binary. AO launches Kiro with a workspace-local custom agent so
+// `kiro-cli` binary. Thanos launches Kiro with a workspace-local custom agent so
 // both worker and orchestrator sessions can use Kiro's normal interactive
 // approval flow. See https://kiro.dev/docs/cli/headless/ and
 // https://kiro.dev/docs/cli/reference/cli-commands/.
@@ -14,7 +14,7 @@
 // Restore uses `kiro-cli chat --resume-id <UUID>` with the native session id
 // captured from a Kiro hook payload.
 //
-// AO-managed sessions derive native session identity and display metadata from
+// Thanos-managed sessions derive native session identity and display metadata from
 // Kiro's native hooks (see hooks.go) rather than transcript scans.
 package kiro
 
@@ -170,7 +170,7 @@ func (p *Plugin) kiroBinary(ctx context.Context) (string, error) {
 	return binary, nil
 }
 
-// appendApprovalFlags maps AO's permission modes onto Kiro's tool-trust flags.
+// appendApprovalFlags maps Thanos's permission modes onto Kiro's tool-trust flags.
 // Default emits no flag so Kiro uses its normal interactive approval flow.
 // accept-edits grants the write-capable built-in tools; auto/bypass grant all
 // tools.

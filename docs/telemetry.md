@@ -8,7 +8,7 @@ The Electron renderer sends anonymous usage events to PostHog automatically. The
 - Route views (home, project board, session detail, etc.)
 - Project add / remove actions (project path is SHA-256 hashed before transmission)
 - Unhandled renderer exceptions (error name and surface only)
-- AO app version context (`app_version` / `ao_version`, platform, build mode)
+- Thanos app version context (`app_version` / `ao_version`, platform, build mode)
 
 PostHog session recording is also enabled. Network request names are masked before recording.
 
@@ -22,15 +22,15 @@ Before any event or recording is transmitted:
 
 ## Install ID
 
-On first run, a random install identifier is generated and stored at `~/.ao/data/telemetry_install_id` (or `$AO_DATA_DIR/telemetry_install_id`). This ID is used to deduplicate events across sessions. It is not linked to any personal account.
+On first run, a random install identifier is generated and stored at `~/.thanos/data/telemetry_install_id` (or `$THANOS_DATA_DIR/telemetry_install_id`). This ID is used to deduplicate events across sessions. It is not linked to any personal account.
 
 ## Overriding the PostHog endpoint or key
 
 The key and host are baked in at build time. To point at your own PostHog instance, set these environment variables before building:
 
 ```
-VITE_AO_POSTHOG_KEY=phc_yourkey
-VITE_AO_POSTHOG_HOST=https://your-posthog-host.com
+VITE_THANOS_POSTHOG_KEY=phc_yourkey
+VITE_THANOS_POSTHOG_HOST=https://your-posthog-host.com
 ```
 
-Setting `VITE_AO_POSTHOG_KEY` to an empty string disables transmission entirely.
+Setting `VITE_THANOS_POSTHOG_KEY` to an empty string disables transmission entirely.

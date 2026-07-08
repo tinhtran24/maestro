@@ -20,7 +20,7 @@ import (
 const (
 	defaultRESTBaseURL = "https://api.github.com"
 	defaultGraphQLURL  = "https://api.github.com/graphql"
-	defaultUserAgent   = "ao-agent-orchestrator/scm-github"
+	defaultUserAgent   = "ao-thanos/scm-github"
 )
 
 // Sentinel errors. Provider-level callers should match on these via

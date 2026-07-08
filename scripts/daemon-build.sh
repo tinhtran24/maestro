@@ -4,7 +4,7 @@ set -euo pipefail
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 repo_root="$(cd "${script_dir}/.." && pwd)"
 backend_dir="${repo_root}/backend"
-build_dir="${XDG_CACHE_HOME:-${HOME}/.cache}/aoagents/agent-orchestrator/bin"
+build_dir="${XDG_CACHE_HOME:-${HOME}/.cache}/tinhtran/thanos/bin"
 
 can_write_dir() {
   local dir="$1"

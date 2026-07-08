@@ -16,7 +16,7 @@ The dashboard already has an xterm.js terminal connected to every session. The `
 
 ## Use
 
-```yaml title="agent-orchestrator.yaml"
+```yaml title="thanos.yaml"
 terminal: web
 terminalConfig:
   dashboardUrl: http://localhost:3000 # default
@@ -35,5 +35,5 @@ Since the terminal UI lives in the dashboard itself, there's no per-session stat
 ## Why this exists
 
 - Windows has no `osascript` and no AppleScript-equivalent that's worth writing a plugin for.
-- You're running AO on a remote host — no local terminal to attach to.
+- You're running Thanos on a remote host — no local terminal to attach to.
 - You prefer browser tabs over terminal tabs.

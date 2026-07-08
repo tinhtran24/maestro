@@ -1,19 +1,19 @@
 ---
 title: Reactions
-description: Configure what AO does when CI fails, reviews arrive, agents get stuck, or PRs become ready.
+description: Configure what Thanos does when CI fails, reviews arrive, agents get stuck, or PRs become ready.
 ---
 
-Reactions are AO's automatic responses to session events. They decide whether AO should message an agent, notify a human, or mark a PR as ready for a merge action.
+Reactions are Thanos's automatic responses to session events. They decide whether Thanos should message an agent, notify a human, or mark a PR as ready for a merge action.
 
-You do not need to configure reactions to start. AO ships with defaults for CI failures, review comments, merge conflicts, stuck agents, input prompts, and completed sessions.
+You do not need to configure reactions to start. Thanos ships with defaults for CI failures, review comments, merge conflicts, stuck agents, input prompts, and completed sessions.
 
 ## Common Recipes
 
 ### Watch Without Auto-Recovery
 
-Use this while onboarding AO to a sensitive repo. You still see notifications, but AO stops sending recovery prompts to agents automatically.
+Use this while onboarding Thanos to a sensitive repo. You still see notifications, but Thanos stops sending recovery prompts to agents automatically.
 
-```yaml title="agent-orchestrator.yaml"
+```yaml title="thanos.yaml"
 reactions:
   ci-failed:
     auto: false
@@ -27,7 +27,7 @@ reactions:
 
 ### Give CI Recovery More Attempts
 
-```yaml title="agent-orchestrator.yaml"
+```yaml title="thanos.yaml"
 reactions:
   ci-failed:
     retries: 3
@@ -38,7 +38,7 @@ reactions:
 
 ### Escalate Stuck Agents Faster
 
-```yaml title="agent-orchestrator.yaml"
+```yaml title="thanos.yaml"
 reactions:
   agent-stuck:
     priority: urgent
@@ -49,7 +49,7 @@ reactions:
 
 `approved-and-green` does not merge by default. It notifies you that the PR is ready.
 
-```yaml title="agent-orchestrator.yaml"
+```yaml title="thanos.yaml"
 reactions:
   approved-and-green:
     auto: false
@@ -58,7 +58,7 @@ reactions:
 ```
 
 <Callout type="warning">
-	`auto-merge` is currently an intent flag, not a bypass. AO does not ignore branch protection, reviews, or failing
+	`auto-merge` is currently an intent flag, not a bypass. Thanos does not ignore branch protection, reviews, or failing
 	checks.
 </Callout>
 
@@ -93,8 +93,8 @@ Each reaction accepts:
 
 | Field            | Type                                        | Purpose                                                    |
 | ---------------- | ------------------------------------------- | ---------------------------------------------------------- |
-| `auto`           | `boolean`                                   | Whether AO should perform the automated action             |
-| `action`         | `send-to-agent` \| `notify` \| `auto-merge` | What AO does when the reaction fires                       |
+| `auto`           | `boolean`                                   | Whether Thanos should perform the automated action             |
+| `action`         | `send-to-agent` \| `notify` \| `auto-merge` | What Thanos does when the reaction fires                       |
 | `message`        | `string`                                    | Message sent to the agent or included in notification text |
 | `priority`       | `urgent` \| `action` \| `warning` \| `info` | Notification routing priority                              |
 | `retries`        | `number`                                    | Max repeated agent messages before escalation              |
@@ -119,7 +119,7 @@ reactions:
 
 Reaction `priority` maps to `notificationRouting` in the global config:
 
-```yaml title="~/.agent-orchestrator/config.yaml"
+```yaml title="~/.thanos/config.yaml"
 notificationRouting:
   urgent: [desktop, composio]
   action: [desktop]
@@ -129,7 +129,7 @@ notificationRouting:
 
 Named notifier instances are configured separately:
 
-```yaml title="~/.agent-orchestrator/config.yaml"
+```yaml title="~/.thanos/config.yaml"
 notifiers:
   desktop:
     plugin: desktop
@@ -142,7 +142,7 @@ notifiers:
 
 Put reaction overrides in a local project config to affect only that project:
 
-```yaml title="agent-orchestrator.yaml"
+```yaml title="thanos.yaml"
 reactions:
   ci-failed:
     retries: 4
@@ -156,19 +156,19 @@ Project values override global values for the same reaction key.
 
 CI failure handling happens in two passes:
 
-1. AO sends the configured `ci-failed.message` when the session first enters a failed-CI state.
-2. On the next poll, AO sends a structured follow-up with the failing check names, statuses, and URLs.
+1. Thanos sends the configured `ci-failed.message` when the session first enters a failed-CI state.
+2. On the next poll, Thanos sends a structured follow-up with the failing check names, statuses, and URLs.
 
 The second message does not consume the `ci-failed` retry budget. It exists so the agent gets both the instruction and the specific failing checks.
 
 ## Review Backlog Throttle
 
-AO throttles review-comment lookups to avoid hammering GitHub or GitLab. Pending human comments and known automation comments are fetched at most once every two minutes per session.
+Thanos throttles review-comment lookups to avoid hammering GitHub or GitLab. Pending human comments and known automation comments are fetched at most once every two minutes per session.
 
 Force a check when you need one immediately:
 
 ```bash
-ao review-check <session-id>
+to review-check <session-id>
 ```
 
 ## Event Reference
@@ -192,7 +192,7 @@ ao review-check <session-id>
 	<Card
 		title="Webhook notifier"
 		href="/docs/plugins/notifiers/webhook"
-		description="Send AO events to any HTTPS endpoint."
+		description="Send Thanos events to any HTTPS endpoint."
 	/>
 	<Card
 		title="Configuration"

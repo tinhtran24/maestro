@@ -1,11 +1,11 @@
-# ao stop
+# to stop
 
-Stop the AO daemon.
+Stop the Thanos daemon.
 
 ## Syntax
 
 ```
-ao stop [flags]
+to stop [flags]
 ```
 
 ## Flags
@@ -19,10 +19,10 @@ ao stop [flags]
 
 ```bash
 # Stop the daemon
-ao stop
+to stop
 ```
 
 ```bash
 # Stop with a longer timeout
-ao stop --timeout 30s
+to stop --timeout 30s
 ```

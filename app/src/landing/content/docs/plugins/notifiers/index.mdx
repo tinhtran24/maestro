@@ -3,14 +3,14 @@ title: Notifiers overview
 description: Who gets pinged when an agent needs you. Seven notifiers ship; pick one or stack several.
 ---
 
-Notifiers deliver AO events — session stuck, PR opened, review requested, CI failed — to wherever you actually pay attention.
+Notifiers deliver Thanos events — session stuck, PR opened, review requested, CI failed — to wherever you actually pay attention.
 
 <PluginGrid>
 	<PluginCard
 		name="Dashboard"
 		logo="web"
 		href="/docs/plugins/notifiers/dashboard"
-		description="Retained notifications inside the AO dashboard."
+		description="Retained notifications inside the Thanos dashboard."
 	/>
 	<PluginCard
 		name="Desktop"
@@ -69,7 +69,7 @@ notificationRouting:
 ```
 
 Setup commands can write this routing for you with `--routing-preset
-urgent-only`, `urgent-action`, or `all`. AO does not dedupe across channels, so
+urgent-only`, `urgent-action`, or `all`. Thanos does not dedupe across channels, so
 route only the priorities each destination should receive.
 
 ## Testing
@@ -88,7 +88,7 @@ a real test message.
 
 | Event               | When                                   |
 | ------------------- | -------------------------------------- |
-| `session.spawned`   | `ao spawn` succeeds                    |
+| `session.spawned`   | `to spawn` succeeds                    |
 | `session.working`   | Agent is actively editing code         |
 | `pr.opened`         | Agent pushed a branch and opened a PR  |
 | `ci.failed`         | Required check fails                   |

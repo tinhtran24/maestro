@@ -26,11 +26,11 @@ func newPreviewCommand(ctx *commandContext) *cobra.Command {
 			"With no argument it opens the workspace's static entry point, falling\n" +
 			"back to this session's existing preview target when no entry point exists.\n" +
 			"A local file can be opened by its absolute file:// URL\n" +
-			"(e.g. file:///home/me/proj/index.html). Use `ao preview clear` to empty the panel.",
-		Example: `  ao preview
-  ao preview file://$(pwd)/index.html
-  ao preview http://localhost:5173
-  ao preview clear`,
+			"(e.g. file:///home/me/proj/index.html). Use `to preview clear` to empty the panel.",
+		Example: `  to preview
+  to preview file://$(pwd)/index.html
+  to preview http://localhost:5173
+  to preview clear`,
 		Args: atMostOneArg,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var target string
@@ -60,7 +60,7 @@ func (c *commandContext) openPreview(ctx context.Context, target string) error {
 }
 
 // clearPreview empties the desktop browser panel for the current session
-// (`ao preview clear`) by deleting the session's stored preview target.
+// (`to preview clear`) by deleting the session's stored preview target.
 func (c *commandContext) clearPreview(ctx context.Context) error {
 	path, err := sessionPreviewPath()
 	if err != nil {
@@ -70,9 +70,9 @@ func (c *commandContext) clearPreview(ctx context.Context) error {
 }
 
 func sessionPreviewPath() (string, error) {
-	sessionID := strings.TrimSpace(os.Getenv("AO_SESSION_ID"))
+	sessionID := strings.TrimSpace(os.Getenv("THANOS_SESSION_ID"))
 	if sessionID == "" {
-		return "", usageError{errors.New("to preview must run inside an AO session (AO_SESSION_ID is not set)")}
+		return "", usageError{errors.New("to preview must run inside an Thanos session (THANOS_SESSION_ID is not set)")}
 	}
 	// PathEscape: session ids are already "-"/digit safe, but keep the URL
 	// well-formed regardless.

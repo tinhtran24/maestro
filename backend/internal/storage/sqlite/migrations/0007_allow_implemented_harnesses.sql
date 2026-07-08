@@ -1,4 +1,4 @@
--- Widen the sessions.harness CHECK to allow every agent harness AO ships, in a
+-- Widen the sessions.harness CHECK to allow every agent harness Thanos ships, in a
 -- single step. SQLite cannot ALTER a CHECK, so we surgically rewrite the stored
 -- CREATE TABLE text in sqlite_master. writable_schema edits must run outside a
 -- transaction, and RESET forces an immediate schema reparse on the connection.

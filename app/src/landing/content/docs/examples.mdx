@@ -3,10 +3,10 @@ title: Examples
 description: Five annotated starter configurations covering GitHub, Linear, multi-project, auto-merge, and Codex setups.
 ---
 
-All examples live in the [`examples/` directory](https://github.com/ComposioHQ/agent-orchestrator/tree/main/examples) of the AO repository. Pick the one closest to your setup, copy it to your project root as `agent-orchestrator.yaml`, fill in your repo path and any API keys, and you're ready to spawn agents.
+All examples live in the [`examples/` directory](https://github.com/ComposioHQ/thanos/tree/main/examples) of the Thanos repository. Pick the one closest to your setup, copy it to your project root as `thanos.yaml`, fill in your repo path and any API keys, and you're ready to spawn agents.
 
 ```bash
-cp examples/simple-github.yaml agent-orchestrator.yaml
+cp examples/simple-github.yaml thanos.yaml
 ```
 
 ---
@@ -19,7 +19,7 @@ For solo devs on a single GitHub repo with GitHub Issues.
 # Minimal setup for a single GitHub repo with GitHub Issues
 # Perfect for getting started quickly
 
-dataDir: ~/.agent-orchestrator
+dataDir: ~/.thanos
 worktreeDir: ~/.worktrees
 
 projects:
@@ -32,10 +32,10 @@ projects:
 **Notable settings:**
 
 - Uses the default GitHub tracker — requires `GITHUB_TOKEN` (set automatically by the `gh` CLI).
-- No `defaults:` block needed — AO's built-in defaults (`tmux` runtime, `claude-code` agent, `worktree` workspace) apply automatically.
+- No `defaults:` block needed — Thanos's built-in defaults (`tmux` runtime, `claude-code` agent, `worktree` workspace) apply automatically.
 - Replace `owner/my-app` and `~/my-app` with your actual GitHub slug and local checkout path.
 
-[View raw file on GitHub](https://github.com/ComposioHQ/agent-orchestrator/blob/main/examples/simple-github.yaml)
+[View raw file on GitHub](https://github.com/ComposioHQ/thanos/blob/main/examples/simple-github.yaml)
 
 ---
 
@@ -47,7 +47,7 @@ For teams that track work in Linear rather than GitHub Issues.
 # Linear integration with custom team
 # Requires LINEAR_API_KEY environment variable
 
-dataDir: ~/.agent-orchestrator
+dataDir: ~/.thanos
 worktreeDir: ~/.worktrees
 
 projects:
@@ -75,7 +75,7 @@ projects:
 - Requires a `LINEAR_API_KEY` environment variable (set it in your shell profile or CI secrets).
 - `agentRules` injects project-specific instructions into every agent's prompt — useful for enforcing commit conventions or test requirements.
 
-[View raw file on GitHub](https://github.com/ComposioHQ/agent-orchestrator/blob/main/examples/linear-team.yaml)
+[View raw file on GitHub](https://github.com/ComposioHQ/thanos/blob/main/examples/linear-team.yaml)
 
 ---
 
@@ -87,7 +87,7 @@ For managing multiple repositories from a single config, with mixed trackers and
 # Managing multiple projects with different trackers
 # Shows how to configure multiple repos with different settings
 
-dataDir: ~/.agent-orchestrator
+dataDir: ~/.thanos
 worktreeDir: ~/.worktrees
 
 defaults:
@@ -151,7 +151,7 @@ notificationRouting:
 - `notifiers.slack.webhook: ${SLACK_WEBHOOK_URL}` reads the webhook URL from an environment variable — never hardcode secrets in config files.
 - `notificationRouting` routes urgent and actionable events to both desktop and Slack, while lower-priority events go to Slack only.
 
-[View raw file on GitHub](https://github.com/ComposioHQ/agent-orchestrator/blob/main/examples/multi-project.yaml)
+[View raw file on GitHub](https://github.com/ComposioHQ/thanos/blob/main/examples/multi-project.yaml)
 
 ---
 
@@ -163,7 +163,7 @@ For teams that want maximum automation — PRs merge automatically when approved
 # Aggressive automation with auto-merge
 # Automatically merges approved PRs with passing CI
 
-dataDir: ~/.agent-orchestrator
+dataDir: ~/.thanos
 worktreeDir: ~/.worktrees
 
 projects:
@@ -203,11 +203,11 @@ reactions:
 
 - `reactions.approved-and-green.auto: true` with `action: auto-merge` enables hands-free merging — no human click required once the PR is approved and CI passes.
 - The project-level `reactions` block overrides global reactions for that project only; global `reactions` apply to all projects unless overridden.
-- `ci-failed.retries: 3` lets AO send the agent back to fix CI up to three times before escalating.
+- `ci-failed.retries: 3` lets Thanos send the agent back to fix CI up to three times before escalating.
 - `changes-requested.escalateAfter: 1h` ensures a human is notified if an agent can't resolve review comments within an hour.
 - `agent-stuck.threshold: 10m` triggers an urgent desktop notification if an agent goes silent for 10 minutes.
 
-[View raw file on GitHub](https://github.com/ComposioHQ/agent-orchestrator/blob/main/examples/auto-merge.yaml)
+[View raw file on GitHub](https://github.com/ComposioHQ/thanos/blob/main/examples/auto-merge.yaml)
 
 ---
 
@@ -219,7 +219,7 @@ For teams that prefer GPT-4/Codex over Claude Code.
 # Using Codex instead of Claude Code
 # Demonstrates using a different AI agent
 
-dataDir: ~/.agent-orchestrator
+dataDir: ~/.thanos
 worktreeDir: ~/.worktrees
 
 defaults:
@@ -251,7 +251,7 @@ projects:
 - `agentConfig.permissions: default` uses the plugin's built-in permission set — change to `full` to allow broader file access, or `readonly` to restrict writes.
 - Requires an `OPENAI_API_KEY` environment variable.
 
-[View raw file on GitHub](https://github.com/ComposioHQ/agent-orchestrator/blob/main/examples/codex-integration.yaml)
+[View raw file on GitHub](https://github.com/ComposioHQ/thanos/blob/main/examples/codex-integration.yaml)
 
 ---
 
@@ -261,7 +261,7 @@ projects:
 	<Card
 		title="Configuration Reference"
 		href="/docs/configuration"
-		description="Full reference for every field in agent-orchestrator.yaml."
+		description="Full reference for every field in thanos.yaml."
 	/>
 	<Card
 		title="Plugins"

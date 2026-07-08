@@ -14,7 +14,7 @@ import (
 
 // TestGetAgentHooksFootprintIsGitignored enforces a contract every shipped
 // (and future) adapter must hold: any file GetAgentHooks writes into a session
-// worktree must be covered by a sibling AO-managed self-ignoring .gitignore
+// worktree must be covered by a sibling Thanos-managed self-ignoring .gitignore
 // (hookutil.EnsureWorkspaceGitignore). Hook files are untracked, and
 // `git worktree remove` (without --force) refuses on any untracked file — an
 // uncovered hook file makes every one of that adapter's session workspaces
@@ -44,7 +44,7 @@ func TestGetAgentHooksFootprintIsGitignored(t *testing.T) {
 				}
 				content := string(data)
 				if !strings.Contains(content, hookutil.GitignoreSentinel) {
-					t.Errorf(".gitignore next to %q is not AO-managed (missing sentinel)", rel)
+					t.Errorf(".gitignore next to %q is not Thanos-managed (missing sentinel)", rel)
 					continue
 				}
 				if entry := "/" + filepath.Base(rel); !hasLine(content, entry) {

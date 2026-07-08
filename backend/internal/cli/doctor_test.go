@@ -55,7 +55,7 @@ func TestDoctorFailsWhenGitMissing(t *testing.T) {
 
 func TestDoctorChecksTmuxVersion(t *testing.T) {
 	if runtime.GOOS == "windows" {
-		t.Skip("ao doctor emits a conpty check on Windows, not tmux")
+		t.Skip("to doctor emits a conpty check on Windows, not tmux")
 	}
 	setConfigEnv(t)
 	c := doctorContext(t, map[string]string{"git": "/bin/git", "tmux": "/bin/tmux"}, func(_ context.Context, name string, args ...string) ([]byte, error) {
@@ -83,7 +83,7 @@ func TestDoctorChecksTmuxVersion(t *testing.T) {
 // but the version command fails.
 func TestDoctorChecksTmuxVersionFailsOnError(t *testing.T) {
 	if runtime.GOOS == "windows" {
-		t.Skip("ao doctor emits a conpty check on Windows, not tmux")
+		t.Skip("to doctor emits a conpty check on Windows, not tmux")
 	}
 	setConfigEnv(t)
 	c := doctorContext(t, map[string]string{"git": "/bin/git", "tmux": "/bin/tmux"}, func(_ context.Context, name string, _ ...string) ([]byte, error) {
@@ -101,7 +101,7 @@ func TestDoctorChecksTmuxVersionFailsOnError(t *testing.T) {
 
 func TestDoctorWarnsWhenTmuxMissing(t *testing.T) {
 	if runtime.GOOS == "windows" {
-		t.Skip("ao doctor emits a conpty check on Windows, not tmux")
+		t.Skip("to doctor emits a conpty check on Windows, not tmux")
 	}
 	setConfigEnv(t)
 	c := doctorContext(t, map[string]string{"git": "/bin/git"}, func(context.Context, string, ...string) ([]byte, error) {
@@ -183,12 +183,12 @@ func TestDoctorChecksGitHubTokenFromEnv(t *testing.T) {
 	c := doctorContext(t, map[string]string{"git": "/bin/git"}, func(context.Context, string, ...string) ([]byte, error) {
 		return []byte("git version 2.43.0\n"), nil
 	})
-	t.Setenv("AO_GITHUB_TOKEN", "env-token")
+	t.Setenv("THANOS_GITHUB_TOKEN", "env-token")
 	c.deps.HTTPClient = srv.Client()
 	c.deps.DoctorGitHubRESTBase = srv.URL
 
 	check := findDoctorCheck(t, c.runDoctor(context.Background()), "github-token")
-	if check.Level != doctorPass || !strings.Contains(check.Message, "AO_GITHUB_TOKEN") || !strings.Contains(check.Message, "repo, read:org") {
+	if check.Level != doctorPass || !strings.Contains(check.Message, "THANOS_GITHUB_TOKEN") || !strings.Contains(check.Message, "repo, read:org") {
 		t.Fatalf("github-token check = %+v, want PASS with source and scopes", check)
 	}
 }
@@ -311,19 +311,19 @@ func TestDoctorTextOutputIsGrouped(t *testing.T) {
 
 func clearDoctorGitHubEnv(t *testing.T) {
 	t.Helper()
-	t.Setenv("AO_GITHUB_TOKEN", "")
+	t.Setenv("THANOS_GITHUB_TOKEN", "")
 	t.Setenv("GITHUB_TOKEN", "")
 	t.Setenv("GH_TOKEN", "")
 }
 
 // TestDoctorChecksAOBinaryIdentity covers the `ao-binary` check: workspace
-// hooks invoke a bare `ao hooks <agent> <event>`, so doctor must surface when
+// hooks invoke a bare `to hooks <agent> <event>`, so doctor must surface when
 // the `ao` on PATH is not the running binary (e.g. a legacy CLI without the
 // hooks command shadowing the Go one).
 func TestDoctorChecksAOBinaryIdentity(t *testing.T) {
 	dir := t.TempDir()
-	self := filepath.Join(dir, "ao")
-	other := filepath.Join(dir, "ao-legacy")
+	self := filepath.Join(dir, "to")
+	other := filepath.Join(dir, "to-legacy")
 	for _, p := range []string{self, other} {
 		if err := os.WriteFile(p, []byte("#!/bin/sh\n"), 0o755); err != nil { //nolint:gosec // test fixture must be executable-shaped
 			t.Fatal(err)
@@ -338,10 +338,10 @@ func TestDoctorChecksAOBinaryIdentity(t *testing.T) {
 		wantLevel  doctorLevel
 		wantIn     string
 	}{
-		{"ao in PATH is this binary", selfExe, map[string]string{"ao": self}, doctorPass, "this binary"},
-		{"ao in PATH is a different binary", selfExe, map[string]string{"ao": other}, doctorWarn, "not this binary"},
+		{"to in PATH is this binary", selfExe, map[string]string{"to": self}, doctorPass, "this binary"},
+		{"to in PATH is a different binary", selfExe, map[string]string{"to": other}, doctorWarn, "not this binary"},
 		{"ao missing from PATH", selfExe, map[string]string{}, doctorWarn, "not found in PATH"},
-		{"running executable unresolvable", func() (string, error) { return "", errors.New("no exe") }, map[string]string{"ao": self}, doctorWarn, "could not resolve"},
+		{"running executable unresolvable", func() (string, error) { return "", errors.New("no exe") }, map[string]string{"to": self}, doctorWarn, "could not resolve"},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
@@ -374,7 +374,7 @@ func TestDoctorIncludesAOBinaryCheck(t *testing.T) {
 	})
 
 	// doctorContext's LookPath has no "ao", so the check lands as a WARN.
-	check := findDoctorCheck(t, c.runDoctor(context.Background()), "ao-binary")
+	check := findDoctorCheck(t, c.runDoctor(context.Background()), "to-binary")
 	if check.Level != doctorWarn || !strings.Contains(check.Message, "not found in PATH") {
 		t.Fatalf("ao-binary check = %+v, want WARN for missing ao", check)
 	}
@@ -461,7 +461,7 @@ func TestDoctorCodexLaunchFlagsWarnOnRejectedFlag(t *testing.T) {
 		codexCanaryFake(t, "error: unexpected argument '--dangerously-bypass-hook-trust' found\n", errors.New("exit status 2")))
 
 	check := findDoctorCheck(t, c.runDoctor(context.Background()), "codex-launch-flags")
-	if check.Level != doctorWarn || !strings.Contains(check.Message, "rejected AO's launch flags") {
+	if check.Level != doctorWarn || !strings.Contains(check.Message, "rejected Thanos's launch flags") {
 		t.Fatalf("canary = %+v, want WARN rejected flags", check)
 	}
 }
@@ -506,8 +506,8 @@ func TestDoctorHooksLogStates(t *testing.T) {
 	t.Run("recent failures warn", func(t *testing.T) {
 		cfg := setConfigEnv(t)
 		writeHooksLogLines(t, cfg.dataDir,
-			time.Now().Add(-48*time.Hour).UTC().Format(time.RFC3339)+" session=old ao hooks codex stop: stale",
-			time.Now().Add(-time.Hour).UTC().Format(time.RFC3339)+" session=mer-1 ao hooks codex stop: connection refused",
+			time.Now().Add(-48*time.Hour).UTC().Format(time.RFC3339)+" session=old to hooks codex stop: stale",
+			time.Now().Add(-time.Hour).UTC().Format(time.RFC3339)+" session=mer-1 to hooks codex stop: connection refused",
 		)
 		c := doctorContext(t, map[string]string{"git": "/bin/git"}, gitOnly)
 		check := findDoctorCheck(t, c.runDoctor(context.Background()), "hooks-log")
@@ -519,7 +519,7 @@ func TestDoctorHooksLogStates(t *testing.T) {
 	t.Run("only stale failures pass", func(t *testing.T) {
 		cfg := setConfigEnv(t)
 		writeHooksLogLines(t, cfg.dataDir,
-			time.Now().Add(-72*time.Hour).UTC().Format(time.RFC3339)+" session=old ao hooks codex stop: stale",
+			time.Now().Add(-72*time.Hour).UTC().Format(time.RFC3339)+" session=old to hooks codex stop: stale",
 		)
 		c := doctorContext(t, map[string]string{"git": "/bin/git"}, gitOnly)
 		check := findDoctorCheck(t, c.runDoctor(context.Background()), "hooks-log")

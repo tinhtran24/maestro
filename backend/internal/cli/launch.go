@@ -17,7 +17,7 @@ import (
 func newLaunchCommand(ctx *commandContext) *cobra.Command {
 	return &cobra.Command{
 		Use:    "launch",
-		Short:  "Launch an AO-managed agent process (internal)",
+		Short:  "Launch an Thanos-managed agent process (internal)",
 		Hidden: true,
 		Args:   noArgs,
 		RunE: func(cmd *cobra.Command, _ []string) error {
@@ -29,7 +29,7 @@ func newLaunchCommand(ctx *commandContext) *cobra.Command {
 func (c *commandContext) launchAgent(ctx context.Context) error {
 	specPath := strings.TrimSpace(os.Getenv(agentlaunch.EnvSpecPath))
 	if specPath == "" {
-		return errors.New("launch: AO_LAUNCH_SPEC is required")
+		return errors.New("launch: THANOS_LAUNCH_SPEC is required")
 	}
 	spec, err := agentlaunch.ReadAndRemove(specPath)
 	if err != nil {

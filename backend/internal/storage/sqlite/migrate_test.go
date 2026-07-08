@@ -17,7 +17,7 @@ import (
 // live sessions schema admits every harness the domain ships, building the
 // expected set from the domain constants so it can't silently drift.
 func TestMigrateAllowsEveryShippedHarness(t *testing.T) {
-	db, err := sql.Open("sqlite", "file:"+filepath.Join(t.TempDir(), "ao.db")+pragmas)
+	db, err := sql.Open("sqlite", "file:"+filepath.Join(t.TempDir(), "thanos.db")+pragmas)
 	if err != nil {
 		t.Fatalf("open sqlite: %v", err)
 	}

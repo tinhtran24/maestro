@@ -47,7 +47,7 @@ func Build() ([]byte, error) {
 		jsonschema.InterceptDefName(schemaName),
 	)
 
-	r.Spec.SetTitle("Agent Orchestrator HTTP daemon")
+	r.Spec.SetTitle("Thanos HTTP daemon")
 	r.Spec.SetVersion("0.1.0-route-shell")
 	r.Spec.SetDescription("Loopback-only HTTP surface served by the Go daemon. " +
 		"Generated from Go (code-first) — do not edit by hand; run `go generate ./...`.")
@@ -70,7 +70,7 @@ func Build() ([]byte, error) {
 		*(&openapi31.Tag{Name: "events"}).WithDescription(
 			"Server-sent CDC event stream with durable replay"),
 		*(&openapi31.Tag{Name: "import"}).WithDescription(
-			"Legacy AO project import (availability probe and run)"),
+			"Legacy Thanos project import (availability probe and run)"),
 	}
 
 	for _, op := range operations() {
@@ -335,7 +335,7 @@ func importOperations() []operation {
 	return []operation{
 		{
 			method: http.MethodGet, path: "/api/v1/import", id: "getImportStatus", tag: "import",
-			summary: "Check whether a legacy AO install is available to import",
+			summary: "Check whether a legacy Thanos install is available to import",
 			resps: []respUnit{
 				{http.StatusOK, controllers.ImportStatusResponse{}},
 				{http.StatusInternalServerError, envelope.APIError{}},
@@ -344,7 +344,7 @@ func importOperations() []operation {
 		},
 		{
 			method: http.MethodPost, path: "/api/v1/import", id: "runImport", tag: "import",
-			summary: "Run the legacy AO project import through the daemon store",
+			summary: "Run the legacy Thanos project import through the daemon store",
 			resps: []respUnit{
 				{http.StatusOK, controllers.ImportRunResponse{}},
 				{http.StatusInternalServerError, envelope.APIError{}},

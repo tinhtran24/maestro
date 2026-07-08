@@ -12,13 +12,13 @@ export function LandingDifferentiators() {
 		<section className="py-[100px] px-6 max-w-[72rem] mx-auto">
 			<div className="landing-reveal">
 				<div className="text-xs tracking-[0.15em] uppercase text-[var(--landing-muted)] opacity-60 mb-6">
-					Why Agent Orchestrator
+					Why Thanos
 				</div>
 				<h2 className="font-sans font-[680] tracking-tight font-normal text-[clamp(1.375rem,3vw,2rem)] leading-[1.1] tracking-[-1.5px] mb-6 max-w-[42rem]">
 					The only <em className="italic text-[var(--landing-muted)]">open-source, web-based</em> agent orchestrator
 				</h2>
 				<p className="text-[0.9375rem] text-[var(--landing-muted)] leading-[1.7] max-w-[36rem] mb-12">
-					Conductor, T3 Code, and Codex App are native Mac apps. AO runs in your browser, works on any OS, and you can
+					Conductor, T3 Code, and Codex App are native Mac apps. Thanos runs in your browser, works on any OS, and you can
 					self-host or extend it.
 				</p>
 			</div>
@@ -30,7 +30,7 @@ export function LandingDifferentiators() {
 								Feature
 							</th>
 							<th className="text-center px-6 py-4 font-mono text-[0.625rem] tracking-[0.1em] uppercase text-[var(--landing-fg)] opacity-80">
-								AO
+								Thanos
 							</th>
 							<th className="text-center px-6 py-4 font-mono text-[0.625rem] tracking-[0.1em] uppercase text-[var(--landing-muted)] opacity-40">
 								Others

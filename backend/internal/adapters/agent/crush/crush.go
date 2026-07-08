@@ -19,7 +19,7 @@ import (
 
 const (
 	// adapterID is the registry id and the value users pass to
-	// `ao spawn --agent`. It matches domain.HarnessCrush.
+	// `to spawn --agent`. It matches domain.HarnessCrush.
 	adapterID = "crush"
 )
 
@@ -63,7 +63,7 @@ func (p *Plugin) Manifest() adapters.Manifest {
 // argument after `--`. The --yolo flag corresponds to bypass-permissions mode.
 //
 // We intentionally do not pass --session on launch: cfg.SessionID is the
-// AO-internal id, not a Crush-native session id. Letting Crush mint its own
+// Thanos-internal id, not a Crush-native session id. Letting Crush mint its own
 // native session id (captured by hooks into session metadata) keeps launch
 // consistent with GetRestoreCommand, which resumes using that native id.
 func (p *Plugin) GetLaunchCommand(ctx context.Context, cfg ports.LaunchConfig) (cmd []string, err error) {

@@ -9,7 +9,7 @@ const steps = [
 		n: "01",
 		title: "Configure & assign",
 		titleEm: "assign",
-		desc: "Point Agent Orchestrator at your repo with a YAML config. Choose your agent, set up trackers and notifiers. One file, full control.",
+		desc: "Point Thanos at your repo with a YAML config. Choose your agent, set up trackers and notifiers. One file, full control.",
 		tags: ["YAML", "Plugins", "Trackers"],
 		kind: "cli" as const,
 	},
@@ -203,7 +203,7 @@ function CliDemo() {
 					<span className="text-white">ao batch-spawn 42 43 44 45 46</span>
 				</div>
 				<div className="text-[var(--landing-muted)] opacity-60">&nbsp;</div>
-				<div className="text-[var(--landing-muted)] opacity-60">⟡ Loading config from agent-orchestrator.yaml</div>
+				<div className="text-[var(--landing-muted)] opacity-60">⟡ Loading config from thanos.yaml</div>
 				<div className="text-[var(--landing-muted)] opacity-60">⟡ Resolving 5 issues from GitHub</div>
 				<div className="text-[var(--landing-muted)] opacity-60">⟡ Spawning sessions in worktrees...</div>
 				<div className="text-[rgba(134,239,172,0.8)]">✓ Session s-001 spawned → issue #42</div>

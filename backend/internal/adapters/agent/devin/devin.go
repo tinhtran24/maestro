@@ -4,8 +4,8 @@
 // Devin for Terminal (binary "devin") is Cognition's terminal coding agent. It
 // has a documented Claude Code compatibility layer: it imports `.claude/`
 // configuration (commands, subagents, and Claude Code lifecycle hooks), storing
-// the converted hooks in `.devin/hooks.v1.json`. Because of this, AO reuses the
-// Claude Code hook installer (which writes .claude/settings.local.json with AO
+// the converted hooks in `.devin/hooks.v1.json`. Because of this, Thanos reuses the
+// Claude Code hook installer (which writes .claude/settings.local.json with Thanos
 // hook commands) and Devin picks them up via its compat layer. This makes Devin
 // a Tier B (Claude-compat) adapter, mirroring the grok adapter.
 //
@@ -14,13 +14,13 @@
 // print mode is not usable for normal implementation work: it cannot request
 // interactive write/edit approvals and may render as a blank session. Permission
 // handling uses `--permission-mode`, whose valid values are `normal` (aliases:
-// auto) and `dangerous` (aliases: yolo, bypass). AO's four permission modes are
+// auto) and `dangerous` (aliases: yolo, bypass). Thanos's four permission modes are
 // mapped onto these two: Default emits no flag (defer to the user's
 // ~/.config/devin/config.json), AcceptEdits/Auto map to `auto`, and
 // BypassPermissions maps to `dangerous`.
 //
 // Restore prefers the hook-captured native session id via `-r <id>`. Devin
-// session ids are listed by `devin list --format json`; AO captures the native
+// session ids are listed by `devin list --format json`; Thanos captures the native
 // id through the Claude-compat hook payloads (SessionStart) into session
 // metadata, the same path grok uses.
 package devin
@@ -115,9 +115,9 @@ func (p *Plugin) GetPromptDeliveryStrategy(ctx context.Context, _ ports.LaunchCo
 // converts Claude hooks (SessionStart, UserPromptSubmit, Stop, PermissionRequest,
 // SessionEnd, ...) on load.
 //
-// This means Devin picks up the .claude/settings.local.json (and the AO hook
+// This means Devin picks up the .claude/settings.local.json (and the Thanos hook
 // commands we install there) in the worktree. The installed commands are
-// "ao hooks claude-code <evt>", so the existing CLI hook dispatcher routes them
+// "to hooks claude-code <evt>", so the existing CLI hook dispatcher routes them
 // to claude derive logic (Devin is grouped with claude-code in cli/hooks.go).
 func (p *Plugin) GetAgentHooks(ctx context.Context, cfg ports.WorkspaceHookConfig) error {
 	if err := ctx.Err(); err != nil {
@@ -183,7 +183,7 @@ func (p *Plugin) devinBinary(ctx context.Context) (string, error) {
 	return binary, nil
 }
 
-// appendApprovalFlags maps AO's four permission modes onto Devin's two native
+// appendApprovalFlags maps Thanos's four permission modes onto Devin's two native
 // permission values (`auto`/normal and `dangerous`/bypass), per
 // `devin --permission-mode -h`.
 func appendApprovalFlags(cmd *[]string, permissions ports.PermissionMode) {

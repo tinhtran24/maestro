@@ -1,20 +1,20 @@
-# AO CLI
+# Thanos CLI
 
-The `ao` CLI is a thin Go/Cobra client for the local Agent Orchestrator daemon.
+The `ao` CLI is a thin Go/Cobra client for the local Thanos daemon.
 It starts, discovers, inspects, and stops the daemon through the loopback HTTP
 surface and the `running.json` handshake. It must not open SQLite directly or
 call runtime, workspace, tracker, or agent adapters in-process.
 
 When using the CLI directly from a shell, make sure the daemon is running first
-with `ao start` or by opening the desktop app. Product commands such as
-`ao agent ls` and `ao spawn` call the loopback daemon and will fail with a
+with `to start` or by opening the desktop app. Product commands such as
+`to agent ls` and `to spawn` call the loopback daemon and will fail with a
 "daemon is not running" error if no `running.json` points at a live process. From
 a source checkout, build and run the local binary explicitly, for example:
 
 ```bash
 cd backend
 go build -o ./bin/ao ./cmd/ao
-./bin/ao agent ls
+./bin/to agent ls
 ```
 
 ## Current commands
@@ -26,56 +26,56 @@ Every product command resolves to a daemon HTTP route. Run `ao <command>
 
 | Command                       | Purpose                                                                                                                           |
 | ----------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| `ao start`                    | Start the daemon in the background and wait for `/readyz`.                                                                        |
-| `ao stop`                     | Gracefully stop the daemon via loopback `POST /shutdown` after verifying daemon identity.                                         |
-| `ao status` / `--json`        | Report daemon state from `running.json`, process liveness, `/healthz`, and `/readyz`.                                             |
-| `ao doctor` / `--json`        | Check config, data directory, DB-file presence, daemon state, `git`, and (on Darwin/Linux) `tmux`; on Windows conpty is built in. |
-| `ao completion <shell>`       | Generate completions for `bash`, `zsh`, `fish`, or `powershell`.                                                                  |
-| `ao version` / `ao --version` | Print build metadata.                                                                                                             |
-| `ao daemon`                   | Hidden internal daemon entrypoint used by `ao start`.                                                                             |
+| `to start`                    | Start the daemon in the background and wait for `/readyz`.                                                                        |
+| `to stop`                     | Gracefully stop the daemon via loopback `POST /shutdown` after verifying daemon identity.                                         |
+| `to status` / `--json`        | Report daemon state from `running.json`, process liveness, `/healthz`, and `/readyz`.                                             |
+| `to doctor` / `--json`        | Check config, data directory, DB-file presence, daemon state, `git`, and (on Darwin/Linux) `tmux`; on Windows conpty is built in. |
+| `to completion <shell>`       | Generate completions for `bash`, `zsh`, `fish`, or `powershell`.                                                                  |
+| `to version` / `ao --version` | Print build metadata.                                                                                                             |
+| `to daemon`                   | Hidden internal daemon entrypoint used by `to start`.                                                                             |
 
 ### Product commands
 
 | Command                             | Daemon route                                   |
 | ----------------------------------- | ---------------------------------------------- |
-| `ao project add`                    | `POST /api/v1/projects`                        |
-| `ao project ls`                     | `GET /api/v1/projects`                         |
-| `ao project get <id>`               | `GET /api/v1/projects/{id}`                    |
-| `ao project set-config <id>`        | `PUT /api/v1/projects/{id}/config`             |
-| `ao project rm <id>`                | `DELETE /api/v1/projects/{id}`                 |
-| `ao agent ls`                       | `GET /api/v1/agents`                           |
-| `ao agent ls --refresh`             | `POST /api/v1/agents/refresh`                  |
-| `ao spawn`                          | `POST /api/v1/sessions`                        |
-| `ao session ls`                     | `GET /api/v1/sessions`                         |
-| `ao session get <id>`               | `GET /api/v1/sessions/{id}`                    |
-| `ao session kill <id>`              | `POST /api/v1/sessions/{id}/kill`              |
-| `ao session restore <id>`           | `POST /api/v1/sessions/{id}/restore`           |
-| `ao session rename <id> <name>`     | `PATCH /api/v1/sessions/{id}`                  |
-| `ao session cleanup`                | `POST /api/v1/sessions/cleanup`                |
-| `ao session claim-pr <id> <pr-ref>` | `POST /api/v1/sessions/{id}/pr/claim`          |
-| `ao orchestrator ls`                | `GET /api/v1/orchestrators`                    |
-| `ao send`                           | `POST /api/v1/sessions/{id}/send`              |
-| `ao preview [url]`                  | `POST /api/v1/sessions/{id}/preview`           |
-| `ao hooks <agent> <event>`          | `POST /api/v1/sessions/{id}/activity` (hidden) |
+| `to project add`                    | `POST /api/v1/projects`                        |
+| `to project ls`                     | `GET /api/v1/projects`                         |
+| `to project get <id>`               | `GET /api/v1/projects/{id}`                    |
+| `to project set-config <id>`        | `PUT /api/v1/projects/{id}/config`             |
+| `to project rm <id>`                | `DELETE /api/v1/projects/{id}`                 |
+| `to agent ls`                       | `GET /api/v1/agents`                           |
+| `to agent ls --refresh`             | `POST /api/v1/agents/refresh`                  |
+| `to spawn`                          | `POST /api/v1/sessions`                        |
+| `to session ls`                     | `GET /api/v1/sessions`                         |
+| `to session get <id>`               | `GET /api/v1/sessions/{id}`                    |
+| `to session kill <id>`              | `POST /api/v1/sessions/{id}/kill`              |
+| `to session restore <id>`           | `POST /api/v1/sessions/{id}/restore`           |
+| `to session rename <id> <name>`     | `PATCH /api/v1/sessions/{id}`                  |
+| `to session cleanup`                | `POST /api/v1/sessions/cleanup`                |
+| `to session claim-pr <id> <pr-ref>` | `POST /api/v1/sessions/{id}/pr/claim`          |
+| `to orchestrator ls`                | `GET /api/v1/orchestrators`                    |
+| `to send`                           | `POST /api/v1/sessions/{id}/send`              |
+| `to preview [url]`                  | `POST /api/v1/sessions/{id}/preview`           |
+| `to hooks <agent> <event>`          | `POST /api/v1/sessions/{id}/activity` (hidden) |
 
-`ao agent ls` prints the daemon-supported agent catalog with local install/auth
+`to agent ls` prints the daemon-supported agent catalog with local install/auth
 readiness. Use `--refresh` to rerun the bounded local probes and `--json` to
 print the raw inventory response.
 
-`ao spawn` resolves project context in this order: explicit `--project`,
-`AO_PROJECT_ID`, `AO_SESSION_ID` (by fetching the current session from the
+`to spawn` resolves project context in this order: explicit `--project`,
+`THANOS_PROJECT_ID`, `THANOS_SESSION_ID` (by fetching the current session from the
 daemon), then the current working directory matched against registered project
-paths. If `AO_SESSION_ID` is set but the session cannot be fetched, pass
+paths. If `THANOS_SESSION_ID` is set but the session cannot be fetched, pass
 `--project` explicitly.
 
-If `--agent` / `--harness` is omitted, `ao spawn` uses the resolved project's
+If `--agent` / `--harness` is omitted, `to spawn` uses the resolved project's
 `worker.agent` config. Before spawning, the CLI refreshes the advisory agent
 catalog and fails early when the selected agent is unsupported, not installed,
 or unauthorized. It warns-but-continues when auth remains unknown because daemon
 spawn remains the authoritative runtime validation point. Use
 `--skip-agent-check` to bypass only this CLI-side preflight.
 
-`ao preview` resolves its session from the `AO_SESSION_ID` environment variable
+`to preview` resolves its session from the `THANOS_SESSION_ID` environment variable
 (it is meant to run inside a session), not a flag. With no argument it
 autodetects an `index.html` in the session workspace; with a URL argument it
 opens that URL verbatim (`file://`, `http`, `https`).
@@ -83,7 +83,7 @@ opens that URL verbatim (`file://`, `http`, `https`).
 `go run .` in `backend/` remains a compatibility wrapper around the daemon.
 
 PR and review actions (merge, resolve-comments, review execute/send) are
-HTTP-only today and driven by the frontend; there are no `ao pr` / `ao review`
+HTTP-only today and driven by the frontend; there are no `ao pr` / `to review`
 commands yet.
 
 ## Configuration
@@ -92,11 +92,11 @@ The CLI and daemon share the same environment-driven config:
 
 | Var                   | Default              | Purpose                |
 | --------------------- | -------------------- | ---------------------- |
-| `AO_PORT`             | `3001`               | Loopback daemon port.  |
-| `AO_RUN_FILE`         | `~/.ao/running.json` | PID/port handshake.    |
-| `AO_DATA_DIR`         | `~/.ao/data`         | SQLite data directory. |
-| `AO_REQUEST_TIMEOUT`  | `60s`                | REST request timeout.  |
-| `AO_SHUTDOWN_TIMEOUT` | `10s`                | Graceful shutdown cap. |
+| `THANOS_PORT`             | `3001`               | Loopback daemon port.  |
+| `THANOS_RUN_FILE`         | `~/.thanos/running.json` | PID/port handshake.    |
+| `THANOS_DATA_DIR`         | `~/.thanos/data`         | SQLite data directory. |
+| `THANOS_REQUEST_TIMEOUT`  | `60s`                | REST request timeout.  |
+| `THANOS_SHUTDOWN_TIMEOUT` | `10s`                | Graceful shutdown cap. |
 
 The daemon always binds `127.0.0.1`.
 
@@ -107,16 +107,16 @@ cd backend
 go build -o /tmp/ao ./cmd/ao
 
 tmp=$(mktemp -d)
-export AO_RUN_FILE="$tmp/running.json"
-export AO_DATA_DIR="$tmp/data"
-export AO_PORT=3037
+export THANOS_RUN_FILE="$tmp/running.json"
+export THANOS_DATA_DIR="$tmp/data"
+export THANOS_PORT=3037
 
-/tmp/ao status --json
-/tmp/ao doctor
-/tmp/ao start
-/tmp/ao status --json
-/tmp/ao stop
-/tmp/ao status --json
+/tmp/to status --json
+/tmp/to doctor
+/tmp/to start
+/tmp/to status --json
+/tmp/to stop
+/tmp/to status --json
 rm -rf "$tmp"
 ```
 

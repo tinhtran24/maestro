@@ -1,11 +1,11 @@
-# ao import
+# to import
 
-Import reads the legacy Agent Orchestrator flat-file store (`~/.agent-orchestrator`) read-only and ports its projects and per-project settings into the rewrite database. Legacy files are never modified, and a re-run skips rows that already exist, so it is safe to run more than once. The daemon must be stopped before running: it is the sole writer of the database.
+Import reads the legacy Thanos flat-file store (`~/.thanos`) read-only and ports its projects and per-project settings into the rewrite database. Legacy files are never modified, and a re-run skips rows that already exist, so it is safe to run more than once. The daemon must be stopped before running: it is the sole writer of the database.
 
 ## Syntax
 
 ```
-ao import [flags]
+to import [flags]
 ```
 
 ## Flags
@@ -13,7 +13,7 @@ ao import [flags]
 | Flag | Meaning | Default / Required |
 |---|---|---|
 | `--dry-run` | Parse and report the planned import without writing | - |
-| `--from string` | Legacy AO root to read | `~/.agent-orchestrator` |
+| `--from string` | Legacy Thanos root to read | `~/.thanos` |
 | `--json` | Output the import report as JSON | - |
 | `-y, --yes` | Skip the confirmation prompt (for non-interactive use) | - |
 
@@ -21,15 +21,15 @@ ao import [flags]
 
 ```bash
 # Preview what would be imported without writing anything
-ao import --dry-run
+to import --dry-run
 ```
 
 ```bash
 # Run the import non-interactively
-ao import -y
+to import -y
 ```
 
 ```bash
 # Import from a custom legacy path
-ao import --from /tmp/old-agent-orchestrator -y
+to import --from /tmp/old-thanos -y
 ```

@@ -286,7 +286,7 @@ describe("useBrowserView", () => {
 		rerender({ previewUrl: "http://localhost:5173/", previewRevision: 1 });
 		expect(bridge.navigate).toHaveBeenCalledTimes(1);
 
-		// Re-running `ao preview` with the SAME url bumps the revision and must
+		// Re-running `to preview` with the SAME url bumps the revision and must
 		// re-navigate (refresh) — the regression this issue fixes.
 		rerender({ previewUrl: "http://localhost:5173/", previewRevision: 2 });
 		await waitFor(() => expect(bridge.navigate).toHaveBeenCalledTimes(2));
@@ -327,7 +327,7 @@ describe("useBrowserView", () => {
 		expect(bridge.navigate).toHaveBeenCalledTimes(2);
 	});
 
-	it("clears the view when the preview is reset (ao preview clear) and does not navigate", async () => {
+	it("clears the view when the preview is reset (to preview clear) and does not navigate", async () => {
 		const bridge = setupBridge();
 		const { rerender } = renderHook(
 			({ previewUrl, previewRevision }) =>
@@ -336,7 +336,7 @@ describe("useBrowserView", () => {
 		);
 		await waitFor(() => expect(bridge.navigate).toHaveBeenCalledTimes(1));
 
-		// `ao preview clear` empties previewUrl and bumps the revision.
+		// `to preview clear` empties previewUrl and bumps the revision.
 		rerender({ previewUrl: undefined, previewRevision: 2 });
 		await waitFor(() => expect(bridge.clear).toHaveBeenCalledWith("42:sess-1"));
 		expect(bridge.navigate).toHaveBeenCalledTimes(1);

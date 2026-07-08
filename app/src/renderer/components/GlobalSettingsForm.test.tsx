@@ -65,7 +65,7 @@ function renderForm() {
 beforeEach(() => {
 	for (const m of [getMock, postMock, getMigration, setMigration, getUpdate, setUpdate]) m.mockReset();
 	getMigration.mockResolvedValue({ status: "pending" });
-	getMock.mockResolvedValue({ data: { available: true, legacyRoot: "/home/u/.agent-orchestrator" }, error: undefined });
+	getMock.mockResolvedValue({ data: { available: true, legacyRoot: "/home/u/.thanos" }, error: undefined });
 	postMock.mockResolvedValue({ data: { report: { projectsImported: 2, projectsSkipped: 1 } }, error: undefined });
 	setMigration.mockResolvedValue(undefined);
 	getUpdate.mockResolvedValue({ enabled: true, channel: "latest", nightlyAck: false });
@@ -104,7 +104,7 @@ describe("GlobalSettingsForm", () => {
 	it("shows migration status and the available legacy root", async () => {
 		renderForm();
 		expect(await screen.findByText("Not migrated yet")).toBeInTheDocument();
-		expect(await screen.findByText("/home/u/.agent-orchestrator")).toBeInTheDocument();
+		expect(await screen.findByText("/home/u/.thanos")).toBeInTheDocument();
 	});
 
 	it("Run migration imports and marks completed", async () => {

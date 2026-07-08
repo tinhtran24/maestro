@@ -3,13 +3,13 @@ const steps = [
 		num: "STEP 01",
 		title: "Install",
 		desc: "One command. No dependencies beyond Node.js.",
-		cmd: "npm i -g @aoagents/ao",
+		cmd: "npm i -g @tinhtran/ao",
 	},
 	{
 		num: "STEP 02",
 		title: "Configure",
-		desc: "Create an agent-orchestrator.yaml. Pick your agents, tracker, and notifiers.",
-		cmd: "ao start",
+		desc: "Create an thanos.yaml. Pick your agents, tracker, and notifiers.",
+		cmd: "to start",
 	},
 	{ num: "STEP 03", title: "Launch", desc: "Assign issues and watch agents spawn.", cmd: "ao batch-spawn 1 2 3" },
 ];

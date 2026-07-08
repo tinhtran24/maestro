@@ -283,7 +283,7 @@ func TestGetAgentHooksInstallsCursorHooks(t *testing.T) {
 		t.Fatal(err)
 	}
 	hooksPath := filepath.Join(hooksDir, "hooks.json")
-	// Pre-existing user hook on an event AO also manages, plus a non-AO field.
+	// Pre-existing user hook on an event Thanos also manages, plus a non-Thanos field.
 	existing := `{"version":1,"customField":"keep me","hooks":{"stop":[{"command":"custom stop hook"}]}}`
 	if err := os.WriteFile(hooksPath, []byte(existing), 0o644); err != nil {
 		t.Fatal(err)
@@ -297,7 +297,7 @@ func TestGetAgentHooksInstallsCursorHooks(t *testing.T) {
 	if err := plugin.GetAgentHooks(context.Background(), cfg); err != nil {
 		t.Fatal(err)
 	}
-	// A second install must not duplicate AO hook commands.
+	// A second install must not duplicate Thanos hook commands.
 	if err := plugin.GetAgentHooks(context.Background(), cfg); err != nil {
 		t.Fatal(err)
 	}

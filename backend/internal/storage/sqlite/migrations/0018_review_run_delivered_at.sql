@@ -1,4 +1,4 @@
--- AO-internal review changes-requested nudges are delivered through lifecycle
+-- Thanos-internal review changes-requested nudges are delivered through lifecycle
 -- sendOnce after the review result is recorded. This nullable timestamp marks
 -- passes whose worker nudge was durably delivered, so retries after a daemon
 -- restart do not send the same review pass twice.

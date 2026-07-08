@@ -1,4 +1,4 @@
-// Package daemon owns the Agent Orchestrator backend process: config loading,
+// Package daemon owns the Thanos backend process: config loading,
 // loopback HTTP serving, durable storage, CDC fan-out, lifecycle wiring, and
 // graceful shutdown.
 package daemon
@@ -119,7 +119,7 @@ func Run() error {
 
 	// Wire the controller-facing session service over the same store + LCM, the
 	// selected runtime, a gitworktree workspace, the per-session agent resolver
-	// (AO_AGENT validated here for compatibility), and the agent messenger, then mount it
+	// (THANOS_AGENT validated here for compatibility), and the agent messenger, then mount it
 	// on the API.
 	sessionSvc, reviewSvc, sessMgr, err := startSession(cfg, runtimeAdapter, store, lcStack.LCM, messenger, telemetrySink, log)
 	if err != nil {
@@ -174,7 +174,7 @@ func Run() error {
 	const supervisorGrace = 5 * time.Second
 
 	if ln, addr, err := supervisor.Listen(cfg.RunFilePath); err != nil {
-		// Non-fatal: without the link the daemon still works (e.g. headless "ao start"),
+		// Non-fatal: without the link the daemon still works (e.g. headless "to start"),
 		// it just will not auto-stop when a frontend dies. Do not block startup on it.
 		log.Warn("supervisor: listener unavailable; frontend-death auto-stop disabled", "err", err)
 	} else {

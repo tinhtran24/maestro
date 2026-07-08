@@ -66,7 +66,7 @@ func TestGetLaunchCommandWithPrompt(t *testing.T) {
 }
 
 // TestGetLaunchCommandPermissionModesEmitNoFlag documents that Auggie has no
-// blanket auto-approve flag, so every AO permission mode produces the same argv
+// blanket auto-approve flag, so every Thanos permission mode produces the same argv
 // (no permission flag) and defers to the user's Auggie config.
 func TestGetLaunchCommandPermissionModesEmitNoFlag(t *testing.T) {
 	modes := []ports.PermissionMode{

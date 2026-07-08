@@ -104,10 +104,10 @@ func (c *commandContext) doJSONPath(ctx context.Context, method, path string, bo
 		return err
 	}
 	if info == nil {
-		return fmt.Errorf("AO daemon is not running — start it with `ao start`")
+		return fmt.Errorf("Thanos daemon is not running — start it with `to start`")
 	}
 	if !c.deps.ProcessAlive(info.PID) {
-		return fmt.Errorf("AO daemon is not running (stale run-file at %s) — start it with `ao start`", cfg.RunFilePath)
+		return fmt.Errorf("Thanos daemon is not running (stale run-file at %s) — start it with `to start`", cfg.RunFilePath)
 	}
 
 	var reader io.Reader = http.NoBody

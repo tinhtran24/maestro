@@ -16,8 +16,8 @@ import (
 
 const (
 	// LoopbackHost is the only host the daemon ever binds. There is deliberately
-	// no AO_HOST env var: the daemon has no auth/CORS/TLS and a stray
-	// AO_HOST=0.0.0.0 would turn it into a public no-auth service. If a
+	// no THANOS_HOST env var: the daemon has no auth/CORS/TLS and a stray
+	// THANOS_HOST=0.0.0.0 would turn it into a public no-auth service. If a
 	// non-default loopback (e.g. ::1, 127.0.0.2) is ever needed, add it back with
 	// an IsLoopback() validator — not a raw env read.
 	LoopbackHost = "127.0.0.1"
@@ -29,12 +29,12 @@ const (
 	// DefaultShutdownTimeout is the hard cap on graceful shutdown. After this
 	// the process exits even if connections are still draining.
 	DefaultShutdownTimeout = 10 * time.Second
-	// DefaultAgent is the compatibility value used when AO_AGENT is unset. The
+	// DefaultAgent is the compatibility value used when THANOS_AGENT is unset. The
 	// daemon validates it at startup, but worker/orchestrator spawns resolve from
 	// explicit requests or project role config instead of falling back to it.
 	DefaultAgent = "claude-code"
 	// DefaultTelemetryPostHogHost is the default PostHog ingestion host when
-	// remote telemetry is enabled and AO_TELEMETRY_POSTHOG_HOST is unset.
+	// remote telemetry is enabled and THANOS_TELEMETRY_POSTHOG_HOST is unset.
 	DefaultTelemetryPostHogHost = "https://us.i.posthog.com"
 )
 
@@ -86,11 +86,11 @@ type Config struct {
 	// DataDir is the directory holding durable SQLite state: DB and WAL files.
 	// It is created on first use by the storage layer.
 	DataDir string
-	// Agent is the compatibility agent adapter id selected by AO_AGENT;
+	// Agent is the compatibility agent adapter id selected by THANOS_AGENT;
 	// startSession fails fast if no adapter with this id is registered.
 	Agent string
 	// AllowedOrigins are the browser origins granted CORS read access (see
-	// DefaultAllowedOrigins). Overridden by AO_ALLOWED_ORIGINS.
+	// DefaultAllowedOrigins). Overridden by THANOS_ALLOWED_ORIGINS.
 	AllowedOrigins []string
 	// Telemetry controls local/remote telemetry sinks.
 	Telemetry TelemetryConfig
@@ -104,22 +104,22 @@ func (c Config) Addr() string {
 
 // Load resolves configuration from the environment, applying defaults. It
 // returns an error only for values that are present but malformed (e.g. a
-// non-numeric AO_PORT); missing values fall back to defaults.
+// non-numeric THANOS_PORT); missing values fall back to defaults.
 //
 // Recognised variables:
 //
-//	AO_PORT              bind port           (default 3001)
-//	AO_REQUEST_TIMEOUT   per-request timeout (Go duration > 0, default 60s)
-//	AO_SHUTDOWN_TIMEOUT  shutdown deadline   (Go duration > 0, default 10s)
-//	AO_RUN_FILE          running.json path   (default ~/.ao/running.json)
-//	AO_DATA_DIR          durable state dir   (default ~/.ao/data)
-//	AO_AGENT             compatibility agent id (default claude-code)
-//	AO_ALLOWED_ORIGINS   CORS origins, comma-separated (default DefaultAllowedOrigins)
-//	AO_TELEMETRY_EVENTS  local event capture off|on (default off)
-//	AO_TELEMETRY_METRICS local metric capture off|on (default off)
-//	AO_TELEMETRY_REMOTE  remote exporter off|posthog (default off)
-//	AO_TELEMETRY_POSTHOG_KEY   PostHog project key
-//	AO_TELEMETRY_POSTHOG_HOST  PostHog host (default DefaultTelemetryPostHogHost)
+//	THANOS_PORT              bind port           (default 3001)
+//	THANOS_REQUEST_TIMEOUT   per-request timeout (Go duration > 0, default 60s)
+//	THANOS_SHUTDOWN_TIMEOUT  shutdown deadline   (Go duration > 0, default 10s)
+//	THANOS_RUN_FILE          running.json path   (default ~/.thanos/running.json)
+//	THANOS_DATA_DIR          durable state dir   (default ~/.thanos/data)
+//	THANOS_AGENT             compatibility agent id (default claude-code)
+//	THANOS_ALLOWED_ORIGINS   CORS origins, comma-separated (default DefaultAllowedOrigins)
+//	THANOS_TELEMETRY_EVENTS  local event capture off|on (default off)
+//	THANOS_TELEMETRY_METRICS local metric capture off|on (default off)
+//	THANOS_TELEMETRY_REMOTE  remote exporter off|posthog (default off)
+//	THANOS_TELEMETRY_POSTHOG_KEY   PostHog project key
+//	THANOS_TELEMETRY_POSTHOG_HOST  PostHog host (default DefaultTelemetryPostHogHost)
 //
 // The bind host is not configurable: the daemon is loopback-only by design.
 func Load() (Config, error) {
@@ -136,38 +136,38 @@ func Load() (Config, error) {
 		},
 	}
 
-	if raw := os.Getenv("AO_PORT"); raw != "" {
+	if raw := os.Getenv("THANOS_PORT"); raw != "" {
 		port, err := strconv.Atoi(raw)
 		if err != nil {
-			return Config{}, fmt.Errorf("invalid AO_PORT %q: %w", raw, err)
+			return Config{}, fmt.Errorf("invalid THANOS_PORT %q: %w", raw, err)
 		}
 		if port < 1 || port > 65535 {
-			return Config{}, fmt.Errorf("invalid AO_PORT %d: out of range 1-65535", port)
+			return Config{}, fmt.Errorf("invalid THANOS_PORT %d: out of range 1-65535", port)
 		}
 		cfg.Port = port
 	}
 
-	if raw := os.Getenv("AO_REQUEST_TIMEOUT"); raw != "" {
-		d, err := parsePositiveDuration("AO_REQUEST_TIMEOUT", raw)
+	if raw := os.Getenv("THANOS_REQUEST_TIMEOUT"); raw != "" {
+		d, err := parsePositiveDuration("THANOS_REQUEST_TIMEOUT", raw)
 		if err != nil {
 			return Config{}, err
 		}
 		cfg.RequestTimeout = d
 	}
 
-	if raw := os.Getenv("AO_SHUTDOWN_TIMEOUT"); raw != "" {
-		d, err := parsePositiveDuration("AO_SHUTDOWN_TIMEOUT", raw)
+	if raw := os.Getenv("THANOS_SHUTDOWN_TIMEOUT"); raw != "" {
+		d, err := parsePositiveDuration("THANOS_SHUTDOWN_TIMEOUT", raw)
 		if err != nil {
 			return Config{}, err
 		}
 		cfg.ShutdownTimeout = d
 	}
 
-	if raw := os.Getenv("AO_AGENT"); raw != "" {
+	if raw := os.Getenv("THANOS_AGENT"); raw != "" {
 		cfg.Agent = raw
 	}
 
-	if raw, ok := os.LookupEnv("AO_ALLOWED_ORIGINS"); ok && raw != "" {
+	if raw, ok := os.LookupEnv("THANOS_ALLOWED_ORIGINS"); ok && raw != "" {
 		// Explicit override replaces the defaults entirely so a deployment can
 		// also narrow the list. The "null" origin is rejected, never silently
 		// dropped: an operator allowing it would open the no-auth daemon to
@@ -179,38 +179,38 @@ func Load() (Config, error) {
 				continue
 			}
 			if origin == "null" || origin == "*" {
-				return Config{}, fmt.Errorf("invalid AO_ALLOWED_ORIGINS entry %q: wildcard and null origins are not allowed", origin)
+				return Config{}, fmt.Errorf("invalid THANOS_ALLOWED_ORIGINS entry %q: wildcard and null origins are not allowed", origin)
 			}
 			origins = append(origins, origin)
 		}
 		cfg.AllowedOrigins = origins
 	}
 
-	if raw := os.Getenv("AO_TELEMETRY_EVENTS"); raw != "" {
-		v, err := parseToggleEnv("AO_TELEMETRY_EVENTS", raw)
+	if raw := os.Getenv("THANOS_TELEMETRY_EVENTS"); raw != "" {
+		v, err := parseToggleEnv("THANOS_TELEMETRY_EVENTS", raw)
 		if err != nil {
 			return Config{}, err
 		}
 		cfg.Telemetry.Events = v
 	}
-	if raw := os.Getenv("AO_TELEMETRY_METRICS"); raw != "" {
-		v, err := parseToggleEnv("AO_TELEMETRY_METRICS", raw)
+	if raw := os.Getenv("THANOS_TELEMETRY_METRICS"); raw != "" {
+		v, err := parseToggleEnv("THANOS_TELEMETRY_METRICS", raw)
 		if err != nil {
 			return Config{}, err
 		}
 		cfg.Telemetry.Metrics = v
 	}
-	if raw := os.Getenv("AO_TELEMETRY_REMOTE"); raw != "" {
+	if raw := os.Getenv("THANOS_TELEMETRY_REMOTE"); raw != "" {
 		remote, err := parseTelemetryRemote(raw)
 		if err != nil {
-			return Config{}, fmt.Errorf("invalid AO_TELEMETRY_REMOTE %q: %w", raw, err)
+			return Config{}, fmt.Errorf("invalid THANOS_TELEMETRY_REMOTE %q: %w", raw, err)
 		}
 		cfg.Telemetry.Remote = remote
 	}
-	if raw := os.Getenv("AO_TELEMETRY_POSTHOG_KEY"); raw != "" {
+	if raw := os.Getenv("THANOS_TELEMETRY_POSTHOG_KEY"); raw != "" {
 		cfg.Telemetry.PostHogKey = raw
 	}
-	if raw := os.Getenv("AO_TELEMETRY_POSTHOG_HOST"); raw != "" {
+	if raw := os.Getenv("THANOS_TELEMETRY_POSTHOG_HOST"); raw != "" {
 		cfg.Telemetry.PostHogHost = raw
 	}
 
@@ -265,11 +265,11 @@ func parsePositiveDuration(name, raw string) (time.Duration, error) {
 	return d, nil
 }
 
-// resolveRunFilePath picks where running.json lives. An explicit AO_RUN_FILE
-// wins; otherwise it sits under the canonical AO home directory so the CLI and
+// resolveRunFilePath picks where running.json lives. An explicit THANOS_RUN_FILE
+// wins; otherwise it sits under the canonical Thanos home directory so the CLI and
 // Electron supervisor share one handshake location.
 func resolveRunFilePath() (string, error) {
-	if p, ok := os.LookupEnv("AO_RUN_FILE"); ok && p != "" {
+	if p, ok := os.LookupEnv("THANOS_RUN_FILE"); ok && p != "" {
 		return p, nil
 	}
 	stateDir, err := defaultStateDir()
@@ -280,10 +280,10 @@ func resolveRunFilePath() (string, error) {
 }
 
 // resolveDataDir picks where durable state (the SQLite DB) lives. An explicit
-// AO_DATA_DIR wins; otherwise it defaults under the same canonical AO home
+// THANOS_DATA_DIR wins; otherwise it defaults under the same canonical Thanos home
 // directory as the run-file.
 func resolveDataDir() (string, error) {
-	if p, ok := os.LookupEnv("AO_DATA_DIR"); ok && p != "" {
+	if p, ok := os.LookupEnv("THANOS_DATA_DIR"); ok && p != "" {
 		return p, nil
 	}
 	stateDir, err := defaultStateDir()
@@ -298,5 +298,5 @@ func defaultStateDir() (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("resolve state dir: %w", err)
 	}
-	return filepath.Join(homeDir, ".ao"), nil
+	return filepath.Join(homeDir, ".thanos"), nil
 }

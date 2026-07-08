@@ -2,7 +2,7 @@
 // resuming hook-tracked sessions, installing workspace-local hooks, and reading
 // hook-derived session info.
 //
-// AO-managed sessions derive native session identity and display
+// Thanos-managed sessions derive native session identity and display
 // metadata from Codex hooks instead of transcript/cache scans.
 package codex
 
@@ -54,7 +54,7 @@ func (p *Plugin) Manifest() adapters.Manifest {
 }
 
 // GetLaunchCommand builds the argv to start a new Codex session, applying the
-// no-update-check, hook-trust bypass, and approval flags, AO's session-flag
+// no-update-check, hook-trust bypass, and approval flags, Thanos's session-flag
 // activity hooks, the workspace trust override, optional system-prompt
 // instructions, and the initial prompt (passed after `--` so a leading "-" is
 // not read as a flag).
@@ -270,11 +270,11 @@ func (p *Plugin) codexBinary(ctx context.Context) (string, error) {
 	return binary, nil
 }
 
-// DoctorLaunchProbes returns argv tails `ao doctor` runs against the installed
-// codex binary to smoke-test the launch surface AO's hook delivery depends on.
+// DoctorLaunchProbes returns argv tails `to doctor` runs against the installed
+// codex binary to smoke-test the launch surface Thanos's hook delivery depends on.
 // Probe 1 confirms --dangerously-bypass-hook-trust still exists (clap rejects
 // unknown flags with a non-zero exit even alongside --version). Probe 2 loads
-// codex's config with AO's `-c` session-flag overrides through the offline
+// codex's config with Thanos's `-c` session-flag overrides through the offline
 // `features list` subcommand, so an override-parse regression surfaces as a
 // non-zero exit or warning output. Both are built from the same flag builders
 // the launch command uses, so the probes cannot drift from the real spawn argv.
@@ -298,16 +298,16 @@ func appendNoUpdateCheckFlag(cmd *[]string) {
 func appendHideRateLimitNudgeFlag(cmd *[]string) {
 	// When the account nears its rate limit, the Codex TUI interposes an
 	// interactive "switch to a cheaper model?" dialog before the first turn.
-	// In a headless AO pane that dialog hangs the session invisibly and
+	// In a headless Thanos pane that dialog hangs the session invisibly and
 	// swallows the auto-submitted spawn prompt, so suppress it.
 	*cmd = append(*cmd, "-c", "notice.hide_rate_limit_model_nudge=true")
 }
 
 func appendHookTrustBypassFlag(cmd *[]string) {
-	// AO's activity hooks ride the launch command as session-flag config (see
+	// Thanos's activity hooks ride the launch command as session-flag config (see
 	// appendSessionHookFlags) and carry no persisted trust hash in the user's
 	// `[hooks.state]`. Without this flag Codex would hold them for an
-	// interactive hooks review, leaving AO without activity signals.
+	// interactive hooks review, leaving Thanos without activity signals.
 	*cmd = append(*cmd, "--dangerously-bypass-hook-trust")
 }
 
@@ -320,7 +320,7 @@ func appendTerminalCompatibilityFlags(cmd *[]string) {
 func appendApprovalFlags(cmd *[]string, permissions ports.PermissionMode) {
 	switch ports.NormalizePermissionMode(permissions) {
 	case ports.PermissionModeDefault:
-		// Codex sessions are AO-managed and run headlessly inside a terminal
+		// Codex sessions are Thanos-managed and run headlessly inside a terminal
 		// mux pane; default to no approval prompts unless project settings
 		// explicitly choose a more restrictive mode.
 		*cmd = append(*cmd, "--dangerously-bypass-approvals-and-sandbox")

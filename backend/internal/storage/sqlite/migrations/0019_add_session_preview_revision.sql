@@ -1,16 +1,16 @@
 -- +goose Up
--- preview_revision is a monotonic counter bumped on every `ao preview` call
+-- preview_revision is a monotonic counter bumped on every `to preview` call
 -- (POST/DELETE /sessions/{id}/preview). The preview_url alone cannot tell a
--- repeated `ao preview <same-url>` from an unrelated session update replayed
+-- repeated `to preview <same-url>` from an unrelated session update replayed
 -- over CDC, so the desktop browser panel could never refresh on a re-run. The
 -- revision gives the renderer a per-command identity to key navigation on, so
--- re-running `ao preview` always re-navigates even when the URL is unchanged.
+-- re-running `to preview` always re-navigates even when the URL is unchanged.
 -- +goose StatementBegin
 ALTER TABLE sessions ADD COLUMN preview_revision INTEGER NOT NULL DEFAULT 0;
 -- +goose StatementEnd
 
 -- Recreate the sessions update CDC trigger so a preview_revision bump also fans
--- out a session_updated event. Without this a same-URL `ao preview` re-run
+-- out a session_updated event. Without this a same-URL `to preview` re-run
 -- would change only preview_revision/updated_at, which the prior trigger did
 -- not watch, so the renderer never heard about the refresh.
 -- +goose StatementBegin

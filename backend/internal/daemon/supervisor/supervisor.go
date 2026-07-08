@@ -1,7 +1,7 @@
 // Package supervisor provides a transport-agnostic watchdog that fires a
 // callback when the last connected client disconnects and stays gone for a
 // configurable grace period. It arms only after the FIRST client ever
-// connects so a daemon started with no frontend (e.g. CLI "ao start") never
+// connects so a daemon started with no frontend (e.g. CLI "to start") never
 // self-stops.
 //
 // This package is a leaf: it imports only stdlib.

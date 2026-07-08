@@ -174,7 +174,7 @@ func TestGetAgentHooksInstallsClaudeHooks(t *testing.T) {
 	if err := p.GetAgentHooks(context.Background(), cfg); err != nil {
 		t.Fatal(err)
 	}
-	// A second install must not duplicate AO hook commands.
+	// A second install must not duplicate Thanos hook commands.
 	if err := p.GetAgentHooks(context.Background(), cfg); err != nil {
 		t.Fatal(err)
 	}
@@ -209,18 +209,18 @@ func TestGetAgentHooksInstallsClaudeHooks(t *testing.T) {
 		t.Fatalf("unrelated settings clobbered: %s", data)
 	}
 	// SessionStart carries the required matcher; UserPromptSubmit omits it.
-	if m := matcherForCommand(config.Hooks["SessionStart"], "ao hooks claude-code session-start"); m == nil || *m != "startup" {
+	if m := matcherForCommand(config.Hooks["SessionStart"], "to hooks claude-code session-start"); m == nil || *m != "startup" {
 		t.Fatalf("SessionStart matcher = %v, want startup", m)
 	}
-	if m := matcherForCommand(config.Hooks["UserPromptSubmit"], "ao hooks claude-code user-prompt-submit"); m != nil {
+	if m := matcherForCommand(config.Hooks["UserPromptSubmit"], "to hooks claude-code user-prompt-submit"); m != nil {
 		t.Fatalf("UserPromptSubmit matcher = %v, want none", m)
 	}
 	// Notification and SessionEnd install with no matcher (they fire for all
 	// sub-types; the handler filters on the payload).
-	if m := matcherForCommand(config.Hooks["Notification"], "ao hooks claude-code notification"); m != nil {
+	if m := matcherForCommand(config.Hooks["Notification"], "to hooks claude-code notification"); m != nil {
 		t.Fatalf("Notification matcher = %v, want none", m)
 	}
-	if m := matcherForCommand(config.Hooks["SessionEnd"], "ao hooks claude-code session-end"); m != nil {
+	if m := matcherForCommand(config.Hooks["SessionEnd"], "to hooks claude-code session-end"); m != nil {
 		t.Fatalf("SessionEnd matcher = %v, want none", m)
 	}
 }
@@ -268,7 +268,7 @@ func TestUninstallHooksRemovesClaudeHooks(t *testing.T) {
 		t.Fatal(err)
 	}
 	// No managed command survives; the SessionStart/UserPromptSubmit events,
-	// which held only AO hooks, are removed entirely.
+	// which held only Thanos hooks, are removed entirely.
 	for _, spec := range claudeManagedHooks {
 		if got := countClaudeHookCommand(config.Hooks[spec.Event], spec.Command); got != 0 {
 			t.Fatalf("%s command %q count = %d after uninstall, want 0", spec.Event, spec.Command, got)
@@ -343,7 +343,7 @@ func TestSessionInfoFalseWhenNoHookMetadata(t *testing.T) {
 }
 
 // countClaudeHookCommand counts how many hook entries under one event register
-// the given command — used to prove no duplicate AO hooks.
+// the given command — used to prove no duplicate Thanos hooks.
 func countClaudeHookCommand(groups []hooksjson.MatcherGroup, command string) int {
 	count := 0
 	for _, group := range groups {
@@ -409,7 +409,7 @@ func TestGetRestoreCommandReappendsSystemPrompt(t *testing.T) {
 
 func TestGetRestoreCommandFallsBackToDerivedUUID(t *testing.T) {
 	// No agentSessionId captured (pre-hook session) → derive deterministically
-	// from the AO session id, the explicit fallback.
+	// from the Thanos session id, the explicit fallback.
 	cmd, ok, err := (&Plugin{resolvedBinary: "claude"}).GetRestoreCommand(context.Background(), ports.RestoreConfig{
 		Permissions: ports.PermissionModeBypassPermissions,
 		Session:     ports.SessionRef{ID: "sess-r"},
@@ -592,7 +592,7 @@ func TestEnsureWorkspaceTrustedCreatesEntry(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	work := "/Users/me/.ao/worktrees/01ABC"
+	work := "/Users/me/.thanos/worktrees/01ABC"
 	if err := ensureWorkspaceTrusted(cfgPath, work); err != nil {
 		t.Fatalf("ensureWorkspaceTrusted: %v", err)
 	}

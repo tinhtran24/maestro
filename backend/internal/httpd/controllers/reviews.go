@@ -41,7 +41,7 @@ type TriggerReviewResponse struct {
 type SubmitReviewItem struct {
 	RunID          string `json:"runId" description:"Review run id being completed."`
 	Verdict        string `json:"verdict" description:"Review verdict: approved or changes_requested."`
-	Body           string `json:"body,omitempty" description:"Review body recorded by AO. Required for changes_requested."`
+	Body           string `json:"body,omitempty" description:"Review body recorded by Thanos. Required for changes_requested."`
 	GithubReviewID string `json:"githubReviewId,omitempty" description:"Id of the GitHub PR review the reviewer posted, if any."`
 }
 
@@ -49,7 +49,7 @@ type SubmitReviewItem struct {
 type SubmitReviewInput struct {
 	RunID          string             `json:"runId,omitempty" description:"Review run id being completed."`
 	Verdict        string             `json:"verdict,omitempty" description:"Review verdict: approved or changes_requested."`
-	Body           string             `json:"body,omitempty" description:"Review body recorded by AO. Required for changes_requested."`
+	Body           string             `json:"body,omitempty" description:"Review body recorded by Thanos. Required for changes_requested."`
 	GithubReviewID string             `json:"githubReviewId,omitempty" description:"Id of the GitHub PR review the reviewer posted, if any."`
 	Reviews        []SubmitReviewItem `json:"reviews,omitempty" description:"Batched review results recorded by one reviewer CLI command."`
 }

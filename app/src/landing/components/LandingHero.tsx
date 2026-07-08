@@ -16,12 +16,12 @@ export function LandingHero({ starsLabel }: LandingHeroProps) {
 					<span className="text-[var(--landing-muted)]">One dashboard.</span>
 				</h1>
 				<p className="landing-fade-rise-d1 text-[var(--landing-muted)] text-[0.9375rem] max-w-[38rem] mt-6 leading-[1.7]">
-					Agent Orchestrator spawns Claude Code, Codex, Cursor, Aider, and OpenCode in isolated git worktrees. Each
+					Thanos spawns Claude Code, Codex, Cursor, Aider, and OpenCode in isolated git worktrees. Each
 					agent gets its own branch, creates PRs, fixes CI, and addresses reviews autonomously.
 				</p>
 				<div className="landing-fade-rise-d2 flex items-center gap-3 mt-10 flex-wrap justify-center">
 					<div className="landing-card rounded-lg px-6 py-3 font-mono text-sm">
-						<span className="text-[var(--landing-muted)] opacity-40">$</span> npx @aoagents/ao start
+						<span className="text-[var(--landing-muted)] opacity-40">$</span> npx @tinhtran/to start
 					</div>
 					<a
 						href="/docs"
@@ -30,7 +30,7 @@ export function LandingHero({ starsLabel }: LandingHeroProps) {
 						Read Docs
 					</a>
 					<a
-						href="https://github.com/ComposioHQ/agent-orchestrator"
+						href="https://github.com/ComposioHQ/thanos"
 						target="_blank"
 						rel="noopener noreferrer"
 						className="liquid-glass-solid rounded-lg px-6 py-3 text-sm no-underline transition-colors"
@@ -62,7 +62,7 @@ export function LandingHero({ starsLabel }: LandingHeroProps) {
 								{/* eslint-disable-next-line @next/next/no-img-element */}
 								<img
 									src="/hero-dashboard.png"
-									alt="Agent Orchestrator dashboard — live agent sessions flowing from work to review to merge"
+									alt="Thanos dashboard — live agent sessions flowing from work to review to merge"
 									className="w-full h-full"
 									style={{ objectFit: "cover", objectPosition: "top", display: "block" }}
 								/>

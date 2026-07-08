@@ -113,7 +113,7 @@ func (s *Store) SupersedeStaleRunningReviewRuns(ctx context.Context, sessionID d
 }
 
 // MarkReviewRunDelivered records that lifecycle delivered the worker nudge for
-// a completed AO-internal review pass.
+// a completed Thanos-internal review pass.
 func (s *Store) MarkReviewRunDelivered(ctx context.Context, id string, deliveredAt time.Time) (bool, error) {
 	s.writeMu.Lock()
 	defer s.writeMu.Unlock()

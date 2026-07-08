@@ -56,7 +56,7 @@ func capturedState(t *testing.T, capture *activityCapture) string {
 }
 
 func TestHooks_NotificationReportsWaitingInput(t *testing.T) {
-	t.Setenv("AO_SESSION_ID", "ao-7")
+	t.Setenv("THANOS_SESSION_ID", "ao-7")
 	cfg := setConfigEnv(t)
 	srv, capture := activityServer(t, http.StatusOK, `{"ok":true,"sessionId":"ao-7","state":"waiting_input"}`)
 	writeRunFileFor(t, cfg, srv)
@@ -77,7 +77,7 @@ func TestHooks_NotificationReportsWaitingInput(t *testing.T) {
 }
 
 func TestHooks_SessionEndReportsExited(t *testing.T) {
-	t.Setenv("AO_SESSION_ID", "ao-7")
+	t.Setenv("THANOS_SESSION_ID", "ao-7")
 	cfg := setConfigEnv(t)
 	srv, capture := activityServer(t, http.StatusOK, `{"ok":true}`)
 	writeRunFileFor(t, cfg, srv)
@@ -95,7 +95,7 @@ func TestHooks_SessionEndReportsExited(t *testing.T) {
 }
 
 func TestHooks_StopReportsIdle(t *testing.T) {
-	t.Setenv("AO_SESSION_ID", "ao-7")
+	t.Setenv("THANOS_SESSION_ID", "ao-7")
 	cfg := setConfigEnv(t)
 	srv, capture := activityServer(t, http.StatusOK, `{"ok":true}`)
 	writeRunFileFor(t, cfg, srv)
@@ -113,7 +113,7 @@ func TestHooks_StopReportsIdle(t *testing.T) {
 }
 
 func TestHooks_CodexPermissionRequestReportsWaitingInput(t *testing.T) {
-	t.Setenv("AO_SESSION_ID", "ao-7")
+	t.Setenv("THANOS_SESSION_ID", "ao-7")
 	cfg := setConfigEnv(t)
 	srv, capture := activityServer(t, http.StatusOK, `{"ok":true}`)
 	writeRunFileFor(t, cfg, srv)
@@ -131,7 +131,7 @@ func TestHooks_CodexPermissionRequestReportsWaitingInput(t *testing.T) {
 }
 
 func TestHooks_OpenCodeUserPromptReportsActive(t *testing.T) {
-	t.Setenv("AO_SESSION_ID", "ao-7")
+	t.Setenv("THANOS_SESSION_ID", "ao-7")
 	cfg := setConfigEnv(t)
 	srv, capture := activityServer(t, http.StatusOK, `{"ok":true}`)
 	writeRunFileFor(t, cfg, srv)
@@ -149,7 +149,7 @@ func TestHooks_OpenCodeUserPromptReportsActive(t *testing.T) {
 }
 
 func TestHooks_RejectsMalformedSessionID(t *testing.T) {
-	t.Setenv("AO_SESSION_ID", "../etc/passwd")
+	t.Setenv("THANOS_SESSION_ID", "../etc/passwd")
 	cfg := setConfigEnv(t)
 	srv, capture := activityServer(t, http.StatusOK, `{}`)
 	writeRunFileFor(t, cfg, srv)
@@ -167,7 +167,7 @@ func TestHooks_RejectsMalformedSessionID(t *testing.T) {
 }
 
 func TestHooks_NoSessionIDIsNoOp(t *testing.T) {
-	t.Setenv("AO_SESSION_ID", "")
+	t.Setenv("THANOS_SESSION_ID", "")
 	cfg := setConfigEnv(t)
 	srv, capture := activityServer(t, http.StatusOK, `{}`)
 	writeRunFileFor(t, cfg, srv)
@@ -180,12 +180,12 @@ func TestHooks_NoSessionIDIsNoOp(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 	if capture.hits != 0 {
-		t.Errorf("expected no daemon call for a non-AO session, got %d", capture.hits)
+		t.Errorf("expected no daemon call for a non-Thanos session, got %d", capture.hits)
 	}
 }
 
 func TestHooks_UntrackedEventIsNoOp(t *testing.T) {
-	t.Setenv("AO_SESSION_ID", "ao-7")
+	t.Setenv("THANOS_SESSION_ID", "ao-7")
 	cfg := setConfigEnv(t)
 	srv, capture := activityServer(t, http.StatusOK, `{}`)
 	writeRunFileFor(t, cfg, srv)
@@ -203,7 +203,7 @@ func TestHooks_UntrackedEventIsNoOp(t *testing.T) {
 }
 
 func TestHooks_DaemonDownIsBestEffort(t *testing.T) {
-	t.Setenv("AO_SESSION_ID", "ao-7")
+	t.Setenv("THANOS_SESSION_ID", "ao-7")
 	setConfigEnv(t) // no run-file written: daemon is "not running"
 
 	_, _, err := executeCLI(t, Deps{
@@ -216,7 +216,7 @@ func TestHooks_DaemonDownIsBestEffort(t *testing.T) {
 
 // TestHooks_DeliveryFailureGoesToHooksLog covers the durable failure sink:
 // agents swallow hook stderr, so a delivery failure must also land in
-// $AO_DATA_DIR/hooks.log — and a delivered hook must not write the file at all.
+// $THANOS_DATA_DIR/hooks.log — and a delivered hook must not write the file at all.
 func TestHooks_DeliveryFailureGoesToHooksLog(t *testing.T) {
 	cases := []struct {
 		name    string
@@ -230,7 +230,7 @@ func TestHooks_DeliveryFailureGoesToHooksLog(t *testing.T) {
 			status:  http.StatusInternalServerError,
 			body:    `{"error":"internal","code":"BOOM","message":"boom"}`,
 			wantLog: true,
-			wantIn:  []string{"ao hooks claude-code session-end", "session=ao-7"},
+			wantIn:  []string{"to hooks claude-code session-end", "session=ao-7"},
 		},
 		{
 			name:   "successful delivery writes nothing",
@@ -240,7 +240,7 @@ func TestHooks_DeliveryFailureGoesToHooksLog(t *testing.T) {
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			t.Setenv("AO_SESSION_ID", "ao-7")
+			t.Setenv("THANOS_SESSION_ID", "ao-7")
 			cfg := setConfigEnv(t)
 			srv, _ := activityServer(t, tc.status, tc.body)
 			writeRunFileFor(t, cfg, srv)
@@ -277,7 +277,7 @@ func TestHooks_DeliveryFailureGoesToHooksLog(t *testing.T) {
 // a hooks.log already past the cap truncates it first, so a persistently
 // failing hook cannot grow the file without bound.
 func TestHooks_HooksLogTruncatesPastCap(t *testing.T) {
-	t.Setenv("AO_SESSION_ID", "ao-7")
+	t.Setenv("THANOS_SESSION_ID", "ao-7")
 	cfg := setConfigEnv(t) // no run file written: every delivery fails
 	logPath := filepath.Join(cfg.dataDir, "hooks.log")
 	if err := os.MkdirAll(cfg.dataDir, 0o750); err != nil {
@@ -302,13 +302,13 @@ func TestHooks_HooksLogTruncatesPastCap(t *testing.T) {
 	if len(data) > maxHooksLogBytes {
 		t.Fatalf("hooks.log = %d bytes, want truncated below the %d cap", len(data), maxHooksLogBytes)
 	}
-	if !strings.Contains(string(data), "ao hooks claude-code session-end") {
+	if !strings.Contains(string(data), "to hooks claude-code session-end") {
 		t.Errorf("truncated hooks.log missing the new failure line:\n%s", data)
 	}
 }
 
 func TestHooks_DaemonErrorIsSwallowed(t *testing.T) {
-	t.Setenv("AO_SESSION_ID", "ao-7")
+	t.Setenv("THANOS_SESSION_ID", "ao-7")
 	cfg := setConfigEnv(t)
 	srv, _ := activityServer(t, http.StatusInternalServerError,
 		`{"error":"internal","code":"BOOM","message":"boom"}`)
@@ -321,7 +321,7 @@ func TestHooks_DaemonErrorIsSwallowed(t *testing.T) {
 	if err != nil {
 		t.Fatalf("hooks must exit 0 even on a daemon error, got: %v", err)
 	}
-	if !strings.Contains(errOut, "ao hooks") {
+	if !strings.Contains(errOut, "to hooks") {
 		t.Errorf("expected the failure surfaced to stderr, got %q", errOut)
 	}
 }

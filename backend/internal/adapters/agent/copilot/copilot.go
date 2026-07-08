@@ -6,14 +6,14 @@
 // "copilot", installed via npm "@github/copilot"), NOT the older `gh copilot`
 // suggest/explain extension.
 //
-// Launch runs the CLI in interactive mode so AO can keep a durable terminal
+// Launch runs the CLI in interactive mode so Thanos can keep a durable terminal
 // pane attached to the session. Permission modes map onto the CLI's allow flags
 // (`--allow-tool`, `--allow-all-tools`, `--allow-all`).
 // Restore continues an existing session via `--resume <agentSessionId>`; the
 // native session id (a UUID under ~/.copilot/session-state/) is captured by the
-// SessionStart hook AO installs (see hooks.go).
+// SessionStart hook Thanos installs (see hooks.go).
 //
-// AO-managed sessions derive native session identity and display metadata from
+// Thanos-managed sessions derive native session identity and display metadata from
 // Copilot hooks instead of transcript/cache scans.
 package copilot
 
@@ -69,7 +69,7 @@ func (p *Plugin) Manifest() adapters.Manifest {
 //	copilot [permission flags]
 //
 // The prompt is delivered after the process starts; using `-p` runs Copilot in
-// programmatic mode and exits when done, which leaves AO's terminal pane blank
+// programmatic mode and exits when done, which leaves Thanos's terminal pane blank
 // or dead. Copilot CLI does not have a documented system-prompt-injection flag,
 // so SystemPrompt/SystemPromptFile are ignored.
 func (p *Plugin) GetLaunchCommand(ctx context.Context, cfg ports.LaunchConfig) (cmd []string, err error) {
@@ -87,7 +87,7 @@ func (p *Plugin) GetLaunchCommand(ctx context.Context, cfg ports.LaunchConfig) (
 // GetPromptDeliveryStrategy reports that Copilot receives its prompt after the
 // interactive process starts. This overrides the agentbase.Base default
 // (in-command) because Copilot's `-p` programmatic mode exits when done, which
-// would leave AO's terminal pane dead.
+// would leave Thanos's terminal pane dead.
 func (p *Plugin) GetPromptDeliveryStrategy(ctx context.Context, cfg ports.LaunchConfig) (ports.PromptDeliveryStrategy, error) {
 	if err := ctx.Err(); err != nil {
 		return "", err
@@ -247,7 +247,7 @@ func (p *Plugin) copilotBinary(ctx context.Context) (string, error) {
 	return binary, nil
 }
 
-// appendApprovalFlags maps AO's 4 permission modes onto Copilot CLI approval
+// appendApprovalFlags maps Thanos's 4 permission modes onto Copilot CLI approval
 // flags (https://docs.github.com/en/copilot/reference/copilot-cli-reference/cli-programmatic-reference):
 //
 //	default            -> no flag (defer to ~/.copilot config / per-tool prompts)

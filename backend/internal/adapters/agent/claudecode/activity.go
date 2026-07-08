@@ -7,14 +7,14 @@ import (
 )
 
 // DeriveActivityState maps a Claude Code hook event (and its native stdin
-// payload) onto an AO activity state. The bool is false when the event carries
+// payload) onto an Thanos activity state. The bool is false when the event carries
 // no activity signal — e.g. SessionStart (metadata only, v1), a Notification
-// type we don't track, or a SessionEnd reason that doesn't actually end the AO
+// type we don't track, or a SessionEnd reason that doesn't actually end the Thanos
 // session — in which case the caller reports nothing.
 //
-// event is the AO hook sub-command name installed in claudeManagedHooks
+// event is the Thanos hook sub-command name installed in claudeManagedHooks
 // ("user-prompt-submit", "stop", "notification", "session-end", ...), NOT the
-// native Claude event name. Keeping this beside hooks.go means the events AO
+// native Claude event name. Keeping this beside hooks.go means the events Thanos
 // installs and what they mean live in one place.
 func DeriveActivityState(event string, payload []byte) (domain.ActivityState, bool) {
 	switch event {
@@ -51,7 +51,7 @@ func notificationState(payload []byte) (domain.ActivityState, bool) {
 }
 
 // sessionEndState reports exited for reasons that actually end the session.
-// clear/resume keep the same AO session alive (a new native session continues
+// clear/resume keep the same Thanos session alive (a new native session continues
 // in the worktree), so they report nothing. Any other reason — logout,
 // prompt_input_exit, bypass_permissions_disabled, other, or an absent/unknown
 // reason on a SessionEnd that did fire — is treated as a real exit. SessionEnd

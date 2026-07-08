@@ -16,19 +16,19 @@ Every session gets a full `git clone`. Heavier on disk than `worktree`, but simp
 
 ## Use
 
-```yaml title="agent-orchestrator.yaml"
+```yaml title="thanos.yaml"
 workspace: clone
 workspaceConfig:
-  cloneDir: ~/.ao-clones # default
+  cloneDir: ~/.thanos-clones # default
 ```
 
 | Config key | Default        | What it does                  |
 | ---------- | -------------- | ----------------------------- |
-| `cloneDir` | `~/.ao-clones` | Base directory for all clones |
+| `cloneDir` | `~/.thanos-clones` | Base directory for all clones |
 
 ## How it works
 
-- On spawn, AO runs `git clone --reference <source> <cloneDir>/{sessionId}`. The `--reference` flag means the new clone borrows objects from your existing checkout — much faster than a cold clone.
+- On spawn, Thanos runs `git clone --reference <source> <cloneDir>/{sessionId}`. The `--reference` flag means the new clone borrows objects from your existing checkout — much faster than a cold clone.
 - The agent gets a fully independent working tree with its own `.git`.
 - On cleanup, the directory is removed outright.
 

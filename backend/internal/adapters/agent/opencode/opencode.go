@@ -2,16 +2,16 @@
 // launching new TUI sessions, resuming sessions by native id, installing a
 // workspace-local activity plugin, and reading plugin-derived session info.
 //
-// opencode differs from Claude Code and Codex in two ways AO has to bridge:
+// opencode differs from Claude Code and Codex in two ways Thanos has to bridge:
 //   - It has no native command-hook config (no settings.local.json / hooks.json
 //     equivalent). Its only lifecycle-extensibility surface is a JS/TS plugin
-//     loaded from .opencode/plugins/, so GetAgentHooks installs an AO-owned
+//     loaded from .opencode/plugins/, so GetAgentHooks installs an Thanos-owned
 //     plugin file (see hooks.go) instead of merging JSON.
 //   - Its CLI exposes only one approval flag (--dangerously-skip-permissions)
 //     and no system-prompt flag, so the graduated permission modes and the
 //     system prompt are deferred to opencode's own config.
 //
-// AO-managed sessions derive native session identity and display metadata from
+// Thanos-managed sessions derive native session identity and display metadata from
 // the opencode plugin's reported events, mirroring the Codex adapter.
 package opencode
 
@@ -38,7 +38,7 @@ import (
 
 const (
 	// adapterID is the registry id and the value users pass to
-	// `ao spawn --agent`. It matches domain.HarnessOpenCode.
+	// `to spawn --agent`. It matches domain.HarnessOpenCode.
 	adapterID = "opencode"
 
 	// opencodeAgentSessionIDMetadataKey is the session-metadata key the opencode
@@ -323,7 +323,7 @@ func opencodeDBCount(ctx context.Context, db *sql.DB, query string) (int, error)
 	return count, nil
 }
 
-// appendPermissionFlags maps AO's permission modes onto opencode's single
+// appendPermissionFlags maps Thanos's permission modes onto opencode's single
 // approval flag. opencode exposes only --dangerously-skip-permissions (no
 // graduated accept-edits/auto modes), so:
 //   - bypass-permissions → --dangerously-skip-permissions

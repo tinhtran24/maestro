@@ -118,7 +118,7 @@ func TestAuthStatusUnknownWhenKeyOnlyComesFromInteractiveShell(t *testing.T) {
 	dir := t.TempDir()
 	shellPath := filepath.Join(dir, "fake-shell")
 	if err := os.WriteFile(shellPath, []byte(`#!/bin/sh
-/usr/bin/touch "$AO_SHELL_PROBE_MARKER"
+/usr/bin/touch "$THANOS_SHELL_PROBE_MARKER"
 if [ "$1" = "-ic" ]; then
 	OPENAI_API_KEY=from-shell /bin/sh -c "$2"
 fi
@@ -140,7 +140,7 @@ exit 1
 	t.Setenv("SHELL", shellPath)
 	t.Setenv("PATH", dir)
 	t.Setenv("KILO_DATA_DIR", filepath.Join(dir, "missing-kilo-data"))
-	t.Setenv("AO_SHELL_PROBE_MARKER", markerPath)
+	t.Setenv("THANOS_SHELL_PROBE_MARKER", markerPath)
 	for _, name := range kilocodeAPIKeyEnvVars {
 		t.Setenv(name, "")
 	}

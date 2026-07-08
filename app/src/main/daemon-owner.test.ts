@@ -7,7 +7,7 @@ describe("shouldLinkOnAttach", () => {
 		expect(shouldLinkOnAttach("app")).toBe(true);
 	});
 
-	it("returns false when owner is undefined (headless ao start)", () => {
+	it("returns false when owner is undefined (headless to start)", () => {
 		expect(shouldLinkOnAttach(undefined)).toBe(false);
 	});
 

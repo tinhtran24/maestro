@@ -35,7 +35,7 @@ func TestRuntimeIntegration(t *testing.T) {
 		// exec is added by buildLaunchCommand, but we also verify here that output
 		// appears).
 		Argv: []string{"sh", "-c", "echo hello-from-tmux"},
-		Env:  map[string]string{"AO_SESSION_ID": id},
+		Env:  map[string]string{"THANOS_SESSION_ID": id},
 	})
 	if err != nil {
 		t.Fatalf("Create: %v", err)

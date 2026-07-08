@@ -305,7 +305,7 @@ func (w *Workspace) Destroy(ctx context.Context, info ports.WorkspaceInfo) error
 //
 // ponytail: only safe to call AFTER the session's uncommitted work has been
 // captured via StashUncommitted. Calling it before capture silently
-// discards agent work. For interactive teardown (ao session kill, ao cleanup)
+// discards agent work. For interactive teardown (to session kill, ao cleanup)
 // use Destroy, which refuses dirty worktrees via ErrWorkspaceDirty.
 func (w *Workspace) ForceDestroy(ctx context.Context, info ports.WorkspaceInfo) error {
 	if info.Path == "" {
@@ -369,7 +369,7 @@ func (w *Workspace) StashUncommitted(ctx context.Context, info ports.WorkspaceIn
 		)
 	}
 
-	// Reserve a unique path for the temp index in the system temp dir (not ~/.ao).
+	// Reserve a unique path for the temp index in the system temp dir (not ~/.thanos).
 	// We must NOT pre-create the file: git requires GIT_INDEX_FILE to either not
 	// exist (it creates it) or be a valid git index. os.CreateTemp gives us a
 	// unique name; we close and remove it immediately so git gets an absent path.

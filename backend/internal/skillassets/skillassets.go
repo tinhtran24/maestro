@@ -1,7 +1,7 @@
 // Package skillassets embeds the using-ao skill (the ao CLI catalog) and
-// installs it into the AO data dir at daemon boot. Worker sessions run in a
+// installs it into the Thanos data dir at daemon boot. Worker sessions run in a
 // worktree of whatever project they were spawned in, so a repo-relative
-// skills/ path only resolves when that project happens to be the AO repo
+// skills/ path only resolves when that project happens to be the Thanos repo
 // itself. Installing under the data dir gives every session, in any project, a
 // stable absolute path to read.
 //

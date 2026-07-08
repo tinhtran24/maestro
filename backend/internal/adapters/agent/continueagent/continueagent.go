@@ -1,7 +1,7 @@
 // Package continueagent implements the Continue CLI agent adapter.
 //
 // Continue (https://docs.continue.dev/guides/cli) is Continue's terminal coding
-// agent. Its binary is "cn" (npm package @continuedev/cli) and the AO harness /
+// agent. Its binary is "cn" (npm package @continuedev/cli) and the Thanos harness /
 // manifest id is the string "continue". The Go package and directory are named
 // "continueagent" because "continue" is a reserved keyword.
 //
@@ -11,13 +11,13 @@
 // PreToolUse, PostToolUse, Stop, Notification) with the standard hook payload
 // (session_id, hook_event_name, hookSpecificOutput, permissionDecision,
 // additionalContext). So we reuse the claudecode hook installer and route hook
-// callbacks through the existing "ao hooks claude-code <evt>" dispatcher — no
+// callbacks through the existing "to hooks claude-code <evt>" dispatcher — no
 // Continue-specific native hook config or activity deriver is needed.
 //
 // Launch is interactive via `cn [--auto|--readonly] [-- <prompt>]`. Restore
 // continues a specific native session by id with `cn --fork <sessionId>`
 // (Continue's `--resume` only continues the *last* session, so it cannot target
-// a particular AO session).
+// a particular Thanos session).
 package continueagent
 
 import (
@@ -32,7 +32,7 @@ import (
 	"github.com/tinhtran/thanos/backend/internal/ports"
 )
 
-// adapterID is the AO harness / manifest id. It is the string "continue"
+// adapterID is the Thanos harness / manifest id. It is the string "continue"
 // (NOT the Go package name "continueagent").
 const adapterID = "continue"
 
@@ -79,8 +79,8 @@ func (p *Plugin) Manifest() adapters.Manifest {
 
 // GetLaunchCommand builds the Continue CLI argv for a fresh launch.
 //
-// AO sessions are long-lived terminal sessions, so prompted and promptless
-// launches both stay interactive as `cn ...`. Permission flags map AO's 4 modes
+// Thanos sessions are long-lived terminal sessions, so prompted and promptless
+// launches both stay interactive as `cn ...`. Permission flags map Thanos's 4 modes
 // onto Continue's two booleans (--auto / --readonly); Default and AcceptEdits
 // emit no flag so Continue resolves behavior from the user's config.
 func (p *Plugin) GetLaunchCommand(ctx context.Context, cfg ports.LaunchConfig) (cmd []string, err error) {
@@ -115,10 +115,10 @@ func (p *Plugin) GetPromptDeliveryStrategy(ctx context.Context, cfg ports.Launch
 // GetAgentHooks reuses the Claude Code hook installer because the Continue CLI
 // natively reads Claude Code hook settings.
 //
-// The installed commands are "ao hooks claude-code <evt>", so the existing CLI
+// The installed commands are "to hooks claude-code <evt>", so the existing CLI
 // hook dispatcher routes them to the claude derive logic. The Continue CLI reads
 // .claude/settings.local.json from the worktree and fires Claude-format events
-// (SessionStart / UserPromptSubmit / Stop / Notification), giving AO
+// (SessionStart / UserPromptSubmit / Stop / Notification), giving Thanos
 // title/summary/agentSessionId + activity for free without a Continue-specific
 // hook implementation or code duplication.
 func (p *Plugin) GetAgentHooks(ctx context.Context, cfg ports.WorkspaceHookConfig) error {
@@ -132,7 +132,7 @@ func (p *Plugin) GetAgentHooks(ctx context.Context, cfg ports.WorkspaceHookConfi
 // a hook-captured native session id is available. ok=false otherwise (the manager
 // falls back to a fresh launch). `--fork <id>` continues a specific session by
 // id; Continue's `--resume` only continues the last session and so cannot target
-// a particular AO session.
+// a particular Thanos session.
 func (p *Plugin) GetRestoreCommand(ctx context.Context, cfg ports.RestoreConfig) (cmd []string, ok bool, err error) {
 	if err := ctx.Err(); err != nil {
 		return nil, false, err
@@ -189,7 +189,7 @@ func (p *Plugin) continueBinary(ctx context.Context) (string, error) {
 	return binary, nil
 }
 
-// appendApprovalFlags maps AO's 4 permission modes onto Continue's two boolean
+// appendApprovalFlags maps Thanos's 4 permission modes onto Continue's two boolean
 // flags. Continue exposes only `--readonly` (plan mode, read-only tools) and
 // `--auto` (all tools allowed); there is no separate yolo/bypass beyond --auto,
 // and the two flags are mutually exclusive. Default and AcceptEdits emit no flag

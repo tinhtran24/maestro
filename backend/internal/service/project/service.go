@@ -62,7 +62,7 @@ var _ Manager = (*Service)(nil)
 
 // Deps captures optional collaborators for project use-cases.
 type Deps struct {
-	// DefaultHarness is the daemon's configured default agent (AO_AGENT).
+	// DefaultHarness is the daemon's configured default agent (THANOS_AGENT).
 	// When empty, the service falls back to config.DefaultAgent.
 	DefaultHarness domain.AgentHarness
 	Store          Store

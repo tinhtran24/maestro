@@ -1,16 +1,16 @@
 # Milestones & Delivery Plan
 
-Phased plan to clone the AO frontend onto the already-cloned Thanos backend. Each
+Phased plan to clone the Thanos frontend onto the already-cloned Thanos backend. Each
 phase ends with a runnable, testable increment. "Port" = copy from
-`agent-orchestrator-main/frontend/src/**` and adjust names/paths (`ao` → thanos,
-`~/.ao` → `~/.thanos`, backend module path).
+`thanos-main/frontend/src/**` and adjust names/paths (`ao` → thanos,
+`~/.thanos` → `~/.thanos`, backend module path).
 
 ## Phase 0 — Scaffold (foundation)
 
-- [ ] Create `thanos/frontend/` from the AO frontend: `package.json`, `tsconfig`,
+- [ ] Create `thanos/frontend/` from the Thanos frontend: `package.json`, `tsconfig`,
       `vite.*.config.ts`, `forge.config.ts`, `components.json`, `index.html`,
       `vitest.config.ts`, `playwright.config.ts`, Tailwind setup.
-- [ ] Install deps (npm or pnpm — match AO's lockfile choice).
+- [ ] Install deps (npm or pnpm — match Thanos's lockfile choice).
 - [ ] Generate API types: `npm run api:ts` → `src/api/schema.ts` from
       `backend/internal/httpd/apispec/openapi.yaml`. Fix the script's relative path.
 - [ ] Update `scripts/build-daemon.mjs` to build `thanos/backend/cmd/ao`.
@@ -83,7 +83,7 @@ phase ends with a runnable, testable increment. "Port" = copy from
 ## Phase 9 — Telemetry, polish, packaging
 
 - [ ] Port telemetry (`telemetry`, `posthog-config`) behind opt-out boundary.
-- [ ] Full Vitest + Playwright suites green at parity with AO.
+- [ ] Full Vitest + Playwright suites green at parity with Thanos.
 - [ ] `electron-forge make` produces installers (zip/deb/rpm); auto-update channel set.
 - **Done when**: `make` builds a distributable that boots against the Thanos daemon.
 

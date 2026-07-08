@@ -272,7 +272,7 @@ type SetSessionPreviewURLParams struct {
 }
 
 // preview_revision is bumped on every call (even when preview_url is unchanged)
-// so a repeated `ao preview <same-url>` still trips the sessions_cdc_update
+// so a repeated `to preview <same-url>` still trips the sessions_cdc_update
 // trigger and the desktop browser panel re-navigates / refreshes.
 func (q *Queries) SetSessionPreviewURL(ctx context.Context, arg SetSessionPreviewURLParams) (int64, error) {
 	result, err := q.db.ExecContext(ctx, setSessionPreviewURL, arg.PreviewURL, arg.UpdatedAt, arg.ID)

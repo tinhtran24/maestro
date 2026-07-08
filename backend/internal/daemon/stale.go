@@ -14,7 +14,7 @@ import (
 // an unreachable port cannot stall daemon startup.
 const staleProbeTimeout = 2 * time.Second
 
-// runFileOwnerServing reports whether an AO daemon matching info is actually
+// runFileOwnerServing reports whether an Thanos daemon matching info is actually
 // serving on the recorded loopback port.
 //
 // runfile.CheckStale only confirms the recorded PID is alive, which is not

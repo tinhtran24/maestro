@@ -12,9 +12,9 @@ const (
 	droidSettingsDirName = ".factory"
 	droidHooksFileName   = "hooks.json"
 
-	// droidHookCommandPrefix identifies the hook commands AO owns, so install
-	// skips duplicates and uninstall recognizes AO entries by prefix.
-	droidHookCommandPrefix = "ao hooks droid "
+	// droidHookCommandPrefix identifies the hook commands Thanos owns, so install
+	// skips duplicates and uninstall recognizes Thanos entries by prefix.
+	droidHookCommandPrefix = "to hooks droid "
 	droidHookTimeout       = 30
 )
 
@@ -22,7 +22,7 @@ const (
 // its "startup" source matcher.
 var droidStartupMatcher = "startup"
 
-// droidManagedHooks is the source of truth for the hooks AO installs:
+// droidManagedHooks is the source of truth for the hooks Thanos installs:
 // SessionStart (under the "startup" matcher), UserPromptSubmit, Stop,
 // Notification, and SessionEnd.
 var droidManagedHooks = []hooksjson.HookSpec{
@@ -33,7 +33,7 @@ var droidManagedHooks = []hooksjson.HookSpec{
 	{Event: "SessionEnd", Command: droidHookCommandPrefix + "session-end"},
 }
 
-// droidHooks manages AO's hooks in the workspace-local .factory/hooks.json file.
+// droidHooks manages Thanos's hooks in the workspace-local .factory/hooks.json file.
 var droidHooks = hooksjson.Manager{
 	Label:         "droid",
 	CommandPrefix: droidHookCommandPrefix,
@@ -46,17 +46,17 @@ func droidHooksPath(workspacePath string) string {
 	return filepath.Join(workspacePath, droidSettingsDirName, droidHooksFileName)
 }
 
-// GetAgentHooks installs AO's Droid hooks, preserving user-defined hooks.
+// GetAgentHooks installs Thanos's Droid hooks, preserving user-defined hooks.
 func (p *Plugin) GetAgentHooks(ctx context.Context, cfg ports.WorkspaceHookConfig) error {
 	return droidHooks.Install(ctx, cfg.WorkspacePath)
 }
 
-// UninstallHooks removes AO's Droid hooks, leaving user-defined hooks untouched.
+// UninstallHooks removes Thanos's Droid hooks, leaving user-defined hooks untouched.
 func (p *Plugin) UninstallHooks(ctx context.Context, workspacePath string) error {
 	return droidHooks.Uninstall(ctx, workspacePath)
 }
 
-// AreHooksInstalled reports whether any AO Droid hook is present.
+// AreHooksInstalled reports whether any Thanos Droid hook is present.
 func (p *Plugin) AreHooksInstalled(ctx context.Context, workspacePath string) (bool, error) {
 	return droidHooks.AreInstalled(ctx, workspacePath)
 }

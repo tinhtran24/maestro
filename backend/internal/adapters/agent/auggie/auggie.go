@@ -4,7 +4,7 @@
 //
 // Auggie is Augment Code's terminal coding agent (binary "auggie", installed via
 // `npm install -g @augmentcode/auggie`). It exposes a headless one-shot mode via
-// `--print` (alias `-p`) which runs a single instruction and exits -- the mode AO
+// `--print` (alias `-p`) which runs a single instruction and exits -- the mode Thanos
 // uses to drive it unattended.
 //
 // Launch shape:
@@ -19,12 +19,12 @@
 // Permissions: Auggie has no single "approve everything" flag. It governs
 // unattended tool/file approval through granular `--permission <tool>:<allow|deny>`
 // rules (and a read-only `--ask` mode), not a 4-mode bypass like Claude Code.
-// Because there is no verifiable blanket auto-approve flag, every AO permission
+// Because there is no verifiable blanket auto-approve flag, every Thanos permission
 // mode emits no flag and defers to the user's Auggie configuration, rather than
 // guessing a flag that does not exist.
 //
 // Resume: Auggie supports `--resume <sessionId>` (alias `-r`), usable with
-// `--print` for headless resume. AO only has a native session id to resume from
+// `--print` for headless resume. Thanos only has a native session id to resume from
 // when one was captured into session metadata; Auggie exposes no hook/lifecycle
 // system, so that id is not captured automatically yet. GetRestoreCommand
 // therefore returns ok=false until a native session id is present, at which point
@@ -132,7 +132,7 @@ func (p *Plugin) GetRestoreCommand(ctx context.Context, cfg ports.RestoreConfig)
 
 // Auggie has no single blanket auto-approve/bypass flag; unattended tool/file
 // approval is governed by granular `--permission <tool>:<allow|deny>` rules, so
-// AO emits no approval flag and defers every mode to the user's Auggie config.
+// Thanos emits no approval flag and defers every mode to the user's Auggie config.
 // There is therefore no appendApprovalFlags helper for this adapter.
 
 var auggieBinarySpec = binaryutil.BinarySpec{

@@ -25,13 +25,13 @@ Run the setup command on macOS:
 ao setup desktop
 ```
 
-AO asks which desktop backend to use and which notification priorities desktop
+Thanos asks which desktop backend to use and which notification priorities desktop
 should receive: `urgent-only`, `urgent-action`, or `all`. For scriptable setup,
 pass `--routing-preset <preset>`.
 
 ## Use
 
-```yaml title="agent-orchestrator.yaml"
+```yaml title="thanos.yaml"
 notifiers:
   desktop:
     plugin: desktop
@@ -47,7 +47,7 @@ notificationRouting:
 | -------------- | ---------------------- | ------------------------------------------------------------ |
 | `backend`      | `auto`                 | `ao-app`, `terminal-notifier`, `osascript`, or auto fallback |
 | `dashboardUrl` | dashboard port         | URL opened from desktop notification actions                 |
-| `appPath`      | macOS app install path | Custom AO Notifier.app path                                  |
+| `appPath`      | macOS app install path | Custom Thanos Notifier.app path                                  |
 
 ## How it works
 

@@ -1,6 +1,6 @@
 -- +goose Up
 -- preview_url is the browser preview target the desktop app opens for a
--- session, set via `ao preview` (POST /sessions/{id}/preview). It is durable
+-- session, set via `to preview` (POST /sessions/{id}/preview). It is durable
 -- so a daemon restart keeps the requested preview. Empty means no preview has
 -- been requested. Defaulting to '' keeps existing rows valid without backfill.
 -- +goose StatementBegin

@@ -1,7 +1,7 @@
 package cli
 
-// dto_drift_e2e_test.go is the DTO-drift guard for the `ao spawn` and
-// `ao project add` commands. The CLI defines its OWN request structs
+// dto_drift_e2e_test.go is the DTO-drift guard for the `to spawn` and
+// `to project add` commands. The CLI defines its OWN request structs
 // (spawnRequest in spawn.go, addProjectRequest in project.go) that are separate
 // copies of the daemon's canonical request DTOs (controllers.SpawnSessionRequest
 // and project.AddInput). Nothing else verifies the two sides agree on JSON field
@@ -171,7 +171,7 @@ func (f *fakeProjectManager) Remove(context.Context, domain.ProjectID) (projects
 
 // startDriftTestDaemon stands up the real router+controllers backed by the
 // supplied fakes and points the CLI's run-file at it. The CLI discovers the
-// server purely via AO_RUN_FILE + the run-file port, so this is a genuine
+// server purely via THANOS_RUN_FILE + the run-file port, so this is a genuine
 // loopback round trip through postJSON.
 func startDriftTestDaemon(t *testing.T, sessions controllers.SessionService, projects projectsvc.Manager) {
 	t.Helper()
@@ -188,7 +188,7 @@ func startDriftTestDaemon(t *testing.T, sessions controllers.SessionService, pro
 	port := srv.Listener.Addr().(*net.TCPAddr).Port
 
 	rfPath := filepath.Join(t.TempDir(), "running.json")
-	t.Setenv("AO_RUN_FILE", rfPath)
+	t.Setenv("THANOS_RUN_FILE", rfPath)
 	if err := runfile.Write(rfPath, runfile.Info{PID: os.Getpid(), Port: port, StartedAt: time.Now()}); err != nil {
 		t.Fatalf("write run-file: %v", err)
 	}

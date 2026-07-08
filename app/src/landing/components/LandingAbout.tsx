@@ -14,7 +14,7 @@ export function LandingAbout() {
 
 				<div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
 					<p className="text-[0.9375rem] text-[var(--landing-muted)] leading-[1.8] max-w-[28rem]">
-						Agent Orchestrator replaces that with one YAML file. Point it at your GitHub issues, pick your agents, and
+						Thanos replaces that with one YAML file. Point it at your GitHub issues, pick your agents, and
 						walk away. Each agent spawns in its own git worktree, creates PRs, fixes CI failures, addresses review
 						comments, and moves toward merge. If you are new, start with the{" "}
 						<a
@@ -33,7 +33,7 @@ export function LandingAbout() {
 							<div className="w-2 h-2 rounded-full bg-[rgba(255,240,220,0.12)]" />
 							<div className="w-2 h-2 rounded-full bg-[rgba(255,240,220,0.12)]" />
 							<span className="ml-1.5 font-mono text-[0.5625rem] text-[var(--landing-muted-dim)]">
-								agent-orchestrator.yaml
+								thanos.yaml
 							</span>
 						</div>
 						<pre className="px-5 py-4 font-mono text-[0.75rem] leading-[1.9] overflow-x-auto">

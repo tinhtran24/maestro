@@ -6,8 +6,8 @@ declare global {
 	}
 
 	interface ImportMetaEnv {
-		readonly VITE_AO_POSTHOG_KEY?: string;
-		readonly VITE_AO_POSTHOG_HOST?: string;
+		readonly VITE_THANOS_POSTHOG_KEY?: string;
+		readonly VITE_THANOS_POSTHOG_HOST?: string;
 	}
 }
 

@@ -98,7 +98,7 @@ func fakeSpawnerFor(t *testing.T, hosts map[string]*inProcHost, fakePID int) hos
 }
 
 // ---------------------------------------------------------------------------
-// Redirect ptyregistry to a temp HOME so tests don't pollute ~/.ao
+// Redirect ptyregistry to a temp HOME so tests don't pollute ~/.thanos
 // ---------------------------------------------------------------------------
 
 func isolateRegistry(t *testing.T) {

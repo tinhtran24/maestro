@@ -1,7 +1,7 @@
 # App Shell & Routing
 
 Clone the Electron main process and renderer shell/routing from
-`agent-orchestrator-main/frontend/src`. This doc lists the modules to port and
+`thanos-main/frontend/src`. This doc lists the modules to port and
 their responsibilities.
 
 ## Electron main process (`src/main/`)
@@ -35,7 +35,7 @@ control, update actions). No `nodeIntegration` in the renderer.
 ### State-dir pinning
 
 In `main.ts`, pin `app.setPath('userData', '~/.thanos/electron')` before app ready.
-Mirror AO's hard rule — all state under `~/.thanos`.
+Mirror Thanos's hard rule — all state under `~/.thanos`.
 
 ## Renderer routing (`src/renderer/routes/`)
 
@@ -83,4 +83,4 @@ sidebar collapse, theme. Server state stays in TanStack Query — do not duplica
 - Tailwind CSS 4 via `@tailwindcss/vite`; global `styles.css`.
 - shadcn components under `components/ui/` (`components.json` config).
 - Terminal keeps its own palette (`lib/terminal-themes.ts`); refined-blue accent
-  elsewhere, per AO DESIGN.md.
+  elsewhere, per Thanos DESIGN.md.

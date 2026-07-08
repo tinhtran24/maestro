@@ -1,19 +1,19 @@
-# Plan: Clone the AO Frontend into `app/` — Shell Choice (Wails vs. Electron)
+# Plan: Clone the Thanos Frontend into `app/` — Shell Choice (Wails vs. Electron)
 
 > **DECISION (locked): Option B — Wails v3 (Go-native shell).** The app in `app/`
-> reuses AO's React renderer verbatim but rebuilds the shell in Go with Wails; the
+> reuses Thanos's React renderer verbatim but rebuilds the shell in Go with Wails; the
 > preview browser and auto-updater are reimplemented natively. See Option B below
 > for the responsibility mapping and `04_milestones.md` (shell phases now target
 > Wails, not Electron).
 
-> Task: clone `agent-orchestrator-main/frontend/` into `thanos/app/`, driving the
+> Task: clone `thanos-main/frontend/` into `thanos/app/`, driving the
 > cloned `to` daemon (`thanos/backend`). Resolved question: **build the app with
 > Wails** (Go-native), not Electron.
 
 ## Key insight that makes both viable
 
 The cloned backend is a **standalone local daemon** exposing HTTP + SSE + WebSocket
-at `/api/v1`. The AO renderer is a **plain React SPA** that talks to that daemon
+at `/api/v1`. The Thanos renderer is a **plain React SPA** that talks to that daemon
 over the network — it does **not** depend on Electron for data. Electron is only
 the *shell*: it (a) owns daemon lifecycle, (b) hosts an embedded BrowserView for
 `to preview`, (c) does auto-update, (d) exposes a small IPC bridge.
@@ -22,15 +22,15 @@ So the renderer (routes, components, hooks, API client, terminal, stores — ~90
 the frontend code) is **portable to either shell unchanged**. The decision only
 affects the ~10% "shell" layer (`src/main/*`, `preload.ts`, `shared/daemon-*`).
 
-## Option A — Electron (clone AO tech structure verbatim) ★ fidelity
+## Option A — Electron (clone Thanos tech structure verbatim) ★ fidelity
 
-Port `agent-orchestrator-main/frontend/` into `app/` as-is (Electron 33 + Forge +
+Port `thanos-main/frontend/` into `app/` as-is (Electron 33 + Forge +
 Vite + React 19). See `00`–`04` in this folder for the full breakdown.
 
 - **Pros**: highest fidelity, fastest to working parity, every `src/main/*`
   module (daemon-owner, browser-view-host, auto-updater, supervisor-link) and its
   tests port 1:1. Embedded preview BrowserView and electron-updater work out of the
-  box. Matches AO's DESIGN "clone verbatim" rule exactly.
+  box. Matches Thanos's DESIGN "clone verbatim" rule exactly.
 - **Cons**: ships Chromium + Node (~big binary); a second toolchain (npm/Node)
   alongside Go; diverges from Thanos's original Wails choice.
 - **Effort**: lowest — it's a port, following milestones `04_milestones.md`.
@@ -73,7 +73,7 @@ that migration is a contained swap of the `src/main/*` layer, not a rewrite.
 If a lightweight, Go-only single-toolchain app is a hard requirement up front, go
 **straight to Wails (B)** and budget for reimplementing preview + updater.
 
-Either way: put the app in `app/`, keep the renderer identical to AO, and generate
+Either way: put the app in `app/`, keep the renderer identical to Thanos, and generate
 `app/src/api/schema.ts` from `backend/internal/httpd/apispec/openapi.yaml`.
 
 ## Decision needed

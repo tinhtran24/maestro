@@ -1,4 +1,4 @@
-// Command gen is the Thanos Orchestrator code-generation entrypoint. It
+// Command gen is the Thanos code-generation entrypoint. It
 // dispatches on a subcommand so more generators can be added later:
 //
 //	gen spec [-out openapi.yaml]   # write the code-first OpenAPI document
@@ -54,7 +54,7 @@ func runSpec(args []string) {
 }
 
 func usage() {
-	fmt.Fprint(os.Stderr, `gen — Thanos Orchestrator code generators
+	fmt.Fprint(os.Stderr, `gen — Thanos code generators
 
 Usage:
   gen <subcommand> [flags]

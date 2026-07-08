@@ -20,7 +20,7 @@ func TestReviewTextsIncludesMultiPRQueue(t *testing.T) {
 
 	prompt, _ := reviewTexts(spec)
 	for _, want := range []string{
-		"AO created 2 review tasks",
+		"Thanos created 2 review tasks",
 		"Review every queued PR, then submit all results together",
 		"Complete every review task in the queue autonomously",
 		"Do not ask the user whether to continue to the next PR",
@@ -29,7 +29,7 @@ func TestReviewTextsIncludesMultiPRQueue(t *testing.T) {
 		"After every PR has its own GitHub review from step 1",
 		"printf '%s'",
 		"do not use a heredoc",
-		"ao review submit --session mer-1 --reviews -",
+		"to review submit --session mer-1 --reviews -",
 		`"reviews": [`,
 	} {
 		if !strings.Contains(prompt, want) {

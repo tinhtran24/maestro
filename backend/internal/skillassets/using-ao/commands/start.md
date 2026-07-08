@@ -1,11 +1,11 @@
-# ao start
+# to start
 
-Fetch (if needed) and open the Agent Orchestrator desktop app. The desktop app owns the daemon, state, and updates. `ao start` no longer runs a daemon: it resolves the installed app (or downloads the latest release), opens it, and exits.
+Fetch (if needed) and open the Thanos desktop app. The desktop app owns the daemon, state, and updates. `to start` no longer runs a daemon: it resolves the installed app (or downloads the latest release), opens it, and exits.
 
 ## Syntax
 
 ```
-ao start [flags]
+to start [flags]
 ```
 
 ## Flags
@@ -17,11 +17,11 @@ ao start [flags]
 ## Examples
 
 ```bash
-# Open the AO desktop app
-ao start
+# Open the Thanos desktop app
+to start
 ```
 
 ```bash
 # Open the app and get the result as JSON
-ao start --json
+to start --json
 ```

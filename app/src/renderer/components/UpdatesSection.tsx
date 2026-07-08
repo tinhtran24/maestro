@@ -16,7 +16,7 @@ const CHANNEL_OPTIONS: { value: UpdateChannel; label: string }[] = [
 ];
 
 // UpdatesSection is the Global Settings card for the desktop auto-update channel
-// (issue #2207). It reads/writes ~/.ao/update-settings.json via the main process
+// (issue #2207). It reads/writes ~/.thanos/update-settings.json via the main process
 // (the same file auto-updater.ts consumes), letting a user pick Stable vs Nightly.
 // Changes apply on the next launch / update check.
 export function UpdatesSection() {

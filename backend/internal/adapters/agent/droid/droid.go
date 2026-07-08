@@ -3,7 +3,7 @@
 // workspace-local hooks, and reading hook-derived session info.
 //
 // Droid is Factory's terminal coding agent (binary "droid"). Unlike Grok it has
-// no Claude Code compatibility layer, so AO installs its own hooks into the
+// no Claude Code compatibility layer, so Thanos installs its own hooks into the
 // worktree-local .factory/hooks.json (see hooks.go). The hook JSON structure
 // matches Claude Code's, but Droid's Notification payload omits notification_type
 // and its hooks live under .factory/, so the adapter ships its own activity
@@ -11,7 +11,7 @@
 //
 // Launch uses the interactive `droid [prompt]` command (the prompt is a
 // positional argument). Droid's interactive TUI exposes no per-launch permission
-// flag (--auto / --skip-permissions-unsafe live only on `droid exec`), so AO's
+// flag (--auto / --skip-permissions-unsafe live only on `droid exec`), so Thanos's
 // graduated permission modes are delivered by writing a process-scoped runtime
 // settings file (sessionDefaultSettings.autonomyLevel) and passing it via the
 // root `--settings <path>` flag. Restore prefers the hook-captured native
@@ -141,7 +141,7 @@ func (p *Plugin) SessionInfo(ctx context.Context, session ports.SessionRef) (por
 	return info, ok, nil
 }
 
-// droidAutonomyLevel maps an AO permission mode onto Droid's
+// droidAutonomyLevel maps an Thanos permission mode onto Droid's
 // sessionDefaultSettings.autonomyLevel (off|low|medium|high). The empty string
 // means "no override" — defer to the user's own Droid settings — so the default
 // mode emits no --settings flag and writes no file.

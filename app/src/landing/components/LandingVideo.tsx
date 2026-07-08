@@ -12,7 +12,7 @@ export function LandingVideo() {
 					allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
 					allowFullScreen
 					className="w-full h-full border-none"
-					title="Agent Orchestrator Launch Demo"
+					title="Thanos Launch Demo"
 				/>
 			</div>
 		</section>

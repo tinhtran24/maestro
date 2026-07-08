@@ -4,20 +4,20 @@
 //
 // The Kilo Code CLI (binary "kilocode", also aliased "kilo"; npm package
 // @kilocode/cli) is a fork of sst/opencode and shares its CLI surface and
-// plugin runtime, so AO bridges it the same two ways it bridges opencode:
+// plugin runtime, so Thanos bridges it the same two ways it bridges opencode:
 //   - It has no native command-hook config (no settings.local.json / hooks.json
 //     equivalent). Its only lifecycle-extensibility surface is the @opencode-ai
 //     plugin SDK loaded from a config dir's `{plugin,plugins}/*.{ts,js}` glob,
-//     so GetAgentHooks installs an AO-owned plugin file (see hooks.go) into
+//     so GetAgentHooks installs an Thanos-owned plugin file (see hooks.go) into
 //     .kilocode/plugins/ instead of merging JSON.
 //   - Its interactive TUI exposes no permission flag (the --auto flag lives only
-//     on `kilo run`, not the default TUI command AO launches) and no
-//     system-prompt flag. AO's graduated permission modes are delivered via the
+//     on `kilo run`, not the default TUI command Thanos launches) and no
+//     system-prompt flag. Thanos's graduated permission modes are delivered via the
 //     KILO_CONFIG_CONTENT env var, which Kilo deep-merges as the
 //     highest-precedence inline config; the system prompt defers to Kilo's own
 //     config.
 //
-// AO-managed sessions derive native session identity and display metadata from
+// Thanos-managed sessions derive native session identity and display metadata from
 // the Kilo plugin's reported events, mirroring the opencode and Codex adapters.
 package kilocode
 
@@ -35,7 +35,7 @@ import (
 
 const (
 	// adapterID is the registry id and the value users pass to
-	// `ao spawn --agent`. It matches domain.HarnessKilocode.
+	// `to spawn --agent`. It matches domain.HarnessKilocode.
 	adapterID = "kilocode"
 )
 
@@ -133,11 +133,11 @@ func (p *Plugin) SessionInfo(ctx context.Context, session ports.SessionRef) (por
 // precedence: global -> KILO_CONFIG -> ./kilo.json -> .kilo/kilo.json ->
 // KILO_CONFIG_CONTENT -> managed; later wins). It is the permission-control
 // surface the interactive TUI honors: the --auto flag exists solely on
-// `kilo run`, not on the default TUI command AO launches, so passing any
+// `kilo run`, not on the default TUI command Thanos launches, so passing any
 // permission flag would make Kilo reject the argv and the session fail to launch.
 const kilocodePermissionEnvVar = "KILO_CONFIG_CONTENT"
 
-// kilocodePermissionConfig maps an AO permission mode onto Kilo's permission
+// kilocodePermissionConfig maps an Thanos permission mode onto Kilo's permission
 // config (tool -> action, values "ask"/"allow"/"deny", verified via
 // `kilocode config check`). Tools left unset fall back to Kilo's own default
 // action ("ask"), so each mode only names the tools it relaxes:

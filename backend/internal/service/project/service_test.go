@@ -121,11 +121,11 @@ func TestManager_AddListGetRemove(t *testing.T) {
 		t.Fatalf("List() = %v, %v; want empty", got, err)
 	}
 
-	proj, err := m.Add(ctx, project.AddInput{Path: repo, ProjectID: ptr("ao"), Name: ptr("Agent Orchestrator")})
+	proj, err := m.Add(ctx, project.AddInput{Path: repo, ProjectID: ptr("ao"), Name: ptr("Thanos")})
 	if err != nil {
 		t.Fatalf("Add: %v", err)
 	}
-	if proj.ID != "ao" || proj.Name != "Agent Orchestrator" || proj.Path != repo || proj.DefaultBranch != "main" {
+	if proj.ID != "ao" || proj.Name != "Thanos" || proj.Path != repo || proj.DefaultBranch != "main" {
 		t.Fatalf("Add returned %#v", proj)
 	}
 
@@ -577,9 +577,9 @@ func TestManager_GetUpdateRemoveErrors(t *testing.T) {
 
 func configureCommitter(t *testing.T) {
 	t.Helper()
-	t.Setenv("GIT_AUTHOR_NAME", "AO Test")
+	t.Setenv("GIT_AUTHOR_NAME", "Thanos Test")
 	t.Setenv("GIT_AUTHOR_EMAIL", "ao@example.com")
-	t.Setenv("GIT_COMMITTER_NAME", "AO Test")
+	t.Setenv("GIT_COMMITTER_NAME", "Thanos Test")
 	t.Setenv("GIT_COMMITTER_EMAIL", "ao@example.com")
 }
 
@@ -745,7 +745,7 @@ func TestManager_AddWorkspaceAdoptsExistingParent(t *testing.T) {
 		t.Fatalf("git log: %v (%s)", err, logOut)
 	}
 	lines := strings.Split(strings.TrimSpace(string(logOut)), "\n")
-	// Expect: AO workspace commit + "add gitignore" + "initial" = 3 commits.
+	// Expect: Thanos workspace commit + "add gitignore" + "initial" = 3 commits.
 	if len(lines) != 3 {
 		t.Fatalf("expected 3 commits, got %d:\n%s", len(lines), logOut)
 	}

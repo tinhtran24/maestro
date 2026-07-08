@@ -13,17 +13,17 @@ import (
 func TestSpawnEnvProjectVarsCannotOverrideInternal(t *testing.T) {
 	env := spawnEnv("mer-1", "mer", "issue-9", "/data", map[string]string{
 		"FOO":        "bar",
-		EnvSessionID: "hacked", // a project must not override AO-internal vars
+		EnvSessionID: "hacked", // a project must not override Thanos-internal vars
 		EnvProjectID: "hacked",
 	})
 	if env["FOO"] != "bar" {
 		t.Fatalf("FOO = %q, want bar", env["FOO"])
 	}
 	if env[EnvSessionID] != "mer-1" {
-		t.Fatalf("AO_SESSION_ID = %q, want mer-1 (internal wins)", env[EnvSessionID])
+		t.Fatalf("THANOS_SESSION_ID = %q, want mer-1 (internal wins)", env[EnvSessionID])
 	}
 	if env[EnvProjectID] != "mer" {
-		t.Fatalf("AO_PROJECT_ID = %q, want mer (internal wins)", env[EnvProjectID])
+		t.Fatalf("THANOS_PROJECT_ID = %q, want mer (internal wins)", env[EnvProjectID])
 	}
 }
 

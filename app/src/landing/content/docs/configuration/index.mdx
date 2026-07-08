@@ -1,14 +1,14 @@
 ---
 title: Configuration
-description: How AO stores configuration, what belongs in the global registry, and what you should edit per project.
+description: How Thanos stores configuration, what belongs in the global registry, and what you should edit per project.
 ---
 
-AO uses configuration in two layers:
+Thanos uses configuration in two layers:
 
-- **Global registry** — remembers which projects AO knows about and which repository each project points to.
+- **Global registry** — remembers which projects Thanos knows about and which repository each project points to.
 - **Local project config** — controls behavior for one project: agent, runtime, workspace, rules, reactions, tracker, SCM, and setup commands.
 
-Most users should let `ao start` create the registry entry, then edit the local `agent-orchestrator.yaml` in the project when they want to change behavior.
+Most users should let `to start` create the registry entry, then edit the local `thanos.yaml` in the project when they want to change behavior.
 
 <Callout type="info">
 	The old wrapped format with a top-level `projects:` block is still understood for compatibility, but new project-local
@@ -16,23 +16,23 @@ Most users should let `ao start` create the registry entry, then edit the local 
 	project config.
 </Callout>
 
-## What AO Creates
+## What Thanos Creates
 
-When you run AO in a repository, it can register the project globally and create a local config file:
+When you run Thanos in a repository, it can register the project globally and create a local config file:
 
 ```bash
-ao start
+to start
 ```
 
 The global registry lives at:
 
 ```text
-~/.agent-orchestrator/config.yaml
+~/.thanos/config.yaml
 ```
 
-That file is AO-owned. It stores durable identity:
+That file is Thanos-owned. It stores durable identity:
 
-```yaml title="~/.agent-orchestrator/config.yaml"
+```yaml title="~/.thanos/config.yaml"
 projects:
   my-app:
     projectId: my-app
@@ -50,12 +50,12 @@ projects:
 The local project config lives inside the repository:
 
 ```text
-my-app/agent-orchestrator.yaml
+my-app/thanos.yaml
 ```
 
 That file is for behavior:
 
-```yaml title="agent-orchestrator.yaml"
+```yaml title="thanos.yaml"
 agent: claude-code
 runtime: tmux
 workspace: worktree
@@ -76,13 +76,13 @@ agentRules: |
 
 | Goal                                             | Edit                                           |
 | ------------------------------------------------ | ---------------------------------------------- |
-| Change the default agent or model                | Local `agent-orchestrator.yaml`                |
+| Change the default agent or model                | Local `thanos.yaml`                |
 | Add `.env` or tool config files to each worktree | Local `symlinks`                               |
 | Run setup commands before the agent starts       | Local `postCreate`                             |
 | Disable or tune automated recovery               | Local or global `reactions`                    |
 | Change notification routing for all projects     | Global registry                                |
-| Rename, remove, or relink a registered project   | Use AO commands/dashboard project settings     |
-| Change where AO stores sessions                  | Do not hand-edit; re-register/relink if needed |
+| Rename, remove, or relink a registered project   | Use Thanos commands/dashboard project settings     |
+| Change where Thanos stores sessions                  | Do not hand-edit; re-register/relink if needed |
 
 Do not manually edit `storageKey`, `path`, or `originUrl` unless you are repairing a broken registry entry and already know why it is wrong.
 
@@ -90,7 +90,7 @@ Do not manually edit `storageKey`, `path`, or `originUrl` unless you are repairi
 
 A practical local config usually starts with the agent, runtime, workspace, setup, and rules:
 
-```yaml title="agent-orchestrator.yaml"
+```yaml title="thanos.yaml"
 agent: claude-code # claude-code | codex | aider | opencode
 runtime: tmux # tmux | process
 workspace: worktree # worktree | clone
@@ -116,7 +116,7 @@ See [Projects](/docs/configuration/projects) for the full project behavior refer
 
 You can set defaults that apply across all registered projects in the global registry:
 
-```yaml title="~/.agent-orchestrator/config.yaml"
+```yaml title="~/.thanos/config.yaml"
 defaults:
   agent: claude-code
   runtime: tmux
@@ -134,17 +134,17 @@ Project-local values override global defaults.
 
 ## Config Lookup
 
-AO resolves configuration in this order:
+Thanos resolves configuration in this order:
 
-1. `AO_CONFIG_PATH`, if set.
-2. `agent-orchestrator.yaml` or `agent-orchestrator.yml` found by walking upward from the current directory.
+1. `THANOS_CONFIG_PATH`, if set.
+2. `thanos.yaml` or `thanos.yml` found by walking upward from the current directory.
 3. The global registry path.
 4. Legacy home-directory fallbacks:
-   - `~/.agent-orchestrator.yaml`
-   - `~/.agent-orchestrator.yml`
-   - `~/.config/agent-orchestrator/config.yaml`
+   - `~/.thanos.yaml`
+   - `~/.thanos.yml`
+   - `~/.config/thanos/config.yaml`
 
-For normal use, run AO from inside the repository and keep `agent-orchestrator.yaml` in the repo root.
+For normal use, run Thanos from inside the repository and keep `thanos.yaml` in the repo root.
 
 ## Top-Level Global Keys
 
@@ -163,12 +163,12 @@ For normal use, run AO from inside the repository and keep `agent-orchestrator.y
 
 ## Where Data Lives
 
-AO stores runtime data under `~/.agent-orchestrator/` by storage key. Session files, archived sessions, feedback reports, and observability snapshots are plain files so they can be inspected during debugging.
+Thanos stores runtime data under `~/.thanos/` by storage key. Session files, archived sessions, feedback reports, and observability snapshots are plain files so they can be inspected during debugging.
 
 You usually do not need to configure this. If you need to debug a session, start with:
 
 ```bash
-ls ~/.agent-orchestrator
+ls ~/.thanos
 ```
 
 ## Next Steps
@@ -182,7 +182,7 @@ ls ~/.agent-orchestrator
 	<Card
 		title="Reactions"
 		href="/docs/configuration/reactions"
-		description="Control what AO does when CI fails, reviews arrive, or agents need help."
+		description="Control what Thanos does when CI fails, reviews arrive, or agents need help."
 	/>
 	<Card
 		title="Remote access"

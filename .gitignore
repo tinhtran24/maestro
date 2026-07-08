@@ -19,10 +19,10 @@ vendor/
 /backend/backend
 # bundled daemon binary produced by app/scripts/build-daemon.mjs
 /app/daemon/
-agent-orchestrator.yaml
+thanos.yaml
 
 # Backend runtime data artifacts (SQLite store + WAL, CDC event log).
-# Created at AO_DATA_DIR (outside the repo by default); ignored here so a
+# Created at THANOS_DATA_DIR (outside the repo by default); ignored here so a
 # data dir pointed at the tree never gets committed.
 *.db
 *.db-shm
@@ -30,10 +30,10 @@ agent-orchestrator.yaml
 session-events.jsonl
 session-events.jsonl.*
 
-# Agent Orchestrator local session state
-.ao/
+# Thanos local session state
+.thanos/
 
-# AO reviewer scratch output. The reviewer agent runs inside the worker's
+# Thanos reviewer scratch output. The reviewer agent runs inside the worker's
 # worktree; its review writeup must never be committed onto the worker branch.
 /review.md
 

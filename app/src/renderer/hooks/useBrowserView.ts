@@ -14,14 +14,14 @@ type UseBrowserViewOptions = {
 	 */
 	terminated?: boolean;
 	/**
-	 * Preview target driven by the daemon (via `ao preview`, streamed over CDC).
+	 * Preview target driven by the daemon (via `to preview`, streamed over CDC).
 	 * When set, the view navigates here automatically; an empty value clears it.
 	 */
 	previewUrl?: string;
 	/**
-	 * Monotonic counter the daemon bumps on every `ao preview` call, even when
+	 * Monotonic counter the daemon bumps on every `to preview` call, even when
 	 * previewUrl is unchanged. The view re-navigates whenever it advances, so a
-	 * repeated `ao preview <same-url>` still refreshes (and CDC replays of an
+	 * repeated `to preview <same-url>` still refreshes (and CDC replays of an
 	 * unrelated session update, which leave it unchanged, are ignored).
 	 */
 	previewRevision?: number;
@@ -139,7 +139,7 @@ export function useBrowserView({
 
 	// A ResizeObserver only fires on size changes, so a position-only layout shift
 	// leaves the native overlay at stale bounds: entering/leaving pop-out moves the
-	// slot into a different panel, and opening the inspector (what `ao preview`
+	// slot into a different panel, and opening the inspector (what `to preview`
 	// does) reflows the slot's x without changing the observed node's box size.
 	// Neither fires the observer, so the view visibly spills over the sidebar/
 	// terminal until an unrelated window resize re-measures it. Re-measure now and
@@ -251,7 +251,7 @@ export function useBrowserView({
 				setNavState((current) => ({
 					...current,
 					url: normalized,
-					title: normalized ? "AO preview" : "",
+					title: normalized ? "Thanos preview" : "",
 					isLoading: false,
 				}));
 				return Promise.resolve();
@@ -277,7 +277,7 @@ export function useBrowserView({
 	}, [clear, terminated]);
 
 	// Drive the view from the daemon-set preview target. Current daemons key
-	// this on previewRevision (bumped on every `ao preview` call); older daemons
+	// this on previewRevision (bumped on every `to preview` call); older daemons
 	// did not send it, so fall back to URL changes for compatibility.
 	useEffect(() => {
 		if (!viewId || terminated) return;

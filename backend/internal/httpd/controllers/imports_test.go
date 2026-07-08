@@ -41,7 +41,7 @@ func newImportTestServer(t *testing.T, svc controllers.ImportService) *httptest.
 }
 
 func TestImportAPI_Status(t *testing.T) {
-	svc := &fakeImportService{statusResult: importsvc.Status{Available: true, LegacyRoot: "/home/u/.agent-orchestrator"}}
+	svc := &fakeImportService{statusResult: importsvc.Status{Available: true, LegacyRoot: "/home/u/.thanos"}}
 	srv := newImportTestServer(t, svc)
 	body, status, headers := doRequest(t, srv, "GET", "/api/v1/import", "")
 	if status != http.StatusOK {
@@ -50,7 +50,7 @@ func TestImportAPI_Status(t *testing.T) {
 	assertJSON(t, headers)
 	var resp controllers.ImportStatusResponse
 	mustJSON(t, body, &resp)
-	if !resp.Available || resp.LegacyRoot != "/home/u/.agent-orchestrator" {
+	if !resp.Available || resp.LegacyRoot != "/home/u/.thanos" {
 		t.Fatalf("status = %+v", resp)
 	}
 }

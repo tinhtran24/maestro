@@ -53,7 +53,7 @@ func Open(dataDir string) (*Store, error) {
 	if err := os.MkdirAll(dataDir, 0o750); err != nil {
 		return nil, fmt.Errorf("create data dir: %w", err)
 	}
-	dsn := "file:" + filepath.Join(dataDir, "ao.db") + pragmas
+	dsn := "file:" + filepath.Join(dataDir, "thanos.db") + pragmas
 
 	writeDB, err := sql.Open("sqlite", dsn)
 	if err != nil {

@@ -2,8 +2,8 @@ import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import path from "node:path";
 
 /**
- * The marker the desktop app writes under ~/.ao on every launch (spec §5).
- * It is the fast-path hint `ao start` reads to locate the installed bundle.
+ * The marker the desktop app writes under ~/.thanos on every launch (spec §5).
+ * It is the fast-path hint `to start` reads to locate the installed bundle.
  * The Go reader is backend/internal/cli/start.go `appState`; the JSON keys
  * below MUST match its struct tags exactly (camelCase).
  */
@@ -31,11 +31,11 @@ export interface AppStateMarker {
 /** Current marker format version (spec §5, schemaVersion field). */
 const SCHEMA_VERSION = 2;
 
-/** File name of the marker under the ~/.ao state dir. */
+/** File name of the marker under the ~/.thanos state dir. */
 export const APP_STATE_FILE_NAME = "app-state.json";
 
 export interface WriteAppStateOptions {
-	/** Directory the marker lives in (dirname of running.json, i.e. ~/.ao). */
+	/** Directory the marker lives in (dirname of running.json, i.e. ~/.thanos). */
 	stateDir: string;
 	/** Bundle path as of this launch (the macOS .app, or the platform exe). */
 	appPath: string;
@@ -43,7 +43,7 @@ export interface WriteAppStateOptions {
 	version: string;
 	/**
 	 * How the app was installed, captured ONLY on first marker creation from
-	 * `ao start`'s --installed-via arg. Subsequent launches preserve the value
+	 * `to start`'s --installed-via arg. Subsequent launches preserve the value
 	 * already on disk. Defaults to "unknown" when absent on first creation.
 	 */
 	installedVia?: string;
@@ -73,7 +73,7 @@ async function readExisting(file: string): Promise<AppStateMarker | null> {
 /**
  * Atomic write: temp file in the same dir, then rename. Mirrors the daemon's
  * proven atomic write (backend/internal/runfile/runfile.go Write) so a
- * concurrent `ao start` reader never observes a partial file.
+ * concurrent `to start` reader never observes a partial file.
  */
 async function atomicWriteMarker(stateDir: string, marker: AppStateMarker): Promise<void> {
 	await mkdir(stateDir, { recursive: true, mode: 0o750 });
@@ -85,10 +85,10 @@ async function atomicWriteMarker(stateDir: string, marker: AppStateMarker): Prom
 }
 
 /**
- * Write ~/.ao/app-state.json. The app is the SOLE writer (invariant 3) and
+ * Write ~/.thanos/app-state.json. The app is the SOLE writer (invariant 3) and
  * writes on every launch. Mirrors the daemon's proven atomic write
  * (backend/internal/runfile/runfile.go Write): a temp file in the same dir
- * then an atomic rename, so a concurrent `ao start` reader never observes a
+ * then an atomic rename, so a concurrent `to start` reader never observes a
  * partial file.
  *
  * On first creation, installedAt and installSource are captured and then

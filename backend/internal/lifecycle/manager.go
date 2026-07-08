@@ -65,7 +65,7 @@ type Manager struct {
 func New(store sessionStore, messenger ports.AgentMessenger, opts ...Option) *Manager {
 	// UTC so activity-driven LastActivityAt/UpdatedAt match spawn-stamped
 	// timestamps (the session manager clock is UTC too); a local clock here left
-	// `ao session get` showing created in UTC but updated in local time. A
+	// `to session get` showing created in UTC but updated in local time. A
 	// WithClock option may still override this in tests.
 	clock := func() time.Time { return time.Now().UTC() }
 	m := &Manager{store: store, messenger: messenger, window: defaultRecentActivityWindow, clock: clock, react: newReactionState()}

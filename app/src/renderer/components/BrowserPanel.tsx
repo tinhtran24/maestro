@@ -128,7 +128,7 @@ function StaticPreview({ url }: { url: string }) {
 	return (
 		<div className="absolute inset-0 overflow-auto bg-[#f7f8fb] text-[#17202a]">
 			<div className="border-b border-[#dfe4ea] bg-white px-4 py-3">
-				<div className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#687384]">AO Preview</div>
+				<div className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#687384]">Thanos Preview</div>
 				<div className="mt-1 truncate font-mono text-[12px] text-[#2f5b9d]">{url}</div>
 			</div>
 			<div className="mx-auto max-w-[760px] px-5 py-6">
@@ -139,7 +139,7 @@ function StaticPreview({ url }: { url: string }) {
 								Demo app preview
 							</h1>
 							<p className="mt-1 text-[13px] leading-5 text-[#526070]">
-								The worker exposed a local Vite app with <span className="font-mono">ao preview</span>.
+								The worker exposed a local Vite app with <span className="font-mono">to preview</span>.
 							</p>
 						</div>
 						<span className="rounded-[6px] bg-[#e7f8ed] px-2.5 py-1 text-[11px] font-semibold text-[#177245]">

@@ -1,13 +1,13 @@
 ---
 title: Architecture
-description: How Agent Orchestrator fits together — plugin slots, session lifecycle, event bus, prompt assembly, and activity detection.
+description: How Thanos fits together — plugin slots, session lifecycle, event bus, prompt assembly, and activity detection.
 ---
 
-Agent Orchestrator (AO) is a Node.js orchestrator that spawns and manages parallel AI coding agents across isolated git worktrees. Every moving part is a plugin; the core provides the state machine, event bus, and prompt assembly that ties them together.
+Thanos (Thanos) is a Node.js orchestrator that spawns and manages parallel AI coding agents across isolated git worktrees. Every moving part is a plugin; the core provides the state machine, event bus, and prompt assembly that ties them together.
 
 ## The 8 Plugin Slots
 
-Each abstraction in AO is a named interface defined in `packages/core/src/types.ts`. Seven of the eight slots are pluggable at runtime; the eighth (Lifecycle) is built into core and cannot be replaced.
+Each abstraction in Thanos is a named interface defined in `packages/core/src/types.ts`. Seven of the eight slots are pluggable at runtime; the eighth (Lifecycle) is built into core and cannot be replaced.
 
 | Slot      | Default                                         | Purpose                                                          | Interface          |
 | --------- | ----------------------------------------------- | ---------------------------------------------------------------- | ------------------ |
@@ -22,7 +22,7 @@ Each abstraction in AO is a named interface defined in `packages/core/src/types.
 
 <Callout type="info">
 	The Lifecycle slot is not pluggable. It is instantiated by core and wired to all other plugins automatically. You
-	configure its behaviour (poll interval, reactions, thresholds) through `agent-orchestrator.yaml` rather than by
+	configure its behaviour (poll interval, reactions, thresholds) through `thanos.yaml` rather than by
 	replacing the implementation.
 </Callout>
 
@@ -172,7 +172,7 @@ Built from the project configuration. Includes:
 
 ### Layer 3 — User rules (per-project)
 
-Loaded from `agentRules` (inline string in `agent-orchestrator.yaml`) and/or `agentRulesFile` (path to a file, relative to the project root). Both are concatenated when present. If neither is provided, this layer is omitted.
+Loaded from `agentRules` (inline string in `thanos.yaml`) and/or `agentRulesFile` (path to a file, relative to the project root). Both are concatenated when present. If neither is provided, this layer is omitted.
 
 An explicit `userPrompt` is appended after Layer 3 as "Additional Instructions" — it has the highest precedence and overrides anything above it.
 
@@ -186,9 +186,9 @@ The `orchestratorRules` field in `ProjectConfig` is reserved for orchestrator-ro
 
 Orchestrator sessions do not receive the standard three-layer prompt. Instead, `generateOrchestratorPrompt()` in `packages/core/src/orchestrator-prompt.ts` builds a standalone prompt that provides:
 
-- **Role rules** — read-only investigations only; never own a PR; never use `tmux send-keys` directly; always use `ao send` / `ao spawn` to delegate.
+- **Role rules** — read-only investigations only; never own a PR; never use `tmux send-keys` directly; always use `to send` / `to spawn` to delegate.
 - **Project info** — name, repo, default branch, session prefix, local path, dashboard port.
-- **Quick-start commands** — `ao status`, `ao spawn`, `ao batch-spawn`, `ao session claim-pr`, `ao send`, `ao open`.
+- **Quick-start commands** — `to status`, `to spawn`, `ao batch-spawn`, `to session claim-pr`, `to send`, `ao open`.
 - **Available `ao` commands table** — full reference adapted to whether a repo is configured.
 - **Session management workflows** — spawning, monitoring, PR takeover, investigation workflow, cleanup.
 - **Dashboard info** — URL and feature summary.
@@ -249,7 +249,7 @@ Every agent plugin must implement this cascade in order:
 | Pattern                | Used by                     | How it works                                                                                                                                                                                                                      |
 | ---------------------- | --------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Agent-native JSONL** | Claude Code, Codex          | The agent writes its own JSONL with rich state entries (`permission_request`, `tool_call`, `error`, etc.). `getActivityState` reads the last entry and maps it to activity states.                                                |
-| **AO activity JSONL**  | Aider, OpenCode, new agents | The agent implements `recordActivity`, which calls `recordTerminalActivity()` → `classifyTerminalActivity()` → `appendActivityEntry()` to write to `{workspacePath}/.ao/activity.jsonl`. `getActivityState` reads from this file. |
+| **Thanos activity JSONL**  | Aider, OpenCode, new agents | The agent implements `recordActivity`, which calls `recordTerminalActivity()` → `classifyTerminalActivity()` → `appendActivityEntry()` to write to `{workspacePath}/.thanos/activity.jsonl`. `getActivityState` reads from this file. |
 
 ### Thresholds
 
@@ -263,7 +263,7 @@ Every agent plugin must implement this cascade in order:
 
 ## PATH Wrappers
 
-When an agent creates a PR or switches a branch, AO needs to update the session metadata (e.g. write `pr=https://...` or `branch=feat/INT-123`) so the dashboard and lifecycle manager stay in sync. Two mechanisms exist:
+When an agent creates a PR or switches a branch, Thanos needs to update the session metadata (e.g. write `pr=https://...` or `branch=feat/INT-123`) so the dashboard and lifecycle manager stay in sync. Two mechanisms exist:
 
 **Claude Code — PostToolUse hooks**
 
@@ -271,7 +271,7 @@ Claude Code writes `.claude/settings.json` with a `PostToolUse` hook that fires 
 
 **All other agents — PATH wrappers**
 
-Agents without a native hook system (Codex, Aider, OpenCode, custom agents) use `~/.ao/bin/gh` and `~/.ao/bin/git` shell wrappers. These wrappers are installed to `~/.ao/bin/` by `setupPathWrapperWorkspace(workspacePath)` from `packages/core/src/agent-workspace-hooks.ts`. The function also writes session context to `{workspacePath}/.ao/AGENTS.md` (gitignored — does not touch tracked files).
+Agents without a native hook system (Codex, Aider, OpenCode, custom agents) use `~/.thanos/bin/gh` and `~/.thanos/bin/git` shell wrappers. These wrappers are installed to `~/.thanos/bin/` by `setupPathWrapperWorkspace(workspacePath)` from `packages/core/src/agent-workspace-hooks.ts`. The function also writes session context to `{workspacePath}/.thanos/AGENTS.md` (gitignored — does not touch tracked files).
 
 The wrappers intercept:
 
@@ -290,7 +290,7 @@ For the user-facing storage summary, see [Configuration — Where data lives](/d
 The lifecycle manager, session manager, and plugin registry emit structured telemetry using project observers created by `createProjectObserver()`. Each running process writes a JSON snapshot to:
 
 ```
-~/.agent-orchestrator/{hash}-observability/processes/{component}-{pid}.json
+~/.thanos/{hash}-observability/processes/{component}-{pid}.json
 ```
 
 The hash is the first 12 characters of the SHA-256 of the config directory path. The `{component}` segment matches the internal observer name (e.g. `lifecycle-manager`, `session-manager`).
@@ -300,7 +300,7 @@ The dashboard's `/api/observability` route reads and merges these per-process sn
 **Feedback reports** from the agent's `bug_report` and `improvement_suggestion` tools are written as flat key-value files at:
 
 ```
-~/.agent-orchestrator/{hash}-{projectId}/feedback-reports/*.kv
+~/.thanos/{hash}-{projectId}/feedback-reports/*.kv
 ```
 
 ---
@@ -308,12 +308,12 @@ The dashboard's `/api/observability` route reads and merges these per-process sn
 ## Data Flow Summary
 
 ```
-agent-orchestrator.yaml ──► Config Loader (Zod) ──► Plugin Registry
+thanos.yaml ──► Config Loader (Zod) ──► Plugin Registry
                                                           │
                                           ┌───────────────┘
                                           │
                                           ▼
-                                    Session Manager ◄─── ao spawn / ao session
+                                    Session Manager ◄─── to spawn / to session
                                           │
                                           ▼
                                   Lifecycle Manager ────► Events ────► Notifiers
@@ -341,7 +341,7 @@ agent-orchestrator.yaml ──► Config Loader (Zod) ──► Plugin Registry
 	<Card
 		title="Project Configuration"
 		href="/docs/configuration/projects"
-		description="Configure projects, agents, trackers, and reactions in agent-orchestrator.yaml."
+		description="Configure projects, agents, trackers, and reactions in thanos.yaml."
 	/>
 	<Card
 		title="Authoring Plugins"
@@ -356,6 +356,6 @@ agent-orchestrator.yaml ──► Config Loader (Zod) ──► Plugin Registry
 	<Card
 		title="Configuration"
 		href="/docs/configuration"
-		description="Understand the global registry, local project config, and where AO stores runtime data."
+		description="Understand the global registry, local project config, and where Thanos stores runtime data."
 	/>
 </Cards>

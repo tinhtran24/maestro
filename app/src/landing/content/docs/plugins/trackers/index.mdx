@@ -1,9 +1,9 @@
 ---
 title: Trackers overview
-description: Where your issues live. AO fetches them, assigns them to sessions, and updates them as work progresses.
+description: Where your issues live. Thanos fetches them, assigns them to sessions, and updates them as work progresses.
 ---
 
-The **tracker** plugin is how AO fetches issues, creates new ones, and links sessions to them. Three trackers ship.
+The **tracker** plugin is how Thanos fetches issues, creates new ones, and links sessions to them. Three trackers ship.
 
 <PluginGrid>
 	<PluginCard
@@ -28,7 +28,7 @@ The **tracker** plugin is how AO fetches issues, creates new ones, and links ses
 
 ## What a tracker does
 
-1. **Fetch an issue** by id — used by `ao spawn 42` to build the agent's prompt.
+1. **Fetch an issue** by id — used by `to spawn 42` to build the agent's prompt.
 2. **Create an issue** — used by a few helper workflows (e.g. CI self-healing can file a follow-up).
 3. **Close / comment** — the agent's wrappers use these when it wraps up work.
 4. **Return the issue URL** so the dashboard can link to it.

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Cross-compile the Go `ao` binary (backend/cmd/ao) for every supported
+# Cross-compile the Go `to` binary (backend/cmd/to) for every supported
 # platform and drop each into the matching platform package's bin/ dir.
 #
 # Run this from any cwd before `npm publish`. It is the ONLY way the binaries
@@ -8,7 +8,7 @@
 #
 # CGO-free build (modernc.org/sqlite driver) so cross-compilation needs no C
 # toolchain. Prod build: no -ldflags, so cli.releaseRepo keeps its default
-# (AgentWrapper/agent-orchestrator).
+# (AgentWrapper/thanos).
 set -euo pipefail
 
 # Repo layout: this script lives at <repo>/packages/build-binaries.sh.
@@ -18,20 +18,20 @@ BACKEND_DIR="${REPO_ROOT}/backend"
 
 # pkg_dir : npm_os : npm_arch : GOOS : GOARCH : bin_name
 TARGETS=(
-  "ao-darwin-arm64:darwin:arm64:darwin:arm64:ao"
-  "ao-darwin-x64:darwin:x64:darwin:amd64:ao"
-  "ao-win32-x64:win32:x64:windows:amd64:ao.exe"
-  "ao-linux-x64:linux:x64:linux:amd64:ao"
+  "thanos-darwin-arm64:darwin:arm64:darwin:arm64:to"
+  "thanos-darwin-x64:darwin:x64:darwin:amd64:to"
+  "thanos-win32-x64:win32:x64:windows:amd64:to.exe"
+  "thanos-linux-x64:linux:x64:linux:amd64:to"
 )
 
-echo "Building ao binaries from ${BACKEND_DIR}/cmd/ao"
+echo "Building to binaries from ${BACKEND_DIR}/cmd/to"
 for t in "${TARGETS[@]}"; do
   IFS=":" read -r pkg npm_os npm_arch goos goarch bin <<<"$t"
   out="${SCRIPT_DIR}/${pkg}/bin/${bin}"
   mkdir -p "${SCRIPT_DIR}/${pkg}/bin"
   echo "  -> ${pkg} (GOOS=${goos} GOARCH=${goarch}) -> bin/${bin}"
   (cd "${BACKEND_DIR}" && CGO_ENABLED=0 GOOS="${goos}" GOARCH="${goarch}" \
-    go build -o "${out}" ./cmd/ao)
+    go build -o "${out}" ./cmd/to)
   chmod 0755 "${out}"
 done
 

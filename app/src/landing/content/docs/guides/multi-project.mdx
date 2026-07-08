@@ -1,21 +1,21 @@
 ---
 title: Multi-project
-description: Run AO against several repos from one dashboard, with per-project plugins and configs.
+description: Run Thanos against several repos from one dashboard, with per-project plugins and configs.
 ---
 
 import { Callout } from "fumadocs-ui/components/callout";
 
-One `agent-orchestrator.yaml` can drive many projects. Each project gets its own repo, tracker, plugin overrides, and — most importantly — its own dashboard lane.
+One `thanos.yaml` can drive many projects. Each project gets its own repo, tracker, plugin overrides, and — most importantly — its own dashboard lane.
 
 ## Config shape
 
-```yaml title="agent-orchestrator.yaml"
+```yaml title="thanos.yaml"
 runtime: tmux # global default
 agent: claude-code
 
 projects:
   web:
-    repo: ComposioHQ/agent-orchestrator
+    repo: ComposioHQ/thanos
     agent: claude-code
 
   api:
@@ -37,21 +37,21 @@ Project IDs (`web`, `api`, `marketing`) are what you pass to `--project` / `-p`.
 
 Two ways:
 
-- **By path**: `ao start ~/code/new-repo` — AO infers a project ID from the directory name and appends it.
-- **By URL**: `ao start https://github.com/owner/repo` — AO clones it under `~/.agent-orchestrator/` and registers it.
+- **By path**: `to start ~/code/new-repo` — Thanos infers a project ID from the directory name and appends it.
+- **By URL**: `to start https://github.com/owner/repo` — Thanos clones it under `~/.thanos/` and registers it.
 
-Both update `agent-orchestrator.yaml` in place. Diff it if you're curious.
+Both update `thanos.yaml` in place. Diff it if you're curious.
 
 ## Spawning in the right project
 
-`ao spawn` auto-detects the project when you're in a worktree belonging to it. Otherwise name it:
+`to spawn` auto-detects the project when you're in a worktree belonging to it. Otherwise name it:
 
 ```bash
-ao spawn 42 -p api
+to spawn 42 -p api
 ao batch-spawn 10 11 12 -p web
 ```
 
-Or pass no project and AO will prompt.
+Or pass no project and Thanos will prompt.
 
 ## Per-project plugin overrides
 
@@ -77,10 +77,10 @@ The `internal` project uses Linear + Discord. Every other project uses GitHub + 
 ## Status across projects
 
 ```bash
-ao status                   # all projects
-ao status -p api            # one project
-ao status --json | jq       # scripted
-ao status --watch           # live-updating table
+to status                   # all projects
+to status -p api            # one project
+to status --json | jq       # scripted
+to status --watch           # live-updating table
 ```
 
 The dashboard shows all projects as swim lanes.
@@ -88,8 +88,8 @@ The dashboard shows all projects as swim lanes.
 ## Stopping selectively
 
 ```bash
-ao stop api          # stop one project's orchestrator + dashboard
-ao stop --all        # stop everything
+to stop api          # stop one project's orchestrator + dashboard
+to stop --all        # stop everything
 ```
 
 <Callout type="info">

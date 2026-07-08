@@ -22,8 +22,8 @@ ao
 ├── open [target]               Open session(s) in terminal tabs
 ├── verify [issue]              Mark an issue as verified (or failed) after staging check
 ├── doctor                      Run install, environment, and runtime health checks
-├── update                      Check for updates and upgrade AO
-├── init                        (deprecated — use ao start)
+├── update                      Check for updates and upgrade Thanos
+├── init                        (deprecated — use to start)
 ├── config-help                 Print the config schema and a guide
 ├── notify                      test
 ├── session                     ls, attach, kill, cleanup, restore, claim-pr, remap
@@ -33,7 +33,7 @@ ao
 
 ## Core commands
 
-### `ao start [project]`
+### `to start [project]`
 
 > Start orchestrator agent and dashboard (auto-creates config on first run, adds projects by path/URL)
 
@@ -45,20 +45,20 @@ ao
 | `--dev`             | —       | Use Next.js dev server with hot reload (monorepo only; ignored in npm installs) |
 | `--interactive`     | —       | Prompt to configure config settings                                             |
 
-Positional `[project]` — project id, local path, or repo URL. If omitted and no config exists in `cwd`, AO creates `agent-orchestrator.yaml`.
+Positional `[project]` — project id, local path, or repo URL. If omitted and no config exists in `cwd`, Thanos creates `thanos.yaml`.
 
-If AO is already running, you'll get an interactive prompt to open/restart/spawn-new/quit. Non-TTY callers get info + `process.exit(0)`.
+If Thanos is already running, you'll get an interactive prompt to open/restart/spawn-new/quit. Non-TTY callers get info + `process.exit(0)`.
 
-### `ao stop [project]`
+### `to stop [project]`
 
 > Stop orchestrator agent and dashboard
 
 | Flag              | Default | Purpose                                          |
 | ----------------- | ------- | ------------------------------------------------ |
 | `--purge-session` | —       | Delete the mapped OpenCode session when stopping |
-| `--all`           | —       | Stop all running AO instances on this machine    |
+| `--all`           | —       | Stop all running Thanos instances on this machine    |
 
-### `ao status`
+### `to status`
 
 > Show all sessions with branch, activity, PR, and CI status
 
@@ -71,7 +71,7 @@ If AO is already running, you'll get an interactive prompt to open/restart/spawn
 
 `--watch` and `--json` are mutually exclusive. Falls back to tmux session discovery if no config is found.
 
-### `ao spawn [issue]`
+### `to spawn [issue]`
 
 > Spawn a single agent session
 
@@ -86,7 +86,7 @@ If AO is already running, you'll get an interactive prompt to open/restart/spawn
 Positional `[first]` — issue identifier. The project is auto-detected from `cwd`.
 
 <Callout type="warn">
-	The old two-arg form `ao spawn &lt;project&gt; &lt;issue&gt;` is rejected with an error. Use `-p` or run from inside a
+	The old two-arg form `to spawn &lt;project&gt; &lt;issue&gt;` is rejected with an error. Use `-p` or run from inside a
 	worktree.
 </Callout>
 
@@ -100,7 +100,7 @@ Positional `[first]` — issue identifier. The project is auto-detected from `cw
 
 Skips duplicates within the batch and any issues that already have an active session.
 
-### `ao send <session> [message...]`
+### `to send <session> [message...]`
 
 > Send a message to a session with busy detection and retry
 
@@ -112,7 +112,7 @@ Skips duplicates within the batch and any issues that already have an active ses
 
 Positional: `<session>` required, `[message...]` variadic. One of inline message or `--file` is required. Long messages (>200 chars or multiline) go via tmux paste-buffer + temp file.
 
-### `ao review-check [project]`
+### `to review-check [project]`
 
 > Check PRs for review comments and trigger agents to address them
 
@@ -157,7 +157,7 @@ Positional `[target]` — session name, project id, or `"all"`. Defaults to all 
 
 `[issue]` is required unless `--list` is passed.
 
-### `ao doctor`
+### `to doctor`
 
 > Run install, environment, and runtime health checks
 
@@ -170,7 +170,7 @@ Runs `ao-doctor.sh` for shell-level checks, then TypeScript checks (version fres
 
 ### `ao update`
 
-> Check for updates and upgrade AO to the latest version
+> Check for updates and upgrade Thanos to the latest version
 
 | Flag           | Default | Purpose                                                            |
 | -------------- | ------- | ------------------------------------------------------------------ |
@@ -178,11 +178,11 @@ Runs `ao-doctor.sh` for shell-level checks, then TypeScript checks (version fres
 | `--smoke-only` | —       | Run smoke tests without fetching or rebuilding (git installs only) |
 | `--check`      | —       | Print version info as JSON; don't upgrade                          |
 
-Behavior depends on how AO was installed — git, npm-global, pnpm-global, or unknown (manual instructions printed).
+Behavior depends on how Thanos was installed — git, npm-global, pnpm-global, or unknown (manual instructions printed).
 
 ### `ao config-help`
 
-> Show config schema and guide for creating `agent-orchestrator.yaml`
+> Show config schema and guide for creating `thanos.yaml`
 
 No flags.
 
@@ -206,7 +206,7 @@ No flags.
 
 ## Session subcommands
 
-### `ao session ls`
+### `to session ls`
 
 > List all sessions
 
@@ -216,13 +216,13 @@ No flags.
 | `-a, --all`          | —       | Include orchestrator sessions |
 | `--json`             | —       | Output JSON                   |
 
-### `ao session attach <session>`
+### `to session attach <session>`
 
 > Attach to a session's tmux window
 
 No flags. Attaches via `tmux attach-session`. Only meaningful with `runtime: tmux`.
 
-### `ao session kill <session>`
+### `to session kill <session>`
 
 > Kill a session and remove its worktree
 
@@ -230,7 +230,7 @@ No flags. Attaches via `tmux attach-session`. Only meaningful with `runtime: tmu
 | ----------------- | ------- | ---------------------------------- |
 | `--purge-session` | —       | Delete the mapped OpenCode session |
 
-### `ao session cleanup`
+### `to session cleanup`
 
 > Kill sessions where PR is merged or issue is closed
 
@@ -239,7 +239,7 @@ No flags. Attaches via `tmux attach-session`. Only meaningful with `runtime: tmu
 | `-p, --project <id>` | —       | Filter to one project         |
 | `--dry-run`          | —       | Show what would be cleaned up |
 
-### `ao session claim-pr <pr> [session]`
+### `to session claim-pr <pr> [session]`
 
 > Attach an existing PR to a session
 
@@ -247,17 +247,17 @@ No flags. Attaches via `tmux attach-session`. Only meaningful with `runtime: tmu
 | -------------------- | ------- | ------------------------------------------------- |
 | `--assign-on-github` | —       | Assign the PR to the authenticated user on GitHub |
 
-If `[session]` is omitted, falls back to `AO_SESSION_NAME` / `AO_SESSION` env vars.
+If `[session]` is omitted, falls back to `THANOS_SESSION_NAME` / `THANOS_SESSION` env vars.
 
-### `ao session restore <session>`
+### `to session restore <session>`
 
 > Restore a terminated or crashed session in-place
 
 No flags. Relaunches the agent inside the same worktree and rewires session metadata.
 
-### `ao session remap <session>`
+### `to session remap <session>`
 
-> Re-discover and persist OpenCode session mapping for an AO session
+> Re-discover and persist OpenCode session mapping for an Thanos session
 
 | Flag          | Default | Purpose                  |
 | ------------- | ------- | ------------------------ |
@@ -265,9 +265,9 @@ No flags. Relaunches the agent inside the same worktree and rewires session meta
 
 ## Setup subcommands
 
-Notifier setup commands that write AO config support `--routing-preset <preset>`.
+Notifier setup commands that write Thanos config support `--routing-preset <preset>`.
 Valid presets are `urgent-only`, `urgent-action`, and `all`. In interactive
-mode, AO asks which notification priorities the notifier should receive before
+mode, Thanos asks which notification priorities the notifier should receive before
 writing `notificationRouting`.
 
 | Command                         | Purpose                                                |
@@ -286,7 +286,7 @@ writing `notificationRouting`.
 
 ### `ao setup openclaw`
 
-> Connect AO notifications to an OpenClaw gateway
+> Connect Thanos notifications to an OpenClaw gateway
 
 | Flag                            | Default                     | Purpose                                                                            |
 | ------------------------------- | --------------------------- | ---------------------------------------------------------------------------------- |
@@ -294,13 +294,13 @@ writing `notificationRouting`.
 | `--token <token>`               | —                           | Remote/manual fallback; local setup should read `hooks.token` from OpenClaw config |
 | `--openclaw-config-path <path>` | `~/.openclaw/openclaw.json` | OpenClaw config path that contains `hooks.token`                                   |
 | `--routing-preset <preset>`     | —                           | `urgent-only` · `urgent-action` · `all`                                            |
-| `--refresh`                     | —                           | Reuse existing values and rewrite AO config                                        |
+| `--refresh`                     | —                           | Reuse existing values and rewrite Thanos config                                        |
 | `--no-test`                     | —                           | Skip the setup token probe                                                         |
 | `--force`                       | —                           | Replace a conflicting `notifiers.openclaw` entry                                   |
 | `--status`                      | —                           | Show OpenClaw config, gateway state, and token probe status                        |
 | `--non-interactive`             | —                           | Skip prompts — auto-detect OpenClaw on localhost                                   |
 
-Interactive mode (TTY) uses `@clack/prompts` with review/change steps for the gateway URL, OpenClaw config path, and routing preset. OpenClaw owns the token in `hooks.token`; AO does not generate it or write shell-profile exports.
+Interactive mode (TTY) uses `@clack/prompts` with review/change steps for the gateway URL, OpenClaw config path, and routing preset. OpenClaw owns the token in `hooks.token`; Thanos does not generate it or write shell-profile exports.
 
 ## Plugin subcommands
 
@@ -322,7 +322,7 @@ No flags.
 
 ### `ao plugin create [directory]`
 
-> Scaffold a new AO plugin package
+> Scaffold a new Thanos plugin package
 
 | Flag                    | Default | Purpose                         |
 | ----------------------- | ------- | ------------------------------- |
@@ -367,11 +367,11 @@ A few env vars affect every command:
 
 | Variable                            | Purpose                                                                              |
 | ----------------------------------- | ------------------------------------------------------------------------------------ |
-| `AO_DATA_DIR`                       | Override the `~/.ao` base directory.                                                 |
-| `AO_LOG_LEVEL`                      | `error` · `warn` · `info` · `debug` · `trace`                                        |
-| `AO_CONFIG_PATH`                    | Absolute path to a specific `agent-orchestrator.yaml`. Overrides CWD-based search.   |
-| `AO_SESSION_ID` · `AO_SESSION_NAME` | Auto-set inside spawned sessions; used by `claim-pr` default                         |
-| `AO_PROJECT_ID`                     | Set by AO inside spawned sessions. Used by `ao spawn` to resolve the active project. |
+| `THANOS_DATA_DIR`                       | Override the `~/.thanos` base directory.                                                 |
+| `THANOS_LOG_LEVEL`                      | `error` · `warn` · `info` · `debug` · `trace`                                        |
+| `THANOS_CONFIG_PATH`                    | Absolute path to a specific `thanos.yaml`. Overrides CWD-based search.   |
+| `THANOS_SESSION_ID` · `THANOS_SESSION_NAME` | Auto-set inside spawned sessions; used by `claim-pr` default                         |
+| `THANOS_PROJECT_ID`                     | Set by Thanos inside spawned sessions. Used by `to spawn` to resolve the active project. |
 | `PORT`                              | Next.js dashboard port. Overrides `config.port`.                                     |
 | `TERMINAL_PORT`                     | WebSocket mux server port (default 14800).                                           |
 | `DIRECT_TERMINAL_PORT`              | Direct PTY WebSocket port (default 14801).                                           |

@@ -26,7 +26,7 @@ type TrackerObservation struct {
 	Provider string
 	// Host is the tracker host that served this observation.
 	Host string
-	// Repo is the full repository/project name shown to AO users, usually
+	// Repo is the full repository/project name shown to Thanos users, usually
 	// "owner/name" for GitHub-issue trackers.
 	Repo string
 
@@ -62,7 +62,7 @@ type TrackerIssueObservation struct {
 	URL string
 	// Number is the provider's issue number within the repository/project.
 	Number int
-	// State is AO's normalized issue state from domain.NormalizedIssueState
+	// State is Thanos's normalized issue state from domain.NormalizedIssueState
 	// (open, in_progress, review, done, cancelled).
 	State domain.NormalizedIssueState
 	// Title is the provider issue title.

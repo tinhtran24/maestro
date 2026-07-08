@@ -31,7 +31,7 @@ type PRRow = {
 	session: WorkspaceSession;
 };
 
-// The PR board, ported from agent-orchestrator's PullRequestsPage. One row per
+// The PR board, ported from thanos's PullRequestsPage. One row per
 // attributed PR — a session can own several (a stack or independent PRs), so we
 // flatMap the session's prs list rather than assuming one. Actions hit
 // /prs/{number}/merge and /resolve-comments. Per-PR CI/review facts also live on

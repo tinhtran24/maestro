@@ -25,7 +25,7 @@ export default async function DocsSlugPage({ params }: PageProps) {
 			}}
 			editOnGithub={{
 				owner: "ComposioHQ",
-				repo: "agent-orchestrator",
+				repo: "thanos",
 				sha: "main",
 				path: `website/content/docs/${page.file?.path ?? ""}`,
 			}}
@@ -68,7 +68,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 		title: page.data.title,
 		description: page.data.description,
 		alternates: {
-			canonical: `https://aoagents.dev${page.url}`,
+			canonical: `https://tinhtran.dev${page.url}`,
 		},
 		openGraph: {
 			title: page.data.title,

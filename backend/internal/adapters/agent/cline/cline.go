@@ -3,12 +3,12 @@
 // Cline hooks, and reading hook-derived session info.
 //
 // Cline is an autonomous coding agent that runs in the terminal (binary
-// "cline", installed via `npm i -g cline`). AO opens Cline's normal terminal UI
+// "cline", installed via `npm i -g cline`). Thanos opens Cline's normal terminal UI
 // and delivers prompted worker tasks after startup so dashboard terminal
 // attachments stay readable and Cline's startup command parser is bypassed.
 //
-// AO-managed sessions derive native session identity from Cline hooks
-// (the workspace-local `.clinerules/hooks/` executable scripts AO installs)
+// Thanos-managed sessions derive native session identity from Cline hooks
+// (the workspace-local `.clinerules/hooks/` executable scripts Thanos installs)
 // rather than transcript/cache scans.
 package cline
 
@@ -71,7 +71,7 @@ func (p *Plugin) GetLaunchCommand(ctx context.Context, cfg ports.LaunchConfig) (
 	return cmd, nil
 }
 
-// GetPromptDeliveryStrategy reports that AO should inject prompted Cline tasks
+// GetPromptDeliveryStrategy reports that Thanos should inject prompted Cline tasks
 // into the interactive terminal after startup.
 func (p *Plugin) GetPromptDeliveryStrategy(ctx context.Context, _ ports.LaunchConfig) (ports.PromptDeliveryStrategy, error) {
 	if err := ctx.Err(); err != nil {

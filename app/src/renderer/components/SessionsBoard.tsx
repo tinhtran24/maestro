@@ -29,7 +29,7 @@ type SessionsBoardProps = {
 };
 
 // The four kanban columns, left→right by flow (work → review → merge), ported
-// verbatim from agent-orchestrator (SIMPLE_KANBAN_LEVELS + AttentionZone +
+// verbatim from thanos (SIMPLE_KANBAN_LEVELS + AttentionZone +
 // mc-board.css). "done" is archived, not a column.
 type Column = {
 	level: AttentionZone;
@@ -126,7 +126,7 @@ export function SessionsBoard({ projectId }: SessionsBoardProps) {
 	const isLoaded = workspaceQuery.isSuccess;
 	const showWelcome = !projectId && isLoaded && all.length === 0;
 	const showProjectEmpty = projectId !== undefined && isLoaded && workspaces.length > 0 && sessions.length === 0;
-	// Collapsed by default, like agent-orchestrator's done-bar: finished and
+	// Collapsed by default, like thanos's done-bar: finished and
 	// killed sessions cost one quiet line under the board until expanded.
 	const [doneExpanded, setDoneExpanded] = useState(false);
 
@@ -277,7 +277,7 @@ export function SessionsBoard({ projectId }: SessionsBoardProps) {
 
 			{done.length > 0 && (
 				<div className="shrink-0 border-t border-border px-[18px]">
-					{/* agent-orchestrator's done-bar (Dashboard.tsx + globals.css):
+					{/* thanos's done-bar (Dashboard.tsx + globals.css):
 					    a full-width chevron + label + count toggle row. min-h matches
 					    the sidebar footer (7px pad ×2 + 37px Settings button) so this
 					    border-t aligns with the sidebar's footer border. The button is

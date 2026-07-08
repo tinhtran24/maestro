@@ -46,7 +46,7 @@ const cases: UseCase[] = [
 		title: "Grinds through the long ones",
 		desc: "Hand one agent a sweeping change and let it work file by file until tests pass.",
 		prefix: "$",
-		cmd: "ao spawn 305 --agent claude-code",
+		cmd: "to spawn 305 --agent claude-code",
 		outcome: "23 files · tests green",
 	},
 	{
@@ -54,7 +54,7 @@ const cases: UseCase[] = [
 		title: "Right model per job",
 		desc: "Claude Code orchestrates, Codex does the work. Pick the tool per task.",
 		prefix: "$",
-		cmd: "ao spawn 88 --agent codex",
+		cmd: "to spawn 88 --agent codex",
 		outcome: "codex #88 · claude-code #91",
 	},
 	{
@@ -62,7 +62,7 @@ const cases: UseCase[] = [
 		title: "Every repo, one screen",
 		desc: "Register all your repos and supervise their agents from a single dashboard.",
 		prefix: "$",
-		cmd: "ao start",
+		cmd: "to start",
 		outcome: "3 projects · one dashboard",
 	},
 ];
@@ -135,7 +135,7 @@ export function LandingUseCases() {
 					One orchestrator, many jobs
 				</h2>
 				<p className="text-[var(--landing-muted)] text-[0.9375rem] leading-[1.6] max-w-[34rem] mx-auto mb-12">
-					Point AO at the work and walk away — drag to explore what a single run can do.
+					Point Thanos at the work and walk away — drag to explore what a single run can do.
 				</p>
 			</div>
 

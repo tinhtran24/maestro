@@ -10,7 +10,7 @@ import tailwindcss from "@tailwindcss/vite";
 import { DEFAULT_POSTHOG_HOST } from "./src/shared/posthog-config";
 
 const POSTHOG_ORIGIN = (() => {
-	const configured = process.env.VITE_AO_POSTHOG_HOST?.trim() || DEFAULT_POSTHOG_HOST;
+	const configured = process.env.VITE_THANOS_POSTHOG_HOST?.trim() || DEFAULT_POSTHOG_HOST;
 	if (!configured) return "";
 	try {
 		return new URL(configured).origin;
@@ -62,11 +62,11 @@ export default defineConfig({
 	server: {
 		proxy: {
 			"/api": {
-				target: process.env.AO_DEV_API_TARGET ?? "http://127.0.0.1:3001",
+				target: process.env.THANOS_DEV_API_TARGET ?? "http://127.0.0.1:3001",
 				changeOrigin: false,
 			},
 			"/mux": {
-				target: process.env.AO_DEV_API_TARGET ?? "http://127.0.0.1:3001",
+				target: process.env.THANOS_DEV_API_TARGET ?? "http://127.0.0.1:3001",
 				changeOrigin: false,
 				ws: true,
 			},

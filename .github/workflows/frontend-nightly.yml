@@ -103,8 +103,8 @@ jobs:
           exit 1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          AO_RELEASE_REPO: ${{ github.repository }}
-          AO_RELEASE_PRERELEASE: "true"
+          THANOS_RELEASE_REPO: ${{ github.repository }}
+          THANOS_RELEASE_PRERELEASE: "true"
           # macOS signing + notarization env is exported by the "macOS signing
           # setup" step above via $GITHUB_ENV; the cert is in the keychain.
 
@@ -163,16 +163,16 @@ jobs:
           exit 1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          AO_RELEASE_REPO: ${{ github.repository }}
-          AO_RELEASE_PRERELEASE: "true"
+          THANOS_RELEASE_REPO: ${{ github.repository }}
+          THANOS_RELEASE_PRERELEASE: "true"
       - name: Upload stable asset aliases (macOS)
         shell: bash
         run: |
           tag="v$(node -p "require('./package.json').version")"
           arch="$(uname -m)"
           case "$arch" in
-            arm64) alias_name="agent-orchestrator-darwin-arm64.zip" ;;
-            x86_64) alias_name="agent-orchestrator-darwin-x64.zip" ;;
+            arm64) alias_name="thanos-darwin-arm64.zip" ;;
+            x86_64) alias_name="thanos-darwin-x64.zip" ;;
             *) echo "unsupported macOS arch: $arch" >&2; exit 1 ;;
           esac
           src="$(ls out/make/zip/darwin/*/*.zip | head -n1)"

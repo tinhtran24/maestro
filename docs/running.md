@@ -2,7 +2,7 @@
 
 How to build and run Thanos locally. Thanos has two parts:
 
-- **`backend/`** — the Go daemon and the `to` CLI ("Thanos Orchestrator"). A
+- **`backend/`** — the Go daemon and the `to` CLI ("Thanos"). A
   loopback-only HTTP/SSE/WebSocket sidecar that supervises coding-agent sessions.
 - **`app/`** — the Electron + Vite + React desktop app that supervises the daemon
   and renders the UI.
@@ -133,8 +133,8 @@ and `make` run it automatically via the `prepackage`/`premake` hooks.
 
 ## App state / data directory
 
-All runtime state lives under **`~/.ao`** (daemon data, `running.json`, worktrees,
-and the Electron `userData`). Override with `AO_DATA_DIR` / `AO_RUN_FILE`. Nothing
+All runtime state lives under **`~/.thanos`** (daemon data, `running.json`, worktrees,
+and the Electron `userData`). Override with `THANOS_DATA_DIR` / `THANOS_RUN_FILE`. Nothing
 is written to OS-default app-data locations.
 
 ## Troubleshooting
@@ -144,7 +144,7 @@ is written to OS-default app-data locations.
 - **App starts but shows no data**: confirm the daemon is up —
   `curl http://127.0.0.1:<port>/api/v1/healthz` or `./to status`.
 - **Stale API types**: rerun `pnpm run api` after changing backend controllers/DTOs.
-- **Port/lock conflicts**: a previous daemon may still own `~/.ao/running.json`;
+- **Port/lock conflicts**: a previous daemon may still own `~/.thanos/running.json`;
   `./to stop` (or remove the run file) and retry.
 - **`Cannot use 'import.meta' outside a module` / `require() of ES Module ... not
   supported` when starting the app**: your Node is too old for Vite 8. Use Node

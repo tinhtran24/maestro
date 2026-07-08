@@ -16,7 +16,7 @@ Spawns agents as plain child processes — no tmux involved. Use this on Windows
 
 ## Use
 
-```yaml title="agent-orchestrator.yaml"
+```yaml title="thanos.yaml"
 runtime: process
 ```
 
@@ -24,15 +24,15 @@ No plugin-level config.
 
 ## How it works
 
-- AO spawns the agent via Node's `child_process.spawn` with `shell: true`.
+- Thanos spawns the agent via Node's `child_process.spawn` with `shell: true`.
 - Stdout + stderr are captured in a rolling 1000-line buffer.
 - The dashboard reads from that buffer over the same WebSocket the tmux runtime uses — you won't notice a difference in the UI.
 - `isProcessRunning` uses a PID-based signal-0 check.
 
 ## What you lose vs tmux
 
-- **No tmux attach.** `ao session attach` doesn't work. Use the dashboard terminal instead.
-- **No reconnecting to the agent's TTY.** If you `ao stop` the orchestrator, the child process goes with it. The agent's own session-resume features (Claude `--resume`, Codex `resume`, etc.) still work — that's a different layer.
+- **No tmux attach.** `to session attach` doesn't work. Use the dashboard terminal instead.
+- **No reconnecting to the agent's TTY.** If you `to stop` the orchestrator, the child process goes with it. The agent's own session-resume features (Claude `--resume`, Codex `resume`, etc.) still work — that's a different layer.
 
 ## When to pick it
 

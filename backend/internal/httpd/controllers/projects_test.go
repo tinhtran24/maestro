@@ -120,7 +120,7 @@ func TestProjectsAPI_ListAddGet(t *testing.T) {
 
 	srv := newTestServer(t)
 
-	repo := gitRepo(t, "agent-orchestrator")
+	repo := gitRepo(t, "thanos")
 
 	body, status, headers := doRequest(t, srv, "GET", "/api/v1/projects", "")
 
@@ -144,7 +144,7 @@ func TestProjectsAPI_ListAddGet(t *testing.T) {
 
 	}
 
-	body, status, _ = doRequest(t, srv, "POST", "/api/v1/projects", `{"path":`+quote(repo)+`,"projectId":"ao","name":"Agent Orchestrator"}`)
+	body, status, _ = doRequest(t, srv, "POST", "/api/v1/projects", `{"path":`+quote(repo)+`,"projectId":"ao","name":"Thanos"}`)
 
 	if status != http.StatusCreated {
 
@@ -158,7 +158,7 @@ func TestProjectsAPI_ListAddGet(t *testing.T) {
 
 	mustJSON(t, body, &add)
 
-	if add.Project.ID != "ao" || add.Project.Name != "Agent Orchestrator" || add.Project.DefaultBranch != "main" {
+	if add.Project.ID != "ao" || add.Project.Name != "Thanos" || add.Project.DefaultBranch != "main" {
 
 		t.Fatalf("created project = %#v", add.Project)
 

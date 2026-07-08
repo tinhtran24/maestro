@@ -32,7 +32,7 @@ func (f *fakeStore) UpsertProject(_ context.Context, r domain.ProjectRecord) err
 // legacy root.
 func writeLegacyRoot(t *testing.T) string {
 	t.Helper()
-	root := filepath.Join(t.TempDir(), ".agent-orchestrator")
+	root := filepath.Join(t.TempDir(), ".thanos")
 	mustMkdir(t, filepath.Join(root, "projects", "alpha", "sessions"))
 	mustMkdir(t, filepath.Join(root, "projects", "beta", "sessions"))
 

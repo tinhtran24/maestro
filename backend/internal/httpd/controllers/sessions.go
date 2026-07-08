@@ -123,7 +123,7 @@ func (c *SessionsController) spawn(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// displayName is optional at the API (the desktop new-task dialog omits it
-	// and the read model falls back to the session id). `ao spawn` makes it
+	// and the read model falls back to the session id). `to spawn` makes it
 	// required CLI-side. When present, it is held to the same length cap here so
 	// a direct API call cannot exceed it.
 	displayName := strings.TrimSpace(in.DisplayName)
@@ -203,7 +203,7 @@ func (c *SessionsController) previewFile(w http.ResponseWriter, r *http.Request)
 //     is served through the preview/files route so local files load.
 //   - Anything else (http(s)/file URLs, host:port dev servers) is kept verbatim.
 //
-// Every call bumps the session's preview revision, so re-running `ao preview`
+// Every call bumps the session's preview revision, so re-running `to preview`
 // with the same target still refreshes the panel.
 func (c *SessionsController) setPreview(w http.ResponseWriter, r *http.Request) {
 	if c.Svc == nil {
@@ -254,7 +254,7 @@ func (c *SessionsController) setPreview(w http.ResponseWriter, r *http.Request) 
 	envelope.WriteJSON(w, http.StatusOK, SessionResponse{Session: sessionView(updated)})
 }
 
-// clearPreview resets a session's browser preview to empty (`ao preview
+// clearPreview resets a session's browser preview to empty (`to preview
 // clear`). Unlike setPreview with an empty url it never autodetects: it persists
 // an empty target so the desktop browser panel returns to its blank state. The
 // write still bumps the preview revision, so the panel hears the change over
@@ -362,7 +362,7 @@ func (c *SessionsController) kill(w http.ResponseWriter, r *http.Request) {
 // rollback undoes a partially-completed spawn: if the session row is still in
 // seed state (no workspace, no runtime handle yet), the row is deleted
 // outright. If anything observable has landed it falls back to Kill so the
-// runtime/workspace are torn down. Used by `ao spawn --claim-pr` to undo a
+// runtime/workspace are torn down. Used by `to spawn --claim-pr` to undo a
 // session whose claim step failed, avoiding the orphan terminated row a
 // plain Kill would leave behind.
 func (c *SessionsController) rollback(w http.ResponseWriter, r *http.Request) {
@@ -422,7 +422,7 @@ func (c *SessionsController) send(w http.ResponseWriter, r *http.Request) {
 }
 
 // activity records an agent activity-state signal reported by an agent hook
-// (via `ao hooks <agent> <event>`). It funnels through the single
+// (via `to hooks <agent> <event>`). It funnels through the single
 // lifecycle.Manager so the reaper and hooks never race on the session's
 // activity/termination columns.
 func (c *SessionsController) activity(w http.ResponseWriter, r *http.Request) {

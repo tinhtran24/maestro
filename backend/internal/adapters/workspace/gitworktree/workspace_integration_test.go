@@ -115,7 +115,7 @@ func TestWorkspaceIntegrationDestroyDirtyWorktree(t *testing.T) {
 		t.Fatalf("create: %v", err)
 	}
 
-	// AO-managed hook files behind a self-ignoring .gitignore: invisible to git
+	// Thanos-managed hook files behind a self-ignoring .gitignore: invisible to git
 	// status, so they must not block teardown.
 	hookDir := filepath.Join(info.Path, ".codex")
 	if err := os.MkdirAll(hookDir, 0o750); err != nil {
@@ -141,7 +141,7 @@ func TestWorkspaceIntegrationDestroyDirtyWorktree(t *testing.T) {
 		t.Fatalf("dirty worktree was not preserved: %v", statErr)
 	}
 
-	// With the real work gone, only the ignored AO files remain — git considers
+	// With the real work gone, only the ignored Thanos files remain — git considers
 	// the worktree clean and Destroy succeeds without --force.
 	if err := os.Remove(wip); err != nil {
 		t.Fatalf("remove wip: %v", err)

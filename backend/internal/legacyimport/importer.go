@@ -24,7 +24,7 @@ type Store interface {
 
 // Options configure one import run.
 type Options struct {
-	// Root is the legacy state root to read (default ~/.agent-orchestrator).
+	// Root is the legacy state root to read (default ~/.thanos).
 	Root string
 	// DryRun parses + plans every row but writes nothing.
 	DryRun bool
