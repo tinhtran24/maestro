@@ -9,6 +9,9 @@
 PM  ?= pnpm
 GO  ?= go
 BIN := bin
+# Runs a command with a Node >=22.12 on PATH (Vite 8 requirement); auto-selects an
+# nvm install when the system Node is too old. See scripts/with-node.sh.
+NODE := ./scripts/with-node.sh
 
 .DEFAULT_GOAL := help
 
@@ -19,11 +22,11 @@ BIN := bin
 .PHONY: run dev
 run: dev ## Alias for `dev`: launch the desktop app
 dev: app/node_modules ## Run the desktop app (Electron); spawns the daemon via `go run ./cmd/to daemon`
-	cd app && $(PM) run dev
+	cd app && $(CURDIR)/$(NODE) $(PM) run dev
 
 .PHONY: dev-web
 dev-web: app/node_modules ## Run only the renderer in a browser (no Electron); needs a daemon running
-	cd app && $(PM) run dev:web
+	cd app && $(CURDIR)/$(NODE) $(PM) run dev:web
 
 .PHONY: daemon
 daemon: ## Run the backend daemon directly in the foreground
@@ -44,15 +47,15 @@ build-backend cli: ## Build the `to` CLI binary into ./bin/to
 
 .PHONY: build-daemon
 build-daemon: ## Build the bundled daemon binary into app/daemon/
-	cd app && $(PM) run build:daemon
+	cd app && $(CURDIR)/$(NODE) $(PM) run build:daemon
 
 .PHONY: build-app package
 build-app package: app/node_modules ## Package the desktop app (electron-forge package)
-	cd app && $(PM) run package
+	cd app && $(CURDIR)/$(NODE) $(PM) run package
 
 .PHONY: dist make-app
 dist make-app: app/node_modules ## Build distributable installers (electron-forge make)
-	cd app && $(PM) run make
+	cd app && $(CURDIR)/$(NODE) $(PM) run make
 
 ## ----------------------------------------------------------------------------
 ## Codegen, tests, lint
@@ -75,11 +78,11 @@ test: test-backend test-app ## Run all tests
 test-backend: ## Run backend Go tests
 	cd backend && $(GO) test ./...
 test-app: app/node_modules ## Run app unit tests (vitest)
-	cd app && $(PM) run test
+	cd app && $(CURDIR)/$(NODE) $(PM) run test
 
 .PHONY: typecheck
 typecheck: app/node_modules ## TypeScript typecheck the app
-	cd app && $(PM) run typecheck
+	cd app && $(CURDIR)/$(NODE) $(PM) run typecheck
 
 .PHONY: lint
 lint: ## Backend go test + golangci-lint
@@ -93,7 +96,7 @@ lint: ## Backend go test + golangci-lint
 install: app/node_modules ## Install app dependencies
 
 app/node_modules: app/package.json
-	cd app && $(PM) install
+	cd app && $(CURDIR)/$(NODE) $(PM) install
 	@touch app/node_modules
 
 .PHONY: clean

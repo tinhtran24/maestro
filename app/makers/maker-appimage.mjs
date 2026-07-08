@@ -1,37 +1,27 @@
 import path from "node:path";
-import { MakerBase, type MakerOptions } from "@electron-forge/maker-base";
-import type { ForgePlatform } from "@electron-forge/shared-types";
+import { MakerBase } from "@electron-forge/maker-base";
 
 // Electron Forge has no first-party AppImage maker, so we bridge to
-// electron-builder's `buildForge`, exactly as makers/maker-nsis.ts does for the
+// electron-builder's `buildForge`, exactly as makers/maker-nsis.mjs does for the
 // Windows NSIS installer. AppImage is the Linux fetch-and-run artifact for the
-// `ao start` bootstrapper: a single self-contained executable the Go agent can
+// `to start` bootstrapper: a single self-contained executable the Go agent can
 // download from releases/latest/download and run directly, with no system
 // package manager. The deb/rpm makers stay for users who want a system package.
 //
 // `buildForge` speaks Forge's legacy v5 function API, which Forge 7's class-based
 // maker loader cannot resolve, so this thin MakerBase subclass adapts it.
+//
+// Config shape (all optional): { appId, productName, icon, appImage }.
 
-export type MakerAppImageConfig = {
-	// electron-builder appId; required for a well-formed AppImage.
-	appId?: string;
-	// Display name for the app. Defaults to appName.
-	productName?: string;
-	// Path to the PNG icon used for the app and desktop entry.
-	icon?: string;
-	// Any extra electron-builder `appImage` options, merged over our defaults.
-	appImage?: Record<string, unknown>;
-};
-
-export default class MakerAppImage extends MakerBase<MakerAppImageConfig> {
+export default class MakerAppImage extends MakerBase {
 	name = "appimage";
-	defaultPlatforms: ForgePlatform[] = ["linux"];
+	defaultPlatforms = ["linux"];
 
-	isSupportedOnCurrentPlatform(): boolean {
+	isSupportedOnCurrentPlatform() {
 		return true;
 	}
 
-	async make({ dir, targetArch, appName }: MakerOptions): Promise<string[]> {
+	async make({ dir, targetArch, appName }) {
 		const { buildForge } = await import("app-builder-lib");
 		const cfg = this.config ?? {};
 		// Mirror buildForge's own output layout (<dir>/../make) so artifacts land

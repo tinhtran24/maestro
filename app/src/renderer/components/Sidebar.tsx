@@ -62,7 +62,7 @@ import {
 } from "./ui/sidebar";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 import { OrchestratorIcon } from "./icons";
-import aoLogo from "../assets/ao-logo.png";
+import aoLogo from "../assets/thanos-logo.png";
 import { cn } from "../lib/utils";
 import { useUiStore } from "../stores/ui-store";
 import { CreateProjectAgentSheet, type CreateProjectAgentSelection } from "./CreateProjectAgentSheet";

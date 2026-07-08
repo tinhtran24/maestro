@@ -6,6 +6,12 @@
 nodeLinker: hoisted
 # Electron's postinstall downloads the runtime binary into node_modules/electron/dist;
 # without this approval pnpm skips it and `electron-forge start` cannot launch.
+# pnpm 10 reads `onlyBuiltDependencies` (a list); pnpm 11 reads `allowBuilds` (a
+# map). Keep both so the approval holds across pnpm versions.
+onlyBuiltDependencies:
+  - electron
+  - electron-winstaller
+  - esbuild
 allowBuilds:
   core-js: false
   electron: true

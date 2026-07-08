@@ -11,12 +11,21 @@ How to build and run Thanos locally. Thanos has two parts:
 
 ## Prerequisites
 
-| Tool     | Version        | Notes                                              |
-| -------- | -------------- | -------------------------------------------------- |
-| Go       | 1.25+          | builds the backend daemon + `to` CLI               |
-| Node.js  | 22+            | runs the Electron app + tooling                    |
-| pnpm     | 10 (preferred) | app package manager (`npm` also works)             |
-| Git      | any recent     | worktrees per session                              |
+| Tool     | Version           | Notes                                                        |
+| -------- | ----------------- | ------------------------------------------------------------ |
+| Go       | 1.25+             | builds the backend daemon + `to` CLI                         |
+| Node.js  | **^20.19 \|\| >=22.12** | runs the Electron app; Vite 8 needs `require(esm)` (older Node fails to load `forge.config`) |
+| pnpm     | 10 (preferred)    | app package manager (`npm` also works)                       |
+| tmux     | any recent        | **required** runtime — the daemon supervises agent sessions in tmux |
+| Git      | any recent        | worktrees per session                                        |
+| gh       | any recent        | optional — GitHub CLI for PR/SCM features                    |
+
+Install the runtime tools on macOS with: `brew install tmux gh`.
+
+**Node version**: the repo ships an `.nvmrc` (Node 24) — run `nvm use` to select it.
+`make` targets go through `scripts/with-node.sh`, which auto-selects a compatible
+Node (preferring the active one, else the newest qualifying nvm install), so
+`make dev` works even if your system Node is older.
 
 Optional: **Nix + direnv** — `direnv allow` (the repo ships `.envrc` → `use flake`)
 drops you into a shell with Go 1.25, Node 22, pnpm 10, and `just` already on PATH.
@@ -137,3 +146,13 @@ is written to OS-default app-data locations.
 - **Stale API types**: rerun `pnpm run api` after changing backend controllers/DTOs.
 - **Port/lock conflicts**: a previous daemon may still own `~/.ao/running.json`;
   `./to stop` (or remove the run file) and retry.
+- **`Cannot use 'import.meta' outside a module` / `require() of ES Module ... not
+  supported` when starting the app**: your Node is too old for Vite 8. Use Node
+  `>=22.12` (`nvm use`), or just run via `make dev` (it auto-selects one).
+- **`tmux required ... but not in PATH`** when spawning a session: install tmux
+  (`brew install tmux`). It's the session runtime.
+- **`gh: executable file not found`**: install the GitHub CLI (`brew install gh`)
+  for PR/SCM features, or ignore it if you don't need them.
+- **pnpm skips Electron's postinstall** (`Ignored build scripts: electron`): the
+  approvals live in `app/pnpm-workspace.yaml` (`onlyBuiltDependencies`); if the
+  Electron binary is missing, run `node app/node_modules/electron/install.js`.
