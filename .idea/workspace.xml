@@ -5,34 +5,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="ab904008-d3c3-488d-a287-421dd9b93abe" name="Changes" comment="feature: thanos task plan">
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/api/schema.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/api/schema.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/renderer/components/ProjectSettingsForm.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/renderer/components/ProjectSettingsForm.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/renderer/components/quick-capture/AIExtractionCard.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/renderer/components/quick-capture/AIExtractionCard.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/renderer/components/quick-capture/CreateTaskWizard.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/renderer/components/quick-capture/CreateTaskWizard.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/renderer/components/quick-capture/TaskReviewFlow.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/renderer/components/quick-capture/TaskReviewFlow.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/renderer/components/quick-capture/types.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/renderer/components/quick-capture/types.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/internal/adapters/scm/github/auth.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/adapters/scm/github/auth.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/internal/adapters/scm/github/provider.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/adapters/scm/github/provider.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/internal/adapters/scm/github/provider_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/adapters/scm/github/provider_test.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/internal/adapters/workspace/gitworktree/workspace.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/adapters/workspace/gitworktree/workspace.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/internal/adapters/workspace/gitworktree/workspace_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/adapters/workspace/gitworktree/workspace_test.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/renderer/components/SessionInspector.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/renderer/components/SessionInspector.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/backend/internal/daemon/scm_wiring.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/daemon/scm_wiring.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/internal/domain/projectconfig.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/domain/projectconfig.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/internal/httpd/apispec/openapi.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/httpd/apispec/openapi.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/internal/service/planner/claude.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/service/planner/claude.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/internal/service/planner/planner.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/service/planner/planner.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/internal/service/planner/planner_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/service/planner/planner_test.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/internal/session_manager/manager.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/session_manager/manager.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/internal/session_manager/manager_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/session_manager/manager_test.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/screenshots/first.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/screenshots/image.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/screenshots/second.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/screenshots/third.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/screenshots/tweet1.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/screenshots/tweet2.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/screenshots/tweet3.png" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
