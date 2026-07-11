@@ -42,6 +42,7 @@ export function CreateTaskWizard({ open, projectId, onCreated, onOpenChange }: P
 	const [extraContext, setExtraContext] = useState("");
 	const [agent, setAgent] = useState("");
 	const [agentTouched, setAgentTouched] = useState(false);
+	const [models, setModels] = useState<Record<string, string>>({});
 	const [error, setError] = useState<string | undefined>();
 	const [createdId, setCreatedId] = useState<string | undefined>();
 
@@ -78,6 +79,7 @@ export function CreateTaskWizard({ open, projectId, onCreated, onOpenChange }: P
 			setExtraContext("");
 			setAgent("");
 			setAgentTouched(false);
+			setModels({});
 			setError(undefined);
 			setCreatedId(undefined);
 		}
@@ -118,11 +120,14 @@ export function CreateTaskWizard({ open, projectId, onCreated, onOpenChange }: P
 	const createMutation = useMutation({
 		mutationFn: async () => {
 			if (!projectId) throw new Error("No project selected");
+			const taskAgent = agent || defaultAgent;
+			const taskModel = taskAgent ? models[taskAgent] : undefined;
 			const { data, error: apiError } = await apiClient.POST("/api/v1/sessions", {
 				body: {
 					projectId,
 					kind: "worker",
-					harness: agentTouched && agent ? (agent as AgentProvider) : undefined,
+					harness: (agentTouched && agent) || taskModel ? (taskAgent as AgentProvider) : undefined,
+					model: taskModel || undefined,
 					issueId: draft.title.trim() || "Untitled task",
 					prompt: composeSessionPrompt(draft, extraContext) || draft.title,
 				},
@@ -197,15 +202,22 @@ export function CreateTaskWizard({ open, projectId, onCreated, onOpenChange }: P
 									<p className="max-w-sm text-[12px] text-muted-foreground">Planning will start shortly — {agent || "the agent"} will analyze the task and ask questions if needed.</p>
 								</div>
 							) : step === "capture" ? (
-								<QuickCaptureEditor
-									input={input}
-									onInput={setInput}
-									attachments={attachments}
-									onAddFiles={addFiles}
-									onAddUrl={addUrl}
-									onRemove={removeAttachment}
-									onReorder={reorderAttachment}
-								/>
+								<>
+									<QuickCaptureEditor
+										input={input}
+										onInput={setInput}
+										attachments={attachments}
+										onAddFiles={addFiles}
+										onAddUrl={addUrl}
+										onRemove={removeAttachment}
+										onReorder={reorderAttachment}
+									/>
+									<NativeModelSelectors
+										agents={agentCatalog}
+										models={models}
+										onChange={(harness, model) => setModels((current) => ({ ...current, [harness]: model }))}
+									/>
+								</>
 							) : step === "structure" ? (
 								<AIExtractionCard draft={draft} onChange={patchDraft} agent={agent} />
 							) : step === "review" ? (
@@ -223,7 +235,9 @@ export function CreateTaskWizard({ open, projectId, onCreated, onOpenChange }: P
 							)}
 
 							{error ? (
-								<div className="mt-4 rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-[12px] text-destructive">{error}</div>
+								<div className="mt-4 rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-[12px] text-destructive">
+									{error}
+								</div>
 							) : null}
 						</div>
 
@@ -250,7 +264,11 @@ export function CreateTaskWizard({ open, projectId, onCreated, onOpenChange }: P
 							</div>
 
 							{createdId ? (
-								<Button type="button" onClick={() => (onCreated(createdId), onOpenChange(false))} className="bg-violet-600 hover:bg-violet-500">
+								<Button
+									type="button"
+									onClick={() => (onCreated(createdId), onOpenChange(false))}
+									className="bg-violet-600 hover:bg-violet-500"
+								>
 									Open Task
 								</Button>
 							) : (
@@ -261,22 +279,46 @@ export function CreateTaskWizard({ open, projectId, onCreated, onOpenChange }: P
 										</Button>
 									) : (
 										<Dialog.Close asChild>
-											<Button type="button" variant="ghost">Cancel</Button>
+											<Button type="button" variant="ghost">
+												Cancel
+											</Button>
 										</Dialog.Close>
 									)}
 									{step === "capture" ? (
-										<Button type="button" disabled={!canExtract} onClick={() => extractMutation.mutate()} className="bg-violet-600 hover:bg-violet-500">
-											{extractMutation.isPending ? <Loader2 className="size-3.5 animate-spin" /> : <Sparkles className="size-3.5" />}
+										<Button
+											type="button"
+											disabled={!canExtract}
+											onClick={() => extractMutation.mutate()}
+											className="bg-violet-600 hover:bg-violet-500"
+										>
+											{extractMutation.isPending ? (
+												<Loader2 className="size-3.5 animate-spin" />
+											) : (
+												<Sparkles className="size-3.5" />
+											)}
 											{extractMutation.isPending ? "Structuring…" : "AI Structure"}
 											{!extractMutation.isPending ? <ArrowRight className="size-3.5" /> : null}
 										</Button>
 									) : step === "create" ? (
-										<Button type="button" disabled={createMutation.isPending || !projectId} onClick={() => createMutation.mutate()} className="bg-violet-600 hover:bg-violet-500">
-											{createMutation.isPending ? <Loader2 className="size-3.5 animate-spin" /> : <Check className="size-3.5" />}
+										<Button
+											type="button"
+											disabled={createMutation.isPending || !projectId}
+											onClick={() => createMutation.mutate()}
+											className="bg-violet-600 hover:bg-violet-500"
+										>
+											{createMutation.isPending ? (
+												<Loader2 className="size-3.5 animate-spin" />
+											) : (
+												<Check className="size-3.5" />
+											)}
 											{createMutation.isPending ? "Creating…" : "Create Task"}
 										</Button>
 									) : (
-										<Button type="button" onClick={() => setStep(STEPS[stepIndex + 1].id)} className="bg-violet-600 hover:bg-violet-500">
+										<Button
+											type="button"
+											onClick={() => setStep(STEPS[stepIndex + 1].id)}
+											className="bg-violet-600 hover:bg-violet-500"
+										>
 											Next <ArrowRight className="size-3.5" />
 										</Button>
 									)}
@@ -301,13 +343,67 @@ function CreateSummary({ draft, attachments, agent }: { draft: TaskDraft; attach
 				<div className="mt-1 flex flex-wrap items-center gap-1.5 text-muted-foreground">
 					<span className="rounded border border-border px-1.5 py-0.5">{draft.priority || "P2"}</span>
 					{draft.labels?.slice(0, 6).map((l) => (
-						<span key={l} className="rounded-full border border-border px-1.5 py-0.5">{l}</span>
+						<span key={l} className="rounded-full border border-border px-1.5 py-0.5">
+							{l}
+						</span>
 					))}
 				</div>
 				{draft.description ? <p className="mt-2 line-clamp-3 text-muted-foreground">{draft.description}</p> : null}
 				<div className="mt-2 text-[11px] text-passive">
-					{draft.acceptanceCriteria?.length ?? 0} acceptance criteria · {attachments.length} attachment(s) · agent: {agent || "project default"}
+					{draft.acceptanceCriteria?.length ?? 0} acceptance criteria · {attachments.length} attachment(s) · agent:{" "}
+					{agent || "project default"}
 				</div>
+			</div>
+		</div>
+	);
+}
+
+export function NativeModelSelectors({
+	agents,
+	models,
+	onChange,
+}: {
+	agents: components["schemas"]["ListAgentsResponse"] | undefined;
+	models: Record<string, string>;
+	onChange: (harness: string, model: string) => void;
+}) {
+	const installed = new Set((agents?.installed ?? []).map((agent) => agent.id));
+	const authorized = new Set((agents?.authorized ?? []).map((agent) => agent.id));
+	const available = (agents?.supported ?? []).filter(
+		(agent) => installed.has(agent.id) && (authorized.has(agent.id) || agent.authStatus !== "unauthorized"),
+	);
+	if (available.length === 0) return null;
+
+	return (
+		<div className="mt-4 rounded-lg border border-border bg-surface/30 p-3" aria-label="Native CLI model configuration">
+			<div className="text-[12px] font-medium text-foreground">Native CLI models</div>
+			<p className="mt-1 text-[11px] text-muted-foreground">
+				Optional task-level overrides. Leave a CLI on its default to preserve its configured model.
+			</p>
+			<div className="mt-3 grid gap-2 sm:grid-cols-2">
+				{available.map((agent) => {
+					const options = agent.models ?? [];
+					const unsupported = options.length === 0;
+					return (
+						<label key={agent.id} className="flex flex-col gap-1 text-[11px] text-muted-foreground">
+							<span>{agent.label}</span>
+							<select
+								aria-label={`${agent.label} model`}
+								className="h-8 rounded-md border border-border bg-transparent px-2 text-[12px] text-foreground disabled:cursor-not-allowed disabled:opacity-60"
+								disabled={unsupported}
+								value={models[agent.id] ?? ""}
+								onChange={(event) => onChange(agent.id, event.target.value)}
+							>
+								<option value="">{unsupported ? "Model selection unavailable" : "CLI default"}</option>
+								{options.map((model) => (
+									<option key={model} value={model}>
+										{model}
+									</option>
+								))}
+							</select>
+						</label>
+					);
+				})}
 			</div>
 		</div>
 	);

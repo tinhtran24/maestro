@@ -588,6 +588,8 @@ export interface components {
             authStatus?: "authorized" | "unauthorized" | "unknown";
             id: string;
             label: string;
+            /** @description Selectable task-level model overrides supported by this native CLI. */
+            models?: string[];
         };
         ClaimPRRequest: {
             allowTakeover?: null | boolean;
@@ -1019,6 +1021,7 @@ export interface components {
             issueId?: string;
             /** @enum {string} */
             kind?: "worker" | "orchestrator";
+            model?: string;
             projectId: string;
             prompt?: string;
         };

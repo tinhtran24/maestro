@@ -8,6 +8,7 @@ import (
 	"time"
 
 	agentregistry "github.com/tinhtran/thanos/backend/internal/adapters/agent/registry"
+	"github.com/tinhtran/thanos/backend/internal/domain"
 	"github.com/tinhtran/thanos/backend/internal/ports"
 )
 
@@ -35,6 +36,7 @@ type Info struct {
 	ID         string                `json:"id"`
 	Label      string                `json:"label"`
 	AuthStatus ports.AgentAuthStatus `json:"authStatus,omitempty" enum:"authorized,unauthorized,unknown" description:"Advisory local auth probe result. authorized means a recent local probe passed; spawn remains the authoritative validation point."`
+	Models     []string              `json:"models,omitempty" description:"Selectable task-level model overrides supported by this native CLI."`
 }
 
 // Inventory describes all daemon-supported agents and best-effort local probe
@@ -155,7 +157,7 @@ func (s *Service) Probe(ctx context.Context, agentID string) (ProbeResult, error
 		return ProbeResult{}, err
 	}
 	for _, item := range s.agents {
-		info := Info{ID: string(item.Harness), Label: item.Manifest.Name}
+		info := infoFor(item)
 		if info.Label == "" {
 			info.Label = info.ID
 		}
@@ -175,7 +177,7 @@ func (s *Service) Probe(ctx context.Context, agentID string) (ProbeResult, error
 func supportedInfos(agents []agentregistry.HarnessAgent) []Info {
 	supported := make([]Info, 0, len(agents))
 	for _, item := range agents {
-		info := Info{ID: string(item.Harness), Label: item.Manifest.Name}
+		info := infoFor(item)
 		if info.Label == "" {
 			info.Label = info.ID
 		}
@@ -200,7 +202,7 @@ func cloneInfos(in []Info) []Info {
 }
 
 func probeAgent(ctx context.Context, item agentregistry.HarnessAgent) probeResult {
-	info := Info{ID: string(item.Harness), Label: item.Manifest.Name}
+	info := infoFor(item)
 	if info.Label == "" {
 		info.Label = info.ID
 	}
@@ -217,6 +219,15 @@ func probeAgent(ctx context.Context, item agentregistry.HarnessAgent) probeResul
 	defer authCancel()
 	info.AuthStatus = authStatus(authCtx, item.Agent)
 	return probeResult{info: info, installed: true, authorized: info.AuthStatus == ports.AgentAuthStatusAuthorized}
+}
+
+func infoFor(item agentregistry.HarnessAgent) Info {
+	info := Info{ID: string(item.Harness), Label: item.Manifest.Name}
+	if info.Label == "" {
+		info.Label = info.ID
+	}
+	info.Models = append([]string(nil), domain.SupportedModels[item.Harness]...)
+	return info
 }
 
 func authStatus(ctx context.Context, a ports.Agent) ports.AgentAuthStatus {

@@ -504,6 +504,23 @@ func TestSpawn_ResolvesProjectConfig(t *testing.T) {
 	}
 }
 
+func TestSpawn_TaskModelOverridesProjectModel(t *testing.T) {
+	st := newFakeStore()
+	st.projects["mer"] = domain.ProjectRecord{ID: "mer", Config: domain.ProjectConfig{
+		AgentConfig: domain.AgentConfig{Model: "claude-sonnet-4-5"},
+		Worker:      domain.RoleOverride{Harness: domain.HarnessClaudeCode},
+	}}
+	agent := &recordingAgent{}
+	m := New(Deps{Runtime: &fakeRuntime{}, Agents: singleAgent{agent: agent}, Workspace: &fakeWorkspace{}, Store: st, Messenger: &fakeMessenger{}, Lifecycle: &fakeLCM{store: st}, LookPath: func(string) (string, error) { return "/bin/true", nil }})
+
+	if _, err := m.Spawn(ctx, ports.SpawnConfig{ProjectID: "mer", Kind: domain.KindWorker, Model: "claude-opus-4-5"}); err != nil {
+		t.Fatal(err)
+	}
+	if agent.lastConfig.Model != "claude-opus-4-5" {
+		t.Fatalf("launch model = %q, want task override", agent.lastConfig.Model)
+	}
+}
+
 func TestSpawn_RejectsMissingRoleHarness(t *testing.T) {
 	st := newFakeStore()
 	st.projects["mer"] = domain.ProjectRecord{ID: "mer"}

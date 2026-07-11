@@ -244,15 +244,15 @@ func TestGetPromptDeliveryStrategyIsInCommand(t *testing.T) {
 	}
 }
 
-func TestGetConfigSpecHasNoCustomFieldsYet(t *testing.T) {
+func TestGetConfigSpecExposesModelOverride(t *testing.T) {
 	plugin := &Plugin{}
 
 	spec, err := plugin.GetConfigSpec(context.Background())
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(spec.Fields) != 0 {
-		t.Fatalf("unexpected config fields: %#v", spec.Fields)
+	if len(spec.Fields) != 1 || spec.Fields[0].Key != "model" || len(spec.Fields[0].Enum) != 1 || spec.Fields[0].Enum[0] != "gpt-5-codex" {
+		t.Fatalf("config fields = %#v, want Codex model selector", spec.Fields)
 	}
 }
 
