@@ -1,0 +1,57 @@
+---
+title: Migration
+description: Breaking changes between Thanos versions and how to upgrade cleanly.
+---
+
+import { Callout } from "fumadocs-ui/components/callout";
+
+<Callout type="info">
+	Thanos is in active development and follows semver pre-1.0. Breaking changes are called out here with migration steps.
+</Callout>
+
+## From `@composio/thanos` to `@tinhtran/to`
+
+The npm scope moved to `@tinhtran/to`. If you installed under the old name:
+
+```bash
+npm uninstall -g @composio/thanos
+npm install -g @tinhtran/to
+```
+
+Your config and data directory (`~/.thanos`) don't change — no data migration needed. GitHub org and repo URLs (`ComposioHQ/thanos`) didn't change either.
+
+## `to spawn <project> <issue>` → `to spawn <issue>`
+
+The old two-argument form is rejected with an error. Pick the project via `-p` or by running from inside its worktree:
+
+```bash
+# old
+to spawn myproject 42
+
+# new
+to spawn 42 -p myproject
+# or, from inside the project's worktree:
+to spawn 42
+```
+
+## `to init` → `to start`
+
+`to init` has been removed. Use `to start` instead; it auto-creates `thanos.yaml` on first run and opens the dashboard in one step.
+
+## Upgrading
+
+Preferred:
+
+```bash
+to update
+```
+
+The command detects your install method (`npm-global`, `pnpm-global`, git, or unknown) and picks the right upgrade path. Override behaviour with `--skip-smoke` or `--smoke-only` for git installs.
+
+## Before major upgrades
+
+1. `to status` — see what's running.
+2. `to session cleanup` — archive finished sessions.
+3. `to stop --all` — halt every Thanos instance.
+4. Upgrade.
+5. `to doctor` on the new version.

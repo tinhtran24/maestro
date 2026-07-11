@@ -1,517 +1,187 @@
-# Thanos — Multi-Agent AI Development Framework for Go, Codex, and Claude Code
+<div align="center">
+  <img src="thanos-logo.svg" alt="Thanos" width="160" height="160" />
 
-[Tiếng Việt](README.vi.md) · [Technical Reference](Technical.md)
+# Thanos
 
-Thanos is an open-source, multi-agent AI development framework written in Go.
-It orchestrates specialized AI coding agents across a deterministic software
-engineering workflow:
+**The orchestration layer for parallel AI coding agents**
 
-```text
-QA Plan -> split the ticket into ordered execution chunks (EC-1, EC-2, ...)
+[![Stars](https://img.shields.io/github/stars/AgentWrapper/thanos)](https://github.com/AgentWrapper/thanos/stargazers)
+[![Contributors](https://img.shields.io/github/contributors/AgentWrapper/thanos)](https://github.com/AgentWrapper/thanos/graphs/contributors)
+[![Twitter](https://img.shields.io/badge/Twitter-1DA1F2?logo=twitter&logoColor=white)](https://x.com/tinhtran)
+[![Discord](https://img.shields.io/badge/Discord-join%20the%20community-5865F2?logo=discord&logoColor=white)](https://discord.com/invite/UZv7JjxbwG)
+[![License: Apache-2.0](https://img.shields.io/badge/License-Apache--2.0-blue.svg)](LICENSE)
 
-then run EACH chunk to completion before the next one starts:
+An Agentic IDE that supervises parallel AI coding agents in isolated workspaces, with complete control and automatic feedback loops from CI failures, review comments, and merge conflicts.
 
-  EC-n: Development -> Code Review -> EC + Smoke Testing
-            ^              |                 |
-            +--------------+-----------------+
-                    reopen on failed gate
+<img src="docs/assets/readme/dashboard.png" alt="Thanos dashboard showing parallel coding agent sessions" width="100%" />
+</div>
 
-after the last chunk: Evidence + Feature Memory -> Done
-```
+---
 
-A planning step first breaks a feature into ordered **execution chunks (ECs)**.
-Thanos drives EC-1 through development, independent review, and acceptance
-testing, then EC-2, and so on. Failed gates reopen development with recorded
-evidence and stop the current run.
+## What is Thanos?
 
-Thanos assigns QA planning, implementation, independent review, testing, and
-final memory updates to explicit roles with required outputs and deterministic
-transitions.
+Thanos is a meta-harness agent IDE for running AI coding agents in parallel. It gives terminal-based agents like Claude Code, Codex, Cursor, Aider, Goose, and others a shared workspace where their sessions, terminals, branches, pull requests, and feedback loops can be supervised from one place.
 
-Thanos works with Codex, Claude Code, Cursor, Gemini CLI, and custom command-line
-AI runners. It also installs Agent Skills from GitHub, synchronizes skills
-between runners, and manages Claude Code plugin marketplaces.
-
-The default project experience is a full-screen terminal UI built with Bubble
-Tea and Lip Gloss. It keeps Thanos's deterministic phase graph, role isolation,
-evidence gates, and human approval while presenting each feature as a resumable
-work session.
-
-<p align="center">
-  <img src="screenshoot/intro/intro.png" alt="Thanos terminal workbench: header block, workflow phases, and command box" width="900">
-</p>
+The agents still do the coding. Thanos provides the harness around them: isolated workspaces, live terminal access, session state, PR awareness, and automatic loops that send CI failures, review comments, and merge conflicts back to the right agent. Instead of manually coordinating a pile of agent terminals, Thanos turns parallel agent work into a managed workflow.
 
 ## Why Thanos?
 
-Single-agent AI coding is fast, but it creates predictable risks:
-
-- The implementation inherits mistakes from the original design.
-- The same agent reviews its own assumptions.
-- Tests may validate the implementation instead of the requirement.
-- Interrupted sessions lose context and progress.
-- Skills become duplicated across Codex, Claude Code, Cursor, and Gemini.
-
-Thanos moves critical controls into a deterministic Go CLI. The language model
-handles reasoning and code generation; Thanos handles phase transitions,
-dependencies, artifact validation, resumable state, and completion gates.
-
-## Key Features
-
-- **Contract-driven workflow:** dedicated Planner, Coder, Reviewer, Tester, and
-  Memory roles with explicit quality gates.
-- **Deterministic quality gates:** legal phase transitions and required reports
-  are enforced by Go code instead of prompts.
-- **AI runner agnostic:** use Codex, Claude Code, Cursor, Gemini CLI, or a custom
-  executable.
-- **Session terminal UI:** browse, create, run, resume, and approve project work
-  without leaving the terminal.
-- **Mid-session runner switching:** change the selected LLM runner while
-  preserving the specification, artifacts, event history, and phase.
-- **LSP capability registry:** detect or register project language servers for
-  runner context and health checks.
-- **MCP capability registry:** configure `stdio`, `http`, and `sse` servers at
-  project scope and expose them to compatible runners.
-- **Persistent feature memory:** map business rules, architectural decisions,
-  dependencies, related features, and affected code paths across sessions.
-- **Impact-aware bugfixes:** attach a bugfix to its parent feature so every role
-  receives the complete known cross-layer impact before changing code.
-- **Portable Go binary:** release targets cover macOS, Linux, Windows,
-  Android terminals, FreeBSD, OpenBSD, and NetBSD.
-- **Crash-resistant workflow:** every feature stores state, events, prompts, and
-  reports under `.thanos/`.
-- **Local codebase graph:** indexes files, symbols, calls, imports, tests, hub
-  symbols, and repository conventions for every AI role.
-- **EC acceptance testing:** every execution chunk must pass its acceptance
-  cases before the next chunk starts.
-- **Automatic gated completion:** a ticket becomes done only after every active
-  EC has approved review evidence and passing EC/smoke tests.
-- **GitHub Agent Skills:** search and install skills with the open
-  `npx skills` ecosystem.
-- **Cross-runner skill sync:** one canonical skill directory is linked into each
-  runner's native skill location.
-- **Claude Code plugins:** add marketplaces and install project plugins through
-  Claude's native CLI.
-- **No AI SDK lock-in:** runners communicate through prompts, files, and process
-  exit codes.
-
-## Installation
-
-Homebrew (macOS / Linux)
-
-```
-brew install tinhtran24/tap/thanos
-```
-
-Thanos requires Go 1.20 or newer.
-
-```bash
-go install github.com/tinhtran/thanos/cmd/thanos@latest
-```
-
-Build from source:
-
-```bash
-git clone https://github.com/tinhtran/thanos.git
-cd thanos
-make check
-./bin/thanos help
-```
-
-## Quick Start
-
-Initialize Thanos inside an existing software project:
-
-```bash
-cd your-project
-thanos init --runner codex --runner-command codex
-```
-
-Open the session UI:
-
-```bash
-thanos
-# or: thanos ui
-```
-
-Key bindings: `↑/↓` select, `enter` run or resume, `m` switch runner, `n`
-create a session, `d` approve, `r` refresh, and `q` quit.
-
-For an existing project, initialization automatically writes:
-
-```text
-.thanos/codebase/graph.json
-.thanos/codebase/summary.md
-```
-
-Create a feature:
-
-```bash
-thanos new "OAuth2 authentication" \
-  --description "Add Google OAuth2 login and protected sessions." \
-  --acceptance "Login succeeds;Invalid state is rejected;Tests pass"
-```
-
-Run the full AI development loop:
-
-```bash
-thanos run F001
-thanos status
-```
-
-After reviewing the generated code and reports:
-
-```bash
-thanos done F001
-```
-
-Interrupted runs resume from `.thanos/<feature-id>/state.json`.
-
-### Framework detection during init
-
-`thanos init` stores a single canonical value in `project.framework` inside
-`.thanos/settings.json`. Use `--framework VALUE` to supply an explicit value;
-surrounding whitespace is trimmed. The supported auto-detected values are
-`wordpress`, `laravel`, `nextjs`, `nestjs`, `angular`, `nuxt`, `gin`, `echo`,
-`django`, `flask`, `fastapi`, `actix-web`, `axum`, and `rocket`.
-
-Detection uses only root evidence for the final selected language, after any
-`--language` override:
-
-- PHP: `composer.json`, or the `artisan` and `bootstrap/app.php` Laravel
-  markers, or the `wp-admin`, `wp-includes`, and `wp-content` WordPress
-  directories.
-- TypeScript: `package.json`.
-- Go: `go.mod`.
-- Python: `pyproject.toml` and root `requirements*.txt` files.
-- Rust: `Cargo.toml`.
-
-If evidence identifies multiple supported frameworks, detection is ambiguous
-and writes no framework. An empty framework is omitted from settings. Detection
-is local, read-only, and network-free; it runs no package manager and executes
-no project command.
-
-## Persistent feature memory and bugfix mapping
-
-Create features with durable rules and known scope:
-
-```bash
-thanos new "Password policy" \
-  --rules "Passwords require at least 12 characters;Registration and reset share the same policy" \
-  --scope "internal/auth/password.go;web/auth/password.ts;docs/security.md"
-```
-
-Map a bugfix to that feature:
-
-```bash
-thanos bugfix F001 "Password reset accepts short passwords" \
-  --description "Reset validation does not enforce the shared password policy." \
-  --acceptance "Registration, reset, and account settings enforce the same minimum"
-```
-
-Before any role runs, Thanos resolves:
-
-- The parent feature and connected dependencies or related features.
-- Stored business rules and acceptance invariants.
-- Architectural decisions learned during feature acceptance.
-- Explicitly declared paths and files recorded by prior coder reports.
-- Neighboring callers and callees inferred from the local code graph.
-- Tests, frontend files, contracts, and documentation associated with those
-  paths.
-
-Inspect memory directly:
-
-```bash
-thanos memory
-thanos memory F002
-```
-
-Accepted features produce `.thanos/<feature-id>/feature-memory.json`. Thanos
-merges it into `.thanos/memory/feature-graph.json` and injects the resolved
-impact map into Planner, Coder, Tester, and Overview prompts.
-
-## LSP and MCP capabilities
-
-Thanos records a matching language server during `init` when the executable is
-already installed. Servers can also be registered explicitly:
-
-```bash
-thanos lsp add go --command gopls
-thanos lsp add typescript --command typescript-language-server --args "--stdio"
-```
-
-Register MCP servers with `stdio`, `http`, or `sse` transport:
-
-```bash
-thanos mcp add filesystem --type stdio --command node --args "/path/to/server.js"
-thanos mcp add github --type http --url https://api.githubcopilot.com/mcp/
-thanos mcp add events --type sse --url https://example.com/mcp/sse
-```
-
-`thanos doctor` validates runner, LSP, and MCP configuration. Registered
-capabilities are included in role prompts; the selected runner must expose the
-matching native LSP or MCP tools to execute them.
-
-## Local Codebase Graph for AI Agents
-
-A codebase is structure, not only text. Thanos records source files, programming
-languages, symbols, function calls, imports, test relationships, hub symbols,
-and detected repository conventions.
-
-Every role is instructed to read `.thanos/codebase/summary.md` before exploring
-source files. The complete machine-readable graph is stored in
-`.thanos/codebase/graph.json`.
-
-Refresh it manually after large external changes:
-
-```bash
-thanos scan
-```
-
-The graph is also refreshed automatically after successful feature acceptance.
-Everything remains local; no SaaS account, API key, or source upload is needed.
-
-## Multi-Agent Development Roles
-
-| Role | Responsibility | Main output |
-|---|---|---|
-| Planner | Analyze the ticket and split it into implementation-ready EC tasks | `execution-plan.yaml` |
-| Coder | Implement the current EC and record verification evidence | Source changes and `implementation-note.md` |
-| Reviewer | Independently review correctness, regressions, and test coverage | `review-report.md` |
-| Tester | Run mapped ECs and adjacent smoke tests with evidence | `test-report.md` |
-| Memory | Summarize evidence and update durable feature knowledge | `final-report.md`, `feature-memory.json` |
-
-Specialized prompts are also included for Mini-Coder fixes, re-verification,
-parallel review synthesis, and evolution value gating.
-
-Each chunk's artifacts live under `.thanos/<feature-id>/ec-<n>/` when a feature
-has more than one chunk (single-chunk features keep the flat layout). If a role
-hits a genuinely ambiguous decision it writes a `clarify.json` question and the
-run pauses for a human answer — in the TUI a popup lets you choose, or run
-`thanos clarify FEATURE_ID "<answer>"`. A project `.thanos/coding-style.md`, when
-present, is injected into planner and coder prompts so generated code matches
-your conventions.
-
-## Working session UI
-
-The default experience (`thanos` or `thanos ui`) is a single-column, chat-first
-terminal app:
-
-- **Header block** — the Thanos logo and a status grid: project, active runner,
-  the selected feature and phase, and the ready/running state.
-- **Conversation stream** — the selected feature's title and a workflow panel
-  (`planning → development → code review → testing → memory → done`) that shows
-  completed, active, pending, rejected, and blocked states, with the role-by-role
-  agent output streaming below it.
-- **Command box** — type `/` for the command palette. The suggestion dropdown is
-  navigable with `↑/↓` and accepted with `tab`. Attach files by pasting a path or
-  referencing `@path`; they are passed to the agent as run context. Paste single-
-  or multiline text directly; line breaks are preserved, and Enter submits or
-  advances the active guided form.
-- **Status line** — ready/busy, the working directory, and the selected feature.
-
-Mouse drag selects and copies any text natively — it is always available.
-
-### Command palette and navigation
-
-`/` opens the palette (`run`, `new`, `bugfix`, `feature`, `runner`/`agent`,
-`transition`, `prompt`, `status`, `scan`, `doctor`, `memory`, `skill`, `plugin`,
-`lsp`, `mcp`, `find`, `copy`, `clear`, `help`). Move the highlight with `↑/↓` and
-accept with `tab`. Switch features with `↑/↓`, run with `enter`, start a new
-feature with `n`, remove an EC with `x`, and answer a clarification with `c`.
-
-`ctrl+p` (or `/find`) opens the fuzzy session picker; `/feature <id>` jumps
-straight to a session:
-
-<p align="center">
-  <img src="screenshoot/intro/intro_feature.png" alt="Jump-to-session fuzzy picker" width="900">
+AI coding agents become much more useful when they can work in parallel, but parallel work gets messy quickly. Branches overlap, terminals get lost, CI failures need follow-up, review comments need replies, and merge conflicts have to reach the right worker.
+
+Thanos is built to keep that loop visible and manageable. It helps you:
+
+- Start multiple agents from the same project without mixing their work
+- Keep every session in a separate git worktree
+- See which agents are working, waiting, finished, or blocked
+- Route CI failures, review comments, and merge conflicts back to the right session
+- Use different agent CLIs through one common supervisor
+
+## How it works
+
+At a high level, Thanos follows a simple loop:
+
+1. Add a project you want agents to work on.
+2. Start one or more sessions from the desktop app or CLI.
+3. Thanos creates an isolated git worktree for each session.
+4. Thanos launches the selected coding agent in that session's terminal runtime.
+5. The local daemon watches session state, terminal activity, pull requests, CI, and review feedback.
+6. The desktop app and CLI show the current state and let you send follow-up instructions to the right session.
+
+The result is a local control layer for agentic coding: agents still do the coding, while Thanos keeps their workspaces, status, terminals, and feedback loops organized.
+
+## Features
+
+The desktop app is the main control surface: projects on the left, active sessions in the center, and the selected session's terminal, pull request state, review runs, and browser preview in the inspector.
+
+<table>
+  <tr>
+    <td width="36%">
+      <h3>Parallel agent sessions</h3>
+      <p>Start multiple coding agents from the same project without mixing files, branches, terminals, or pull request state.</p>
+    </td>
+    <td width="64%">
+      <img src="docs/assets/readme/dashboard.png" alt="Thanos board with multiple parallel sessions" />
+    </td>
+  </tr>
+  <tr>
+    <td width="36%">
+      <h3>Live terminal control</h3>
+      <p>Open any session and attach to the worker terminal while keeping session summary, PR state, and follow-up actions in view.</p>
+    </td>
+    <td width="64%">
+      <img src="docs/assets/readme/session-terminal.png" alt="Session terminal inside Thanos" />
+    </td>
+  </tr>
+  <tr>
+    <td width="36%">
+      <h3>Review feedback loop</h3>
+      <p>Run reviewer agents, inspect review status, and route requested changes back to the right worker session.</p>
+    </td>
+    <td width="64%">
+      <img src="docs/assets/readme/reviews-tab.png" alt="Reviews tab showing reviewer runs and actions" />
+    </td>
+  </tr>
+  <tr>
+    <td width="36%">
+      <h3>In-app browser preview</h3>
+      <p>Preview a session's local app beside the terminal so UI work, browser state, and agent output stay together.</p>
+    </td>
+    <td width="64%">
+      <img src="docs/assets/readme/browser-preview.png" alt="Browser preview tab showing a local app preview" />
+    </td>
+  </tr>
+</table>
+
+## Supported Agents
+
+Thanos ships adapters for 23 worker agent harnesses:
+
+<p>
+  <a href="https://to-agents.com/docs/plugins/agents/claude-code"><img src="frontend/src/landing/public/docs/logos/claude-code.svg" alt="" width="16" height="16" valign="middle" /> <code>claude-code</code></a> ·
+  <a href="https://to-agents.com/docs/plugins/agents/codex"><img src="frontend/src/landing/public/docs/logos/codex.svg" alt="" width="16" height="16" valign="middle" /> <code>codex</code></a> ·
+  <a href="https://to-agents.com/docs/plugins/agents/aider"><img src="frontend/src/landing/public/docs/logos/aider.png" alt="" width="16" height="16" valign="middle" /> <code>aider</code></a> ·
+  <a href="https://to-agents.com/docs/plugins/agents/opencode"><img src="frontend/src/landing/public/docs/logos/opencode.svg" alt="" width="16" height="16" valign="middle" /> <code>opencode</code></a> ·
+  <a href="https://to-agents.com/docs/plugins/agents"><img src="frontend/src/landing/public/docs/logos/grok.png" alt="" width="16" height="16" valign="middle" /> <code>grok</code></a> ·
+  <a href="https://to-agents.com/docs/plugins/agents"><img src="frontend/src/landing/public/docs/logos/droid.png" alt="" width="16" height="16" valign="middle" /> <code>droid</code></a> ·
+  <a href="https://to-agents.com/docs/plugins/agents"><code>amp</code></a> ·
+  <a href="https://to-agents.com/docs/plugins/agents"><code>agy</code></a> ·
+  <a href="https://to-agents.com/docs/plugins/agents"><img src="frontend/src/landing/public/docs/logos/crush.png" alt="" width="16" height="16" valign="middle" /> <code>crush</code></a> ·
+  <a href="https://to-agents.com/docs/plugins/agents/cursor"><img src="frontend/src/landing/public/docs/logos/cursor.svg" alt="" width="16" height="16" valign="middle" /> <code>cursor</code></a> ·
+  <a href="https://to-agents.com/docs/plugins/agents"><img src="frontend/src/landing/public/docs/logos/qwen.png" alt="" width="16" height="16" valign="middle" /> <code>qwen</code></a> ·
+  <a href="https://to-agents.com/docs/plugins/agents"><img src="frontend/src/landing/public/docs/logos/copilot.png" alt="" width="16" height="16" valign="middle" /> <code>copilot</code></a> ·
+  <a href="https://to-agents.com/docs/plugins/agents"><img src="frontend/src/landing/public/docs/logos/goose.png" alt="" width="16" height="16" valign="middle" /> <code>goose</code></a> ·
+  <a href="https://to-agents.com/docs/plugins/agents"><code>auggie</code></a> ·
+  <a href="https://to-agents.com/docs/plugins/agents"><img src="frontend/src/landing/public/docs/logos/continue.png" alt="" width="16" height="16" valign="middle" /> <code>continue</code></a> ·
+  <a href="https://to-agents.com/docs/plugins/agents"><img src="frontend/src/landing/public/docs/logos/devin.png" alt="" width="16" height="16" valign="middle" /> <code>devin</code></a> ·
+  <a href="https://to-agents.com/docs/plugins/agents"><code>cline</code></a> ·
+  <a href="https://to-agents.com/docs/plugins/agents"><img src="frontend/src/landing/public/docs/logos/kimi.png" alt="" width="16" height="16" valign="middle" /> <code>kimi</code></a> ·
+  <a href="https://to-agents.com/docs/plugins/agents"><img src="frontend/src/landing/public/docs/logos/kiro.png" alt="" width="16" height="16" valign="middle" /> <code>kiro</code></a> ·
+  <a href="https://to-agents.com/docs/plugins/agents"><img src="frontend/src/landing/public/docs/logos/kilocode.png" alt="" width="16" height="16" valign="middle" /> <code>kilocode</code></a> ·
+  <a href="https://to-agents.com/docs/plugins/agents"><img src="frontend/src/landing/public/docs/logos/vibe.png" alt="" width="16" height="16" valign="middle" /> <code>vibe</code></a> ·
+  <a href="https://to-agents.com/docs/plugins/agents"><img src="frontend/src/landing/public/docs/logos/pi.png" alt="" width="16" height="16" valign="middle" /> <code>pi</code></a> ·
+  <a href="https://to-agents.com/docs/plugins/agents"><code>autohand</code></a>
 </p>
 
-### CLI commands stream into the view
+Reviewer agents are configured separately. The current reviewer harnesses are:
 
-Workspace commands such as `thanos scan` run straight from the command box and
-stream their output inline:
-
-<p align="center">
-  <img src="screenshoot/intro/img_scan.png" alt="thanos scan streaming its output into the session view" width="900">
+<p>
+  <a href="https://to-agents.com/docs/plugins/agents/claude-code"><img src="frontend/src/landing/public/docs/logos/claude-code.svg" alt="" width="16" height="16" valign="middle" /> <code>claude-code</code></a> ·
+  <a href="https://to-agents.com/docs/plugins/agents/codex"><img src="frontend/src/landing/public/docs/logos/codex.svg" alt="" width="16" height="16" valign="middle" /> <code>codex</code></a> ·
+  <a href="https://to-agents.com/docs/plugins/agents/opencode"><img src="frontend/src/landing/public/docs/logos/opencode.svg" alt="" width="16" height="16" valign="middle" /> <code>opencode</code></a>
 </p>
 
-### Keyboard shortcuts
+**If it runs in a terminal, it runs on Thanos.**
 
-Press `?` for the full keyboard reference:
+## Install
 
-<p align="center">
-  <img src="screenshoot/intro/intro_helper.png" alt="Thanos keyboard shortcuts overlay" width="900">
-</p>
-
-## Agent Skills from GitHub
-
-Search the Agent Skills ecosystem:
+The fastest path is the same flow used by the installation docs:
 
 ```bash
-thanos skill find golang
-thanos skill find security
+npm install -g @tinhtran/to
+to start
 ```
 
-Install skills from a GitHub repository:
+Run `to start` from the repository you want Thanos to manage. See the [installation guide](https://to-agents.com/docs/installation) for pnpm, yarn, source installs, agent CLI setup, and troubleshooting.
 
-```bash
-thanos skill add abc/skill
-```
+You can also download the latest desktop build for your platform:
 
-Install one skill and enable it only for selected Thanos roles:
+| Platform | Download                                                                                          |
+| -------- | ------------------------------------------------------------------------------------------------- |
+| Windows  | [Setup.exe](https://github.com/AgentWrapper/thanos/releases/latest)                   |
+| macOS    | [Thanos.dmg](https://github.com/AgentWrapper/thanos/releases/latest)      |
+| Linux    | [Thanos.AppImage](https://github.com/AgentWrapper/thanos/releases/latest) |
 
-```bash
-thanos skill add vercel-labs/agent-skills \
-  --skill web-design-guidelines \
-  --roles designer,coder,reviewer
-```
+## Witness Thanos's Journey on X
 
-Thanos delegates installation to the open Skills CLI:
+<table>
+  <tr>
+    <td width="50%" align="center">
+      <a href="https://x.com/agent_wrapper/status/2026329204405723180">
+        <img src="screenshots/tweet2.png" height="330" alt="Thanos journey screenshot one" />
+      </a>
+    </td>
+    <td width="50%" align="center">
+      <a href="https://x.com/agent_wrapper/status/2025986105485733945">
+        <img src="screenshots/tweet1.png" height="330" alt="Thanos journey screenshot two" />
+      </a>
+    </td>
+  </tr>
+</table>
 
-```bash
-npx skills add owner/repo --agent universal --yes --copy
-```
+## Documentation
 
-Discovered `SKILL.md` files are recorded in `.thanos/settings.json` and injected
-into matching role prompts.
+| Document                                                         | Start here when you need                                                                     |
+| ---------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| [docs/architecture.md](docs/architecture.md)                     | Backend mental model, lifecycle, persistence, CDC, status derivation, and daemon boundaries. |
+| [docs/backend-code-structure.md](docs/backend-code-structure.md) | Package ownership and where each backend concern belongs.                                    |
+| [docs/cli/README.md](docs/cli/README.md)                         | CLI behavior and daemon route mapping.                                                       |
+| [docs/STATUS.md](docs/STATUS.md)                                 | What currently ships on `main` and what remains in flight.                                   |
+| [docs/stack.md](docs/stack.md)                                   | Library, runtime, and dependency decisions.                                                  |
 
-## Synchronize Skills Across Codex, Claude Code, Cursor, and Gemini
+## Telemetry
 
-Add another AI coding runner:
-
-```bash
-thanos runner add claude --command claude
-thanos runner add codex --command codex
-```
-
-Thanos links configured skills from the canonical project skill directory into
-runner-native directories:
-
-| Runner | Skill directory |
-|---|---|
-| Claude Code | `.claude/skills/` |
-| Codex | `.agents/skills/` |
-| Cursor | `.agents/skills/` |
-| Gemini CLI | `.agents/skills/` |
-
-Configure a custom runner:
-
-```bash
-thanos runner add custom-agent \
-  --command custom-agent \
-  --agent custom-agent \
-  --skills-dir .custom-agent/skills
-```
-
-Relative symlinks provide one source of truth. Thanos never overwrites an
-existing non-symlink skill directory.
-
-## Claude Code Plugin Management
-
-Add a Claude Code plugin marketplace:
-
-```bash
-thanos plugin marketplace add claude anthropics/claude-code
-```
-
-Install a plugin for the current project:
-
-```bash
-thanos plugin install claude \
-  commit-commands@claude-code-plugins \
-  --scope project
-```
-
-These commands invoke Claude Code's native plugin CLI and record successful
-operations in `.thanos/settings.json`.
-
-## File-Based AI Agent Protocol
-
-```text
-.thanos/
-├── settings.json
-├── features/
-│   └── F001-oauth2-authentication.yaml
-└── F001-oauth2-authentication/
-    ├── state.json
-    ├── events.jsonl
-    ├── execution-plan.yaml
-    ├── final-report.md
-    ├── retro-learnings.json
-    ├── feature-memory.json
-    ├── implementation-note.md
-    ├── review-report.md
-    └── test-report.md
-```
-
-The filesystem is the source of truth. Agents do not need shared hidden context,
-and a failed process can restart from the latest validated phase.
-
-## CLI Commands
-
-| Command | Description |
-|---|---|
-| `thanos` / `thanos ui` | Open the project session TUI |
-| `thanos init` | Initialize a network-free Thanos workspace |
-| `thanos new` | Create a feature specification |
-| `thanos bugfix` | Create a bugfix mapped to an existing feature |
-| `thanos run` | Run or resume the multi-agent workflow |
-| `thanos status` | Display feature status and current phase |
-| `thanos plan ls\|add\|rm` | List, add, or remove a feature's execution chunks (ECs) |
-| `thanos clarify` | Answer a paused clarification and resume the run |
-| `thanos ask "<prompt>"` | Send a one-off prompt to the runner (headless, no pipeline) |
-| `thanos prompt` | Render a role prompt without executing a runner |
-| `thanos transition` | Apply a validated manual phase transition |
-| `thanos done` | Complete a legacy feature already in `pending-review` |
-| `thanos doctor` | Check configured runner executables |
-| `thanos scan` | Build or refresh the local codebase graph |
-| `thanos skill find` | Search available Agent Skills |
-| `thanos skill add` | Install and register skills from Git or local sources |
-| `thanos runner add` | Register a runner and synchronize existing skills |
-| `thanos lsp add` | Register a project language server |
-| `thanos mcp add` | Register a `stdio`, `http`, or `sse` MCP server |
-| `thanos memory` | Inspect the persistent project or feature impact graph |
-| `thanos plugin marketplace add` | Add a runner plugin marketplace |
-| `thanos plugin install` | Install and record a runner plugin |
-
-For configuration details, runner contracts, settings examples, and safety
-behavior, read the [Technical Reference](Technical.md).
-
-## Use Cases
-
-Thanos is designed for:
-
-- Security-sensitive features such as authentication and authorization.
-- Payment, billing, migration, and data integrity work.
-- AI-assisted pull requests that require independent review.
-- Teams that need auditable AI-generated code and test evidence.
-- Long-running features that must survive interrupted AI sessions.
-- Developers using multiple AI coding agents with shared skills.
-
-For one-line fixes or exploratory prototypes, a direct single-agent workflow may
-be faster.
-
-## Safety
-
-AI runners and plugins execute with your operating-system permissions. Thanos
-enforces workflow rules, but it is not an operating-system sandbox. Review
-third-party skills and plugins before installation, use isolated branches or
-worktrees, and inspect generated changes before running `thanos done`.
-
-## Development
-
-```bash
-make build
-make test
-make lint
-make check
-```
-
-## Inspiration and Standards
-
-- Agent Skills integration through [vercel-labs/skills](https://github.com/vercel-labs/skills)
-- Claude Code plugins through the [official plugin system](https://code.claude.com/docs/en/discover-plugins)
+Thanos's Electron renderer sends anonymous usage events to PostHog for reliability and product understanding, and PostHog session recording is enabled with local paths and local URLs redacted before transmission. Set `VITE_THANOS_POSTHOG_KEY` to an empty string before building to disable transmission. See [docs/telemetry.md](docs/telemetry.md).
 
 ## License
 
-Thanos is available under the [MIT License](LICENSE).
+Apache License 2.0. See [LICENSE](LICENSE).

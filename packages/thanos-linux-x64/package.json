@@ -1,0 +1,15 @@
+{
+	"name": "@tinhtran/thanos-linux-x64",
+	"version": "0.10.0",
+	"description": "Thanos CLI binary for Linux x64.",
+	"license": "MIT",
+	"os": [
+		"linux"
+	],
+	"cpu": [
+		"x64"
+	],
+	"files": [
+		"bin/to"
+	]
+}

@@ -1,0 +1,15 @@
+{
+	"name": "@tinhtran/thanos-darwin-arm64",
+	"version": "0.10.0",
+	"description": "Thanos CLI binary for macOS arm64.",
+	"license": "MIT",
+	"os": [
+		"darwin"
+	],
+	"cpu": [
+		"arm64"
+	],
+	"files": [
+		"bin/to"
+	]
+}

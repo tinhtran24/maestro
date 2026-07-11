@@ -1,0 +1,62 @@
+package droid
+
+import (
+	"context"
+	"path/filepath"
+
+	"github.com/tinhtran/thanos/backend/internal/adapters/agent/hooksjson"
+	"github.com/tinhtran/thanos/backend/internal/ports"
+)
+
+const (
+	droidSettingsDirName = ".factory"
+	droidHooksFileName   = "hooks.json"
+
+	// droidHookCommandPrefix identifies the hook commands Thanos owns, so install
+	// skips duplicates and uninstall recognizes Thanos entries by prefix.
+	droidHookCommandPrefix = "to hooks droid "
+	droidHookTimeout       = 30
+)
+
+// droidStartupMatcher is referenced by pointer so SessionStart serializes with
+// its "startup" source matcher.
+var droidStartupMatcher = "startup"
+
+// droidManagedHooks is the source of truth for the hooks Thanos installs:
+// SessionStart (under the "startup" matcher), UserPromptSubmit, Stop,
+// Notification, and SessionEnd.
+var droidManagedHooks = []hooksjson.HookSpec{
+	{Event: "SessionStart", Matcher: &droidStartupMatcher, Command: droidHookCommandPrefix + "session-start"},
+	{Event: "UserPromptSubmit", Command: droidHookCommandPrefix + "user-prompt-submit"},
+	{Event: "Stop", Command: droidHookCommandPrefix + "stop"},
+	{Event: "Notification", Command: droidHookCommandPrefix + "notification"},
+	{Event: "SessionEnd", Command: droidHookCommandPrefix + "session-end"},
+}
+
+// droidHooks manages Thanos's hooks in the workspace-local .factory/hooks.json file.
+var droidHooks = hooksjson.Manager{
+	Label:         "droid",
+	CommandPrefix: droidHookCommandPrefix,
+	Timeout:       droidHookTimeout,
+	Path:          droidHooksPath,
+	Managed:       droidManagedHooks,
+}
+
+func droidHooksPath(workspacePath string) string {
+	return filepath.Join(workspacePath, droidSettingsDirName, droidHooksFileName)
+}
+
+// GetAgentHooks installs Thanos's Droid hooks, preserving user-defined hooks.
+func (p *Plugin) GetAgentHooks(ctx context.Context, cfg ports.WorkspaceHookConfig) error {
+	return droidHooks.Install(ctx, cfg.WorkspacePath)
+}
+
+// UninstallHooks removes Thanos's Droid hooks, leaving user-defined hooks untouched.
+func (p *Plugin) UninstallHooks(ctx context.Context, workspacePath string) error {
+	return droidHooks.Uninstall(ctx, workspacePath)
+}
+
+// AreHooksInstalled reports whether any Thanos Droid hook is present.
+func (p *Plugin) AreHooksInstalled(ctx context.Context, workspacePath string) (bool, error) {
+	return droidHooks.AreInstalled(ctx, workspacePath)
+}

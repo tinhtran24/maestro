@@ -1,0 +1,124 @@
+package httpd
+
+import (
+	"net/http"
+
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
+
+	"github.com/tinhtran/thanos/backend/internal/cdc"
+	"github.com/tinhtran/thanos/backend/internal/config"
+	"github.com/tinhtran/thanos/backend/internal/httpd/apispec"
+	"github.com/tinhtran/thanos/backend/internal/httpd/controllers"
+	"github.com/tinhtran/thanos/backend/internal/httpd/envelope"
+	"github.com/tinhtran/thanos/backend/internal/ports"
+	prsvc "github.com/tinhtran/thanos/backend/internal/service/pr"
+	projectsvc "github.com/tinhtran/thanos/backend/internal/service/project"
+	reviewsvc "github.com/tinhtran/thanos/backend/internal/service/review"
+)
+
+// APIDeps bundles every service the API layer's controllers depend on.
+type APIDeps struct {
+	Agents             controllers.AgentCatalog
+	Projects           projectsvc.Manager
+	Sessions           controllers.SessionService
+	Activity           controllers.ActivityRecorder
+	PRs                prsvc.ActionManager
+	Reviews            reviewsvc.Manager
+	Notifications      controllers.NotificationService
+	NotificationStream controllers.NotificationStream
+	Import             controllers.ImportService
+	Planner            controllers.PlanService
+	PlannerAgent       string
+	CDC                cdc.Source
+	Events             cdcSubscriber
+	Telemetry          ports.EventSink
+}
+
+// API owns one controller per resource and is the single Register call the
+// router invokes to mount the /api/v1 surface.
+type API struct {
+	cfg           config.Config
+	agents        *controllers.AgentsController
+	projects      *controllers.ProjectsController
+	sessions      *controllers.SessionsController
+	prs           *controllers.PRsController
+	reviews       *controllers.ReviewsController
+	notifications *controllers.NotificationsController
+	imports       *controllers.ImportController
+	plan          *controllers.PlanController
+	events        *EventsController
+}
+
+// NewAPI constructs the API surface from its dependencies. cfg carries the
+// per-request timeout so the REST group can apply it without re-reading the
+// environment.
+func NewAPI(cfg config.Config, deps APIDeps) *API {
+	return &API{
+		cfg: cfg,
+		agents: &controllers.AgentsController{
+			Catalog: deps.Agents,
+		},
+		projects: &controllers.ProjectsController{
+			Mgr: deps.Projects,
+		},
+		sessions: &controllers.SessionsController{
+			Svc:      deps.Sessions,
+			Activity: deps.Activity,
+		},
+		prs:           &controllers.PRsController{Svc: deps.PRs},
+		reviews:       &controllers.ReviewsController{Svc: deps.Reviews},
+		notifications: &controllers.NotificationsController{Svc: deps.Notifications, Stream: deps.NotificationStream},
+		imports:       &controllers.ImportController{Svc: deps.Import},
+		plan:          &controllers.PlanController{Svc: deps.Planner, DefaultAgent: deps.PlannerAgent},
+		events:        &EventsController{Source: deps.CDC, Live: deps.Events},
+	}
+}
+
+// Register mounts the bounded /api/v1 REST surface. Long-lived surfaces such
+// as muxed terminal streams stay outside this timeout group.
+func (a *API) Register(root chi.Router) {
+	timeout := a.cfg.RequestTimeout
+	if timeout <= 0 {
+		timeout = config.DefaultRequestTimeout
+	}
+
+	root.Route("/api/v1", func(r chi.Router) {
+		// Serve the OpenAPI document from the same origin as the routes it describes.
+		r.Get("/openapi.yaml", apispec.ServeYAML)
+
+		r.Group(func(r chi.Router) {
+			r.Use(middleware.Timeout(timeout))
+			a.agents.Register(r)
+			a.projects.Register(r)
+			a.sessions.Register(r)
+			a.prs.Register(r)
+			a.reviews.Register(r)
+			a.notifications.Register(r)
+			a.imports.Register(r)
+			// Sibling REST controllers plug in here.
+		})
+		// The planner shells out to an agent CLI that can take tens of seconds, so
+		// it bypasses the short REST timeout and relies on its own bounded context.
+		a.plan.Register(r)
+		// Long-lived streams intentionally bypass the REST timeout middleware.
+		a.notifications.RegisterStream(r)
+		a.events.Register(r)
+	})
+}
+
+// notFoundJSON returns the locked envelope for unmatched routes. Chi's default
+// 404 is a text/plain body; the API surface must answer JSON so consumers can
+// parse it uniformly.
+func notFoundJSON(w http.ResponseWriter, r *http.Request) {
+	envelope.WriteAPIError(w, r, http.StatusNotFound, "not_found", "ROUTE_NOT_FOUND",
+		r.Method+" "+r.URL.Path+" has no handler", nil)
+}
+
+// methodNotAllowedJSON returns the locked envelope when a method probes a
+// known path without a matching verb (e.g. PUT /projects/{id} after we drop
+// the legacy PUT alias).
+func methodNotAllowedJSON(w http.ResponseWriter, r *http.Request) {
+	envelope.WriteAPIError(w, r, http.StatusMethodNotAllowed, "method_not_allowed", "METHOD_NOT_ALLOWED",
+		r.Method+" not allowed on "+r.URL.Path, nil)
+}

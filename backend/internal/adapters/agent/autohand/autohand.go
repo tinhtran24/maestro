@@ -1,0 +1,186 @@
+// Package autohand implements the Autohand Code agent adapter: launching new
+// command-mode sessions, resuming native sessions by id, installing Thanos's
+// lifecycle hooks into Autohand's config, and reading hook-derived session info.
+//
+// Autohand ("autohand") is an autonomous coding agent with a non-interactive
+// command mode (`autohand -p <prompt>` / positional prompt), native session
+// resume (`autohand resume <sessionId>`), and a native hook/lifecycle system
+// whose events (session-start, stop, permission-request, ...) Thanos maps onto
+// activity states. See hooks.go for hook installation.
+package autohand
+
+import (
+	"context"
+	"strings"
+	"sync"
+
+	"github.com/tinhtran/thanos/backend/internal/adapters"
+	"github.com/tinhtran/thanos/backend/internal/adapters/agent/agentbase"
+	"github.com/tinhtran/thanos/backend/internal/adapters/agent/binaryutil"
+	"github.com/tinhtran/thanos/backend/internal/ports"
+)
+
+const adapterID = "autohand"
+
+// Plugin is the Autohand agent adapter. It is safe for concurrent use; the
+// binary path is resolved once and cached under binaryMu.
+type Plugin struct {
+	agentbase.Base
+
+	binaryMu       sync.Mutex
+	resolvedBinary string
+}
+
+// New returns a ready-to-register Autohand adapter.
+func New() *Plugin {
+	return &Plugin{}
+}
+
+var _ adapters.Adapter = (*Plugin)(nil)
+var _ ports.Agent = (*Plugin)(nil)
+
+// Manifest returns the adapter's static self-description.
+func (p *Plugin) Manifest() adapters.Manifest {
+	return adapters.Manifest{
+		ID:          adapterID,
+		Name:        "Autohand",
+		Description: "Run Autohand worker sessions.",
+		Version:     "0.0.1",
+		Capabilities: []adapters.Capability{
+			adapters.CapabilityAgent,
+		},
+	}
+}
+
+// GetLaunchCommand builds the argv to start a new Autohand command-mode session,
+// scoping the run to the workspace, applying the approval-mode flags and optional
+// system-prompt override, and passing the initial prompt as a positional argument
+// after `--` so a prompt beginning with "-" is not read as a flag.
+//
+//	autohand [--path <workspace>] [<approval flags>] [--sys-prompt <value>] [-- <prompt>]
+func (p *Plugin) GetLaunchCommand(ctx context.Context, cfg ports.LaunchConfig) (cmd []string, err error) {
+	binary, err := p.autohandBinary(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	cmd = []string{binary}
+	appendWorkspaceFlag(&cmd, cfg.WorkspacePath)
+	appendApprovalFlags(&cmd, cfg.Permissions)
+
+	// Autohand's --sys-prompt accepts either an inline string or a file path,
+	// auto-detected by the CLI; prefer the file form when Thanos provides one.
+	if cfg.SystemPromptFile != "" {
+		cmd = append(cmd, "--sys-prompt", cfg.SystemPromptFile)
+	} else if cfg.SystemPrompt != "" {
+		cmd = append(cmd, "--sys-prompt", cfg.SystemPrompt)
+	}
+
+	if cfg.Prompt != "" {
+		cmd = append(cmd, "--", cfg.Prompt)
+	}
+
+	return cmd, nil
+}
+
+// GetRestoreCommand rebuilds the argv that continues an existing Autohand
+// session: `autohand resume [--path <workspace>] <sessionId>`. ok is false when
+// the hook-derived native session id has not landed yet, so callers can fall
+// back to fresh launch behavior. Autohand's resume sub-command does not accept
+// approval flags, so none are appended here.
+func (p *Plugin) GetRestoreCommand(ctx context.Context, cfg ports.RestoreConfig) (cmd []string, ok bool, err error) {
+	if err := ctx.Err(); err != nil {
+		return nil, false, err
+	}
+	agentSessionID := strings.TrimSpace(cfg.Session.Metadata[ports.MetadataKeyAgentSessionID])
+	if agentSessionID == "" {
+		return nil, false, nil
+	}
+
+	binary, err := p.autohandBinary(ctx)
+	if err != nil {
+		return nil, false, err
+	}
+
+	cmd = make([]string, 0, 5)
+	cmd = append(cmd, binary, "resume")
+	appendWorkspaceFlag(&cmd, cfg.Session.WorkspacePath)
+	cmd = append(cmd, agentSessionID)
+	return cmd, true, nil
+}
+
+// SessionInfo surfaces Autohand hook-derived metadata. Metadata is intentionally
+// nil: callers get the normalized fields directly.
+func (p *Plugin) SessionInfo(ctx context.Context, session ports.SessionRef) (ports.SessionInfo, bool, error) {
+	if err := ctx.Err(); err != nil {
+		return ports.SessionInfo{}, false, err
+	}
+	info, ok := agentbase.StandardSessionInfo(session)
+	return info, ok, nil
+}
+
+// appendWorkspaceFlag scopes the run to the given workspace path via --path.
+func appendWorkspaceFlag(cmd *[]string, workspacePath string) {
+	if strings.TrimSpace(workspacePath) != "" {
+		*cmd = append(*cmd, "--path", workspacePath)
+	}
+}
+
+// appendApprovalFlags maps Thanos's four permission modes onto Autohand's approval
+// flags. Default emits no flag so Autohand resolves its starting mode from the
+// user's own config (permissions.mode). Autohand has no distinct "accept-edits"
+// mode, so it maps to --yes (auto-confirm risky actions) -- the least-privileged
+// non-interactive option -- while auto/bypass map to --unrestricted.
+func appendApprovalFlags(cmd *[]string, permissions ports.PermissionMode) {
+	switch ports.NormalizePermissionMode(permissions) {
+	case ports.PermissionModeDefault:
+		// No flag: defer to the user's Autohand config/default behavior.
+	case ports.PermissionModeAcceptEdits:
+		*cmd = append(*cmd, "--yes")
+	case ports.PermissionModeAuto:
+		*cmd = append(*cmd, "--unrestricted")
+	case ports.PermissionModeBypassPermissions:
+		*cmd = append(*cmd, "--unrestricted")
+	}
+}
+
+var autohandBinarySpec = binaryutil.BinarySpec{
+	Label:         "autohand",
+	Names:         []string{"autohand"},
+	WinNames:      []string{"autohand.cmd", "autohand.exe", "autohand"},
+	UnixPaths:     []string{"/usr/local/bin/autohand", "/opt/homebrew/bin/autohand"},
+	UnixHomePaths: [][]string{{".local", "bin", "autohand"}, {".npm", "bin", "autohand"}},
+	WinPaths: []binaryutil.WinPath{
+		{Base: binaryutil.WinAppData, Parts: []string{"npm", "autohand.cmd"}},
+		{Base: binaryutil.WinAppData, Parts: []string{"npm", "autohand.exe"}},
+		{Base: binaryutil.WinHome, Parts: []string{".local", "bin", "autohand.exe"}},
+	},
+}
+
+// ResolveAutohandBinary returns the path to the autohand binary, or a wrapped
+// ports.ErrAgentBinaryNotFound when it is absent.
+func ResolveAutohandBinary(ctx context.Context) (string, error) {
+	return binaryutil.ResolveBinary(ctx, autohandBinarySpec)
+}
+
+func (p *Plugin) autohandBinary(ctx context.Context) (string, error) {
+	// Honor cancellation even on the cached path, where ResolveAutohandBinary
+	// (which has its own ctx.Err() guard) is never reached.
+	if err := ctx.Err(); err != nil {
+		return "", err
+	}
+
+	p.binaryMu.Lock()
+	defer p.binaryMu.Unlock()
+
+	if p.resolvedBinary != "" {
+		return p.resolvedBinary, nil
+	}
+
+	binary, err := ResolveAutohandBinary(ctx)
+	if err != nil {
+		return "", err
+	}
+	p.resolvedBinary = binary
+	return binary, nil
+}

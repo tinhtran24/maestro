@@ -1,0 +1,426 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="ab904008-d3c3-488d-a287-421dd9b93abe" name="Changes" comment="feature: test update plan">
+      <change beforePath="$PROJECT_DIR$/.github/workflows/cli-e2e.yml" beforeDir="false" afterPath="$PROJECT_DIR$/.github/workflows/cli-e2e.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.github/workflows/desktop-testing.yml" beforeDir="false" afterPath="$PROJECT_DIR$/.github/workflows/desktop-testing.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.github/workflows/frontend-release.yml" beforeDir="false" afterPath="$PROJECT_DIR$/.github/workflows/frontend-release.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.github/workflows/testing-build.yml" beforeDir="false" afterPath="$PROJECT_DIR$/.github/workflows/testing-build.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/AGENTS.md" beforeDir="false" afterPath="$PROJECT_DIR$/AGENTS.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/DESIGN.md" beforeDir="false" afterPath="$PROJECT_DIR$/DESIGN.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/e2e/workbench.spec.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/e2e/workbench.spec.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/scripts/build-daemon.mjs" beforeDir="false" afterPath="$PROJECT_DIR$/app/scripts/build-daemon.mjs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/scripts/feed.mjs" beforeDir="false" afterPath="$PROJECT_DIR$/app/scripts/feed.mjs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/scripts/feed.test.mjs" beforeDir="false" afterPath="$PROJECT_DIR$/app/scripts/feed.test.mjs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/landing/components/LandingCTA.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/landing/components/LandingCTA.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/landing/components/LandingHowItWorks.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/landing/components/LandingHowItWorks.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/landing/components/LandingQuickStart.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/landing/components/LandingQuickStart.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/landing/components/LandingUseCases.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/landing/components/LandingUseCases.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/landing/components/docs/DocsMissingPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/landing/components/docs/DocsMissingPage.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/landing/components/docs/PluginCard.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/landing/components/docs/PluginCard.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/landing/content/docs/architecture.mdx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/landing/content/docs/architecture.mdx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/landing/content/docs/changelog.mdx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/landing/content/docs/changelog.mdx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/landing/content/docs/cli.mdx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/landing/content/docs/cli.mdx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/landing/content/docs/configuration/index.mdx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/landing/content/docs/configuration/index.mdx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/landing/content/docs/configuration/projects.mdx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/landing/content/docs/configuration/projects.mdx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/landing/content/docs/configuration/remote-access.mdx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/landing/content/docs/configuration/remote-access.mdx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/landing/content/docs/faq.mdx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/landing/content/docs/faq.mdx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/landing/content/docs/guides/multi-project.mdx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/landing/content/docs/guides/multi-project.mdx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/landing/content/docs/guides/parallel-issues.mdx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/landing/content/docs/guides/parallel-issues.mdx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/landing/content/docs/guides/per-role-agents.mdx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/landing/content/docs/guides/per-role-agents.mdx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/landing/content/docs/installation.mdx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/landing/content/docs/installation.mdx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/landing/content/docs/migration.mdx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/landing/content/docs/migration.mdx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/landing/content/docs/platforms.mdx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/landing/content/docs/platforms.mdx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/landing/content/docs/plugins/authoring.mdx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/landing/content/docs/plugins/authoring.mdx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/landing/content/docs/plugins/index.mdx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/landing/content/docs/plugins/index.mdx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/landing/content/docs/plugins/notifiers/composio.mdx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/landing/content/docs/plugins/notifiers/composio.mdx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/landing/content/docs/plugins/notifiers/dashboard.mdx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/landing/content/docs/plugins/notifiers/dashboard.mdx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/landing/content/docs/plugins/notifiers/desktop.mdx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/landing/content/docs/plugins/notifiers/desktop.mdx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/landing/content/docs/plugins/notifiers/discord.mdx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/landing/content/docs/plugins/notifiers/discord.mdx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/landing/content/docs/plugins/notifiers/index.mdx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/landing/content/docs/plugins/notifiers/index.mdx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/landing/content/docs/plugins/notifiers/openclaw.mdx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/landing/content/docs/plugins/notifiers/openclaw.mdx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/landing/content/docs/plugins/notifiers/slack.mdx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/landing/content/docs/plugins/notifiers/slack.mdx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/landing/content/docs/plugins/notifiers/webhook.mdx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/landing/content/docs/plugins/notifiers/webhook.mdx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/landing/content/docs/plugins/scm/github.mdx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/landing/content/docs/plugins/scm/github.mdx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/landing/content/docs/plugins/scm/gitlab.mdx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/landing/content/docs/plugins/scm/gitlab.mdx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/landing/content/docs/plugins/terminals/index.mdx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/landing/content/docs/plugins/terminals/index.mdx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/landing/content/docs/plugins/terminals/iterm2.mdx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/landing/content/docs/plugins/terminals/iterm2.mdx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/landing/content/docs/plugins/terminals/web.mdx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/landing/content/docs/plugins/terminals/web.mdx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/landing/content/docs/quickstart.mdx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/landing/content/docs/quickstart.mdx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/landing/content/docs/troubleshooting.mdx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/landing/content/docs/troubleshooting.mdx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/landing/lib/github-repo.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/landing/lib/github-repo.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/landing/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/landing/package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/landing/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/landing/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/app-state.test.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/app-state.test.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/supervisor-link.test.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/supervisor-link.test.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/update-settings.test.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/update-settings.test.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/preload.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/preload.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/renderer/components/BrowserPanel.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/renderer/components/BrowserPanel.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/renderer/components/CenterPane.test.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/renderer/components/CenterPane.test.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/renderer/components/CenterPane.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/renderer/components/CenterPane.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/renderer/components/NotificationCenter.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/renderer/components/NotificationCenter.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/renderer/components/ProjectSettingsForm.test.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/renderer/components/ProjectSettingsForm.test.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/renderer/components/ProjectSettingsForm.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/renderer/components/ProjectSettingsForm.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/renderer/components/SessionView.test.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/renderer/components/SessionView.test.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/renderer/components/SessionView.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/renderer/components/SessionView.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/renderer/components/ShellTopbar.test.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/renderer/components/ShellTopbar.test.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/renderer/components/Sidebar.test.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/renderer/components/Sidebar.test.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/renderer/components/Sidebar.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/renderer/components/Sidebar.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/renderer/components/TerminalPane.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/renderer/components/TerminalPane.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/renderer/components/XtermTerminal.test.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/renderer/components/XtermTerminal.test.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/renderer/global.d.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/renderer/global.d.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/renderer/hooks/useBrowserView.test.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/renderer/hooks/useBrowserView.test.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/renderer/hooks/useBrowserView.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/renderer/hooks/useBrowserView.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/renderer/hooks/useResizable.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/renderer/hooks/useResizable.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/renderer/hooks/useTerminalSession.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/renderer/hooks/useTerminalSession.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/renderer/lib/api-client.test.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/renderer/lib/api-client.test.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/renderer/lib/api-client.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/renderer/lib/api-client.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/renderer/lib/bridge.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/renderer/lib/bridge.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/renderer/lib/daemon-telemetry.test.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/renderer/lib/daemon-telemetry.test.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/renderer/lib/daemon-telemetry.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/renderer/lib/daemon-telemetry.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/renderer/lib/mock-data.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/renderer/lib/mock-data.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/renderer/lib/spawn-orchestrator.test.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/renderer/lib/spawn-orchestrator.test.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/renderer/lib/spawn-orchestrator.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/renderer/lib/spawn-orchestrator.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/renderer/lib/telemetry.test.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/renderer/lib/telemetry.test.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/renderer/lib/telemetry.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/renderer/lib/telemetry.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/renderer/routes/__root.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/renderer/routes/__root.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/renderer/routes/_shell.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/renderer/routes/_shell.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/renderer/stores/ui-store.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/renderer/stores/ui-store.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/renderer/test/setup.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/renderer/test/setup.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/shared/daemon-attach.test.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/shared/daemon-attach.test.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/shared/daemon-launch.test.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/shared/daemon-launch.test.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/shared/daemon-launch.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/shared/daemon-launch.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/shared/telemetry.test.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/shared/telemetry.test.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/internal/adapters/agent/cline/hooks.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/adapters/agent/cline/hooks.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/internal/adapters/agent/copilot/copilot_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/adapters/agent/copilot/copilot_test.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/internal/adapters/agent/copilot/hooks.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/adapters/agent/copilot/hooks.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/internal/adapters/agent/droid/droid.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/adapters/agent/droid/droid.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/internal/adapters/agent/goose/hooks.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/adapters/agent/goose/hooks.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/internal/adapters/agent/hookutil/hookutil.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/adapters/agent/hookutil/hookutil.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/internal/adapters/agent/kilocode/assets/thanos-activity.ts" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/adapters/agent/kilocode/assets/thanos-activity.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/internal/adapters/agent/kiro/hooks.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/adapters/agent/kiro/hooks.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/internal/adapters/agent/kiro/kiro.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/adapters/agent/kiro/kiro.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/internal/adapters/agent/kiro/kiro_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/adapters/agent/kiro/kiro_test.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/internal/adapters/agent/opencode/assets/thanos-activity.ts" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/adapters/agent/opencode/assets/thanos-activity.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/internal/adapters/reviewer/codex/codex_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/adapters/reviewer/codex/codex_test.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/internal/adapters/runtime/conpty/ptyregistry/ptyregistry_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/adapters/runtime/conpty/ptyregistry/ptyregistry_test.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/internal/adapters/scm/github/client.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/adapters/scm/github/client.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/internal/adapters/scm/github/provider_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/adapters/scm/github/provider_test.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/internal/adapters/telemetry/posthog.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/adapters/telemetry/posthog.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/internal/adapters/telemetry/posthog_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/adapters/telemetry/posthog_test.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/internal/adapters/tracker/github/tracker.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/adapters/tracker/github/tracker.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/internal/adapters/workspace/gitworktree/workspace.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/adapters/workspace/gitworktree/workspace.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/internal/adapters/workspace/gitworktree/workspace_integration_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/adapters/workspace/gitworktree/workspace_integration_test.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/internal/adapters/workspace/gitworktree/workspace_preserve_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/adapters/workspace/gitworktree/workspace_preserve_test.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/internal/adapters/workspace/gitworktree/workspace_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/adapters/workspace/gitworktree/workspace_test.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/internal/agentlaunch/spec.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/agentlaunch/spec.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/internal/cli/doctor.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/cli/doctor.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/internal/cli/doctor_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/cli/doctor_test.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/internal/cli/e2e_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/cli/e2e_test.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/internal/cli/hooks_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/cli/hooks_test.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/internal/cli/launch.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/cli/launch.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/internal/cli/root.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/cli/root.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/internal/cli/spawn.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/cli/spawn.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/internal/cli/start.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/cli/start.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/internal/config/config_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/config/config_test.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/internal/daemon/lifecycle_wiring.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/daemon/lifecycle_wiring.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/internal/daemon/supervisor/listen_windows.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/daemon/supervisor/listen_windows.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/internal/daemon/wiring_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/daemon/wiring_test.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/internal/domain/projectconfig_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/domain/projectconfig_test.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/internal/httpd/controllers/projects_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/httpd/controllers/projects_test.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/internal/httpd/controllers/sessions_activity_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/httpd/controllers/sessions_activity_test.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/internal/httpd/controllers/sessions_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/httpd/controllers/sessions_test.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/internal/httpd/log.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/httpd/log.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/internal/httpd/log_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/httpd/log_test.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/internal/httpd/recover.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/httpd/recover.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/internal/httpd/router.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/httpd/router.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/internal/httpd/telemetry_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/httpd/telemetry_test.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/internal/integration/lifecycle_sqlite_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/integration/lifecycle_sqlite_test.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/internal/lifecycle/manager.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/lifecycle/manager.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/internal/lifecycle/manager_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/lifecycle/manager_test.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/internal/lifecycle/reactions.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/lifecycle/reactions.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/internal/notify/manager_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/notify/manager_test.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/internal/observe/scm/observer_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/observe/scm/observer_test.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/internal/ports/outbound.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/ports/outbound.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/internal/preview/poller_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/preview/poller_test.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/internal/review/launcher.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/review/launcher.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/internal/service/project/service.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/service/project/service.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/internal/service/project/service_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/service/project/service_test.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/internal/service/session/service.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/service/session/service.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/internal/service/session/service_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/service/session/service_test.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/internal/service/session/stack_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/service/session/stack_test.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/internal/session_manager/manager.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/session_manager/manager.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/internal/session_manager/manager_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/session_manager/manager_test.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/internal/session_manager/provision_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/session_manager/provision_test.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/internal/storage/sqlite/migrations/0001_init.sql" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/storage/sqlite/migrations/0001_init.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/internal/storage/sqlite/store/notification_store_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/storage/sqlite/store/notification_store_test.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/internal/storage/sqlite/store/store_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/storage/sqlite/store/store_test.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/internal/storage/sqlite/store/telemetry_store_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/storage/sqlite/store/telemetry_store_test.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/internal/terminal/attachment_integration_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/terminal/attachment_integration_test.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/main.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/STATUS.md" beforeDir="false" afterPath="$PROJECT_DIR$/docs/STATUS.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/architecture.md" beforeDir="false" afterPath="$PROJECT_DIR$/docs/architecture.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/backend-code-structure.md" beforeDir="false" afterPath="$PROJECT_DIR$/docs/backend-code-structure.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/cli/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/docs/cli/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/plans/2026-06-26-import-offer.md" beforeDir="false" afterPath="$PROJECT_DIR$/docs/plans/2026-06-26-import-offer.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/plans/session-lifecycle-persistence.md" beforeDir="false" afterPath="$PROJECT_DIR$/docs/plans/session-lifecycle-persistence.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/thanos-start-bootstrapper-and-npm-deprecation.md" beforeDir="false" afterPath="$PROJECT_DIR$/docs/thanos-start-bootstrapper-and-npm-deprecation.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/packages/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/thanos-darwin-arm64/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/thanos-darwin-arm64/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/thanos-darwin-x64/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/thanos-darwin-x64/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/thanos-linux-x64/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/thanos-linux-x64/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/thanos-win32-x64/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/thanos-win32-x64/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/plans/frontend/00_overview.md" beforeDir="false" afterPath="$PROJECT_DIR$/plans/frontend/00_overview.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/plans/frontend/02_app_shell_and_routing.md" beforeDir="false" afterPath="$PROJECT_DIR$/plans/frontend/02_app_shell_and_routing.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/plans/frontend/04_milestones.md" beforeDir="false" afterPath="$PROJECT_DIR$/plans/frontend/04_milestones.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/daemon-build.sh" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/daemon-build.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/rebrand.sh" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/rebrand.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/skills/bug-triage/SKILL.md" beforeDir="false" afterPath="$PROJECT_DIR$/skills/bug-triage/SKILL.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/cli/Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/test/cli/Dockerfile" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/cli/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/test/cli/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/cli/install-check.sh" beforeDir="false" afterPath="$PROJECT_DIR$/test/cli/install-check.sh" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="EmbeddingIndexingInfo">
+    <option name="cachedIndexableFilesCount" value="955" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+    <option name="UPDATE_TYPE" value="REBASE" />
+  </component>
+  <component name="McpProjectServerCommands">
+    <commands />
+    <urls />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 0,
+  &quot;fromUser&quot;: false
+}</component>
+  <component name="ProjectId" id="3FYxUk3HCxtvxwQu0ERxxkuZWlG" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showExcludedFiles" value="false" />
+    <option name="showLibraryContents" value="true" />
+    <option name="showMembers" value="true" />
+    <option name="sortByType" value="true" />
+    <option name="sortKey" value="BY_TYPE" />
+  </component>
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ASKED_MARK_IGNORED_FILES_AS_EXCLUDED&quot;: &quot;true&quot;,
+    &quot;ASKED_SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;JavaScript Debug.index.html.executor&quot;: &quot;Run&quot;,
+    &quot;JavaScript Debug.localhost:34115.executor&quot;: &quot;Debug&quot;,
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.MCP Project settings loaded&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
+    &quot;codeWithMe.voiceChat.enabledByDefault&quot;: &quot;false&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;feature/v2-to&quot;,
+    &quot;javascript.preferred.runtime.type.id&quot;: &quot;node&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/Users/trantinh/tool/thanos&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;ts.external.directory.path&quot;: &quot;/Users/trantinh/tool/thanos/app/node_modules/typescript/lib&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  }
+}</component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/docs" />
+      <recent name="$PROJECT_DIR$" />
+      <recent name="$PROJECT_DIR$/apps/thanos-desktop/src-tauri/icons" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/apps/thanos-desktop/src-tauri/imgs/logo" />
+    </key>
+  </component>
+  <component name="RunManager" selected="JavaScript Debug.localhost:34115">
+    <configuration name="index.html" type="JavascriptDebugType" temporary="true" nameIsGenerated="true" uri="http://localhost:63342/thanos/apps/thanos-desktop/playwright-report/index.html" useBuiltInWebServerPort="true">
+      <method v="2" />
+    </configuration>
+    <configuration name="localhost:34115" type="JavascriptDebugType" temporary="true" nameIsGenerated="true" uri="http://localhost:34115">
+      <method v="2" />
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="JavaScript Debug.localhost:34115" />
+        <item itemvalue="JavaScript Debug.index.html" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-js-predefined-d6986cc7102b-3bd3a6803838-JavaScript-WS-261.22158.274" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="ab904008-d3c3-488d-a287-421dd9b93abe" name="Changes" comment="" />
+      <created>1782265822555</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1782265822555</updated>
+      <workItem from="1782265823791" duration="6796000" />
+      <workItem from="1782276536007" duration="46000" />
+      <workItem from="1782285314947" duration="4333000" />
+      <workItem from="1782369775238" duration="4909000" />
+      <workItem from="1782868454668" duration="23000" />
+      <workItem from="1782868480825" duration="54000" />
+      <workItem from="1782869620105" duration="11889000" />
+      <workItem from="1783042083989" duration="13797000" />
+      <workItem from="1783473862987" duration="6821000" />
+      <workItem from="1783481148222" duration="5307000" />
+    </task>
+    <task id="LOCAL-00001" summary="feature: update layout ui">
+      <option name="closed" value="true" />
+      <created>1782269845494</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1782269845494</updated>
+    </task>
+    <task id="LOCAL-00002" summary="feature: enhance ui and workflow">
+      <option name="closed" value="true" />
+      <created>1782275365928</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1782275365928</updated>
+    </task>
+    <task id="LOCAL-00003" summary="feature: enhance ui and workflow">
+      <option name="closed" value="true" />
+      <created>1782275787693</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1782275787693</updated>
+    </task>
+    <task id="LOCAL-00004" summary="bugfix: go release">
+      <option name="closed" value="true" />
+      <created>1782276573969</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1782276573970</updated>
+    </task>
+    <task id="LOCAL-00005" summary="bugfix: UI and loop">
+      <option name="closed" value="true" />
+      <created>1782289625021</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1782289625021</updated>
+    </task>
+    <task id="LOCAL-00006" summary="feature: improve ui">
+      <option name="closed" value="true" />
+      <created>1782376519629</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1782376519630</updated>
+    </task>
+    <task id="LOCAL-00007" summary="feature: improve UI v2">
+      <option name="closed" value="true" />
+      <created>1782875373070</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1782875373070</updated>
+    </task>
+    <task id="LOCAL-00008" summary="feature: init skill, mcp feature phase 6">
+      <option name="closed" value="true" />
+      <created>1783044515931</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1783044515931</updated>
+    </task>
+    <task id="LOCAL-00009" summary="feature: current plan phase 6, next plan code workflow">
+      <option name="closed" value="true" />
+      <created>1783050547424</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1783050547424</updated>
+    </task>
+    <task id="LOCAL-00010" summary="feature: test update plan">
+      <option name="closed" value="true" />
+      <created>1783137717124</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1783137717124</updated>
+    </task>
+    <option name="localTasksCounter" value="11" />
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="OPEN_GENERIC_TABS">
+      <map>
+        <entry key="6debf16b-97c0-4865-9f90-34eae1f0b262" value="TOOL_WINDOW" />
+      </map>
+    </option>
+    <option name="TAB_STATES">
+      <map>
+        <entry key="6debf16b-97c0-4865-9f90-34eae1f0b262">
+          <value>
+            <State>
+              <option name="FILTERS">
+                <map>
+                  <entry key="branch">
+                    <value>
+                      <list>
+                        <option value="HEAD" />
+                      </list>
+                    </value>
+                  </entry>
+                  <entry key="roots">
+                    <value>
+                      <list>
+                        <option value="$PROJECT_DIR$" />
+                      </list>
+                    </value>
+                  </entry>
+                </map>
+              </option>
+              <option name="SHOW_ONLY_AFFECTED_CHANGES" value="true" />
+            </State>
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="feature: update layout ui" />
+    <MESSAGE value="feature: enhance ui and workflow" />
+    <MESSAGE value="bugfix: go release" />
+    <MESSAGE value="bugfix: UI and loop" />
+    <MESSAGE value="feature: improve ui" />
+    <MESSAGE value="feature: improve UI v2" />
+    <MESSAGE value="feature: init skill, mcp feature phase 6" />
+    <MESSAGE value="feature: current plan phase 6, next plan code workflow" />
+    <MESSAGE value="feature: test update plan" />
+    <option name="LAST_COMMIT_MESSAGE" value="feature: test update plan" />
+  </component>
+</project>
