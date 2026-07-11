@@ -29,6 +29,7 @@ type fakeSessionService struct {
 	cleanupResult   []domain.SessionID
 	cleanupSkipped  []sessionsvc.CleanupSkipped
 	spawnErr        error
+	lastSpawn       ports.SpawnConfig
 	claimErr        error
 	listPRErr       error
 }
@@ -57,6 +58,7 @@ func (f *fakeSessionService) List(_ context.Context, filter sessionsvc.ListFilte
 }
 
 func (f *fakeSessionService) Spawn(_ context.Context, cfg ports.SpawnConfig) (domain.Session, error) {
+	f.lastSpawn = cfg
 	if f.spawnErr != nil {
 		return domain.Session{}, f.spawnErr
 	}
@@ -269,7 +271,7 @@ func TestSessionsAPI_ListSpawnGetAndActions(t *testing.T) {
 		t.Fatalf("list leaked prompt: %s", body)
 	}
 
-	body, status, _ = doRequest(t, srv, "POST", "/api/v1/sessions", `{"projectId":"to","issueId":"ISS-1","kind":"worker","harness":"codex","prompt":"fix","displayName":"my worker"}`)
+	body, status, _ = doRequest(t, srv, "POST", "/api/v1/sessions", `{"projectId":"to","issueId":"ISS-1","kind":"worker","harness":"codex","model":"gpt-5-codex","prompt":"fix","displayName":"my worker"}`)
 	if status != http.StatusCreated {
 		t.Fatalf("POST session = %d, want 201; body=%s", status, body)
 	}
@@ -282,6 +284,9 @@ func TestSessionsAPI_ListSpawnGetAndActions(t *testing.T) {
 	}
 	if spawned.Session.DisplayName != "my worker" {
 		t.Fatalf("spawned displayName = %q, want %q", spawned.Session.DisplayName, "my worker")
+	}
+	if svc.lastSpawn.Model != "gpt-5-codex" {
+		t.Fatalf("spawn model = %q, want task-level override", svc.lastSpawn.Model)
 	}
 
 	body, status, _ = doRequest(t, srv, "GET", "/api/v1/sessions/to-2", "")
@@ -692,6 +697,30 @@ func TestSessionsAPI_SpawnRejectsOverlongDisplayName(t *testing.T) {
 	overlong := strings.Repeat("x", 21)
 	body, status, _ := doRequest(t, srv, "POST", "/api/v1/sessions", `{"projectId":"to","harness":"codex","displayName":"`+overlong+`"}`)
 	assertErrorCode(t, body, status, http.StatusBadRequest, "DISPLAY_NAME_TOO_LONG")
+}
+
+func TestSessionsAPI_SpawnRejectsUnsupportedModel(t *testing.T) {
+	svc := newFakeSessionService()
+	srv := newSessionTestServer(t, svc)
+	body, status, _ := doRequest(t, srv, "POST", "/api/v1/sessions", `{"projectId":"to","kind":"worker","harness":"codex","model":"not-a-model"}`)
+	if status != http.StatusBadRequest || !strings.Contains(string(body), "MODEL_UNSUPPORTED") {
+		t.Fatalf("POST unsupported model = %d body=%s, want MODEL_UNSUPPORTED", status, body)
+	}
+	if svc.lastSpawn.Model != "" {
+		t.Fatalf("unsupported model reached service: %#v", svc.lastSpawn)
+	}
+}
+
+func TestSessionsAPI_SpawnWithoutModelKeepsDefaultFallback(t *testing.T) {
+	svc := newFakeSessionService()
+	srv := newSessionTestServer(t, svc)
+	body, status, _ := doRequest(t, srv, "POST", "/api/v1/sessions", `{"projectId":"to","kind":"worker","harness":"codex"}`)
+	if status != http.StatusCreated {
+		t.Fatalf("POST session without model = %d body=%s", status, body)
+	}
+	if svc.lastSpawn.Model != "" {
+		t.Fatalf("spawn model = %q, want empty to retain existing default behavior", svc.lastSpawn.Model)
+	}
 }
 
 func TestSessionsAPI_RenameNotFound(t *testing.T) {

@@ -134,7 +134,11 @@ func (c *SessionsController) spawn(w http.ResponseWriter, r *http.Request) {
 	if in.Kind == "" {
 		in.Kind = domain.KindWorker
 	}
-	sess, err := c.Svc.Spawn(r.Context(), ports.SpawnConfig{ProjectID: in.ProjectID, IssueID: in.IssueID, Kind: in.Kind, Harness: in.Harness, Branch: in.Branch, Prompt: in.Prompt, DisplayName: displayName})
+	if !domain.IsSupportedModel(in.Harness, in.Model) {
+		envelope.WriteAPIError(w, r, http.StatusBadRequest, "bad_request", "MODEL_UNSUPPORTED", "model is not supported by the selected native CLI", nil)
+		return
+	}
+	sess, err := c.Svc.Spawn(r.Context(), ports.SpawnConfig{ProjectID: in.ProjectID, IssueID: in.IssueID, Kind: in.Kind, Harness: in.Harness, Branch: in.Branch, Prompt: in.Prompt, DisplayName: displayName, Model: in.Model})
 	if err != nil {
 		envelope.WriteError(w, r, err)
 		return

@@ -21,4 +21,7 @@ type SpawnConfig struct {
 	// DisplayName is the user-facing sidebar label. Empty falls back to the
 	// session id in the read model (e.g. orchestrator sessions).
 	DisplayName string
+	// Model is a task-level native CLI override. Empty retains the project's
+	// configured model (or the CLI's own default).
+	Model string
 }

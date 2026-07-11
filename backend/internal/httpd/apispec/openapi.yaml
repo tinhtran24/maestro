@@ -1633,6 +1633,12 @@ components:
           type: string
         label:
           type: string
+        models:
+          description: Selectable task-level model overrides supported by this native
+            CLI.
+          items:
+            type: string
+          type: array
       required:
       - id
       - label
@@ -2811,6 +2817,8 @@ components:
           enum:
           - worker
           - orchestrator
+          type: string
+        model:
           type: string
         projectId:
           type: string
