@@ -80,3 +80,55 @@ func TestPlan_NoJSONInReply(t *testing.T) {
 		t.Fatal("expected error when reply has no JSON object")
 	}
 }
+
+func TestPlan_ParsesFirstJSONObjectFromNativeCLIOutput(t *testing.T) {
+	fr := &fakeRunner{available: true, reply: `{"title":"Native task","priority":"P1","description":"contains a } brace"}
+{"type":"turn.completed","usage":{"total_tokens":42}}`}
+	s := New(Options{Runner: fr})
+
+	draft, err := s.Plan(context.Background(), "x", nil, "codex")
+	if err != nil {
+		t.Fatalf("Plan: %v", err)
+	}
+	if draft.Title != "Native task" || draft.Priority != "P1" {
+		t.Fatalf("draft = %#v", draft)
+	}
+}
+
+func TestCommandArgs_UsesHeadlessAgentSpecificInvocation(t *testing.T) {
+	tests := []struct {
+		name       string
+		agent      string
+		wantClaude bool
+		want       []string
+	}{
+		{
+			name:       "claude",
+			agent:      "claude-code",
+			wantClaude: true,
+			want:       []string{"-p", "plan this", "--output-format", "json", "--no-session-persistence"},
+		},
+		{
+			name:  "codex",
+			agent: "codex",
+			want:  []string{"exec", "--sandbox", "read-only", "--ephemeral", "--skip-git-repo-check", "plan this"},
+		},
+		{
+			name:  "generic",
+			agent: "aider",
+			want:  []string{"-p", "plan this"},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, claude := commandArgs(tt.agent, "plan this")
+			if claude != tt.wantClaude {
+				t.Fatalf("claude envelope = %v, want %v", claude, tt.wantClaude)
+			}
+			if strings.Join(got, "\x00") != strings.Join(tt.want, "\x00") {
+				t.Fatalf("args = %#v, want %#v", got, tt.want)
+			}
+		})
+	}
+}

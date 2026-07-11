@@ -60,14 +60,9 @@ export function TaskReviewFlow({
 					<Field label="User story">
 						<TextArea value={draft.userStory} onChange={(v) => onChange({ userStory: v })} rows={2} placeholder="As a … I want … so that …" />
 					</Field>
-					<div className="grid gap-4 sm:grid-cols-2">
-						<Field label="Priority">
-							<PrioritySelect value={draft.priority} onChange={(v) => onChange({ priority: v })} />
-						</Field>
-						<Field label="Estimate">
-							<TextField value={draft.estimate} onChange={(v) => onChange({ estimate: v })} placeholder="e.g. 4h" />
-						</Field>
-					</div>
+					<Field label="Priority">
+						<PrioritySelect value={draft.priority} onChange={(v) => onChange({ priority: v })} />
+					</Field>
 					<Field label="Labels">
 						<LabelChips values={draft.labels ?? []} onChange={(v) => onChange({ labels: v })} />
 					</Field>

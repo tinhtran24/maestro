@@ -37,7 +37,6 @@ export function emptyDraft(): TaskDraft {
 		likelyFiles: [],
 		risks: [],
 		dependencies: [],
-		estimate: "",
 		scope: "",
 		plan: [],
 		openQuestions: [],

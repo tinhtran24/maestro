@@ -15,12 +15,7 @@ import (
 	aoprocess "github.com/tinhtran/thanos/backend/internal/process"
 )
 
-const (
-	defaultGitBinary = "git"
-	// defaultBranch is the base branch used when neither the per-project config
-	// nor the adapter options name one. It shares domain's single source of truth.
-	defaultBranch = domain.DefaultBranchName
-)
+const defaultGitBinary = "git"
 
 // ErrUnsafePath is returned when a resolved worktree path escapes the managed
 // root (path traversal guard).
@@ -63,22 +58,20 @@ func (r StaticRepoResolver) RepoPath(projectID domain.ProjectID) (string, error)
 }
 
 // Options configures a gitworktree Workspace. ManagedRoot and RepoResolver are
-// required; Binary and DefaultBranch fall back to defaults.
+// required; Binary falls back to git.
 type Options struct {
-	Binary        string
-	ManagedRoot   string
-	DefaultBranch string
-	RepoResolver  RepoResolver
+	Binary       string
+	ManagedRoot  string
+	RepoResolver RepoResolver
 }
 
 // Workspace creates per-session git worktrees under a managed root. It
 // implements ports.Workspace.
 type Workspace struct {
-	binary        string
-	managedRoot   string
-	defaultBranch string
-	repos         RepoResolver
-	run           commandRunner
+	binary      string
+	managedRoot string
+	repos       RepoResolver
+	run         commandRunner
 }
 
 type commandRunner func(ctx context.Context, binary string, args ...string) ([]byte, error)
@@ -93,10 +86,6 @@ func New(opts Options) (*Workspace, error) {
 	if binary == "" {
 		binary = defaultGitBinary
 	}
-	branch := opts.DefaultBranch
-	if branch == "" {
-		branch = defaultBranch
-	}
 	if opts.ManagedRoot == "" {
 		return nil, errors.New("gitworktree: ManagedRoot is required")
 	}
@@ -108,11 +97,10 @@ func New(opts Options) (*Workspace, error) {
 		return nil, fmt.Errorf("gitworktree: managed root: %w", err)
 	}
 	return &Workspace{
-		binary:        binary,
-		managedRoot:   filepath.Clean(root),
-		defaultBranch: branch,
-		repos:         opts.RepoResolver,
-		run:           runCommand,
+		binary:      binary,
+		managedRoot: filepath.Clean(root),
+		repos:       opts.RepoResolver,
+		run:         runCommand,
 	}, nil
 }
 
@@ -747,8 +735,18 @@ func (w *Workspace) resolveBaseRef(ctx context.Context, repo, branch, baseBranch
 	if strings.TrimSpace(baseBranch) != "" {
 		return w.resolveBaseRefFromDefault(ctx, repo, branch, baseBranch)
 	}
-	defaultBranch := w.inferRepoDefaultBranch(ctx, repo)
-	return w.resolveBaseRefFromDefault(ctx, repo, branch, defaultBranch)
+	// An unset project base means "branch from the checkout the user selected",
+	// not the remote's default branch. HEAD is valid for attached and detached
+	// repositories and makes each new task branch start from the same revision
+	// the user is currently working from.
+	exists, err := w.refExists(ctx, repo, "HEAD")
+	if err != nil {
+		return "", err
+	}
+	if exists {
+		return "HEAD", nil
+	}
+	return "", fmt.Errorf("%w for branch %q (tried HEAD)", errNoBaseRef, branch)
 }
 
 func (w *Workspace) resolveBaseRefFromDefault(ctx context.Context, repo, branch, defaultBranch string) (string, error) {
@@ -773,24 +771,6 @@ func (w *Workspace) resolveBaseRefFromDefault(ctx context.Context, repo, branch,
 		return tagRef, nil
 	}
 	return "", fmt.Errorf("%w for branch %q (tried %s, %s)", errNoBaseRef, branch, strings.Join(candidates, ", "), tagRef)
-}
-
-func (w *Workspace) inferRepoDefaultBranch(ctx context.Context, repo string) string {
-	for _, args := range [][]string{
-		{"symbolic-ref", "--quiet", "--short", "refs/remotes/origin/HEAD"},
-		{"branch", "--show-current"},
-	} {
-		out, err := w.run(ctx, w.binary, append([]string{"-C", repo}, args...)...)
-		if err != nil {
-			continue
-		}
-		branch := strings.TrimSpace(string(out))
-		branch = strings.TrimPrefix(branch, "origin/")
-		if branch != "" {
-			return branch
-		}
-	}
-	return w.defaultBranch
 }
 
 func (w *Workspace) refExists(ctx context.Context, repo, ref string) (bool, error) {

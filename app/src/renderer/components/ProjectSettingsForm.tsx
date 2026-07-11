@@ -87,6 +87,7 @@ function SettingsBody({ project, projectId, onSaved }: { project: Project; proje
 		intakeEnabled: intake.enabled ?? false,
 		intakeRepo: intake.repo ?? "",
 		intakeAssignee: intake.assignee ?? "",
+		gitEnabled: config.git?.enabled ?? false,
 	});
 	const [savedAt, setSavedAt] = useState<number | null>(null);
 	const [replacementError, setReplacementError] = useState<string | null>(null);
@@ -137,6 +138,7 @@ function SettingsBody({ project, projectId, onSaved }: { project: Project; proje
 				}),
 				reviewers: form.reviewerHarness ? [{ harness: form.reviewerHarness }] : undefined,
 				trackerIntake: buildIntake(intakeForm),
+				git: { enabled: form.gitEnabled },
 			};
 			const { error } = await apiClient.PUT("/api/v1/projects/{id}/config", {
 				params: { path: { id: projectId } },
@@ -198,6 +200,23 @@ function SettingsBody({ project, projectId, onSaved }: { project: Project; proje
 					<ReadonlyRow label="kind" value={project.kind === "workspace" ? "workspace" : "single repo"} />
 					<ReadonlyRow label="path" value={project.path} />
 					<ReadonlyRow label="repo" value={project.repo || "—"} />
+				</CardContent>
+			</Card>
+
+			<Card>
+				<CardHeader>
+					<CardTitle className="text-[13px]">Git workflow</CardTitle>
+				</CardHeader>
+				<CardContent>
+					<label className="flex cursor-pointer items-start gap-3 text-[12px] text-muted-foreground">
+						<input
+							type="checkbox"
+							checked={form.gitEnabled}
+							onChange={(e) => setForm((f) => ({ ...f, gitEnabled: e.target.checked }))}
+							className="mt-0.5 size-4 accent-violet-500"
+						/>
+						<span><span className="font-medium text-foreground">Commit and push completed tasks</span><br />Workers use `git status`, make an atomic Conventional Commit, and push with your existing Git/SSH credentials.</span>
+					</label>
 				</CardContent>
 			</Card>
 

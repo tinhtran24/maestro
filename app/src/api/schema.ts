@@ -655,6 +655,9 @@ export interface components {
             lastActivityAt: string;
             state: string;
         };
+        DomainGitWorkflowConfig: {
+            enabled?: boolean;
+        };
         DomainReviewerConfig: {
             harness: string;
         };
@@ -765,7 +768,6 @@ export interface components {
             confidence: components["schemas"]["PlannerConfidence"];
             dependencies: string[];
             description: string;
-            estimate: string;
             labels: string[];
             likelyFiles: string[];
             missingInformation: string[];
@@ -801,6 +803,7 @@ export interface components {
             env?: {
                 [key: string]: string;
             };
+            git?: components["schemas"]["DomainGitWorkflowConfig"];
             orchestrator?: components["schemas"]["RoleOverride"];
             planner?: components["schemas"]["RoleOverride"];
             postCreate?: string[];

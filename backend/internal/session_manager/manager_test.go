@@ -1321,6 +1321,15 @@ func TestSpawn_DefaultsBranchFromSessionID(t *testing.T) {
 	}
 }
 
+func TestDefaultSpawnBranch_UsesTaskTypePrefix(t *testing.T) {
+	if got := defaultSpawnBranch("mer-7", domain.KindWorker, "mer", domain.ProjectKindSingleRepo, "Add settings panel"); got != "feature/mer-7" {
+		t.Fatalf("feature branch = %q", got)
+	}
+	if got := defaultSpawnBranch("mer-8", domain.KindWorker, "mer", domain.ProjectKindSingleRepo, "Fix planner error"); got != "bugfix/mer-8" {
+		t.Fatalf("bugfix branch = %q", got)
+	}
+}
+
 func TestSpawn_ForwardsResolvedAgentConfigPermissions(t *testing.T) {
 	st := newFakeStore()
 	st.projects["mer"] = domain.ProjectRecord{ID: "mer", Config: domain.ProjectConfig{

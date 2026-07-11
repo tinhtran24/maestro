@@ -230,7 +230,7 @@ func (m *Manager) Spawn(ctx context.Context, cfg ports.SpawnConfig) (domain.Sess
 
 	branch := cfg.Branch
 	if branch == "" {
-		branch = defaultSpawnBranch(id, cfg.Kind, sessionPrefix(project), project.Kind.WithDefault())
+		branch = defaultSpawnBranch(id, cfg.Kind, sessionPrefix(project), project.Kind.WithDefault(), cfg.IssueID)
 	}
 	ws, workspaceProject, err := m.createSessionWorkspace(ctx, project, cfg, id, branch)
 	if err != nil {
@@ -350,7 +350,10 @@ func (m *Manager) createSessionWorkspace(ctx context.Context, project domain.Pro
 			Kind:          cfg.Kind,
 			SessionPrefix: sessionPrefix(project),
 			Branch:        branch,
-			BaseBranch:    project.Config.WithDefaults().DefaultBranch,
+			// An explicitly configured project base wins. When it is unset, the
+			// workspace adapter uses the project's current checkout (HEAD), so a
+			// task created from a feature branch stays in that codebase.
+			BaseBranch: project.Config.DefaultBranch,
 		})
 		return ws, nil, err
 	}
@@ -377,7 +380,7 @@ func (m *Manager) createSessionWorkspace(ctx context.Context, project domain.Pro
 		SessionPrefix: sessionPrefix(project),
 		Branch:        branch,
 		RootRepoPath:  project.Path,
-		BaseBranch:    project.Config.WithDefaults().DefaultBranch,
+		BaseBranch:    project.Config.DefaultBranch,
 		Repos:         childRepos,
 	})
 	if err != nil {
@@ -1480,11 +1483,24 @@ func defaultSessionBranch(id domain.SessionID, kind domain.SessionKind, prefix s
 	return "to/" + string(id) + "/root"
 }
 
-func defaultSpawnBranch(id domain.SessionID, kind domain.SessionKind, prefix string, projectKind domain.ProjectKind) string {
+func defaultSpawnBranch(id domain.SessionID, kind domain.SessionKind, prefix string, projectKind domain.ProjectKind, issueID domain.IssueID) string {
 	if projectKind == domain.ProjectKindWorkspace {
 		return "to/" + string(id)
 	}
+	if kind == domain.KindWorker && strings.TrimSpace(string(issueID)) != "" {
+		return taskBranchPrefix(string(issueID)) + "/" + string(id)
+	}
 	return defaultSessionBranch(id, kind, prefix)
+}
+
+func taskBranchPrefix(task string) string {
+	task = strings.ToLower(task)
+	for _, marker := range []string{"bug", "fix", "defect", "regression", "crash", "error", "hotfix"} {
+		if strings.Contains(task, marker) {
+			return "bugfix"
+		}
+	}
+	return "feature"
 }
 
 func buildPrompt(cfg ports.SpawnConfig) string {
@@ -1536,7 +1552,20 @@ func (m *Manager) buildSystemPrompt(ctx context.Context, kind domain.SessionKind
 	if workspacePrompt != "" {
 		base += "\n\n" + workspacePrompt
 	}
+	project, err := m.loadProject(ctx, projectID)
+	if err != nil {
+		return "", err
+	}
+	if kind == domain.KindWorker && project.Config.Git.Enabled {
+		base += "\n\n" + gitWorkflowPrompt()
+	}
 	return base + m.aoSkillPointer() + systemPromptGuard, nil
+}
+
+func gitWorkflowPrompt() string {
+	return `## Git completion workflow
+
+Before reporting this task complete, run git status. Commit only the task's intended changes as a small, atomic Conventional Commit (for example, feat: add native model selection or fix: handle planner output). Then push the current task branch with git push -u origin HEAD. Use the user's existing Git remote credentials (SSH or Git credential helper); never request or store a GitHub token. If commit or push fails, report the exact blocker and leave the working tree intact.`
 }
 
 // aoSkillPointer is appended to every agent system prompt. It points the agent

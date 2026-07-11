@@ -229,15 +229,13 @@ func TestCreateWorkspaceProjectRepoPrunesStaleRegisteredWorktree(t *testing.T) {
 		joined := strings.Join(args, " ")
 		calls = append(calls, joined)
 		switch {
-		case strings.Contains(joined, "symbolic-ref --quiet --short refs/remotes/origin/HEAD"):
-			return []byte("origin/main\n"), nil
 		case strings.Contains(joined, "rev-parse --verify --quiet origin/feature/test"):
 			return nil, commandError{args: append([]string{binary}, args...), err: exitErr}
-		case strings.Contains(joined, "rev-parse --verify --quiet origin/main"):
+		case strings.Contains(joined, "rev-parse --verify --quiet HEAD"):
 			return nil, nil
-		case strings.Contains(joined, "rev-parse --verify origin/main"):
+		case strings.Contains(joined, "rev-parse --verify HEAD"):
 			return []byte("abc123\n"), nil
-		case strings.Contains(joined, "worktree add -b feature/test "+output+" origin/main"):
+		case strings.Contains(joined, "worktree add -b feature/test "+output+" HEAD"):
 			addAttempts++
 			if addAttempts == 1 {
 				return nil, commandError{
@@ -594,7 +592,7 @@ func TestAddWorktreeReportsBranchNotFetched(t *testing.T) {
 	}
 }
 
-func TestResolveBaseRefInfersRepoDefaultBranchWhenUnset(t *testing.T) {
+func TestResolveBaseRefUsesCurrentCheckoutWhenUnset(t *testing.T) {
 	ws, err := New(Options{ManagedRoot: t.TempDir(), RepoResolver: StaticRepoResolver{"proj": t.TempDir()}})
 	if err != nil {
 		t.Fatalf("new: %v", err)
@@ -606,9 +604,7 @@ func TestResolveBaseRefInfersRepoDefaultBranchWhenUnset(t *testing.T) {
 	ws.run = func(_ context.Context, _ string, args ...string) ([]byte, error) {
 		joined := strings.Join(args, " ")
 		switch {
-		case strings.Contains(joined, "symbolic-ref --quiet --short refs/remotes/origin/HEAD"):
-			return []byte("origin/master\n"), nil
-		case strings.Contains(joined, "origin/master"):
+		case strings.Contains(joined, "HEAD"):
 			return []byte("sha\n"), nil
 		case strings.Contains(joined, "rev-parse --verify"):
 			return nil, commandError{args: args, err: exitOne}
@@ -620,8 +616,8 @@ func TestResolveBaseRefInfersRepoDefaultBranchWhenUnset(t *testing.T) {
 	if err != nil {
 		t.Fatalf("resolveBaseRef err = %v", err)
 	}
-	if ref != "origin/master" {
-		t.Fatalf("base ref = %q, want child origin/master", ref)
+	if ref != "HEAD" {
+		t.Fatalf("base ref = %q, want current checkout HEAD", ref)
 	}
 }
 

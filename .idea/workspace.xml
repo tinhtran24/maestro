@@ -4,187 +4,35 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="ab904008-d3c3-488d-a287-421dd9b93abe" name="Changes" comment="feature: test update plan">
-      <change beforePath="$PROJECT_DIR$/.github/workflows/cli-e2e.yml" beforeDir="false" afterPath="$PROJECT_DIR$/.github/workflows/cli-e2e.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.github/workflows/desktop-testing.yml" beforeDir="false" afterPath="$PROJECT_DIR$/.github/workflows/desktop-testing.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.github/workflows/frontend-release.yml" beforeDir="false" afterPath="$PROJECT_DIR$/.github/workflows/frontend-release.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.github/workflows/testing-build.yml" beforeDir="false" afterPath="$PROJECT_DIR$/.github/workflows/testing-build.yml" afterDir="false" />
+    <list default="true" id="ab904008-d3c3-488d-a287-421dd9b93abe" name="Changes" comment="feature: thanos task plan">
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/AGENTS.md" beforeDir="false" afterPath="$PROJECT_DIR$/AGENTS.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/DESIGN.md" beforeDir="false" afterPath="$PROJECT_DIR$/DESIGN.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/e2e/workbench.spec.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/e2e/workbench.spec.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/scripts/build-daemon.mjs" beforeDir="false" afterPath="$PROJECT_DIR$/app/scripts/build-daemon.mjs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/scripts/feed.mjs" beforeDir="false" afterPath="$PROJECT_DIR$/app/scripts/feed.mjs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/scripts/feed.test.mjs" beforeDir="false" afterPath="$PROJECT_DIR$/app/scripts/feed.test.mjs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/landing/components/LandingCTA.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/landing/components/LandingCTA.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/landing/components/LandingHowItWorks.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/landing/components/LandingHowItWorks.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/landing/components/LandingQuickStart.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/landing/components/LandingQuickStart.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/landing/components/LandingUseCases.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/landing/components/LandingUseCases.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/landing/components/docs/DocsMissingPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/landing/components/docs/DocsMissingPage.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/landing/components/docs/PluginCard.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/landing/components/docs/PluginCard.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/landing/content/docs/architecture.mdx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/landing/content/docs/architecture.mdx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/landing/content/docs/changelog.mdx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/landing/content/docs/changelog.mdx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/landing/content/docs/cli.mdx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/landing/content/docs/cli.mdx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/landing/content/docs/configuration/index.mdx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/landing/content/docs/configuration/index.mdx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/landing/content/docs/configuration/projects.mdx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/landing/content/docs/configuration/projects.mdx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/landing/content/docs/configuration/remote-access.mdx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/landing/content/docs/configuration/remote-access.mdx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/landing/content/docs/faq.mdx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/landing/content/docs/faq.mdx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/landing/content/docs/guides/multi-project.mdx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/landing/content/docs/guides/multi-project.mdx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/landing/content/docs/guides/parallel-issues.mdx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/landing/content/docs/guides/parallel-issues.mdx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/landing/content/docs/guides/per-role-agents.mdx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/landing/content/docs/guides/per-role-agents.mdx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/landing/content/docs/installation.mdx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/landing/content/docs/installation.mdx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/landing/content/docs/migration.mdx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/landing/content/docs/migration.mdx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/landing/content/docs/platforms.mdx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/landing/content/docs/platforms.mdx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/landing/content/docs/plugins/authoring.mdx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/landing/content/docs/plugins/authoring.mdx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/landing/content/docs/plugins/index.mdx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/landing/content/docs/plugins/index.mdx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/landing/content/docs/plugins/notifiers/composio.mdx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/landing/content/docs/plugins/notifiers/composio.mdx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/landing/content/docs/plugins/notifiers/dashboard.mdx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/landing/content/docs/plugins/notifiers/dashboard.mdx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/landing/content/docs/plugins/notifiers/desktop.mdx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/landing/content/docs/plugins/notifiers/desktop.mdx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/landing/content/docs/plugins/notifiers/discord.mdx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/landing/content/docs/plugins/notifiers/discord.mdx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/landing/content/docs/plugins/notifiers/index.mdx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/landing/content/docs/plugins/notifiers/index.mdx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/landing/content/docs/plugins/notifiers/openclaw.mdx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/landing/content/docs/plugins/notifiers/openclaw.mdx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/landing/content/docs/plugins/notifiers/slack.mdx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/landing/content/docs/plugins/notifiers/slack.mdx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/landing/content/docs/plugins/notifiers/webhook.mdx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/landing/content/docs/plugins/notifiers/webhook.mdx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/landing/content/docs/plugins/scm/github.mdx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/landing/content/docs/plugins/scm/github.mdx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/landing/content/docs/plugins/scm/gitlab.mdx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/landing/content/docs/plugins/scm/gitlab.mdx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/landing/content/docs/plugins/terminals/index.mdx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/landing/content/docs/plugins/terminals/index.mdx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/landing/content/docs/plugins/terminals/iterm2.mdx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/landing/content/docs/plugins/terminals/iterm2.mdx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/landing/content/docs/plugins/terminals/web.mdx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/landing/content/docs/plugins/terminals/web.mdx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/landing/content/docs/quickstart.mdx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/landing/content/docs/quickstart.mdx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/landing/content/docs/troubleshooting.mdx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/landing/content/docs/troubleshooting.mdx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/landing/lib/github-repo.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/landing/lib/github-repo.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/landing/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/landing/package-lock.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/landing/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/landing/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/app-state.test.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/app-state.test.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/supervisor-link.test.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/supervisor-link.test.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/update-settings.test.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/update-settings.test.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/preload.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/preload.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/renderer/components/BrowserPanel.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/renderer/components/BrowserPanel.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/renderer/components/CenterPane.test.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/renderer/components/CenterPane.test.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/renderer/components/CenterPane.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/renderer/components/CenterPane.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/renderer/components/NotificationCenter.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/renderer/components/NotificationCenter.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/renderer/components/ProjectSettingsForm.test.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/renderer/components/ProjectSettingsForm.test.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/api/schema.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/api/schema.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/renderer/components/ProjectSettingsForm.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/renderer/components/ProjectSettingsForm.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/renderer/components/SessionView.test.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/renderer/components/SessionView.test.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/renderer/components/SessionView.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/renderer/components/SessionView.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/renderer/components/ShellTopbar.test.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/renderer/components/ShellTopbar.test.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/renderer/components/Sidebar.test.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/renderer/components/Sidebar.test.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/renderer/components/Sidebar.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/renderer/components/Sidebar.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/renderer/components/TerminalPane.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/renderer/components/TerminalPane.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/renderer/components/XtermTerminal.test.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/renderer/components/XtermTerminal.test.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/renderer/global.d.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/renderer/global.d.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/renderer/hooks/useBrowserView.test.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/renderer/hooks/useBrowserView.test.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/renderer/hooks/useBrowserView.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/renderer/hooks/useBrowserView.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/renderer/hooks/useResizable.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/renderer/hooks/useResizable.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/renderer/hooks/useTerminalSession.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/renderer/hooks/useTerminalSession.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/renderer/lib/api-client.test.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/renderer/lib/api-client.test.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/renderer/lib/api-client.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/renderer/lib/api-client.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/renderer/lib/bridge.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/renderer/lib/bridge.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/renderer/lib/daemon-telemetry.test.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/renderer/lib/daemon-telemetry.test.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/renderer/lib/daemon-telemetry.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/renderer/lib/daemon-telemetry.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/renderer/lib/mock-data.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/renderer/lib/mock-data.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/renderer/lib/spawn-orchestrator.test.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/renderer/lib/spawn-orchestrator.test.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/renderer/lib/spawn-orchestrator.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/renderer/lib/spawn-orchestrator.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/renderer/lib/telemetry.test.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/renderer/lib/telemetry.test.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/renderer/lib/telemetry.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/renderer/lib/telemetry.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/renderer/routes/__root.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/renderer/routes/__root.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/renderer/routes/_shell.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/renderer/routes/_shell.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/renderer/stores/ui-store.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/renderer/stores/ui-store.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/renderer/test/setup.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/renderer/test/setup.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/shared/daemon-attach.test.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/shared/daemon-attach.test.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/shared/daemon-launch.test.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/shared/daemon-launch.test.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/shared/daemon-launch.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/shared/daemon-launch.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/shared/telemetry.test.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/shared/telemetry.test.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/internal/adapters/agent/cline/hooks.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/adapters/agent/cline/hooks.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/internal/adapters/agent/copilot/copilot_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/adapters/agent/copilot/copilot_test.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/internal/adapters/agent/copilot/hooks.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/adapters/agent/copilot/hooks.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/internal/adapters/agent/droid/droid.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/adapters/agent/droid/droid.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/internal/adapters/agent/goose/hooks.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/adapters/agent/goose/hooks.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/internal/adapters/agent/hookutil/hookutil.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/adapters/agent/hookutil/hookutil.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/internal/adapters/agent/kilocode/assets/thanos-activity.ts" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/adapters/agent/kilocode/assets/thanos-activity.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/internal/adapters/agent/kiro/hooks.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/adapters/agent/kiro/hooks.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/internal/adapters/agent/kiro/kiro.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/adapters/agent/kiro/kiro.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/internal/adapters/agent/kiro/kiro_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/adapters/agent/kiro/kiro_test.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/internal/adapters/agent/opencode/assets/thanos-activity.ts" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/adapters/agent/opencode/assets/thanos-activity.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/internal/adapters/reviewer/codex/codex_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/adapters/reviewer/codex/codex_test.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/internal/adapters/runtime/conpty/ptyregistry/ptyregistry_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/adapters/runtime/conpty/ptyregistry/ptyregistry_test.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/internal/adapters/scm/github/client.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/adapters/scm/github/client.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/renderer/components/quick-capture/AIExtractionCard.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/renderer/components/quick-capture/AIExtractionCard.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/renderer/components/quick-capture/CreateTaskWizard.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/renderer/components/quick-capture/CreateTaskWizard.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/renderer/components/quick-capture/TaskReviewFlow.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/renderer/components/quick-capture/TaskReviewFlow.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/renderer/components/quick-capture/types.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/renderer/components/quick-capture/types.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/internal/adapters/scm/github/auth.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/adapters/scm/github/auth.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/internal/adapters/scm/github/provider.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/adapters/scm/github/provider.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/backend/internal/adapters/scm/github/provider_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/adapters/scm/github/provider_test.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/internal/adapters/telemetry/posthog.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/adapters/telemetry/posthog.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/internal/adapters/telemetry/posthog_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/adapters/telemetry/posthog_test.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/internal/adapters/tracker/github/tracker.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/adapters/tracker/github/tracker.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/backend/internal/adapters/workspace/gitworktree/workspace.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/adapters/workspace/gitworktree/workspace.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/internal/adapters/workspace/gitworktree/workspace_integration_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/adapters/workspace/gitworktree/workspace_integration_test.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/internal/adapters/workspace/gitworktree/workspace_preserve_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/adapters/workspace/gitworktree/workspace_preserve_test.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/backend/internal/adapters/workspace/gitworktree/workspace_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/adapters/workspace/gitworktree/workspace_test.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/internal/agentlaunch/spec.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/agentlaunch/spec.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/internal/cli/doctor.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/cli/doctor.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/internal/cli/doctor_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/cli/doctor_test.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/internal/cli/e2e_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/cli/e2e_test.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/internal/cli/hooks_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/cli/hooks_test.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/internal/cli/launch.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/cli/launch.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/internal/cli/root.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/cli/root.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/internal/cli/spawn.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/cli/spawn.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/internal/cli/start.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/cli/start.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/internal/config/config_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/config/config_test.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/internal/daemon/lifecycle_wiring.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/daemon/lifecycle_wiring.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/internal/daemon/supervisor/listen_windows.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/daemon/supervisor/listen_windows.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/internal/daemon/wiring_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/daemon/wiring_test.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/internal/domain/projectconfig_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/domain/projectconfig_test.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/internal/httpd/controllers/projects_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/httpd/controllers/projects_test.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/internal/httpd/controllers/sessions_activity_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/httpd/controllers/sessions_activity_test.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/internal/httpd/controllers/sessions_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/httpd/controllers/sessions_test.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/internal/httpd/log.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/httpd/log.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/internal/httpd/log_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/httpd/log_test.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/internal/httpd/recover.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/httpd/recover.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/internal/httpd/router.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/httpd/router.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/internal/httpd/telemetry_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/httpd/telemetry_test.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/internal/integration/lifecycle_sqlite_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/integration/lifecycle_sqlite_test.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/internal/lifecycle/manager.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/lifecycle/manager.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/internal/lifecycle/manager_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/lifecycle/manager_test.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/internal/lifecycle/reactions.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/lifecycle/reactions.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/internal/notify/manager_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/notify/manager_test.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/internal/observe/scm/observer_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/observe/scm/observer_test.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/internal/ports/outbound.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/ports/outbound.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/internal/preview/poller_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/preview/poller_test.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/internal/review/launcher.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/review/launcher.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/internal/service/project/service.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/service/project/service.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/internal/service/project/service_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/service/project/service_test.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/internal/service/session/service.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/service/session/service.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/internal/service/session/service_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/service/session/service_test.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/internal/service/session/stack_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/service/session/stack_test.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/internal/daemon/scm_wiring.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/daemon/scm_wiring.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/internal/domain/projectconfig.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/domain/projectconfig.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/internal/httpd/apispec/openapi.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/httpd/apispec/openapi.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/internal/service/planner/claude.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/service/planner/claude.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/internal/service/planner/planner.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/service/planner/planner.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/internal/service/planner/planner_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/service/planner/planner_test.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/backend/internal/session_manager/manager.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/session_manager/manager.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/backend/internal/session_manager/manager_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/session_manager/manager_test.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/internal/session_manager/provision_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/session_manager/provision_test.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/internal/storage/sqlite/migrations/0001_init.sql" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/storage/sqlite/migrations/0001_init.sql" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/internal/storage/sqlite/store/notification_store_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/storage/sqlite/store/notification_store_test.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/internal/storage/sqlite/store/store_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/storage/sqlite/store/store_test.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/internal/storage/sqlite/store/telemetry_store_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/storage/sqlite/store/telemetry_store_test.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/internal/terminal/attachment_integration_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/terminal/attachment_integration_test.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/main.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/STATUS.md" beforeDir="false" afterPath="$PROJECT_DIR$/docs/STATUS.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/architecture.md" beforeDir="false" afterPath="$PROJECT_DIR$/docs/architecture.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/backend-code-structure.md" beforeDir="false" afterPath="$PROJECT_DIR$/docs/backend-code-structure.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/cli/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/docs/cli/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/plans/2026-06-26-import-offer.md" beforeDir="false" afterPath="$PROJECT_DIR$/docs/plans/2026-06-26-import-offer.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/plans/session-lifecycle-persistence.md" beforeDir="false" afterPath="$PROJECT_DIR$/docs/plans/session-lifecycle-persistence.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/thanos-start-bootstrapper-and-npm-deprecation.md" beforeDir="false" afterPath="$PROJECT_DIR$/docs/thanos-start-bootstrapper-and-npm-deprecation.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/packages/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/packages/.gitignore" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/packages/thanos-darwin-arm64/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/thanos-darwin-arm64/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/packages/thanos-darwin-x64/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/thanos-darwin-x64/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/packages/thanos-linux-x64/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/thanos-linux-x64/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/packages/thanos-win32-x64/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/thanos-win32-x64/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/plans/frontend/00_overview.md" beforeDir="false" afterPath="$PROJECT_DIR$/plans/frontend/00_overview.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/plans/frontend/02_app_shell_and_routing.md" beforeDir="false" afterPath="$PROJECT_DIR$/plans/frontend/02_app_shell_and_routing.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/plans/frontend/04_milestones.md" beforeDir="false" afterPath="$PROJECT_DIR$/plans/frontend/04_milestones.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/daemon-build.sh" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/daemon-build.sh" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/rebrand.sh" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/rebrand.sh" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/skills/bug-triage/SKILL.md" beforeDir="false" afterPath="$PROJECT_DIR$/skills/bug-triage/SKILL.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/cli/Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/test/cli/Dockerfile" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/cli/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/test/cli/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/cli/install-check.sh" beforeDir="false" afterPath="$PROJECT_DIR$/test/cli/install-check.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/screenshots/first.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/screenshots/image.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/screenshots/second.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/screenshots/third.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/screenshots/tweet1.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/screenshots/tweet2.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/screenshots/tweet3.png" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -201,6 +49,9 @@
   <component name="McpProjectServerCommands">
     <commands />
     <urls />
+  </component>
+  <component name="PackageJsonUpdateNotifier">
+    <dismissed value="$PROJECT_DIR$/package.json" />
   </component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 0,
@@ -287,7 +138,8 @@
       <workItem from="1782869620105" duration="11889000" />
       <workItem from="1783042083989" duration="13797000" />
       <workItem from="1783473862987" duration="6821000" />
-      <workItem from="1783481148222" duration="5307000" />
+      <workItem from="1783481148222" duration="5333000" />
+      <workItem from="1783733605064" duration="2562000" />
     </task>
     <task id="LOCAL-00001" summary="feature: update layout ui">
       <option name="closed" value="true" />
@@ -369,7 +221,15 @@
       <option name="project" value="LOCAL" />
       <updated>1783137717124</updated>
     </task>
-    <option name="localTasksCounter" value="11" />
+    <task id="LOCAL-00011" summary="feature: thanos task plan">
+      <option name="closed" value="true" />
+      <created>1783491545346</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1783491545346</updated>
+    </task>
+    <option name="localTasksCounter" value="12" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -421,6 +281,7 @@
     <MESSAGE value="feature: init skill, mcp feature phase 6" />
     <MESSAGE value="feature: current plan phase 6, next plan code workflow" />
     <MESSAGE value="feature: test update plan" />
-    <option name="LAST_COMMIT_MESSAGE" value="feature: test update plan" />
+    <MESSAGE value="feature: thanos task plan" />
+    <option name="LAST_COMMIT_MESSAGE" value="feature: thanos task plan" />
   </component>
 </project>
