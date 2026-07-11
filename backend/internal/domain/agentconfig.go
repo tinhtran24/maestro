@@ -10,11 +10,11 @@ var SupportedModels = map[AgentHarness][]string{
 	HarnessCodex:      {"gpt-5-codex"},
 }
 
-// IsSupportedModel reports whether model is an explicit selectable override
-// for harness. An empty model deliberately means use the native CLI default.
-func IsSupportedModel(harness AgentHarness, model string) bool {
+// IsNativeCLIModel reports whether model is a native CLI override for harness.
+// SupportedModels is the canonical source for this classification.
+func IsNativeCLIModel(harness AgentHarness, model string) bool {
 	if model == "" {
-		return true
+		return false
 	}
 	for _, candidate := range SupportedModels[harness] {
 		if model == candidate {
@@ -22,6 +22,12 @@ func IsSupportedModel(harness AgentHarness, model string) bool {
 		}
 	}
 	return false
+}
+
+// IsSupportedModel reports whether model is an explicit selectable override
+// for harness. An empty model deliberately means use the native CLI default.
+func IsSupportedModel(harness AgentHarness, model string) bool {
+	return model == "" || IsNativeCLIModel(harness, model)
 }
 
 // PermissionMode controls how much review an agent requires before acting. It

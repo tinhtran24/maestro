@@ -45,6 +45,26 @@ func TestProjectConfigValidate(t *testing.T) {
 	}
 }
 
+func TestIsNativeCLIModel(t *testing.T) {
+	tests := []struct {
+		name    string
+		harness AgentHarness
+		model   string
+		want    bool
+	}{
+		{name: "known native CLI model", harness: HarnessCodex, model: "gpt-5-codex", want: true},
+		{name: "model for another native CLI", harness: HarnessCodex, model: "claude-opus-4-5", want: false},
+		{name: "empty default", harness: HarnessCodex, model: "", want: false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := IsNativeCLIModel(tt.harness, tt.model); got != tt.want {
+				t.Fatalf("IsNativeCLIModel(%q, %q) = %v, want %v", tt.harness, tt.model, got, tt.want)
+			}
+		})
+	}
+}
+
 func TestDefaultProjectConfig(t *testing.T) {
 	def := DefaultProjectConfig()
 

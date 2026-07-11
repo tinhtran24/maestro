@@ -156,7 +156,8 @@ type SpawnSessionRequest struct {
 	// `to spawn --name` always sets it; other clients (e.g. the desktop new-task
 	// dialog) may omit it and fall back to the session id in the read model.
 	DisplayName string `json:"displayName,omitempty" maxLength:"20"`
-	// Model is an optional task-level native CLI model override.
+	// Model is reserved for execution-model selection. Native CLI model
+	// overrides are not permitted when creating a task.
 	Model string `json:"model,omitempty"`
 }
 

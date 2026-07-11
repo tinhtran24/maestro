@@ -27,6 +27,28 @@ type Props = {
 	onOpenChange: (open: boolean) => void;
 };
 
+export function taskCreationBody({
+	projectId,
+	agent,
+	agentTouched,
+	issueId,
+	prompt,
+}: {
+	projectId: string;
+	agent: string;
+	agentTouched: boolean;
+	issueId: string;
+	prompt: string;
+}) {
+	return {
+		projectId,
+		kind: "worker" as const,
+		harness: agentTouched && agent ? (agent as AgentProvider) : undefined,
+		issueId,
+		prompt,
+	};
+}
+
 const STEPS: { id: WizardStep; label: string; sub: string; icon: typeof Sparkles }[] = [
 	{ id: "capture", label: "Quick Capture", sub: "AI-powered", icon: Sparkles },
 	{ id: "structure", label: "AI Structure", sub: "Auto-extracted", icon: Bot },
@@ -42,7 +64,6 @@ export function CreateTaskWizard({ open, projectId, onCreated, onOpenChange }: P
 	const [extraContext, setExtraContext] = useState("");
 	const [agent, setAgent] = useState("");
 	const [agentTouched, setAgentTouched] = useState(false);
-	const [models, setModels] = useState<Record<string, string>>({});
 	const [error, setError] = useState<string | undefined>();
 	const [createdId, setCreatedId] = useState<string | undefined>();
 
@@ -79,7 +100,6 @@ export function CreateTaskWizard({ open, projectId, onCreated, onOpenChange }: P
 			setExtraContext("");
 			setAgent("");
 			setAgentTouched(false);
-			setModels({});
 			setError(undefined);
 			setCreatedId(undefined);
 		}
@@ -121,16 +141,14 @@ export function CreateTaskWizard({ open, projectId, onCreated, onOpenChange }: P
 		mutationFn: async () => {
 			if (!projectId) throw new Error("No project selected");
 			const taskAgent = agent || defaultAgent;
-			const taskModel = taskAgent ? models[taskAgent] : undefined;
 			const { data, error: apiError } = await apiClient.POST("/api/v1/sessions", {
-				body: {
+				body: taskCreationBody({
 					projectId,
-					kind: "worker",
-					harness: (agentTouched && agent) || taskModel ? (taskAgent as AgentProvider) : undefined,
-					model: taskModel || undefined,
+					agent: taskAgent,
+					agentTouched,
 					issueId: draft.title.trim() || "Untitled task",
 					prompt: composeSessionPrompt(draft, extraContext) || draft.title,
-				},
+				}),
 			});
 			if (apiError) throw new Error(apiErrorMessage(apiError, "Unable to create task"));
 			if (!data?.session?.id) throw new Error("Task creation returned no session");
@@ -211,11 +229,6 @@ export function CreateTaskWizard({ open, projectId, onCreated, onOpenChange }: P
 										onAddUrl={addUrl}
 										onRemove={removeAttachment}
 										onReorder={reorderAttachment}
-									/>
-									<NativeModelSelectors
-										agents={agentCatalog}
-										models={models}
-										onChange={(harness, model) => setModels((current) => ({ ...current, [harness]: model }))}
 									/>
 								</>
 							) : step === "structure" ? (
@@ -353,57 +366,6 @@ function CreateSummary({ draft, attachments, agent }: { draft: TaskDraft; attach
 					{draft.acceptanceCriteria?.length ?? 0} acceptance criteria · {attachments.length} attachment(s) · agent:{" "}
 					{agent || "project default"}
 				</div>
-			</div>
-		</div>
-	);
-}
-
-export function NativeModelSelectors({
-	agents,
-	models,
-	onChange,
-}: {
-	agents: components["schemas"]["ListAgentsResponse"] | undefined;
-	models: Record<string, string>;
-	onChange: (harness: string, model: string) => void;
-}) {
-	const installed = new Set((agents?.installed ?? []).map((agent) => agent.id));
-	const authorized = new Set((agents?.authorized ?? []).map((agent) => agent.id));
-	const available = (agents?.supported ?? []).filter(
-		(agent) => installed.has(agent.id) && (authorized.has(agent.id) || agent.authStatus !== "unauthorized"),
-	);
-	if (available.length === 0) return null;
-
-	return (
-		<div className="mt-4 rounded-lg border border-border bg-surface/30 p-3" aria-label="Native CLI model configuration">
-			<div className="text-[12px] font-medium text-foreground">Native CLI models</div>
-			<p className="mt-1 text-[11px] text-muted-foreground">
-				Optional task-level overrides. Leave a CLI on its default to preserve its configured model.
-			</p>
-			<div className="mt-3 grid gap-2 sm:grid-cols-2">
-				{available.map((agent) => {
-					const options = agent.models ?? [];
-					const unsupported = options.length === 0;
-					return (
-						<label key={agent.id} className="flex flex-col gap-1 text-[11px] text-muted-foreground">
-							<span>{agent.label}</span>
-							<select
-								aria-label={`${agent.label} model`}
-								className="h-8 rounded-md border border-border bg-transparent px-2 text-[12px] text-foreground disabled:cursor-not-allowed disabled:opacity-60"
-								disabled={unsupported}
-								value={models[agent.id] ?? ""}
-								onChange={(event) => onChange(agent.id, event.target.value)}
-							>
-								<option value="">{unsupported ? "Model selection unavailable" : "CLI default"}</option>
-								{options.map((model) => (
-									<option key={model} value={model}>
-										{model}
-									</option>
-								))}
-							</select>
-						</label>
-					);
-				})}
 			</div>
 		</div>
 	);

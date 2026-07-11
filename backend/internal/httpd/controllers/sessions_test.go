@@ -271,7 +271,7 @@ func TestSessionsAPI_ListSpawnGetAndActions(t *testing.T) {
 		t.Fatalf("list leaked prompt: %s", body)
 	}
 
-	body, status, _ = doRequest(t, srv, "POST", "/api/v1/sessions", `{"projectId":"to","issueId":"ISS-1","kind":"worker","harness":"codex","model":"gpt-5-codex","prompt":"fix","displayName":"my worker"}`)
+	body, status, _ = doRequest(t, srv, "POST", "/api/v1/sessions", `{"projectId":"to","issueId":"ISS-1","kind":"worker","harness":"codex","prompt":"fix","displayName":"my worker"}`)
 	if status != http.StatusCreated {
 		t.Fatalf("POST session = %d, want 201; body=%s", status, body)
 	}
@@ -285,8 +285,8 @@ func TestSessionsAPI_ListSpawnGetAndActions(t *testing.T) {
 	if spawned.Session.DisplayName != "my worker" {
 		t.Fatalf("spawned displayName = %q, want %q", spawned.Session.DisplayName, "my worker")
 	}
-	if svc.lastSpawn.Model != "gpt-5-codex" {
-		t.Fatalf("spawn model = %q, want task-level override", svc.lastSpawn.Model)
+	if svc.lastSpawn.Model != "" {
+		t.Fatalf("spawn model = %q, want no task-level override", svc.lastSpawn.Model)
 	}
 
 	body, status, _ = doRequest(t, srv, "GET", "/api/v1/sessions/to-2", "")
@@ -697,6 +697,18 @@ func TestSessionsAPI_SpawnRejectsOverlongDisplayName(t *testing.T) {
 	overlong := strings.Repeat("x", 21)
 	body, status, _ := doRequest(t, srv, "POST", "/api/v1/sessions", `{"projectId":"to","harness":"codex","displayName":"`+overlong+`"}`)
 	assertErrorCode(t, body, status, http.StatusBadRequest, "DISPLAY_NAME_TOO_LONG")
+}
+
+func TestSessionsAPI_SpawnRejectsNativeCLIModel(t *testing.T) {
+	svc := newFakeSessionService()
+	srv := newSessionTestServer(t, svc)
+	body, status, _ := doRequest(t, srv, "POST", "/api/v1/sessions", `{"projectId":"to","kind":"worker","harness":"codex","model":"gpt-5-codex"}`)
+	if status != http.StatusBadRequest || !strings.Contains(string(body), "NATIVE_CLI_MODEL_NOT_ALLOWED") {
+		t.Fatalf("POST native CLI model = %d body=%s, want NATIVE_CLI_MODEL_NOT_ALLOWED", status, body)
+	}
+	if svc.lastSpawn.Model != "" {
+		t.Fatalf("native CLI model reached service: %#v", svc.lastSpawn)
+	}
 }
 
 func TestSessionsAPI_SpawnRejectsUnsupportedModel(t *testing.T) {
