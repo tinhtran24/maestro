@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"os"
+	"os/exec"
 	"strings"
 	"sync"
 	"time"
@@ -12,7 +13,7 @@ import (
 )
 
 // TokenSource yields a GitHub bearer token on demand. Production wires this
-// to EnvTokenSource or GHTokenSource; tests inject StaticTokenSource.
+// to EnvTokenSource or GitCredentialTokenSource; tests inject StaticTokenSource.
 type TokenSource interface {
 	Token(ctx context.Context) (string, error)
 }
@@ -100,6 +101,87 @@ func (s FallbackTokenSource) InvalidateToken() {
 
 const defaultGHTokenCacheTTL = 5 * time.Minute
 
+// GitCredentialTokenSource reads a GitHub token from Git's configured
+// credential helper. It supports the standard `password=<PAT>` response used
+// by macOS Keychain, Git Credential Manager, and other native Git helpers, so
+// the daemon does not require the optional gh CLI.
+type GitCredentialTokenSource struct {
+	// Git is the shell-out hook. Production leaves this nil and invokes
+	// `git credential fill`; tests inject it to avoid touching local helpers.
+	Git      func(ctx context.Context) (string, error)
+	TokenTTL time.Duration
+	Clock    func() time.Time
+
+	mu        sync.Mutex
+	token     string
+	expiresAt time.Time
+}
+
+// Token returns a cached credential-helper token or queries Git for one.
+func (s *GitCredentialTokenSource) Token(ctx context.Context) (string, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	now := s.now()
+	if s.token != "" && now.Before(s.expiresAt) {
+		return s.token, nil
+	}
+	run := s.Git
+	if run == nil {
+		run = gitCredentialToken
+	}
+	out, err := run(ctx)
+	if err != nil {
+		return "", err
+	}
+	for _, line := range strings.Split(out, "\n") {
+		key, value, ok := strings.Cut(line, "=")
+		if ok && key == "password" && strings.TrimSpace(value) != "" {
+			s.token = strings.TrimSpace(value)
+			s.expiresAt = now.Add(s.ttl())
+			return s.token, nil
+		}
+	}
+	return "", ErrNoToken
+}
+
+// InvalidateToken drops the cached credential-helper token.
+func (s *GitCredentialTokenSource) InvalidateToken() {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.token = ""
+	s.expiresAt = time.Time{}
+}
+
+func (s *GitCredentialTokenSource) now() time.Time {
+	if s.Clock != nil {
+		return s.Clock()
+	}
+	return time.Now()
+}
+
+func (s *GitCredentialTokenSource) ttl() time.Duration {
+	if s.TokenTTL > 0 {
+		return s.TokenTTL
+	}
+	return defaultGHTokenCacheTTL
+}
+
+func gitCredentialToken(ctx context.Context) (string, error) {
+	cmd := aoprocess.CommandContext(ctx, "git", "credential", "fill")
+	cmd.Stdin = strings.NewReader("protocol=https\nhost=github.com\n\n")
+	out, err := cmd.Output()
+	if err != nil {
+		if ctx.Err() != nil {
+			return "", ctx.Err()
+		}
+		// A missing Git credential helper or Git installation means this optional
+		// authentication source has no token. The observer can then disable
+		// cleanly instead of retrying a local configuration failure forever.
+		return "", ErrNoToken
+	}
+	return string(out), nil
+}
+
 // GHTokenSource shells out to `gh auth token` when env vars are not
 // configured. It memoizes the result for TokenTTL so we don't fork-exec on
 // every request, but the Client invalidates the cache on auth failures so a
@@ -172,7 +254,17 @@ func (s *GHTokenSource) ttl() time.Duration {
 func ghAuthToken(ctx context.Context) (string, error) {
 	out, err := aoprocess.CommandContext(ctx, "gh", "auth", "token").Output()
 	if err != nil {
-		return "", err
+		return "", ghTokenError(err)
 	}
 	return string(out), nil
+}
+
+func ghTokenError(err error) error {
+	// A missing optional gh CLI is equivalent to having no configured token.
+	// This lets the SCM observer disable itself once instead of logging a
+	// transient retry warning on every poll.
+	if errors.Is(err, exec.ErrNotFound) {
+		return ErrNoToken
+	}
+	return err
 }

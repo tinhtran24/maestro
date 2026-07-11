@@ -32,7 +32,6 @@ type TaskDraft struct {
 	LikelyFiles        []string   `json:"likelyFiles"`
 	Risks              []string   `json:"risks"`
 	Dependencies       []string   `json:"dependencies"`
-	Estimate           string     `json:"estimate"`
 	Scope              string     `json:"scope"`
 	Plan               []string   `json:"plan"`
 	OpenQuestions      []string   `json:"openQuestions"`
@@ -165,7 +164,7 @@ func buildPrompt(input string, attachments []string) string {
 	b.WriteString(`title (string), description (string), userStory (string, "As a ... I want ... so that ..."), `)
 	b.WriteString("priority (one of \"P0\",\"P1\",\"P2\",\"P3\"), labels (string[]), acceptanceCriteria (string[]), ")
 	b.WriteString("technicalNotes (string), likelyFiles (string[]), risks (string[]), dependencies (string[]), ")
-	b.WriteString("estimate (short string like \"4h\" or \"2d\"), scope (\"XS\"|\"S\"|\"M\"|\"L\"|\"XL\"), plan (string[] of short high-level steps), ")
+	b.WriteString("scope (\"XS\"|\"S\"|\"M\"|\"L\"|\"XL\"), plan (string[] of short high-level steps), ")
 	b.WriteString("openQuestions (string[]), missingInformation (string[] of specific facts you need but were not given), ")
 	b.WriteString("suggestedAgent (string, e.g. \"claude\"), ")
 	b.WriteString("confidence (object with integer 0-100 fields: overall, title, priority, acceptanceCriteria).\n")
@@ -194,19 +193,53 @@ func parseDraft(reply string) (TaskDraft, error) {
 	return d, nil
 }
 
-// extractJSONObject returns the substring from the first '{' to the matching
-// last '}', stripping markdown fences the model may have added.
+// extractJSONObject returns the first complete JSON object, stripping markdown
+// fences the model may have added. Native agent CLIs can append diagnostics or
+// additional JSON after their final answer, so using the last brace would turn
+// an otherwise valid draft into invalid JSON.
 func extractJSONObject(s string) string {
 	s = strings.TrimSpace(s)
 	s = strings.TrimPrefix(s, "```json")
 	s = strings.TrimPrefix(s, "```")
 	s = strings.TrimSuffix(s, "```")
 	start := strings.Index(s, "{")
-	end := strings.LastIndex(s, "}")
-	if start < 0 || end <= start {
+	if start < 0 {
 		return ""
 	}
-	return s[start : end+1]
+
+	depth := 0
+	inString := false
+	escaped := false
+	for i := start; i < len(s); i++ {
+		ch := s[i]
+		if inString {
+			if escaped {
+				escaped = false
+				continue
+			}
+			if ch == '\\' {
+				escaped = true
+				continue
+			}
+			if ch == '"' {
+				inString = false
+			}
+			continue
+		}
+
+		switch ch {
+		case '"':
+			inString = true
+		case '{':
+			depth++
+		case '}':
+			depth--
+			if depth == 0 {
+				return s[start : i+1]
+			}
+		}
+	}
+	return ""
 }
 
 // normalize clamps confidence to 0–100 and defaults priority when the model

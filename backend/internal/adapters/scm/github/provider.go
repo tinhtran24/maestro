@@ -76,8 +76,8 @@ func NewProvider(opts ProviderOptions) (*Provider, error) {
 
 // SCMCredentialsAvailable checks whether this provider can obtain a token. The
 // SCM observer calls it lazily during the first poll that has SCM subjects, so
-// daemon readiness is not blocked by shelling out to gh auth token and idle
-// daemons do not warn about missing credentials.
+// daemon readiness is not blocked by credential-helper access and idle daemons
+// do not warn about missing credentials.
 func (p *Provider) SCMCredentialsAvailable(ctx context.Context) (bool, error) {
 	if p.client == nil || p.client.tokens == nil {
 		return true, nil

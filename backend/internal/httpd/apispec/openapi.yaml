@@ -1823,6 +1823,11 @@ components:
       - state
       - lastActivityAt
       type: object
+    DomainGitWorkflowConfig:
+      properties:
+        enabled:
+          type: boolean
+      type: object
     DomainReviewerConfig:
       properties:
         harness:
@@ -2118,8 +2123,6 @@ components:
           type: array
         description:
           type: string
-        estimate:
-          type: string
         labels:
           items:
             type: string
@@ -2167,7 +2170,6 @@ components:
       - likelyFiles
       - risks
       - dependencies
-      - estimate
       - scope
       - plan
       - openQuestions
@@ -2228,6 +2230,8 @@ components:
           additionalProperties:
             type: string
           type: object
+        git:
+          $ref: '#/components/schemas/DomainGitWorkflowConfig'
         orchestrator:
           $ref: '#/components/schemas/RoleOverride'
         planner:

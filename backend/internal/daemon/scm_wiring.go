@@ -32,12 +32,11 @@ func startSCMObserver(ctx context.Context, store *sqlite.Store, lcm *lifecycle.M
 func newGitHubSCMProvider(logger *slog.Logger) (*scmgithub.Provider, error) {
 	tokens := scmgithub.FallbackTokenSource{
 		scmgithub.EnvTokenSource{EnvVars: []string{"THANOS_GITHUB_TOKEN"}},
-		&scmgithub.GHTokenSource{},
+		&scmgithub.GitCredentialTokenSource{},
 	}
 	// Avoid token preflight on daemon startup and session service construction.
-	// GHTokenSource may shell out to `gh`, which is too slow/flaky for the startup
-	// readiness path. Provider calls resolve credentials lazily when claim-pr or
-	// the background observer actually needs GitHub.
+	// Git credential helpers may prompt or be slow; provider calls resolve
+	// credentials lazily when claim-pr or the background observer needs GitHub.
 	return scmgithub.NewProvider(scmgithub.ProviderOptions{Token: tokens, SkipTokenPreflight: true, Logger: logger})
 }
 

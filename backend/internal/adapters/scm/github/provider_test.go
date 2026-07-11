@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"os/exec"
 	"strconv"
 	"strings"
 	"sync"
@@ -1022,6 +1023,46 @@ func TestGHTokenSourceUsesInjectedHook(t *testing.T) {
 	}
 	if calls != 2 {
 		t.Fatalf("after invalidate, GH called %d times; want 2", calls)
+	}
+}
+
+func TestGitCredentialTokenSourceUsesPasswordAndCachesIt(t *testing.T) {
+	calls := 0
+	src := &GitCredentialTokenSource{
+		Git: func(context.Context) (string, error) {
+			calls++
+			return "protocol=https\nhost=github.com\nusername=octo\npassword=git-token\n", nil
+		},
+		TokenTTL: time.Hour,
+	}
+	tok, err := src.Token(context.Background())
+	if err != nil {
+		t.Fatalf("Token: %v", err)
+	}
+	if tok != "git-token" {
+		t.Fatalf("Token = %q, want git-token", tok)
+	}
+	if _, err := src.Token(context.Background()); err != nil {
+		t.Fatalf("cached Token: %v", err)
+	}
+	if calls != 1 {
+		t.Fatalf("Git called %d times, want 1", calls)
+	}
+}
+
+func TestGitCredentialTokenSourceRejectsMissingPassword(t *testing.T) {
+	src := &GitCredentialTokenSource{Git: func(context.Context) (string, error) {
+		return "protocol=https\nhost=github.com\nusername=octo\n", nil
+	}}
+	if _, err := src.Token(context.Background()); !errors.Is(err, ErrNoToken) {
+		t.Fatalf("err = %v, want ErrNoToken", err)
+	}
+}
+
+func TestGHTokenErrorTreatsMissingCLIAsNoToken(t *testing.T) {
+	err := ghTokenError(&exec.Error{Name: "gh", Err: exec.ErrNotFound})
+	if !errors.Is(err, ErrNoToken) {
+		t.Fatalf("err = %v, want ErrNoToken", err)
 	}
 }
 

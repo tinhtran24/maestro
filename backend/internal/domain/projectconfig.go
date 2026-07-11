@@ -41,6 +41,11 @@ type ProjectConfig struct {
 	// the daemon's global planner/default agent.
 	Planner RoleOverride `json:"planner,omitempty"`
 
+	// Git enables the optional worker completion workflow: inspect status, create
+	// an atomic Conventional Commit, and push through the user's normal Git
+	// remote credentials (for example SSH or a credential helper).
+	Git GitWorkflowConfig `json:"git,omitempty"`
+
 	// Reviewers names the agent(s) that review a worker's PR when a review is
 	// triggered. It is configured independently of the Worker override; an empty
 	// list falls back to claude-code (see ResolveReviewerHarness).
@@ -50,6 +55,12 @@ type ProjectConfig struct {
 	// read-only toward the tracker in v1: matching issues spawn sessions, but the
 	// tracker is not commented on or transitioned.
 	TrackerIntake TrackerIntakeConfig `json:"trackerIntake,omitempty"`
+}
+
+// GitWorkflowConfig controls optional Git actions requested of worker agents.
+// It is disabled by default; Thanos never stores a GitHub token for this.
+type GitWorkflowConfig struct {
+	Enabled bool `json:"enabled,omitempty"`
 }
 
 // ReviewerConfig names one reviewer agent by harness. The harness is drawn from

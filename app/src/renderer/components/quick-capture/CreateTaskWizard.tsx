@@ -57,11 +57,17 @@ export function CreateTaskWizard({ open, projectId, onCreated, onOpenChange }: P
 	const agentsQuery = useQuery({ ...agentsQueryOptions, enabled: open });
 	const agentCatalog = agentsQuery.data;
 
-	// Default the planner agent from project planner → worker config.
+	// Default the planner agent from project planner → worker config. A saved
+	// project default can outlive its local login, so prefer a currently
+	// authorized agent rather than submitting an immediately doomed request.
 	const defaultAgent = useMemo(() => {
 		const cfg = projectQuery.data?.config as { planner?: { agent?: string }; worker?: { agent?: string } } | undefined;
-		return cfg?.planner?.agent ?? cfg?.worker?.agent ?? "";
-	}, [projectQuery.data]);
+		const configured = cfg?.planner?.agent ?? cfg?.worker?.agent ?? "";
+		const installed = agentCatalog?.installed ?? [];
+		const configuredStatus = installed.find((item) => item.id === configured)?.authStatus;
+		if (configured && configuredStatus !== "unauthorized") return configured;
+		return agentCatalog?.authorized?.[0]?.id ?? configured;
+	}, [agentCatalog, projectQuery.data]);
 
 	useEffect(() => {
 		if (!open) {
@@ -294,7 +300,6 @@ function CreateSummary({ draft, attachments, agent }: { draft: TaskDraft; attach
 				<div className="text-[14px] font-semibold text-foreground">{draft.title || "Untitled task"}</div>
 				<div className="mt-1 flex flex-wrap items-center gap-1.5 text-muted-foreground">
 					<span className="rounded border border-border px-1.5 py-0.5">{draft.priority || "P2"}</span>
-					{draft.estimate ? <span className="rounded border border-border px-1.5 py-0.5">{draft.estimate}</span> : null}
 					{draft.labels?.slice(0, 6).map((l) => (
 						<span key={l} className="rounded-full border border-border px-1.5 py-0.5">{l}</span>
 					))}

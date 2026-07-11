@@ -3,7 +3,6 @@ package planner
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"os"
 	"os/exec"
@@ -12,10 +11,10 @@ import (
 )
 
 // CLIRunner runs the planning prompt through the chosen agent's CLI in headless
-// print mode. It reuses the agent's existing local login — no API key. Claude
-// Code is first-class (its `--output-format json` envelope is parsed); other
-// agents are run with a generic `-p <prompt>` and their stdout is returned, so
-// the JSON-only instruction in the prompt still yields a parseable object.
+// mode. It reuses the agent's existing local login — no API key. Claude Code is
+// first-class (its `--output-format json` envelope is parsed), and Codex uses
+// its documented `exec` subcommand. Other agents retain the generic print-mode
+// invocation for compatibility.
 type CLIRunner struct {
 	// Binary overrides the resolved binary path (mainly for tests).
 	Binary string
@@ -41,24 +40,15 @@ func (c *CLIRunner) Run(ctx context.Context, agent, prompt string) (string, erro
 		return "", fmt.Errorf("%w (agent %q)", ErrUnavailable, agent)
 	}
 
-	var cmd *exec.Cmd
-	claude := isClaude(agent)
-	if claude {
-		// --output-format json wraps the reply in a machine-readable envelope so
-		// we don't scrape a TTY. Print mode (-p) is one-shot.
-		cmd = exec.CommandContext(ctx, bin, "-p", prompt, "--output-format", "json")
-	} else {
-		cmd = exec.CommandContext(ctx, bin, "-p", prompt)
-	}
-
-	out, err := cmd.Output()
+	args, claude := commandArgs(agent, prompt)
+	cmd := exec.CommandContext(ctx, bin, args...)
+	out, err := cmd.CombinedOutput()
 	if err != nil {
 		if ctx.Err() != nil {
 			return "", fmt.Errorf("planner: %s timed out: %w", agent, ctx.Err())
 		}
-		var ee *exec.ExitError
-		if errors.As(err, &ee) && len(ee.Stderr) > 0 {
-			return "", fmt.Errorf("planner: %s failed: %s", agent, strings.TrimSpace(string(ee.Stderr)))
+		if detail := strings.TrimSpace(string(out)); detail != "" {
+			return "", fmt.Errorf("planner: %s failed: %s", agent, detail)
 		}
 		return "", fmt.Errorf("planner: %s failed: %w", agent, err)
 	}
@@ -78,9 +68,29 @@ func (c *CLIRunner) Run(ctx context.Context, agent, prompt string) (string, erro
 	return env.Result, nil
 }
 
+// commandArgs returns the non-interactive CLI invocation for a planner agent.
+// Planning needs no repository edits, so Codex is constrained to read-only
+// mode. The output itself remains plain text; the prompt requires JSON.
+func commandArgs(agent, prompt string) ([]string, bool) {
+	if isClaude(agent) {
+		// --output-format json wraps the reply in a machine-readable envelope so
+		// we don't scrape a TTY. Print mode (-p) is one-shot.
+		return []string{"-p", prompt, "--output-format", "json", "--no-session-persistence"}, true
+	}
+	if isCodex(agent) {
+		return []string{"exec", "--sandbox", "read-only", "--ephemeral", "--skip-git-repo-check", prompt}, false
+	}
+	return []string{"-p", prompt}, false
+}
+
 func isClaude(agent string) bool {
 	a := strings.ToLower(strings.TrimSpace(agent))
 	return a == "" || a == "claude" || a == "claudecode" || strings.HasPrefix(a, "claude")
+}
+
+func isCodex(agent string) bool {
+	a := strings.ToLower(strings.TrimSpace(agent))
+	return a == "codex" || strings.HasPrefix(a, "codex-")
 }
 
 // resolve finds the CLI binary for the agent. Explicit override and, for Claude,
