@@ -122,8 +122,41 @@ Commit `openapi.yaml` and `frontend/src/api/schema.ts` together with the Go chan
 
 ## PR hygiene
 
-- Branch from `main` unless explicitly continuing an existing PR.
-- Keep one issue per PR. If asked for separate work, create a separate branch and PR.
-- Use conventional commit messages (`feat:`, `fix:`, `docs:`, `test:`, `chore:`).
-- Explain intentional omissions in the PR body, especially when the TypeScript original had more behavior than the Go rewrite domain currently supports.
-- Run the narrowest relevant tests first, then the repo/CI commands that match the touched area.
+Follow the delivery protocol below for every implementation change. Preserve backward
+compatibility unless the ticket explicitly authorizes a breaking change.
+
+### Branches and commits
+
+- Branch from `main` unless explicitly continuing an existing PR. Name new branches
+  `<prefix>/<short-kebab-case-summary>`, where `<prefix>` is one of `feature`,
+  `bugfix`, `hotfix`, `refactor`, `chore`, `docs`, or `test`.
+- Keep one issue or concern per branch and PR. Split unrelated cleanup or refactoring
+  into a separate change.
+- Use Conventional Commits: `<type>(<optional-scope>): <imperative summary>`. Use a
+  standard type such as `feat`, `fix`, `refactor`, `docs`, `test`, `chore`, `build`,
+  `ci`, or `perf`; use `!` or a `BREAKING CHANGE:` footer only when a breaking change
+  is explicitly authorized. Examples: `feat(cli): add session archive command` and
+  `docs: document delivery protocol`.
+- Keep commits small and logically grouped. Do not mix formatting-only churn, generated
+  output, or unrelated refactors with a behavior change.
+
+### Change, validation, and handoff
+
+- Add or update tests for behavior changes at the affected boundary. Documentation-only
+  changes do not need product tests.
+- Run the narrowest relevant check first, then the applicable CI-equivalent checks:
+  `gofmt` plus `go build ./...`, `go vet ./...`, and `go test -race ./...` for backend
+  changes; `npm --prefix app run typecheck`, `npm --prefix app run test`, and the
+  relevant app build for app changes. Run `npm run lint` when backend lint coverage is
+  required. Check changed text files with `npx prettier@3 --check --ignore-unknown <files>`.
+- For API or sqlc inputs, regenerate and commit only their required tracked artifacts
+  (`npm run api` or `npm run sqlc`), then run the associated drift/tests. Never
+  hand-edit generated files. Do not commit other generated output, secrets, local state,
+  temporary files, or build artifacts.
+- Update documentation when APIs, CLI behavior, workflows, setup, or other
+  contributor-facing behavior changes. Explain intentional omissions in the PR body,
+  especially when the TypeScript original had more behavior than the Go rewrite domain
+  currently supports.
+- Before handoff, inspect `git diff --check`, `git status --short`, and the staged file
+  list. Completion output must include a change summary, validation results, suggested
+  branch name, Conventional Commit message, and concise PR title and description.
