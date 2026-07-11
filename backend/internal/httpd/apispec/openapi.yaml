@@ -1715,6 +1715,8 @@ components:
           type: array
         input:
           type: string
+        model:
+          type: string
         projectId:
           type: string
       required:

@@ -10,12 +10,14 @@ type fakeRunner struct {
 	reply     string
 	err       error
 	gotAgent  string
+	gotModel  string
 	gotPrompt string
 	available bool
 }
 
-func (f *fakeRunner) Run(_ context.Context, agent, prompt string) (string, error) {
+func (f *fakeRunner) Run(_ context.Context, agent, model, prompt string) (string, error) {
 	f.gotAgent = agent
+	f.gotModel = model
 	f.gotPrompt = prompt
 	return f.reply, f.err
 }
@@ -31,7 +33,7 @@ func TestPlan_ParsesStructuredJSON(t *testing.T) {
 ` + "```"}
 	s := New(Options{Runner: fr})
 
-	draft, err := s.Plan(context.Background(), "build a cart", []string{"mock.png"}, "claude")
+	draft, err := s.Plan(context.Background(), "build a cart", []string{"mock.png"}, "claude", "claude-opus-4-5")
 	if err != nil {
 		t.Fatalf("Plan: %v", err)
 	}
@@ -47,6 +49,9 @@ func TestPlan_ParsesStructuredJSON(t *testing.T) {
 	if fr.gotAgent != "claude" {
 		t.Fatalf("agent passed to runner = %q", fr.gotAgent)
 	}
+	if fr.gotModel != "claude-opus-4-5" {
+		t.Fatalf("model passed to runner = %q", fr.gotModel)
+	}
 	if !strings.Contains(fr.gotPrompt, "mock.png") {
 		t.Fatalf("attachment not included in prompt")
 	}
@@ -55,7 +60,7 @@ func TestPlan_ParsesStructuredJSON(t *testing.T) {
 func TestPlan_NormalizesBadPriorityAndClampsConfidence(t *testing.T) {
 	fr := &fakeRunner{available: true, reply: `{"title":"X","priority":"urgent","confidence":{"overall":150,"title":-5}}`}
 	s := New(Options{Runner: fr})
-	draft, err := s.Plan(context.Background(), "x", nil, "claude")
+	draft, err := s.Plan(context.Background(), "x", nil, "claude", "")
 	if err != nil {
 		t.Fatalf("Plan: %v", err)
 	}
@@ -69,14 +74,14 @@ func TestPlan_NormalizesBadPriorityAndClampsConfidence(t *testing.T) {
 
 func TestPlan_EmptyInputRejected(t *testing.T) {
 	s := New(Options{Runner: &fakeRunner{available: true}})
-	if _, err := s.Plan(context.Background(), "   ", nil, "claude"); err == nil {
+	if _, err := s.Plan(context.Background(), "   ", nil, "claude", ""); err == nil {
 		t.Fatal("expected error for empty input")
 	}
 }
 
 func TestPlan_NoJSONInReply(t *testing.T) {
 	s := New(Options{Runner: &fakeRunner{available: true, reply: "I cannot help with that."}})
-	if _, err := s.Plan(context.Background(), "x", nil, "claude"); err == nil {
+	if _, err := s.Plan(context.Background(), "x", nil, "claude", ""); err == nil {
 		t.Fatal("expected error when reply has no JSON object")
 	}
 }
@@ -86,7 +91,7 @@ func TestPlan_ParsesFirstJSONObjectFromNativeCLIOutput(t *testing.T) {
 {"type":"turn.completed","usage":{"total_tokens":42}}`}
 	s := New(Options{Runner: fr})
 
-	draft, err := s.Plan(context.Background(), "x", nil, "codex")
+	draft, err := s.Plan(context.Background(), "x", nil, "codex", "")
 	if err != nil {
 		t.Fatalf("Plan: %v", err)
 	}
@@ -100,18 +105,21 @@ func TestCommandArgs_UsesHeadlessAgentSpecificInvocation(t *testing.T) {
 		name       string
 		agent      string
 		wantClaude bool
+		model      string
 		want       []string
 	}{
 		{
 			name:       "claude",
 			agent:      "claude-code",
 			wantClaude: true,
-			want:       []string{"-p", "plan this", "--output-format", "json", "--no-session-persistence"},
+			model:      "claude-opus-4-5",
+			want:       []string{"-p", "plan this", "--output-format", "json", "--no-session-persistence", "--model", "claude-opus-4-5"},
 		},
 		{
 			name:  "codex",
 			agent: "codex",
-			want:  []string{"exec", "--sandbox", "read-only", "--ephemeral", "--skip-git-repo-check", "plan this"},
+			model: "gpt-5-codex",
+			want:  []string{"exec", "--sandbox", "read-only", "--ephemeral", "--skip-git-repo-check", "-c", "model=gpt-5-codex", "plan this"},
 		},
 		{
 			name:  "generic",
@@ -122,7 +130,7 @@ func TestCommandArgs_UsesHeadlessAgentSpecificInvocation(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, claude := commandArgs(tt.agent, "plan this")
+			got, claude := commandArgs(tt.agent, tt.model, "plan this")
 			if claude != tt.wantClaude {
 				t.Fatalf("claude envelope = %v, want %v", claude, tt.wantClaude)
 			}

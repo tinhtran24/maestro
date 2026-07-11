@@ -4,11 +4,13 @@ import type { TaskDraft, Attachment } from "../components/quick-capture/types";
 // extractTask sends raw Quick Capture input to the daemon's planner
 // (POST /api/v1/plan), which runs the chosen agent CLI headlessly and returns a
 // structured task draft. `agent` selects the planner agent (global/project
-// default resolved by the caller).
+// default resolved by the caller); `model` is an optional provider-specific
+// override from the daemon-owned agent catalog.
 export async function extractTask(params: {
 	input: string;
 	attachments?: Attachment[];
 	agent?: string;
+	model?: string;
 	projectId?: string;
 }): Promise<{ draft: TaskDraft; agent: string }> {
 	const attachmentDescriptions = (params.attachments ?? []).map((a) =>
@@ -20,6 +22,7 @@ export async function extractTask(params: {
 			input: params.input,
 			attachments: attachmentDescriptions,
 			agent: params.agent || undefined,
+			model: params.model || undefined,
 			projectId: params.projectId || undefined,
 		},
 	});

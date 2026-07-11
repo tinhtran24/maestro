@@ -615,6 +615,7 @@ export interface components {
             agent?: string;
             attachments?: string[];
             input: string;
+            model?: string;
             projectId?: string;
         };
         ControllersPlanResponse: {

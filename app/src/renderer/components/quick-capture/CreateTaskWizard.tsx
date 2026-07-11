@@ -9,7 +9,6 @@ import { composeSessionPrompt, extractTask } from "../../lib/planner";
 import { agentsQueryOptions } from "../../hooks/useAgentsQuery";
 import type { AgentProvider } from "../../types/workspace";
 import { Button } from "../ui/button";
-import { RequiredAgentField } from "../CreateProjectAgentSheet";
 import { cn } from "../../lib/utils";
 import { AIExtractionCard } from "./AIExtractionCard";
 import { QuickCaptureEditor } from "./QuickCaptureEditor";
@@ -42,7 +41,7 @@ export function CreateTaskWizard({ open, projectId, onCreated, onOpenChange }: P
 	const [extraContext, setExtraContext] = useState("");
 	const [agent, setAgent] = useState("");
 	const [agentTouched, setAgentTouched] = useState(false);
-	const [models, setModels] = useState<Record<string, string>>({});
+	const [model, setModel] = useState("");
 	const [error, setError] = useState<string | undefined>();
 	const [createdId, setCreatedId] = useState<string | undefined>();
 
@@ -66,8 +65,8 @@ export function CreateTaskWizard({ open, projectId, onCreated, onOpenChange }: P
 		const configured = cfg?.planner?.agent ?? cfg?.worker?.agent ?? "";
 		const installed = agentCatalog?.installed ?? [];
 		const configuredStatus = installed.find((item) => item.id === configured)?.authStatus;
-		if (configured && configuredStatus !== "unauthorized") return configured;
-		return agentCatalog?.authorized?.[0]?.id ?? configured;
+		if (isQuickCaptureProvider(configured) && configuredStatus !== "unauthorized") return configured;
+		return agentCatalog?.authorized?.find((item) => isQuickCaptureProvider(item.id))?.id ?? "";
 	}, [agentCatalog, projectQuery.data]);
 
 	useEffect(() => {
@@ -79,7 +78,7 @@ export function CreateTaskWizard({ open, projectId, onCreated, onOpenChange }: P
 			setExtraContext("");
 			setAgent("");
 			setAgentTouched(false);
-			setModels({});
+			setModel("");
 			setError(undefined);
 			setCreatedId(undefined);
 		}
@@ -104,7 +103,7 @@ export function CreateTaskWizard({ open, projectId, onCreated, onOpenChange }: P
 
 	// Step 1 → 2: run the planner.
 	const extractMutation = useMutation({
-		mutationFn: () => extractTask({ input, attachments, agent, projectId }),
+		mutationFn: () => extractTask({ input, attachments, agent, model, projectId }),
 		onMutate: () => {
 			setError(undefined);
 			void captureRendererEvent("thanos.renderer.quick_capture_extract", { project_id: projectId });
@@ -121,13 +120,12 @@ export function CreateTaskWizard({ open, projectId, onCreated, onOpenChange }: P
 		mutationFn: async () => {
 			if (!projectId) throw new Error("No project selected");
 			const taskAgent = agent || defaultAgent;
-			const taskModel = taskAgent ? models[taskAgent] : undefined;
 			const { data, error: apiError } = await apiClient.POST("/api/v1/sessions", {
 				body: {
 					projectId,
 					kind: "worker",
-					harness: (agentTouched && agent) || taskModel ? (taskAgent as AgentProvider) : undefined,
-					model: taskModel || undefined,
+					harness: (agentTouched && agent) || model ? (taskAgent as AgentProvider) : undefined,
+					model: model || undefined,
 					issueId: draft.title.trim() || "Untitled task",
 					prompt: composeSessionPrompt(draft, extraContext) || draft.title,
 				},
@@ -145,6 +143,8 @@ export function CreateTaskWizard({ open, projectId, onCreated, onOpenChange }: P
 
 	const canExtract = (input.trim().length > 0 || attachments.length > 0) && !extractMutation.isPending;
 	const stepIndex = STEPS.findIndex((s) => s.id === step);
+	const selectedAgent = agentCatalog?.supported?.find((item) => item.id === agent);
+	const selectedModels = selectedAgent?.models ?? [];
 
 	return (
 		<Dialog.Root open={open} onOpenChange={onOpenChange}>
@@ -212,11 +212,6 @@ export function CreateTaskWizard({ open, projectId, onCreated, onOpenChange }: P
 										onRemove={removeAttachment}
 										onReorder={reorderAttachment}
 									/>
-									<NativeModelSelectors
-										agents={agentCatalog}
-										models={models}
-										onChange={(harness, model) => setModels((current) => ({ ...current, [harness]: model }))}
-									/>
 								</>
 							) : step === "structure" ? (
 								<AIExtractionCard draft={draft} onChange={patchDraft} agent={agent} />
@@ -242,24 +237,22 @@ export function CreateTaskWizard({ open, projectId, onCreated, onOpenChange }: P
 						</div>
 
 						{/* Footer */}
-						<div className="flex items-center justify-between gap-3 border-t border-border px-5 py-3">
+						<div className="flex items-end justify-end gap-3 border-t border-border px-5 py-3">
 							<div className="min-w-0">
 								{step === "capture" ? (
-									<div className="w-[220px]">
-										<RequiredAgentField
-											id="quick-capture-agent"
-											label="AI Structure agent"
-											placeholder="Project default"
-											value={agent}
-											authorized={agentCatalog?.authorized}
-											installed={agentCatalog?.installed}
-											supported={agentCatalog?.supported}
-											onChange={(v) => {
-												setAgent(v);
-												setAgentTouched(true);
-											}}
-										/>
-									</div>
+									<QuickCaptureProviderSelectors
+										agent={agent}
+										model={model}
+										models={selectedModels}
+										modelsLoading={agentsQuery.isLoading || agentsQuery.isFetching}
+										modelsError={agentsQuery.isError}
+										onAgentChange={(value) => {
+											setAgent(value);
+											setModel("");
+											setAgentTouched(true);
+										}}
+										onModelChange={setModel}
+									/>
 								) : null}
 							</div>
 
@@ -358,53 +351,58 @@ function CreateSummary({ draft, attachments, agent }: { draft: TaskDraft; attach
 	);
 }
 
-export function NativeModelSelectors({
-	agents,
-	models,
-	onChange,
-}: {
-	agents: components["schemas"]["ListAgentsResponse"] | undefined;
-	models: Record<string, string>;
-	onChange: (harness: string, model: string) => void;
-}) {
-	const installed = new Set((agents?.installed ?? []).map((agent) => agent.id));
-	const authorized = new Set((agents?.authorized ?? []).map((agent) => agent.id));
-	const available = (agents?.supported ?? []).filter(
-		(agent) => installed.has(agent.id) && (authorized.has(agent.id) || agent.authStatus !== "unauthorized"),
-	);
-	if (available.length === 0) return null;
+const QUICK_CAPTURE_PROVIDERS = [
+	{ id: "codex", label: "Codex" },
+	{ id: "claude-code", label: "Claude" },
+] as const;
 
+function isQuickCaptureProvider(agent: string): boolean {
+	return QUICK_CAPTURE_PROVIDERS.some((provider) => provider.id === agent);
+}
+
+export function QuickCaptureProviderSelectors({
+	agent,
+	model,
+	models,
+	modelsLoading,
+	modelsError,
+	onAgentChange,
+	onModelChange,
+}: {
+	agent: string;
+	model: string;
+	models: string[];
+	modelsLoading: boolean;
+	modelsError: boolean;
+	onAgentChange: (agent: string) => void;
+	onModelChange: (model: string) => void;
+}) {
+	const modelsUnavailable = !agent || modelsLoading || modelsError || models.length === 0;
+	const emptyLabel = !agent
+		? "Select an agent first"
+		: modelsLoading
+			? "Loading models…"
+			: modelsError
+				? "Models unavailable"
+				: "No models available";
 	return (
-		<div className="mt-4 rounded-lg border border-border bg-surface/30 p-3" aria-label="Native CLI model configuration">
-			<div className="text-[12px] font-medium text-foreground">Native CLI models</div>
-			<p className="mt-1 text-[11px] text-muted-foreground">
-				Optional task-level overrides. Leave a CLI on its default to preserve its configured model.
-			</p>
-			<div className="mt-3 grid gap-2 sm:grid-cols-2">
-				{available.map((agent) => {
-					const options = agent.models ?? [];
-					const unsupported = options.length === 0;
-					return (
-						<label key={agent.id} className="flex flex-col gap-1 text-[11px] text-muted-foreground">
-							<span>{agent.label}</span>
-							<select
-								aria-label={`${agent.label} model`}
-								className="h-8 rounded-md border border-border bg-transparent px-2 text-[12px] text-foreground disabled:cursor-not-allowed disabled:opacity-60"
-								disabled={unsupported}
-								value={models[agent.id] ?? ""}
-								onChange={(event) => onChange(agent.id, event.target.value)}
-							>
-								<option value="">{unsupported ? "Model selection unavailable" : "CLI default"}</option>
-								{options.map((model) => (
-									<option key={model} value={model}>
-										{model}
-									</option>
-								))}
-							</select>
-						</label>
-					);
-				})}
-			</div>
+		<div className="flex flex-wrap justify-end gap-2" aria-label="AI Structure provider configuration">
+			<label className="flex w-[142px] flex-col gap-1 text-[11px] text-muted-foreground">
+				<span>AI Structure agent</span>
+				<select aria-label="AI Structure agent" className="h-8 rounded-md border border-border bg-transparent px-2 text-[12px] text-foreground" value={agent} onChange={(event) => onAgentChange(event.target.value)}>
+					<option value="">Project default</option>
+					{QUICK_CAPTURE_PROVIDERS.map((provider) => (
+						<option key={provider.id} value={provider.id}>{provider.label}</option>
+					))}
+				</select>
+			</label>
+			<label className="flex w-[142px] flex-col gap-1 text-[11px] text-muted-foreground">
+				<span>Models</span>
+				<select aria-label="Models" className="h-8 rounded-md border border-border bg-transparent px-2 text-[12px] text-foreground disabled:cursor-not-allowed disabled:opacity-60" disabled={modelsUnavailable} value={model} onChange={(event) => onModelChange(event.target.value)}>
+					<option value="">{modelsUnavailable ? emptyLabel : "Provider default"}</option>
+					{models.map((option) => <option key={option} value={option}>{option}</option>)}
+				</select>
+			</label>
 		</div>
 	);
 }

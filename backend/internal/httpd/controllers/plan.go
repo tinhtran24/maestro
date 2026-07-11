@@ -8,6 +8,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
+	"github.com/tinhtran/thanos/backend/internal/domain"
 	"github.com/tinhtran/thanos/backend/internal/httpd/apispec"
 	"github.com/tinhtran/thanos/backend/internal/httpd/envelope"
 	"github.com/tinhtran/thanos/backend/internal/service/planner"
@@ -19,7 +20,10 @@ type PlanRequest struct {
 	Input       string   `json:"input"`
 	Attachments []string `json:"attachments,omitempty"`
 	Agent       string   `json:"agent,omitempty"`
-	ProjectID   string   `json:"projectId,omitempty"`
+	// Model is an optional override from the selected AI Structure provider.
+	// Empty deliberately leaves the provider CLI's configured default in place.
+	Model     string `json:"model,omitempty"`
+	ProjectID string `json:"projectId,omitempty"`
 }
 
 // PlanResponse returns the AI-structured task draft and the agent that produced it.
@@ -31,7 +35,7 @@ type PlanResponse struct {
 
 // PlanService is the controller-facing planner contract.
 type PlanService interface {
-	Plan(ctx context.Context, input string, attachments []string, agent string) (planner.TaskDraft, error)
+	Plan(ctx context.Context, input string, attachments []string, agent, model string) (planner.TaskDraft, error)
 	Available(agent string) bool
 }
 
@@ -70,8 +74,12 @@ func (c *PlanController) plan(w http.ResponseWriter, r *http.Request) {
 			"planner agent CLI not found: "+agent, nil)
 		return
 	}
+	if model := strings.TrimSpace(req.Model); model != "" && !domain.IsSupportedModel(domain.AgentHarness(agent), model) {
+		envelope.WriteAPIError(w, r, http.StatusBadRequest, "bad_request", "MODEL_UNSUPPORTED", "model is not supported by the selected AI Structure agent", nil)
+		return
+	}
 
-	draft, err := c.Svc.Plan(r.Context(), req.Input, req.Attachments, agent)
+	draft, err := c.Svc.Plan(r.Context(), req.Input, req.Attachments, agent, strings.TrimSpace(req.Model))
 	if err != nil {
 		envelope.WriteError(w, r, err)
 		return

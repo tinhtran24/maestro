@@ -1,37 +1,27 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
-import type { components } from "../../../api/schema";
-import { NativeModelSelectors } from "./CreateTaskWizard";
+import { QuickCaptureProviderSelectors } from "./CreateTaskWizard";
 
-const agents: components["schemas"]["ListAgentsResponse"] = {
-	supported: [
-		{ id: "claude-code", label: "Claude Code", models: ["claude-opus-4-5", "claude-sonnet-4-5"] },
-		{ id: "opencode", label: "OpenCode" },
-	],
-	installed: [
-		{ id: "claude-code", label: "Claude Code", authStatus: "authorized" },
-		{ id: "opencode", label: "OpenCode", authStatus: "authorized" },
-	],
-	authorized: [
-		{ id: "claude-code", label: "Claude Code" },
-		{ id: "opencode", label: "OpenCode" },
-	],
-};
-
-describe("NativeModelSelectors", () => {
-	it("renders selectable native models and a disabled unavailable state", () => {
-		render(<NativeModelSelectors agents={agents} models={{}} onChange={vi.fn()} />);
-		expect(screen.getByLabelText("Claude Code model")).toBeEnabled();
-		expect(screen.getByRole("option", { name: "claude-opus-4-5" })).toBeInTheDocument();
-		expect(screen.getByLabelText("OpenCode model")).toBeDisabled();
-		expect(screen.getByRole("option", { name: "Model selection unavailable" })).toBeInTheDocument();
+describe("QuickCaptureProviderSelectors", () => {
+	it("offers Codex and Claude and waits for an agent before enabling models", () => {
+		render(<QuickCaptureProviderSelectors agent="" model="" models={[]} modelsLoading={false} modelsError={false} onAgentChange={vi.fn()} onModelChange={vi.fn()} />);
+		expect(screen.getByRole("option", { name: "Codex" })).toBeInTheDocument();
+		expect(screen.getByRole("option", { name: "Claude" })).toBeInTheDocument();
+		expect(screen.getByLabelText("Models")).toBeDisabled();
+		expect(screen.getByRole("option", { name: "Select an agent first" })).toBeInTheDocument();
 	});
 
-	it("reports an independently changed CLI model", async () => {
-		const onChange = vi.fn();
-		render(<NativeModelSelectors agents={agents} models={{}} onChange={onChange} />);
-		await userEvent.selectOptions(screen.getByLabelText("Claude Code model"), "claude-sonnet-4-5");
-		expect(onChange).toHaveBeenCalledWith("claude-code", "claude-sonnet-4-5");
+	it("reports a model selected for the active provider", async () => {
+		const onModelChange = vi.fn();
+		render(<QuickCaptureProviderSelectors agent="claude-code" model="" models={["claude-opus-4-5", "claude-sonnet-4-5"]} modelsLoading={false} modelsError={false} onAgentChange={vi.fn()} onModelChange={onModelChange} />);
+		await userEvent.selectOptions(screen.getByLabelText("Models"), "claude-sonnet-4-5");
+		expect(onModelChange).toHaveBeenCalledWith("claude-sonnet-4-5");
+	});
+
+	it("shows a model retrieval error state", () => {
+		render(<QuickCaptureProviderSelectors agent="codex" model="" models={[]} modelsLoading={false} modelsError onAgentChange={vi.fn()} onModelChange={vi.fn()} />);
+		expect(screen.getByLabelText("Models")).toBeDisabled();
+		expect(screen.getByRole("option", { name: "Models unavailable" })).toBeInTheDocument();
 	});
 });

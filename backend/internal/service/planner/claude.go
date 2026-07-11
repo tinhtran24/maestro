@@ -34,13 +34,13 @@ func (c *CLIRunner) Available(agent string) bool {
 }
 
 // Run execs the agent CLI headlessly and returns the model's reply text.
-func (c *CLIRunner) Run(ctx context.Context, agent, prompt string) (string, error) {
+func (c *CLIRunner) Run(ctx context.Context, agent, model, prompt string) (string, error) {
 	bin := c.resolve(agent)
 	if bin == "" {
 		return "", fmt.Errorf("%w (agent %q)", ErrUnavailable, agent)
 	}
 
-	args, claude := commandArgs(agent, prompt)
+	args, claude := commandArgs(agent, model, prompt)
 	cmd := exec.CommandContext(ctx, bin, args...)
 	out, err := cmd.CombinedOutput()
 	if err != nil {
@@ -71,14 +71,22 @@ func (c *CLIRunner) Run(ctx context.Context, agent, prompt string) (string, erro
 // commandArgs returns the non-interactive CLI invocation for a planner agent.
 // Planning needs no repository edits, so Codex is constrained to read-only
 // mode. The output itself remains plain text; the prompt requires JSON.
-func commandArgs(agent, prompt string) ([]string, bool) {
+func commandArgs(agent, model, prompt string) ([]string, bool) {
 	if isClaude(agent) {
 		// --output-format json wraps the reply in a machine-readable envelope so
 		// we don't scrape a TTY. Print mode (-p) is one-shot.
-		return []string{"-p", prompt, "--output-format", "json", "--no-session-persistence"}, true
+		args := []string{"-p", prompt, "--output-format", "json", "--no-session-persistence"}
+		if model != "" {
+			args = append(args, "--model", model)
+		}
+		return args, true
 	}
 	if isCodex(agent) {
-		return []string{"exec", "--sandbox", "read-only", "--ephemeral", "--skip-git-repo-check", prompt}, false
+		args := []string{"exec", "--sandbox", "read-only", "--ephemeral", "--skip-git-repo-check"}
+		if model != "" {
+			args = append(args, "-c", "model="+model)
+		}
+		return append(args, prompt), false
 	}
 	return []string{"-p", prompt}, false
 }

@@ -96,7 +96,7 @@ func (s *Score) UnmarshalJSON(b []byte) error {
 // the model's raw reply text. The default runner execs the agent CLI headlessly
 // (Claude gets its JSON envelope); tests inject a fake.
 type Runner interface {
-	Run(ctx context.Context, agent, prompt string) (string, error)
+	Run(ctx context.Context, agent, model, prompt string) (string, error)
 	// Available reports whether the given agent can be run headlessly.
 	Available(agent string) bool
 }
@@ -133,7 +133,7 @@ func (s *Service) Available(agent string) bool {
 
 // Plan structures raw input (plus optional attachment descriptions) into a
 // TaskDraft using the chosen agent. It is safe to pass a large blob of text.
-func (s *Service) Plan(ctx context.Context, input string, attachments []string, agent string) (TaskDraft, error) {
+func (s *Service) Plan(ctx context.Context, input string, attachments []string, agent, model string) (TaskDraft, error) {
 	input = strings.TrimSpace(input)
 	if input == "" && len(attachments) == 0 {
 		return TaskDraft{}, errors.New("planner: empty input")
@@ -142,7 +142,7 @@ func (s *Service) Plan(ctx context.Context, input string, attachments []string, 
 	ctx, cancel := context.WithTimeout(ctx, s.timeout)
 	defer cancel()
 
-	reply, err := s.runner.Run(ctx, agent, buildPrompt(input, attachments))
+	reply, err := s.runner.Run(ctx, agent, model, buildPrompt(input, attachments))
 	if err != nil {
 		return TaskDraft{}, err
 	}
