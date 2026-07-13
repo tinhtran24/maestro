@@ -39,7 +39,13 @@ func sampleRecord(project string) domain.SessionRecord {
 		Kind:      domain.KindWorker,
 		Harness:   domain.HarnessClaudeCode,
 		Activity:  domain.Activity{State: domain.ActivityActive, LastActivityAt: now},
-		Metadata:  domain.SessionMetadata{Branch: "feat/x", WorkspacePath: "/ws"},
+		Metadata: domain.SessionMetadata{
+			Branch:          "feat/x",
+			WorkspacePath:   "/ws",
+			SuggestedBranch: "feat/x",
+			CommitMessage:   "feat: add x",
+			PRTitle:         "feat: add x",
+		},
 		CreatedAt: now,
 		UpdatedAt: now,
 	}
@@ -69,6 +75,42 @@ func TestProjectCRUDAndArchive(t *testing.T) {
 	}
 	if _, ok, _ := s.GetProject(ctx, "mer"); !ok {
 		t.Fatal("archived project must still resolve by id")
+	}
+}
+
+func TestSessionFinalizationPersistsAndAdvancesIdempotently(t *testing.T) {
+	s := newTestStore(t)
+	ctx := context.Background()
+	seedProject(t, s, "fin")
+	worker, err := s.CreateSession(ctx, sampleRecord("fin"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	orchRec := sampleRecord("fin")
+	orchRec.Kind = domain.KindOrchestrator
+	orch, err := s.CreateSession(ctx, orchRec)
+	if err != nil {
+		t.Fatal(err)
+	}
+	now := time.Now().UTC().Truncate(time.Second)
+	if err := s.RequestSessionFinalization(ctx, worker.ID, now); err != nil {
+		t.Fatal(err)
+	}
+	if err := s.RequestSessionFinalization(ctx, worker.ID, now.Add(time.Second)); err != nil {
+		t.Fatalf("duplicate request: %v", err)
+	}
+	if ok, err := s.ClaimSessionFinalization(ctx, worker.ID, orch.ID, now); err != nil || !ok {
+		t.Fatalf("claim: ok=%v err=%v", ok, err)
+	}
+	if ok, err := s.AdvanceSessionFinalization(ctx, worker.ID, orch.ID, domain.FinalizationPending, domain.FinalizationVerifyingGit, now); err != nil || !ok {
+		t.Fatalf("advance: ok=%v err=%v", ok, err)
+	}
+	if ok, err := s.AdvanceSessionFinalization(ctx, worker.ID, orch.ID, domain.FinalizationPending, domain.FinalizationVerifyingGit, now); err != nil || ok {
+		t.Fatalf("replayed stale transition: ok=%v err=%v", ok, err)
+	}
+	got, exists, err := s.GetSessionFinalization(ctx, worker.ID)
+	if err != nil || !exists || got.State != domain.FinalizationVerifyingGit || got.OrchestratorID != orch.ID {
+		t.Fatalf("flow = %#v exists=%v err=%v", got, exists, err)
 	}
 }
 
@@ -138,7 +180,8 @@ func TestSessionCreateAssignsPerProjectID(t *testing.T) {
 		t.Fatalf("get: ok=%v err=%v", ok, err)
 	}
 	if got.Activity.State != domain.ActivityActive || got.IsTerminated ||
-		got.Harness != domain.HarnessClaudeCode || got.Metadata.Branch != "feat/x" {
+		got.Harness != domain.HarnessClaudeCode || got.Metadata.Branch != "feat/x" ||
+		got.Metadata.SuggestedBranch != "feat/x" || got.Metadata.CommitMessage != "feat: add x" || got.Metadata.PRTitle != "feat: add x" {
 		t.Fatalf("round-trip mismatch: %+v", got)
 	}
 	if list, _ := s.ListSessions(ctx, "mer"); len(list) != 2 {

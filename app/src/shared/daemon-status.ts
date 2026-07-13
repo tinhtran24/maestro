@@ -8,6 +8,7 @@ export type DaemonFailureCode =
 	| "not_configured"
 	| "daemon_unreachable"
 	| "binary_missing"
+	| "tmux_missing"
 	| "spawn_failed"
 	| "exited"
 	| "port_unconfirmed"

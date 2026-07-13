@@ -2,7 +2,10 @@ package cli
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"net/url"
+	"os"
 	"sort"
 	"strings"
 	"time"
@@ -24,6 +27,31 @@ func newOrchestratorCommand(ctx *commandContext) *cobra.Command {
 		Short: "Manage orchestrator sessions",
 	}
 	cmd.AddCommand(newOrchestratorListCommand(ctx))
+	cmd.AddCommand(newOrchestratorFinalizeCommand(ctx))
+	return cmd
+}
+
+func newOrchestratorFinalizeCommand(ctx *commandContext) *cobra.Command {
+	var state string
+	cmd := &cobra.Command{
+		Use:   "finalize <worker-id>",
+		Short: "Record one completed task-finalization step",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			orchestratorID := strings.TrimSpace(os.Getenv("THANOS_SESSION_ID"))
+			if orchestratorID == "" {
+				return usageError{errors.New("orchestrator finalize must run inside a managed orchestrator session")}
+			}
+			var out sessionFinalizationResponse
+			endpoint := "orchestrators/" + url.PathEscape(orchestratorID) + "/finalizations/" + url.PathEscape(args[0])
+			if err := ctx.postJSON(cmd.Context(), endpoint, advanceFinalizationRequest{State: state}, &out); err != nil {
+				return err
+			}
+			return writeJSON(cmd.OutOrStdout(), out)
+		},
+	}
+	cmd.Flags().StringVar(&state, "state", "", "Completed workflow state")
+	_ = cmd.MarkFlagRequired("state")
 	return cmd
 }
 

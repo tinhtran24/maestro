@@ -23,6 +23,7 @@ type APIDeps struct {
 	Projects           projectsvc.Manager
 	Sessions           controllers.SessionService
 	Activity           controllers.ActivityRecorder
+	Finalization       controllers.FinalizationService
 	PRs                prsvc.ActionManager
 	Reviews            reviewsvc.Manager
 	Notifications      controllers.NotificationService
@@ -47,6 +48,7 @@ type API struct {
 	notifications *controllers.NotificationsController
 	imports       *controllers.ImportController
 	plan          *controllers.PlanController
+	githubAuth    *controllers.GitHubAuthController
 	events        *EventsController
 }
 
@@ -63,14 +65,16 @@ func NewAPI(cfg config.Config, deps APIDeps) *API {
 			Mgr: deps.Projects,
 		},
 		sessions: &controllers.SessionsController{
-			Svc:      deps.Sessions,
-			Activity: deps.Activity,
+			Svc:          deps.Sessions,
+			Activity:     deps.Activity,
+			Finalization: deps.Finalization,
 		},
 		prs:           &controllers.PRsController{Svc: deps.PRs},
 		reviews:       &controllers.ReviewsController{Svc: deps.Reviews},
 		notifications: &controllers.NotificationsController{Svc: deps.Notifications, Stream: deps.NotificationStream},
 		imports:       &controllers.ImportController{Svc: deps.Import},
 		plan:          &controllers.PlanController{Svc: deps.Planner, DefaultAgent: deps.PlannerAgent},
+		githubAuth:    &controllers.GitHubAuthController{},
 		events:        &EventsController{Source: deps.CDC, Live: deps.Events},
 	}
 }
@@ -96,6 +100,7 @@ func (a *API) Register(root chi.Router) {
 			a.reviews.Register(r)
 			a.notifications.Register(r)
 			a.imports.Register(r)
+			a.githubAuth.Register(r)
 			// Sibling REST controllers plug in here.
 		})
 		// The planner shells out to an agent CLI that can take tens of seconds, so

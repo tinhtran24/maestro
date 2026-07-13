@@ -479,6 +479,19 @@ flowchart LR
 
 ## Lifecycle Management
 
+### Orchestrator-owned finalization
+
+Worker completion is a durable request, not a task-state transition. A worker
+reports `session complete`, creating one `session_finalization` row in `pending`.
+Only a live session whose persisted kind is `orchestrator` may claim that row and
+advance its ordered cursor through git verification, tests, optional commit and
+push, PR claim, metadata persistence, runtime cleanup, Review Pending, and Done.
+Each transition uses a compare-and-set update, so retries and daemon restarts
+resume from the stored state without replaying already acknowledged work.
+
+The `sessions` row still stores no display status. Finalization state is a
+workflow fact and Review Pending/Done remain orchestrator-owned transitions.
+
 ### Lifecycle Manager Responsibilities
 
 The `lifecycle.Manager` is the **canonical write path** for all session lifecycle facts:

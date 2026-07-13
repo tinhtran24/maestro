@@ -22,6 +22,13 @@ How to build and run Thanos locally. Thanos has two parts:
 
 Install the runtime tools on macOS with: `brew install tmux gh`.
 
+On first desktop launch Thanos resolves `tmux` from `THANOS_TMUX_BIN`, the
+previously saved executable, the login-shell `PATH`, and standard package-manager
+locations. It validates the executable with `tmux -V`, saves the canonical path
+in `~/.thanos/app-state.json`, and passes that exact path to the daemon. When it
+cannot resolve tmux, the app does not start session supervision and shows the
+platform install command. Windows continues to use its built-in ConPTY runtime.
+
 **Node version**: the repo ships an `.nvmrc` (Node 24) — run `nvm use` to select it.
 `make` targets go through `scripts/with-node.sh`, which auto-selects a compatible
 Node (preferring the active one, else the newest qualifying nvm install), so
@@ -157,6 +164,10 @@ is written to OS-default app-data locations.
   honor it).
 - **`gh: executable file not found`**: install the GitHub CLI (`brew install gh`)
   for PR/SCM features, or ignore it if you don't need them.
+- **Tracker intake stays in failure backoff**: open Global Settings → GitHub and
+  refresh auth status. Thanos checks `THANOS_GITHUB_TOKEN`, `GITHUB_TOKEN`, and
+  `gh auth token`, then shows install/login guidance without exposing token
+  values.
 - **pnpm skips Electron's postinstall** (`Ignored build scripts: electron`): the
   approvals live in `app/pnpm-workspace.yaml` (`onlyBuiltDependencies`); if the
   Electron binary is missing, run `node app/node_modules/electron/install.js`.

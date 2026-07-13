@@ -181,6 +181,19 @@ type Session struct {
 	FirstSignalAt   sql.NullTime
 	PreviewURL      string
 	PreviewRevision int64
+	SuggestedBranch string
+	CommitMessage   string
+	PRTitle         string
+}
+
+type SessionFinalization struct {
+	SessionID      string
+	OrchestratorID sql.NullString
+	State          string
+	RequestedAt    time.Time
+	UpdatedAt      time.Time
+	CompletedAt    sql.NullTime
+	LastError      string
 }
 
 type SessionWorktree struct {

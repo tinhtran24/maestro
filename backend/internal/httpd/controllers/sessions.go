@@ -19,6 +19,7 @@ import (
 	"github.com/tinhtran/thanos/backend/internal/httpd/envelope"
 	"github.com/tinhtran/thanos/backend/internal/ports"
 	previewutil "github.com/tinhtran/thanos/backend/internal/preview"
+	finalizationsvc "github.com/tinhtran/thanos/backend/internal/service/finalization"
 	sessionsvc "github.com/tinhtran/thanos/backend/internal/service/session"
 )
 
@@ -56,11 +57,18 @@ type ActivityRecorder interface {
 	ApplyActivitySignal(ctx context.Context, id domain.SessionID, s ports.ActivitySignal) error
 }
 
+// FinalizationService records worker completion and advances orchestrator finalization.
+type FinalizationService interface {
+	ReportComplete(context.Context, domain.SessionID) (domain.SessionFinalization, error)
+	Advance(context.Context, domain.SessionID, domain.SessionID, domain.FinalizationState) (domain.SessionFinalization, error)
+}
+
 // SessionsController owns the session routes. Nil keeps routes registered but
 // returns OpenAPI-backed 501s.
 type SessionsController struct {
-	Svc      SessionService
-	Activity ActivityRecorder
+	Svc          SessionService
+	Activity     ActivityRecorder
+	Finalization FinalizationService
 }
 
 // Register mounts the session routes on the supplied router.
@@ -81,9 +89,55 @@ func (c *SessionsController) Register(r chi.Router) {
 	r.Post("/sessions/{sessionId}/rollback", c.rollback)
 	r.Post("/sessions/{sessionId}/send", c.send)
 	r.Post("/sessions/{sessionId}/activity", c.activity)
+	r.Post("/sessions/{sessionId}/complete", c.complete)
 	r.Get("/orchestrators", c.listOrchestrators)
 	r.Post("/orchestrators", c.spawnOrchestrator)
 	r.Get("/orchestrators/{id}", c.getOrchestrator)
+	r.Post("/orchestrators/{id}/finalizations/{sessionId}", c.advanceFinalization)
+}
+
+func (c *SessionsController) complete(w http.ResponseWriter, r *http.Request) {
+	if c.Finalization == nil {
+		apispec.NotImplemented(w, r, "POST", "/api/v1/sessions/{sessionId}/complete")
+		return
+	}
+	flow, err := c.Finalization.ReportComplete(r.Context(), sessionID(r))
+	if err != nil {
+		writeFinalizationError(w, r, err)
+		return
+	}
+	envelope.WriteJSON(w, http.StatusAccepted, SessionFinalizationResponse{Finalization: flow})
+}
+
+func (c *SessionsController) advanceFinalization(w http.ResponseWriter, r *http.Request) {
+	if c.Finalization == nil {
+		apispec.NotImplemented(w, r, "POST", "/api/v1/orchestrators/{id}/finalizations/{sessionId}")
+		return
+	}
+	var in AdvanceFinalizationRequest
+	if err := decodeJSON(r, &in); err != nil {
+		envelope.WriteAPIError(w, r, http.StatusBadRequest, "bad_request", "INVALID_JSON", "Invalid JSON body", nil)
+		return
+	}
+	flow, err := c.Finalization.Advance(r.Context(), domain.SessionID(chi.URLParam(r, "id")), sessionID(r), domain.FinalizationState(in.State))
+	if err != nil {
+		writeFinalizationError(w, r, err)
+		return
+	}
+	envelope.WriteJSON(w, http.StatusOK, SessionFinalizationResponse{Finalization: flow})
+}
+
+func writeFinalizationError(w http.ResponseWriter, r *http.Request, err error) {
+	switch {
+	case errors.Is(err, finalizationsvc.ErrSessionNotFound):
+		envelope.WriteAPIError(w, r, http.StatusNotFound, "not_found", "FINALIZATION_NOT_FOUND", err.Error(), nil)
+	case errors.Is(err, finalizationsvc.ErrWorkerRequired), errors.Is(err, finalizationsvc.ErrOrchestratorRequired):
+		envelope.WriteAPIError(w, r, http.StatusForbidden, "forbidden", "FINALIZATION_FORBIDDEN", err.Error(), nil)
+	case errors.Is(err, finalizationsvc.ErrAlreadyClaimed), errors.Is(err, finalizationsvc.ErrInvalidTransition):
+		envelope.WriteAPIError(w, r, http.StatusConflict, "conflict", "FINALIZATION_CONFLICT", err.Error(), nil)
+	default:
+		envelope.WriteError(w, r, err)
+	}
 }
 
 func (c *SessionsController) list(w http.ResponseWriter, r *http.Request) {
@@ -142,7 +196,19 @@ func (c *SessionsController) spawn(w http.ResponseWriter, r *http.Request) {
 		envelope.WriteAPIError(w, r, http.StatusBadRequest, "bad_request", "MODEL_UNSUPPORTED", "model is not supported by the selected execution model", nil)
 		return
 	}
-	sess, err := c.Svc.Spawn(r.Context(), ports.SpawnConfig{ProjectID: in.ProjectID, IssueID: in.IssueID, Kind: in.Kind, Harness: in.Harness, Branch: in.Branch, Prompt: in.Prompt, DisplayName: displayName, Model: in.Model})
+	if in.Kind == domain.KindWorker {
+		suggestions := domain.SuggestTask(string(in.IssueID), in.Prompt)
+		if strings.TrimSpace(in.Branch) == "" {
+			in.Branch = suggestions.Branch
+		}
+		if strings.TrimSpace(in.CommitMessage) == "" {
+			in.CommitMessage = suggestions.CommitMessage
+		}
+		if strings.TrimSpace(in.PRTitle) == "" {
+			in.PRTitle = suggestions.PRTitle
+		}
+	}
+	sess, err := c.Svc.Spawn(r.Context(), ports.SpawnConfig{ProjectID: in.ProjectID, IssueID: in.IssueID, Kind: in.Kind, Harness: in.Harness, Branch: in.Branch, Prompt: in.Prompt, CommitMessage: in.CommitMessage, PRTitle: in.PRTitle, DisplayName: displayName, Model: in.Model})
 	if err != nil {
 		envelope.WriteError(w, r, err)
 		return
@@ -672,7 +738,7 @@ func previewFileURL(r *http.Request, id domain.SessionID, entry string) string {
 }
 
 func sessionView(s domain.Session) SessionView {
-	return SessionView{Session: s, Branch: s.Metadata.Branch, PreviewURL: s.Metadata.PreviewURL, PreviewRevision: s.Metadata.PreviewRevision, PRs: sessionPRFacts(s.PRs)}
+	return SessionView{Session: s, Branch: s.Metadata.Branch, SuggestedBranch: s.Metadata.SuggestedBranch, CommitMessage: s.Metadata.CommitMessage, PRTitle: s.Metadata.PRTitle, PreviewURL: s.Metadata.PreviewURL, PreviewRevision: s.Metadata.PreviewRevision, PRs: sessionPRFacts(s.PRs)}
 }
 
 func sessionViews(sessions []domain.Session) []SessionView {
