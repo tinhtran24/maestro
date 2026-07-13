@@ -70,18 +70,18 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
-          cache: npm
-          cache-dependency-path: app/package-lock.json
+          node-version: 24
       - uses: actions/setup-go@v5
         with:
           go-version-file: backend/go.mod
           cache-dependency-path: backend/go.sum
-      - run: npm ci
+      - name: Enable pnpm
+        run: npm install --global pnpm@10
+      - run: pnpm install --frozen-lockfile
       - name: Build (unsigned)
-        # `npm run make` keeps the premake daemon build; --targets restricts to this
+        # `pnpm run make` keeps the premake daemon build; --targets restricts to this
         # platform's maker.
-        run: npm run make -- --targets ${{ matrix.target }}
+        run: pnpm run make -- --targets ${{ matrix.target }}
       # Smoke-install the NSIS installer on a clean, native x64 Windows runner.
       # This is a build-vs-host verdict: if it installs here it proves the artifact
       # is good and a failing user machine is host-side (AV/disk/signing); if it
