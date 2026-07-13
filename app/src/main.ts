@@ -27,8 +27,8 @@ import {
 	type UpdateStatus,
 } from "./main/update-settings";
 import { execFile, spawn, type ChildProcessWithoutNullStreams } from "node:child_process";
-import { existsSync } from "node:fs";
-import { readdir, readFile, rm, stat } from "node:fs/promises";
+import { constants as fsConstants, existsSync } from "node:fs";
+import { access, readdir, readFile, rm, stat } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
@@ -50,7 +50,14 @@ import { buildTelemetryBootstrap } from "./shared/telemetry";
 import { createBrowserViewHost, type BrowserViewHost } from "./main/browser-view-host";
 import { connectSupervisor, type SupervisorLinkHandle } from "./main/supervisor-link";
 import { shouldLinkOnAttach } from "./main/daemon-owner";
-import { readMigrationState, updateMigration, writeAppStateMarker, type MigrationState } from "./main/app-state";
+import {
+	readMigrationState,
+	readPersistedTmuxPath,
+	updateMigration,
+	writeAppStateMarker,
+	type MigrationState,
+} from "./main/app-state";
+import { resolveTmux, tmuxInstallGuidance } from "./main/tmux-dependency";
 
 // Globals injected at compile time by @electron-forge/plugin-vite.
 declare const MAIN_WINDOW_VITE_DEV_SERVER_URL: string | undefined;
@@ -96,6 +103,7 @@ let daemonStatus: DaemonStatus = { state: "stopped" };
 let browserViewHost: BrowserViewHost | null = null;
 // Held for the app lifetime. Dropping it (on any exit) triggers daemon self-stop.
 let supervisorLink: SupervisorLinkHandle | null = null;
+let resolvedTmuxPath: string | undefined;
 
 const execFileAsync = promisify(execFile);
 
@@ -206,7 +214,7 @@ function applyRuntimeAppIcon(): void {
 	if (!iconPath) return;
 	const icon = nativeImage.createFromPath(iconPath);
 	if (!icon.isEmpty()) {
-		app.dock.setIcon(icon);
+		app.dock?.setIcon(icon);
 	}
 }
 
@@ -380,7 +388,40 @@ function daemonEnv(): NodeJS.ProcessEnv {
 	if (process.platform === "win32") {
 		return { ...process.env, ...telemetryOverrides(), ...ownerTag };
 	}
-	return buildDaemonEnv(process.env, cachedShellEnv, { ...telemetryOverrides(), ...ownerTag });
+	return buildDaemonEnv(process.env, cachedShellEnv, {
+		...telemetryOverrides(),
+		...ownerTag,
+		...(resolvedTmuxPath ? { THANOS_TMUX_BIN: resolvedTmuxPath } : {}),
+	});
+}
+
+async function ensureTmuxDependency(): Promise<boolean> {
+	if (process.platform === "win32") return true;
+	const runFile = runFilePath();
+	const stateDir = runFile ? path.dirname(runFile) : path.join(os.homedir(), ".thanos");
+	const persistedPath = await readPersistedTmuxPath(stateDir);
+	const env = buildDaemonEnv(process.env, cachedShellEnv, {});
+	const resolution = await resolveTmux({
+		env,
+		persistedPath,
+		isExecutable: async (candidate) => {
+			try {
+				await access(candidate, fsConstants.X_OK);
+				await execFileAsync(candidate, ["-V"], { timeout: 3000 });
+				return true;
+			} catch {
+				return false;
+			}
+		},
+	});
+	if (!resolution.path) {
+		const message = tmuxInstallGuidance(process.platform);
+		setDaemonStatus({ state: "error", code: "tmux_missing", message });
+		await dialog.showMessageBox({ type: "error", title: "tmux is required", message: "Thanos requires tmux to run agent sessions.", detail: message });
+		return false;
+	}
+	resolvedTmuxPath = resolution.path;
+	return true;
 }
 
 function pathKey(value: string): string {
@@ -550,6 +591,7 @@ async function startDaemonInner(startEpoch: number): Promise<DaemonStatus> {
 	// daemon is spawned, so a Finder/Dock launch hands the daemon a real PATH and
 	// shell-exported credentials rather than launchd's minimal env.
 	await ensureShellEnv();
+	if (!(await ensureTmuxDependency())) return daemonStatus;
 
 	const launch = resolveDaemonLaunch(
 		process.env,
@@ -1134,6 +1176,7 @@ async function writeAppStateOnLaunch(): Promise<void> {
 		appPath: resolveBundlePath(),
 		version: app.getVersion(),
 		installedVia: parseInstalledVia(process.argv),
+		tmuxPath: resolvedTmuxPath,
 		now: () => new Date(),
 	});
 }
@@ -1168,6 +1211,8 @@ app.whenReady().then(async () => {
 	// the sticky installSource preserves the value captured above. A marker-write
 	// failure is non-fatal: log and continue so the app still boots.
 	try {
+		await ensureShellEnv();
+		await ensureTmuxDependency();
 		await writeAppStateOnLaunch();
 	} catch (err) {
 		console.error("failed to write app-state marker:", err);

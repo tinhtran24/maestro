@@ -22,6 +22,13 @@ How to build and run Thanos locally. Thanos has two parts:
 
 Install the runtime tools on macOS with: `brew install tmux gh`.
 
+On first desktop launch Thanos resolves `tmux` from `THANOS_TMUX_BIN`, the
+previously saved executable, the login-shell `PATH`, and standard package-manager
+locations. It validates the executable with `tmux -V`, saves the canonical path
+in `~/.thanos/app-state.json`, and passes that exact path to the daemon. When it
+cannot resolve tmux, the app does not start session supervision and shows the
+platform install command. Windows continues to use its built-in ConPTY runtime.
+
 **Node version**: the repo ships an `.nvmrc` (Node 24) — run `nvm use` to select it.
 `make` targets go through `scripts/with-node.sh`, which auto-selects a compatible
 Node (preferring the active one, else the newest qualifying nvm install), so

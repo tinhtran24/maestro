@@ -25,6 +25,7 @@ export interface AppStateMarker {
 	installedAt: string;
 	lastReconciledAt: string;
 	installSource: string;
+	tmuxPath?: string;
 	migration?: MigrationState;
 }
 
@@ -47,6 +48,8 @@ export interface WriteAppStateOptions {
 	 * already on disk. Defaults to "unknown" when absent on first creation.
 	 */
 	installedVia?: string;
+	/** Canonical executable selected by the first-launch runtime check. */
+	tmuxPath?: string;
 	/** Injectable clock so tests can assert deterministic timestamps. */
 	now: () => Date;
 }
@@ -112,6 +115,11 @@ export async function writeAppStateMarker(opts: WriteAppStateOptions): Promise<v
 		// Refreshed on every launch that touches the marker.
 		lastReconciledAt: nowIso,
 		installSource: existing?.installSource ?? opts.installedVia ?? "unknown",
+		...(opts.tmuxPath !== undefined
+			? { tmuxPath: opts.tmuxPath }
+			: existing?.tmuxPath !== undefined
+				? { tmuxPath: existing.tmuxPath }
+				: {}),
 		// Preserve a migration block written before this launch write.
 		...(existing?.migration !== undefined ? { migration: existing.migration } : {}),
 	};
@@ -150,4 +158,9 @@ export async function updateMigration(opts: UpdateMigrationOptions): Promise<voi
 export async function readMigrationState(stateDir: string): Promise<MigrationState> {
 	const existing = await readExisting(path.join(stateDir, APP_STATE_FILE_NAME));
 	return existing?.migration ?? { status: "pending" };
+}
+
+export async function readPersistedTmuxPath(stateDir: string): Promise<string | undefined> {
+	const existing = await readExisting(path.join(stateDir, APP_STATE_FILE_NAME));
+	return existing?.tmuxPath;
 }

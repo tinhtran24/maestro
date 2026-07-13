@@ -7,6 +7,7 @@ import {
 	APP_STATE_FILE_NAME,
 	writeAppStateMarker,
 	readMigrationState,
+	readPersistedTmuxPath,
 	updateMigration,
 	type AppStateMarker,
 } from "./app-state";
@@ -75,6 +76,19 @@ describe("writeAppStateMarker", () => {
 		expect(m.appPath).toBe("/Applications/Thanos.app");
 		expect(m.version).toBe("1.2.3");
 		expect(m.lastReconciledAt).toBe("2026-06-26T11:30:00.000Z");
+	});
+
+	it("persists and preserves the resolved tmux binary", async () => {
+		await writeAppStateMarker({
+			stateDir: dir,
+			appPath: "/Applications/Thanos.app",
+			version: "1.0.0",
+			tmuxPath: "/opt/homebrew/bin/tmux",
+			now: () => new Date("2026-06-26T10:00:00.000Z"),
+		});
+		expect(await readPersistedTmuxPath(dir)).toBe("/opt/homebrew/bin/tmux");
+		await writeAppStateMarker({ stateDir: dir, appPath: "/A.app", version: "1.0.1", now: fixedNow });
+		expect(await readPersistedTmuxPath(dir)).toBe("/opt/homebrew/bin/tmux");
 	});
 
 	it("written JSON keys exactly match the Go reader struct", async () => {

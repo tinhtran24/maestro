@@ -452,6 +452,70 @@ paths:
       summary: Fetch one orchestrator session
       tags:
       - sessions
+  /api/v1/orchestrators/{id}/finalizations/{sessionId}:
+    post:
+      operationId: advanceSessionFinalization
+      parameters:
+      - description: Orchestrator session identifier, e.g. project-orchestrator.
+        in: path
+        name: id
+        required: true
+        schema:
+          description: Orchestrator session identifier, e.g. project-orchestrator.
+          type: string
+      - description: Session identifier, e.g. project-1.
+        in: path
+        name: sessionId
+        required: true
+        schema:
+          description: Session identifier, e.g. project-1.
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdvanceFinalizationRequest'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionFinalizationResponse'
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIError'
+          description: Bad Request
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIError'
+          description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIError'
+          description: Not Found
+        "409":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIError'
+          description: Conflict
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIError'
+          description: Internal Server Error
+      summary: Advance one orchestrator-owned task finalization step
+      tags:
+      - sessions
   /api/v1/plan:
     post:
       operationId: planTask
@@ -977,6 +1041,45 @@ paths:
                 $ref: '#/components/schemas/APIError'
           description: Not Implemented
       summary: Report an agent activity-state signal for a session
+      tags:
+      - sessions
+  /api/v1/sessions/{sessionId}/complete:
+    post:
+      operationId: completeSession
+      parameters:
+      - description: Session identifier, e.g. project-1.
+        in: path
+        name: sessionId
+        required: true
+        schema:
+          description: Session identifier, e.g. project-1.
+          type: string
+      responses:
+        "202":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionFinalizationResponse'
+          description: Accepted
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIError'
+          description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIError'
+          description: Not Found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIError'
+          description: Internal Server Error
+      summary: Report that a worker coding session is complete
       tags:
       - sessions
   /api/v1/sessions/{sessionId}/kill:
@@ -1611,6 +1714,23 @@ components:
           - string
       required:
       - path
+      type: object
+    AdvanceFinalizationRequest:
+      properties:
+        state:
+          enum:
+          - verifying_git
+          - testing
+          - committing
+          - pushing
+          - claiming_pr
+          - persisting_metadata
+          - cleaning_runtime
+          - review_pending
+          - done
+          type: string
+      required:
+      - state
       type: object
     AgentConfig:
       properties:
@@ -2466,6 +2586,40 @@ components:
       - ok
       - sessionId
       - message
+      type: object
+    SessionFinalization:
+      properties:
+        completedAt:
+          format: date-time
+          type:
+          - "null"
+          - string
+        lastError:
+          type: string
+        orchestratorId:
+          type: string
+        requestedAt:
+          format: date-time
+          type: string
+        sessionId:
+          type: string
+        state:
+          type: string
+        updatedAt:
+          format: date-time
+          type: string
+      required:
+      - sessionId
+      - state
+      - requestedAt
+      - updatedAt
+      type: object
+    SessionFinalizationResponse:
+      properties:
+        finalization:
+          $ref: '#/components/schemas/SessionFinalization'
+      required:
+      - finalization
       type: object
     SessionPRCISummary:
       properties:

@@ -414,6 +414,16 @@ type SetActivityRequest struct {
 	State string `json:"state" enum:"active,idle,waiting_input,exited" description:"Agent activity state reported by an agent hook."`
 }
 
+// AdvanceFinalizationRequest acknowledges one completed orchestrator step.
+type AdvanceFinalizationRequest struct {
+	State string `json:"state" enum:"verifying_git,testing,committing,pushing,claiming_pr,persisting_metadata,cleaning_runtime,review_pending,done"`
+}
+
+// SessionFinalizationResponse is returned after reporting or advancing finalization.
+type SessionFinalizationResponse struct {
+	Finalization domain.SessionFinalization `json:"finalization"`
+}
+
 // SetActivityResponse is the body of POST /api/v1/sessions/{sessionId}/activity.
 type SetActivityResponse struct {
 	OK        bool             `json:"ok"`
