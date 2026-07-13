@@ -13,15 +13,14 @@ name: Desktop release
 # Linux daemon is built on the Linux runner (tinhtran24/thanos#2191).
 #
 # ⚠️ Until macOS code signing + notarization secrets are configured (see
-# frontend/docs/desktop-release.md), published builds are UNSIGNED and will
+# app/docs/desktop-release.md), published builds are UNSIGNED and will
 # NOT auto-update on macOS. The workflow still produces installable artifacts.
 #
 # ── Cutting a FORK test release (dev loop) ────────────────────────────────────
-# Test releases go to harshitsinghbhandari/thanos (the fork), never
-# to tinhtran24. To cut one, on the FORK:
+# Test releases go to the fork, never to tinhtran24. To cut one, on the FORK:
 #   - push a `desktop-v*` tag (e.g. `git push fork desktop-v0.0.0-test1`), or
 #   - run this workflow via `workflow_dispatch` from the fork's Actions tab.
-# THANOS_RELEASE_REPO MUST be set to the fork for a test run. It is derived
+# TO_RELEASE_REPO MUST be set to the fork for a test run. It is derived
 # automatically below from `github.repository`, so a fork run publishes to the
 # fork and a run on tinhtran24 publishes to tinhtran24, with no edit. The
 # matching test `to` binary is built with
@@ -31,6 +30,7 @@ name: Desktop release
 on:
   push:
     tags:
+      - "v*"
       - "desktop-v*"
   workflow_dispatch:
 
@@ -50,14 +50,14 @@ jobs:
       contents: write
     defaults:
       run:
-        working-directory: frontend
+        working-directory: app
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: npm
-          cache-dependency-path: frontend/package-lock.json
+          cache-dependency-path: app/package-lock.json
       # The daemon is compiled by build-daemon.mjs during prepackage/premake, so
       # the Go toolchain must be present and pinned on every runner.
       - uses: actions/setup-go@v5
@@ -65,6 +65,15 @@ jobs:
           go-version-file: backend/go.mod
           cache-dependency-path: backend/go.sum
       - run: npm ci
+      - name: Validate release tag
+        if: startsWith(github.ref, 'refs/tags/v')
+        shell: bash
+        run: |
+          expected="v$(node -p "require('./package.json').version")"
+          if [ "$GITHUB_REF_NAME" != "$expected" ]; then
+            echo "::error::release tag $GITHUB_REF_NAME does not match app/package.json version $expected"
+            exit 1
+          fi
       - name: macOS signing setup
         if: startsWith(matrix.os, 'macos')
         uses: ./.github/actions/macos-signing-setup
@@ -89,7 +98,7 @@ jobs:
           exit 1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          THANOS_RELEASE_REPO: ${{ github.repository }}
+          TO_RELEASE_REPO: ${{ github.repository }}
           # macOS signing + notarization env (APPLE_SIGNING_IDENTITY, APPLE_API_KEY,
           # APPLE_API_KEY_ID, APPLE_API_ISSUER) is exported by the "macOS signing
           # setup" step above via $GITHUB_ENV; the Developer ID cert is in the
@@ -178,19 +187,28 @@ jobs:
       contents: write
     defaults:
       run:
-        working-directory: frontend
+        working-directory: app
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: npm
-          cache-dependency-path: frontend/package-lock.json
+          cache-dependency-path: app/package-lock.json
       - uses: actions/setup-go@v5
         with:
           go-version-file: backend/go.mod
           cache-dependency-path: backend/go.sum
       - run: npm ci
+      - name: Validate release tag
+        if: startsWith(github.ref, 'refs/tags/v')
+        shell: bash
+        run: |
+          expected="v$(node -p "require('./package.json').version")"
+          if [ "$GITHUB_REF_NAME" != "$expected" ]; then
+            echo "::error::release tag $GITHUB_REF_NAME does not match app/package.json version $expected"
+            exit 1
+          fi
       - name: macOS signing setup
         uses: ./.github/actions/macos-signing-setup
         with:
@@ -214,7 +232,7 @@ jobs:
           exit 1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          THANOS_RELEASE_REPO: ${{ github.repository }}
+          TO_RELEASE_REPO: ${{ github.repository }}
       - name: Upload stable asset aliases (macOS)
         shell: bash
         run: |
@@ -243,14 +261,14 @@ jobs:
       contents: write
     defaults:
       run:
-        working-directory: frontend
+        working-directory: app
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: npm
-          cache-dependency-path: frontend/package-lock.json
+          cache-dependency-path: app/package-lock.json
       # feed.mjs imports app-builder-lib's blockmap generator, so deps are needed.
       - run: npm ci
       - name: Generate and upload the latest feed
