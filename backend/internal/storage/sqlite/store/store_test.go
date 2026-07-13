@@ -39,7 +39,13 @@ func sampleRecord(project string) domain.SessionRecord {
 		Kind:      domain.KindWorker,
 		Harness:   domain.HarnessClaudeCode,
 		Activity:  domain.Activity{State: domain.ActivityActive, LastActivityAt: now},
-		Metadata:  domain.SessionMetadata{Branch: "feat/x", WorkspacePath: "/ws"},
+		Metadata: domain.SessionMetadata{
+			Branch:          "feat/x",
+			WorkspacePath:   "/ws",
+			SuggestedBranch: "feat/x",
+			CommitMessage:   "feat: add x",
+			PRTitle:         "feat: add x",
+		},
 		CreatedAt: now,
 		UpdatedAt: now,
 	}
@@ -174,7 +180,8 @@ func TestSessionCreateAssignsPerProjectID(t *testing.T) {
 		t.Fatalf("get: ok=%v err=%v", ok, err)
 	}
 	if got.Activity.State != domain.ActivityActive || got.IsTerminated ||
-		got.Harness != domain.HarnessClaudeCode || got.Metadata.Branch != "feat/x" {
+		got.Harness != domain.HarnessClaudeCode || got.Metadata.Branch != "feat/x" ||
+		got.Metadata.SuggestedBranch != "feat/x" || got.Metadata.CommitMessage != "feat: add x" || got.Metadata.PRTitle != "feat: add x" {
 		t.Fatalf("round-trip mismatch: %+v", got)
 	}
 	if list, _ := s.ListSessions(ctx, "mer"); len(list) != 2 {

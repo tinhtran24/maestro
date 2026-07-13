@@ -127,6 +127,12 @@ type CleanupSessionsQuery struct {
 type SessionView struct {
 	domain.Session
 	Branch string `json:"branch,omitempty"`
+	// SuggestedBranch is the branch selected/generated at task creation time.
+	SuggestedBranch string `json:"suggestedBranch,omitempty"`
+	// CommitMessage is the suggested Conventional Commit subject for finalization.
+	CommitMessage string `json:"commitMessage,omitempty"`
+	// PRTitle is the suggested pull-request title for finalization.
+	PRTitle string `json:"prTitle,omitempty"`
 	// PreviewURL is the browser preview target the desktop app opens for this
 	// session, set via POST /sessions/{sessionId}/preview. Empty (omitted) when
 	// no preview has been requested. Pulled from the json:"-" domain Metadata.
@@ -152,6 +158,10 @@ type SpawnSessionRequest struct {
 	Harness   domain.AgentHarness `json:"harness,omitempty" enum:"claude-code,codex,aider,opencode,grok,droid,amp,agy,crush,cursor,qwen,copilot,goose,auggie,continue,devin,cline,kimi,kiro,kilocode,vibe,pi,autohand"`
 	Branch    string              `json:"branch,omitempty"`
 	Prompt    string              `json:"prompt,omitempty" maxLength:"4096"`
+	// CommitMessage is an optional task-creation suggestion edited by the user.
+	CommitMessage string `json:"commitMessage,omitempty"`
+	// PRTitle is an optional task-creation suggestion edited by the user.
+	PRTitle string `json:"prTitle,omitempty"`
 	// DisplayName is the sidebar label for the session, capped at 20 characters.
 	// `to spawn --name` always sets it; other clients (e.g. the desktop new-task
 	// dialog) may omit it and fall back to the session id in the read model.
@@ -407,6 +417,22 @@ type ClaimPRResponse struct {
 	PRs           []SessionPRFacts   `json:"prs"`
 	BranchChanged bool               `json:"branchChanged"`
 	TakenOverFrom []domain.SessionID `json:"takenOverFrom"`
+}
+
+// GitHubAuthStatus describes global GitHub CLI/token readiness for Settings.
+type GitHubAuthStatus struct {
+	Installed      bool   `json:"installed"`
+	Authenticated  bool   `json:"authenticated"`
+	Source         string `json:"source" enum:"none,gh,THANOS_GITHUB_TOKEN,GITHUB_TOKEN"`
+	BinaryPath     string `json:"binaryPath,omitempty"`
+	Message        string `json:"message,omitempty"`
+	InstallCommand string `json:"installCommand,omitempty"`
+	LoginCommand   string `json:"loginCommand,omitempty"`
+}
+
+// GitHubAuthStatusResponse is the body of GET /api/v1/github/auth.
+type GitHubAuthStatusResponse struct {
+	Status GitHubAuthStatus `json:"status"`
 }
 
 // SetActivityRequest is the body of POST /api/v1/sessions/{sessionId}/activity.
