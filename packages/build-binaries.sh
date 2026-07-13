@@ -8,7 +8,7 @@
 #
 # CGO-free build (modernc.org/sqlite driver) so cross-compilation needs no C
 # toolchain. Prod build: no -ldflags, so cli.releaseRepo keeps its default
-# (AgentWrapper/thanos).
+# (tinhtran24/thanos).
 set -euo pipefail
 
 # Repo layout: this script lives at <repo>/packages/build-binaries.sh.

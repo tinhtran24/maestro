@@ -55,6 +55,9 @@ surface (`npm run sqlc`, `npm run api`).
 - Lifecycle reducer plus reaper (`internal/observe/reaper`).
 - Agent adapter platform under `internal/adapters/agent/` (23 adapters) with a
   registry and `to hooks` activity dispatch.
+- Durable orchestrator-owned completion cursor: workers report only `session
+  complete`; live orchestrators checkpoint final git/test/PR/cleanup work and
+  exclusively transition tasks to Review Pending and Done.
 - OpenAPI spec generated from Go DTOs; frontend TS types generated from it and
   drift-checked in CI.
 

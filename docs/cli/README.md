@@ -53,7 +53,17 @@ Every product command resolves to a daemon HTTP route. Run `to <command>
 | `to session rename <id> <name>`     | `PATCH /api/v1/sessions/{id}`                  |
 | `to session cleanup`                | `POST /api/v1/sessions/cleanup`                |
 | `to session claim-pr <id> <pr-ref>` | `POST /api/v1/sessions/{id}/pr/claim`          |
+| `to session complete [id]`          | `POST /api/v1/sessions/{id}/complete`          |
 | `to orchestrator ls`                | `GET /api/v1/orchestrators`                    |
+| `to orchestrator finalize <worker-id> --state <state>` | `POST /api/v1/orchestrators/{id}/finalizations/{worker-id}` |
+| `to task done <worker-id>`          | Final ordered orchestrator transition to `done` |
+
+Workers never transition tasks to Review Pending or Done. They report only
+`session complete`. The active orchestrator owns the durable ordered workflow:
+git verification, tests, optional commit/push, PR creation or claim, metadata
+persistence, runtime cleanup, Review Pending, and finally `to task done`.
+Repeated completion reports and repeated acknowledgements of the current step
+are idempotent; skipped steps and non-orchestrator callers are rejected.
 | `to send`                           | `POST /api/v1/sessions/{id}/send`              |
 | `to preview [url]`                  | `POST /api/v1/sessions/{id}/preview`           |
 | `to hooks <agent> <event>`          | `POST /api/v1/sessions/{id}/activity` (hidden) |

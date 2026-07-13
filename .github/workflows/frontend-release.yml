@@ -10,7 +10,7 @@ name: Desktop release
 # host's platform, so cross-OS packaging (e.g. building the Windows installer on
 # macOS) would ship a non-Windows binary named `to` and the app could not launch
 # the daemon (issues #235/#256). The per-OS matrix keeps host == target, and the
-# Linux daemon is built on the Linux runner (AgentWrapper/thanos#2191).
+# Linux daemon is built on the Linux runner (tinhtran24/thanos#2191).
 #
 # ⚠️ Until macOS code signing + notarization secrets are configured (see
 # frontend/docs/desktop-release.md), published builds are UNSIGNED and will
@@ -18,12 +18,12 @@ name: Desktop release
 #
 # ── Cutting a FORK test release (dev loop) ────────────────────────────────────
 # Test releases go to harshitsinghbhandari/thanos (the fork), never
-# to AgentWrapper. To cut one, on the FORK:
+# to tinhtran24. To cut one, on the FORK:
 #   - push a `desktop-v*` tag (e.g. `git push fork desktop-v0.0.0-test1`), or
 #   - run this workflow via `workflow_dispatch` from the fork's Actions tab.
 # THANOS_RELEASE_REPO MUST be set to the fork for a test run. It is derived
 # automatically below from `github.repository`, so a fork run publishes to the
-# fork and a run on AgentWrapper publishes to AgentWrapper, with no edit. The
+# fork and a run on tinhtran24 publishes to tinhtran24, with no edit. The
 # matching test `to` binary is built with
 # `-ldflags -X ...cli.releaseRepo=harshitsinghbhandari/thanos` so it
 # fetches from the same fork (spec §6.3).

@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"net/url"
+	"os"
 	"sort"
 	"strings"
 	"time"
@@ -135,6 +136,13 @@ type sessionListOutput struct {
 	} `json:"meta"`
 }
 
+type advanceFinalizationRequest struct {
+	State string `json:"state"`
+}
+type sessionFinalizationResponse struct {
+	Finalization map[string]any `json:"finalization"`
+}
+
 func newSessionCommand(ctx *commandContext) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "session",
@@ -147,7 +155,31 @@ func newSessionCommand(ctx *commandContext) *cobra.Command {
 	cmd.AddCommand(newSessionRenameCommand(ctx))
 	cmd.AddCommand(newSessionCleanupCommand(ctx))
 	cmd.AddCommand(newSessionClaimPRCommand(ctx))
+	cmd.AddCommand(newSessionCompleteCommand(ctx))
 	return cmd
+}
+
+func newSessionCompleteCommand(ctx *commandContext) *cobra.Command {
+	return &cobra.Command{
+		Use:   "complete [id]",
+		Short: "Report that a worker coding session is complete",
+		Args:  cobra.MaximumNArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			id := strings.TrimSpace(os.Getenv("THANOS_SESSION_ID"))
+			if len(args) == 1 {
+				id = strings.TrimSpace(args[0])
+			}
+			if id == "" {
+				return usageError{errors.New("session id is required outside a managed session")}
+			}
+			var out sessionFinalizationResponse
+			if err := ctx.postJSON(cmd.Context(), "sessions/"+url.PathEscape(id)+"/complete", struct{}{}, &out); err != nil {
+				return err
+			}
+			_, err := fmt.Fprintln(cmd.OutOrStdout(), "session complete")
+			return err
+		},
+	}
 }
 
 func newSessionListCommand(ctx *commandContext) *cobra.Command {

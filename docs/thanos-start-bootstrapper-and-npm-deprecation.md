@@ -38,12 +38,12 @@ app present? if not, fetch it; then open it."
 | Product / bundle name        | **`Thanos.app`** (spaced)                                  | `frontend/forge.config.ts:9,50` |
 | Bundle id                    | `dev.thanos.desktop`                                       | `frontend/forge.config.ts:8`    |
 | Executable name              | `thanos`                                                   | `frontend/forge.config.ts`      |
-| **Release repo (canonical)** | **`AgentWrapper/thanos`**                                  | per release owner               |
-| Forge publisher repo (TODAY) | `tinhtran/thanos` — **stale, must change to AgentWrapper** | `frontend/forge.config.ts:86`   |
+| **Release repo (canonical)** | **`tinhtran24/thanos`**                                  | per release owner               |
+| Forge publisher repo (TODAY) | `tinhtran/thanos` — **stale, must change to tinhtran24** | `frontend/forge.config.ts:86`   |
 | GitHub release mode          | **`draft: true`**, `prerelease: false`                                 | `frontend/forge.config.ts`      |
 
 > `tinhtran/thanos` was the **temporary** home during the rewrite; the
-> code is now ported and releases land on **`AgentWrapper/thanos`**.
+> code is now ported and releases land on **`tinhtran24/thanos`**.
 > The forge publisher still points at `tinhtran` and must be corrected (task T3).
 > The Go **module path** is also `github.com/tinhtran/thanos`; renaming
 > the module is a large, separate change and is **out of scope** here (it does not
@@ -55,7 +55,7 @@ app present? if not, fetch it; then open it."
   `workflow_dispatch`. Build: `npm run publish` → `build:daemon` +
   `electron-forge publish`.
 - **Matrix: `[macos-latest, windows-latest]` only** (`:28`) — no Linux; deb/rpm
-  makers configured but never run (upstream issue AgentWrapper/thanos#2191).
+  makers configured but never run (upstream issue tinhtran24/thanos#2191).
 - Maker outputs (today): macOS `@electron-forge/maker-zip` → versioned `.zip`
   under `out/make/zip/darwin/<arch>/`; Windows `MakerNSIS` → `Thanos
 Setup.exe` (per-user installer); Linux `maker-deb`/`maker-rpm` →
@@ -127,7 +127,7 @@ waits for ready) and runs a first-boot legacy import (`maybeFirstBootImport`,
 
 ## 2. Decisions locked
 
-1. **Releases land on `AgentWrapper/thanos`.** Fix the forge publisher
+1. **Releases land on `tinhtran24/thanos`.** Fix the forge publisher
    to match; the download URL uses it.
 2. **`to start` = fetch + open the desktop app.** It no longer starts the daemon;
    the frontend owns the daemon. The current daemon-spawn logic in `start.go` is
@@ -138,14 +138,14 @@ waits for ready) and runs a first-boot legacy import (`maybeFirstBootImport`,
 5. **Scope = Track A only** (de-scope auto-update copy; Track B is separate).
 6. **All three platforms; Windows installer is NSIS.**
 7. **Two release targets, never conflated:**
-   - **Production:** GitHub `AgentWrapper/thanos`; npm = the real
+   - **Production:** GitHub `tinhtran24/thanos`; npm = the real
      package name (legacy `to`). Cutting a prod release is a deliberate, gated
      step, never part of the dev/test loop.
    - **Test/dev:** GitHub **`harshitsinghbhandari/thanos`** (the fork);
      npm scope **`@theharshitsingh/to`**. All `to start` download/open testing runs
      against fork releases and the test npm scope.
      The download repo and npm scope are **build-time overridable** (§6.3, §8) so a
-     test binary fetches from the fork and a prod binary from AgentWrapper, with no
+     test binary fetches from the fork and a prod binary from tinhtran24, with no
      code edit between them.
 
 ---
@@ -159,7 +159,7 @@ waits for ready) and runs a first-boot legacy import (`maybeFirstBootImport`,
 - Decide the fate of `to start`'s current first-boot legacy import (§6.4).
 - **App-side:** write `~/.thanos/app-state.json` every launch (app is sole writer);
   own `moveToApplicationsFolder()` relocation (macOS).
-- **Release wiring:** point forge publisher at `AgentWrapper/thanos`,
+- **Release wiring:** point forge publisher at `tinhtran24/thanos`,
   add stable version-free asset names, finalize the draft (or Releases-API
   fallback), add Linux to the matrix.
 - **npm delivery** of the Go binary (port the old Thanos mechanism; zero install
@@ -262,11 +262,11 @@ resolution already in `backend/internal/config`.
 
 Constant URL: `https://github.com/<owner>/<repo>/releases/latest/download/<stable-asset>`
 (302 → asset; requires non-draft release + stable names, §8). `<owner>/<repo>` is
-**build-time overridable**, not hardcoded: default `AgentWrapper/thanos`
+**build-time overridable**, not hardcoded: default `tinhtran24/thanos`
 (prod), overridden to `harshitsinghbhandari/thanos` for test builds via
 a `-ldflags -X …cli.releaseRepo=<owner>/<repo>` injection (mirrors how the daemon
 version will be stamped). So the dev loop fetches from the fork; prod fetches from
-AgentWrapper, with no source edit.
+tinhtran24, with no source edit.
 
 - **macOS:** download `.zip` → unpack with **`ditto -x -k`** (preserves the `.app`
   signature; plain unzip corrupts it) → `open <app> --args --installed-via=npm-bootstrap`.
@@ -335,11 +335,11 @@ pin (`main.ts:64`) are in place. Do not re-implement.
 ## 8. Release / build wiring
 
 - **Publisher repo is overridable** (`forge.config.ts:86`): default prod
-  `AgentWrapper/thanos`, but read from an env var (e.g.
+  `tinhtran24/thanos`, but read from an env var (e.g.
   `THANOS_RELEASE_REPO`) so a fork build publishes to
   `harshitsinghbhandari/thanos`. The dev loop publishes a draft+finalize
   release **on the fork** and points the test binary's `cli.releaseRepo` at the same
-  fork. Never publish to AgentWrapper from a test run.
+  fork. Never publish to tinhtran24 from a test run.
 - **Stable asset names:** add a release-workflow step renaming each maker output to
   space-free names (`thanos-darwin-arm64.zip`,
   `thanos-win32-x64.exe`, the Linux artifact per §11) before upload.
@@ -423,7 +423,7 @@ website.
   stable-asset rename step; finalize the draft (§11.4); add Linux to the matrix.
   Check: a `workflow_dispatch` **on the fork** produces a published
   `harshitsinghbhandari/thanos` release whose
-  `releases/latest/download/<stable-name>` 302-resolves. **No prod (AgentWrapper)
+  `releases/latest/download/<stable-name>` 302-resolves. **No prod (tinhtran24)
   release is cut during development.**
 
 **Batch 2 — app-side + macOS end-to-end (after T1):**

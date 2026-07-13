@@ -177,13 +177,30 @@ function Section({
 function SummaryView({ session }: { session: WorkspaceSession }) {
 	const query = useSessionScmSummary(session.id);
 	const prSummaries = sessionPRDisplaySummaries(session, query.data);
+	const projectQuery = useQuery({
+		queryKey: ["project", session.workspaceId],
+		enabled: prSummaries.length === 0 && Boolean(session.workspaceId),
+		queryFn: async () => {
+			const { data, error } = await apiClient.GET("/api/v1/projects/{id}", { params: { path: { id: session.workspaceId } } });
+			if (error) throw new Error(apiErrorMessage(error));
+			return data?.status === "ok" ? (data.project as components["schemas"]["Project"]) : undefined;
+		},
+	});
 	const prSectionTitle = prSummaries.length > 1 ? `Pull requests (${prSummaries.length})` : "Pull request";
 	const branchLabel = session.branch || `session/${session.id}`;
 	const issueId = canonicalTrackerIssueId(session.issueId);
+	const createPRURL = githubCompareURL(projectQuery.data?.repo, session.branch);
 
 	return (
 		<div role="tabpanel">
-			<Section title={prSectionTitle}>
+			<Section
+				title={prSectionTitle}
+				action={createPRURL ? (
+					<a href={createPRURL} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-[11px] font-medium text-accent hover:underline">
+						Open pull request <ArrowUpRight aria-hidden="true" className="h-3 w-3" strokeWidth={2} />
+					</a>
+				) : null}
+			>
 				{prSummaries.length === 0 ? (
 					<p className="inspector-empty">No pull request opened yet.</p>
 				) : (
@@ -210,6 +227,17 @@ function SummaryView({ session }: { session: WorkspaceSession }) {
 			</Section>
 		</div>
 	);
+}
+
+// githubCompareURL creates GitHub's no-token PR composer URL from the normal
+// Git remote formats. Git itself can push a branch but cannot create a GitHub
+// pull request, so this deliberately leaves final review/submission to GitHub.
+function githubCompareURL(remote: string | undefined, branch: string | undefined): string | undefined {
+	if (!remote || !branch) return undefined;
+	const trimmed = remote.trim().replace(/\.git$/, "");
+	const match = trimmed.match(/^(?:git@github\.com:|https?:\/\/github\.com\/)([^/]+\/[^/]+)$/i);
+	if (!match) return undefined;
+	return `https://github.com/${match[1]}/compare/${encodeURIComponent(branch)}?expand=1`;
 }
 
 function PRSummaryCard({ pr }: { pr: SessionPRSummary }) {

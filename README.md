@@ -5,10 +5,8 @@
 
 **The orchestration layer for parallel AI coding agents**
 
-[![Stars](https://img.shields.io/github/stars/AgentWrapper/thanos)](https://github.com/AgentWrapper/thanos/stargazers)
-[![Contributors](https://img.shields.io/github/contributors/AgentWrapper/thanos)](https://github.com/AgentWrapper/thanos/graphs/contributors)
-[![Twitter](https://img.shields.io/badge/Twitter-1DA1F2?logo=twitter&logoColor=white)](https://x.com/tinhtran)
-[![Discord](https://img.shields.io/badge/Discord-join%20the%20community-5865F2?logo=discord&logoColor=white)](https://discord.com/invite/UZv7JjxbwG)
+[![Stars](https://img.shields.io/github/stars/tinhtran24/thanos)](https://github.com/tinhtran24/thanos/stargazers)
+[![Contributors](https://img.shields.io/github/contributors/tinhtran24/thanos)](https://github.com/tinhtran24/thanos/graphs/contributors)
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache--2.0-blue.svg)](LICENSE)
 
 An Agentic IDE that supervises parallel AI coding agents in isolated workspaces, with complete control and automatic feedback loops from CI failures, review comments, and merge conflicts.
@@ -147,26 +145,9 @@ You can also download the latest desktop build for your platform:
 
 | Platform | Download                                                                                          |
 | -------- | ------------------------------------------------------------------------------------------------- |
-| Windows  | [Setup.exe](https://github.com/AgentWrapper/thanos/releases/latest)                   |
-| macOS    | [Thanos.dmg](https://github.com/AgentWrapper/thanos/releases/latest)      |
-| Linux    | [Thanos.AppImage](https://github.com/AgentWrapper/thanos/releases/latest) |
-
-## Witness Thanos's Journey on X
-
-<table>
-  <tr>
-    <td width="50%" align="center">
-      <a href="https://x.com/agent_wrapper/status/2026329204405723180">
-        <img src="screenshots/tweet2.png" height="330" alt="Thanos journey screenshot one" />
-      </a>
-    </td>
-    <td width="50%" align="center">
-      <a href="https://x.com/agent_wrapper/status/2025986105485733945">
-        <img src="screenshots/tweet1.png" height="330" alt="Thanos journey screenshot two" />
-      </a>
-    </td>
-  </tr>
-</table>
+| Windows  | [Setup.exe](https://github.com/tinhtran24/thanos/releases/latest)                   |
+| macOS    | [Thanos.dmg](https://github.com/tinhtran24/thanos/releases/latest)      |
+| Linux    | [Thanos.AppImage](https://github.com/tinhtran24/thanos/releases/latest) |
 
 ## Documentation
 

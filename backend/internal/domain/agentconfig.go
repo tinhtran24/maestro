@@ -2,6 +2,34 @@ package domain
 
 import "fmt"
 
+// SupportedModels is the daemon-owned allowlist of native CLI model overrides.
+// Keeping it here makes the HTTP boundary and session runtime agree on what can
+// be selected; adapters remain the only place that decides how to pass a model.
+var SupportedModels = map[AgentHarness][]string{
+	HarnessClaudeCode: {"claude-opus-4-5", "claude-sonnet-4-5", "claude-haiku-4-5"},
+	HarnessCodex:      {"gpt-5-codex"},
+}
+
+// IsNativeCLIModel reports whether model is a native CLI override for harness.
+// SupportedModels is the canonical source for this classification.
+func IsNativeCLIModel(harness AgentHarness, model string) bool {
+	if model == "" {
+		return false
+	}
+	for _, candidate := range SupportedModels[harness] {
+		if model == candidate {
+			return true
+		}
+	}
+	return false
+}
+
+// IsSupportedModel reports whether model is an explicit selectable override
+// for harness. An empty model deliberately means use the native CLI default.
+func IsSupportedModel(harness AgentHarness, model string) bool {
+	return model == "" || IsNativeCLIModel(harness, model)
+}
+
 // PermissionMode controls how much review an agent requires before acting. It
 // lives in domain (not ports) so the typed AgentConfig can carry it; ports
 // re-exports it as a type alias so agent adapters keep referring to

@@ -14,7 +14,7 @@
 - **No em dashes** anywhere (prose, comments, copy). Use `.`/`,`/`(...)`.
 - `openapi.yaml` and `frontend/src/api/schema.ts` are **generated** (never hand-edit); change the Go reflection source then run `npm run api:spec && npm run api:ts`.
 - All app state under `~/.thanos` only (already enforced; don't regress).
-- Branch: `to/thanos-3/import-offer` (sibling of `…/root`). PR target `main` on `AgentWrapper/thanos`.
+- Branch: `to/thanos-3/import-offer` (sibling of `…/root`). PR target `main` on `tinhtran24/thanos`.
 - **Reference:** this repo sits exactly at PR #320's base, so the change set lines up 1:1 with that PR. Where a step says "PR-verbatim," copy the PR's content for that file.
 - Commit immediately after each task (Thanos worktrees can be force-removed).
 

@@ -256,6 +256,14 @@ func (m *Manager) Spawn(ctx context.Context, cfg ports.SpawnConfig) (domain.Sess
 		return domain.SessionRecord{}, fmt.Errorf("spawn %s: no agent adapter for harness %q", id, cfg.Harness)
 	}
 	agentConfig := effectiveAgentConfig(cfg.Kind, project.Config)
+	if cfg.Model != "" {
+		if !domain.IsSupportedModel(cfg.Harness, cfg.Model) {
+			m.destroySpawnWorkspace(ctx, ws, workspaceProject)
+			m.rollbackSpawnSeedRow(ctx, id)
+			return domain.SessionRecord{}, fmt.Errorf("spawn %s: unsupported model %q for harness %q", id, cfg.Model, cfg.Harness)
+		}
+		agentConfig.Model = cfg.Model
+	}
 	if err := m.prepareWorkspace(ctx, agent, id, ws.Path, systemPrompt, agentConfig); err != nil {
 		m.destroySpawnWorkspace(ctx, ws, workspaceProject)
 		m.rollbackSpawnSeedRow(ctx, id)
@@ -1556,16 +1564,39 @@ func (m *Manager) buildSystemPrompt(ctx context.Context, kind domain.SessionKind
 	if err != nil {
 		return "", err
 	}
-	if kind == domain.KindWorker && project.Config.Git.Enabled {
-		base += "\n\n" + gitWorkflowPrompt()
+	switch kind {
+	case domain.KindWorker:
+		base += "\n\n" + workerCompletionPrompt()
+	case domain.KindOrchestrator:
+		base += "\n\n" + orchestratorFinalizationPrompt(project.Config.Git.Enabled)
 	}
 	return base + m.aoSkillPointer() + systemPromptGuard, nil
 }
 
-func gitWorkflowPrompt() string {
-	return `## Git completion workflow
+func workerCompletionPrompt() string {
+	return `## Completion ownership
 
-Before reporting this task complete, run git status. Commit only the task's intended changes as a small, atomic Conventional Commit (for example, feat: add native model selection or fix: handle planner output). Then push the current task branch with git push -u origin HEAD. Use the user's existing Git remote credentials (SSH or Git credential helper); never request or store a GitHub token. If commit or push fails, report the exact blocker and leave the working tree intact.`
+You must never mark the task Review Pending or Done, and you must not run the orchestrator finalization command. When coding and your own verification are finished, run ` + "`to session complete`" + `. Its only user-facing output is ` + "`session complete`" + `. Then wait for the orchestrator. Do not commit, push, create or claim a pull request, clean up the runtime, or transition the tracker as part of completion; those actions belong exclusively to the orchestrator.`
+}
+
+func orchestratorFinalizationPrompt(gitEnabled bool) string {
+	gitStep := "Verify the worker git state and required tests."
+	if gitEnabled {
+		gitStep += " Create one atomic Conventional Commit and push the task branch with the user's existing credentials."
+	}
+	return `## Task finalization ownership
+
+Only you, the orchestrator, may transition a worker task to Review Pending or Done. A worker finishes by reporting ` + "`session complete`" + `; that signal never completes the task itself.
+
+For each pending worker, perform these actions in order and acknowledge each successful checkpoint with ` + "`to orchestrator finalize <worker-id> --state <state>`" + `:
+1. ` + gitStep + ` Record ` + "`verifying_git`" + `, ` + "`testing`" + `, ` + "`committing`" + `, and ` + "`pushing`" + ` in order; when git automation is disabled, explicitly verify each no-op before acknowledging it.
+2. Create or discover the pull request and claim it for the worker; record ` + "`claiming_pr`" + `.
+3. Persist the resulting branch, commit, push, and PR metadata; record ` + "`persisting_metadata`" + `.
+4. Clean up the worker tmux session only after all retryable metadata is durable; record ` + "`cleaning_runtime`" + `.
+5. Transition the tracker to Review Pending and record ` + "`review_pending`" + `.
+6. After the review/merge completion bar is satisfied, call ` + "`to task done <worker-id>`" + `. This is the only command that records ` + "`done`" + `.
+
+The cursor is durable and idempotent. On retry or daemon restart, read the current state and resume from the next step. Never skip a state, and never acknowledge a state before its side effect succeeds.`
 }
 
 // aoSkillPointer is appended to every agent system prompt. It points the agent

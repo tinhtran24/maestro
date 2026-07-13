@@ -7,7 +7,11 @@ package daemon
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log/slog"
+	"os"
+	"os/exec"
+	"strings"
 
 	scmgithub "github.com/tinhtran/thanos/backend/internal/adapters/scm/github"
 	"github.com/tinhtran/thanos/backend/internal/lifecycle"
@@ -30,13 +34,18 @@ func startSCMObserver(ctx context.Context, store *sqlite.Store, lcm *lifecycle.M
 }
 
 func newGitHubSCMProvider(logger *slog.Logger) (*scmgithub.Provider, error) {
+	if strings.TrimSpace(os.Getenv("THANOS_GITHUB_TOKEN")) == "" && strings.TrimSpace(os.Getenv("GITHUB_TOKEN")) == "" {
+		if _, err := exec.LookPath("gh"); err != nil {
+			return nil, fmt.Errorf("GitHub CLI not installed; install it with `brew install gh`, then run `gh auth login`")
+		}
+	}
 	tokens := scmgithub.FallbackTokenSource{
 		scmgithub.EnvTokenSource{EnvVars: []string{"THANOS_GITHUB_TOKEN"}},
-		&scmgithub.GitCredentialTokenSource{},
+		&scmgithub.GHTokenSource{},
 	}
 	// Avoid token preflight on daemon startup and session service construction.
-	// Git credential helpers may prompt or be slow; provider calls resolve
-	// credentials lazily when claim-pr or the background observer needs GitHub.
+	// gh may prompt or be slow; provider calls resolve credentials lazily when
+	// claim-pr or the background observer needs GitHub.
 	return scmgithub.NewProvider(scmgithub.ProviderOptions{Token: tokens, SkipTokenPreflight: true, Logger: logger})
 }
 

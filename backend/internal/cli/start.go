@@ -22,7 +22,7 @@ import (
 //	go build -ldflags "-X github.com/tinhtran/thanos/backend/internal/cli.releaseRepo=harshitsinghbhandari/thanos" ./cmd/to
 //
 // Mirrors how version.go's Version var is stamped by release tooling.
-var releaseRepo = "AgentWrapper/thanos"
+var releaseRepo = "tinhtran24/thanos"
 
 // appBundleName is the macOS bundle directory name produced by electron-forge
 // (spaced, per frontend/forge.config.ts).

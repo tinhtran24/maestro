@@ -2,7 +2,7 @@
 // (~/.thanos) read-only and ports it into the rewrite's native
 // SQLite store. It maps the legacy project registry and per-project settings.
 //
-// This is the Go port of the legacy-side TypeScript reader (AgentWrapper PR
+// This is the Go port of the legacy-side TypeScript reader (tinhtran24 PR
 // #2144 / issue #2129); the field mapping is ReverbCode issue #247. The legacy
 // files are NEVER modified: a declined or failed import loses nothing, and a
 // re-run skips rows that already exist.
