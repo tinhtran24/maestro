@@ -47,6 +47,15 @@ At a high level, Thanos follows a simple loop:
 
 The result is a local control layer for agentic coding: agents still do the coding, while Thanos keeps their workspaces, status, terminals, and feedback loops organized.
 
+## Create Task Flow
+
+Use **New task** from a project board or worker top bar to turn rough intent into a tracked worker session:
+
+1. Capture the request with plain text, tracker links, screenshots, or other attachments.
+2. Let the planner agent structure it into a title, user story, acceptance criteria, technical notes, risks, and likely files.
+3. Review and edit the generated details, attachments, and AI plan preview before anything starts.
+4. Create the task. Thanos starts a worker session on an isolated branch with suggested branch, commit, and PR metadata, then tracks it on the board through work, review, and merge readiness.
+
 ## Features
 
 The desktop app is the main control surface: projects on the left, active sessions in the center, and the selected session's terminal, pull request state, review runs, and browser preview in the inspector.
@@ -143,9 +152,9 @@ Run `to start` from the repository you want Thanos to manage. See the [installat
 
 You can also download the latest desktop build for your platform:
 
-| Platform | Download                                                                                          |
-| -------- | ------------------------------------------------------------------------------------------------- |
-| Windows  | [Setup.exe](https://github.com/tinhtran24/thanos/releases/latest)                   |
+| Platform | Download                                                                |
+| -------- | ----------------------------------------------------------------------- |
+| Windows  | [Setup.exe](https://github.com/tinhtran24/thanos/releases/latest)       |
 | macOS    | [Thanos.dmg](https://github.com/tinhtran24/thanos/releases/latest)      |
 | Linux    | [Thanos.AppImage](https://github.com/tinhtran24/thanos/releases/latest) |
 
