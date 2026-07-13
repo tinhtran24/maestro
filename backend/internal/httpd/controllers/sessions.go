@@ -196,7 +196,19 @@ func (c *SessionsController) spawn(w http.ResponseWriter, r *http.Request) {
 		envelope.WriteAPIError(w, r, http.StatusBadRequest, "bad_request", "MODEL_UNSUPPORTED", "model is not supported by the selected execution model", nil)
 		return
 	}
-	sess, err := c.Svc.Spawn(r.Context(), ports.SpawnConfig{ProjectID: in.ProjectID, IssueID: in.IssueID, Kind: in.Kind, Harness: in.Harness, Branch: in.Branch, Prompt: in.Prompt, DisplayName: displayName, Model: in.Model})
+	if in.Kind == domain.KindWorker {
+		suggestions := domain.SuggestTask(string(in.IssueID), in.Prompt)
+		if strings.TrimSpace(in.Branch) == "" {
+			in.Branch = suggestions.Branch
+		}
+		if strings.TrimSpace(in.CommitMessage) == "" {
+			in.CommitMessage = suggestions.CommitMessage
+		}
+		if strings.TrimSpace(in.PRTitle) == "" {
+			in.PRTitle = suggestions.PRTitle
+		}
+	}
+	sess, err := c.Svc.Spawn(r.Context(), ports.SpawnConfig{ProjectID: in.ProjectID, IssueID: in.IssueID, Kind: in.Kind, Harness: in.Harness, Branch: in.Branch, Prompt: in.Prompt, CommitMessage: in.CommitMessage, PRTitle: in.PRTitle, DisplayName: displayName, Model: in.Model})
 	if err != nil {
 		envelope.WriteError(w, r, err)
 		return
@@ -726,7 +738,7 @@ func previewFileURL(r *http.Request, id domain.SessionID, entry string) string {
 }
 
 func sessionView(s domain.Session) SessionView {
-	return SessionView{Session: s, Branch: s.Metadata.Branch, PreviewURL: s.Metadata.PreviewURL, PreviewRevision: s.Metadata.PreviewRevision, PRs: sessionPRFacts(s.PRs)}
+	return SessionView{Session: s, Branch: s.Metadata.Branch, SuggestedBranch: s.Metadata.SuggestedBranch, CommitMessage: s.Metadata.CommitMessage, PRTitle: s.Metadata.PRTitle, PreviewURL: s.Metadata.PreviewURL, PreviewRevision: s.Metadata.PreviewRevision, PRs: sessionPRFacts(s.PRs)}
 }
 
 func sessionViews(sessions []domain.Session) []SessionView {

@@ -85,6 +85,12 @@ or unauthorized. It warns-but-continues when auth remains unknown because daemon
 spawn remains the authoritative runtime validation point. Use
 `--skip-agent-check` to bypass only this CLI-side preflight.
 
+Task creation also generates branch, commit-subject, and PR-title suggestions
+before the worker starts. The desktop New Task flow lets users edit those
+suggestions; API callers can pass `branch`, `commitMessage`, and `prTitle` on
+`POST /api/v1/sessions`. The orchestrator uses the persisted metadata during
+finalization instead of relying on the worker's completion text.
+
 `to preview` resolves its session from the `THANOS_SESSION_ID` environment variable
 (it is meant to run inside a session), not a flag. With no argument it
 autodetects an `index.html` in the session workspace; with a URL argument it

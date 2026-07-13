@@ -71,6 +71,8 @@ func Build() ([]byte, error) {
 			"Server-sent CDC event stream with durable replay"),
 		*(&openapi31.Tag{Name: "import"}).WithDescription(
 			"Legacy Thanos project import (availability probe and run)"),
+		*(&openapi31.Tag{Name: "github"}).WithDescription(
+			"Global GitHub CLI and token diagnostics"),
 	}
 
 	for _, op := range operations() {
@@ -159,6 +161,8 @@ var schemaNames = map[string]string{
 	"ControllersSendSessionMessageResponse":       "SendSessionMessageResponse",
 	"ControllersClaimPRResponse":                  "ClaimPRResponse",
 	"ControllersClaimPRRequest":                   "ClaimPRRequest",
+	"ControllersGitHubAuthStatus":                 "GitHubAuthStatus",
+	"ControllersGitHubAuthStatusResponse":         "GitHubAuthStatusResponse",
 	"ControllersSessionPRFacts":                   "SessionPRFacts",
 	"ControllersSessionPRSummary":                 "SessionPRSummary",
 	"ControllersSessionPRCISummary":               "SessionPRCISummary",
@@ -295,8 +299,21 @@ func operations() []operation {
 	ops = append(ops, reviewOperations()...)
 	ops = append(ops, notificationOperations()...)
 	ops = append(ops, importOperations()...)
+	ops = append(ops, githubOperations()...)
 	ops = append(ops, plannerOperations()...)
 	return ops
+}
+
+func githubOperations() []operation {
+	return []operation{
+		{
+			method: http.MethodGet, path: "/api/v1/github/auth", id: "getGitHubAuthStatus", tag: "github",
+			summary: "Check global GitHub CLI and token readiness",
+			resps: []respUnit{
+				{http.StatusOK, controllers.GitHubAuthStatusResponse{}},
+			},
+		},
+	}
 }
 
 // plannerOperations declares the 1 /plan operation. Must stay 1:1 with the

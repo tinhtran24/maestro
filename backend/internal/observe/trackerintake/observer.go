@@ -86,11 +86,12 @@ type Observer struct {
 	clock          func() time.Time
 	logger         *slog.Logger
 	backoffUntil   map[string]time.Time
+	lastFailure    map[string]string
 }
 
 // New constructs an Observer with safe defaults.
 func New(resolver TrackerResolver, store Store, spawner Spawner, cfg Config) *Observer {
-	o := &Observer{resolver: resolver, store: store, spawner: spawner, tick: cfg.Tick, failureBackoff: cfg.FailureBackoff, clock: cfg.Clock, logger: cfg.Logger, backoffUntil: map[string]time.Time{}}
+	o := &Observer{resolver: resolver, store: store, spawner: spawner, tick: cfg.Tick, failureBackoff: cfg.FailureBackoff, clock: cfg.Clock, logger: cfg.Logger, backoffUntil: map[string]time.Time{}, lastFailure: map[string]string{}}
 	if o.tick <= 0 {
 		o.tick = DefaultTickInterval
 	}
@@ -147,13 +148,15 @@ func (o *Observer) Poll(ctx context.Context) error {
 			return err
 		}
 		if until, ok := o.backoffUntil[project.ID]; ok && now.Before(until) {
-			o.logger.Debug("tracker intake: project in failure backoff", "project", project.ID, "until", until)
+			o.logger.Debug("tracker intake: project in failure backoff", "project", project.ID, "until", until, "reason", o.lastFailure[project.ID])
 			continue
 		}
-		if failed := o.pollProject(ctx, project, seen); failed {
+		if reason, failed := o.pollProject(ctx, project, seen); failed {
 			o.backoffUntil[project.ID] = now.Add(o.failureBackoff)
+			o.lastFailure[project.ID] = reason
 		} else {
 			delete(o.backoffUntil, project.ID)
+			delete(o.lastFailure, project.ID)
 		}
 	}
 	return nil
@@ -161,24 +164,24 @@ func (o *Observer) Poll(ctx context.Context) error {
 
 // pollProject returns failed=true for conditions that should be retried after a
 // backoff window rather than logged on every poll.
-func (o *Observer) pollProject(ctx context.Context, project domain.ProjectRecord, seen map[domain.IssueID]bool) (failed bool) {
+func (o *Observer) pollProject(ctx context.Context, project domain.ProjectRecord, seen map[domain.IssueID]bool) (reason string, failed bool) {
 	cfg := project.Config.TrackerIntake.WithDefaults()
 	if !cfg.Enabled {
-		return false
+		return "", false
 	}
 	if err := cfg.Validate(); err != nil {
 		o.logger.Warn("tracker intake: skipping project with invalid config", "project", project.ID, "err", err)
-		return true
+		return err.Error(), true
 	}
 	repo, ok := trackerRepo(project, cfg)
 	if !ok {
 		o.logger.Warn("tracker intake: skipping project without tracker scope", "project", project.ID, "provider", cfg.Provider, "origin", project.RepoOriginURL)
-		return true
+		return "project has no tracker repo scope", true
 	}
 	tracker, err := o.resolver.Resolve(cfg.Provider)
 	if err != nil {
 		o.logger.Warn("tracker intake: no adapter for provider", "project", project.ID, "provider", cfg.Provider, "err", err)
-		return true
+		return err.Error(), true
 	}
 	issues, err := tracker.List(ctx, repo, domain.ListFilter{
 		State:    domain.ListOpen,
@@ -186,12 +189,12 @@ func (o *Observer) pollProject(ctx context.Context, project domain.ProjectRecord
 	})
 	if err != nil {
 		o.logger.Error("tracker intake: list issues failed", "project", project.ID, "repo", repo.Native, "err", err)
-		return true
+		return err.Error(), true
 	}
 	var spawnFailed bool
 	for _, issue := range issues {
 		if ctx.Err() != nil {
-			return true
+			return ctx.Err().Error(), true
 		}
 		if issue.State != domain.IssueOpen {
 			continue
@@ -210,12 +213,13 @@ func (o *Observer) pollProject(ctx context.Context, project domain.ProjectRecord
 			Prompt:    BuildIssuePrompt(issue),
 		}); err != nil {
 			o.logger.Error("tracker intake: spawn issue session failed", "project", project.ID, "issue", issueID, "err", err)
+			reason = err.Error()
 			spawnFailed = true
 			continue
 		}
 		seen[issueID] = true
 	}
-	return spawnFailed
+	return reason, spawnFailed
 }
 
 func issueMatchesConfig(issue domain.Issue, cfg domain.TrackerIntakeConfig) bool {

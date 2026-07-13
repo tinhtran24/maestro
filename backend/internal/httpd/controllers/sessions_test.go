@@ -288,6 +288,9 @@ func TestSessionsAPI_ListSpawnGetAndActions(t *testing.T) {
 	if svc.lastSpawn.Model != "" {
 		t.Fatalf("spawn model = %q, want no task-level override", svc.lastSpawn.Model)
 	}
+	if svc.lastSpawn.Branch != "bugfix/iss-1" || svc.lastSpawn.CommitMessage != "fix: ISS-1" || svc.lastSpawn.PRTitle != "fix: ISS-1" {
+		t.Fatalf("spawn suggestions = branch %q commit %q pr %q", svc.lastSpawn.Branch, svc.lastSpawn.CommitMessage, svc.lastSpawn.PRTitle)
+	}
 
 	body, status, _ = doRequest(t, srv, "GET", "/api/v1/sessions/to-2", "")
 	if status != http.StatusOK {

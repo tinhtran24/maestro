@@ -72,6 +72,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/github/auth": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Check global GitHub CLI and token readiness */
+        get: operations["getGitHubAuthStatus"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/import": {
         parameters: {
             query?: never;
@@ -664,6 +681,7 @@ export interface components {
         ControllersSessionView: {
             activity: components["schemas"]["DomainActivity"];
             branch?: string;
+            commitMessage?: string;
             /** Format: date-time */
             createdAt: string;
             displayName?: string;
@@ -672,6 +690,7 @@ export interface components {
             isTerminated: boolean;
             issueId?: string;
             kind: string;
+            prTitle?: string;
             /** Format: int64 */
             previewRevision?: number;
             previewUrl?: string;
@@ -679,6 +698,7 @@ export interface components {
             prs: components["schemas"]["SessionPRFacts"][];
             /** @enum {string} */
             status: "working" | "pr_open" | "draft" | "ci_failed" | "review_pending" | "changes_requested" | "approved" | "mergeable" | "merged" | "needs_input" | "idle" | "terminated" | "no_signal";
+            suggestedBranch?: string;
             terminalHandleId?: string;
             /** Format: date-time */
             updatedAt: string;
@@ -700,6 +720,19 @@ export interface components {
         };
         DomainReviewerConfig: {
             harness: string;
+        };
+        GitHubAuthStatus: {
+            authenticated: boolean;
+            binaryPath?: string;
+            installCommand?: string;
+            installed: boolean;
+            loginCommand?: string;
+            message?: string;
+            /** @enum {string} */
+            source: "none" | "gh" | "THANOS_GITHUB_TOKEN" | "GITHUB_TOKEN";
+        };
+        GitHubAuthStatusResponse: {
+            status: components["schemas"]["GitHubAuthStatus"];
         };
         ImportReport: {
             dryRun: boolean;
@@ -1068,6 +1101,7 @@ export interface components {
         };
         SpawnSessionRequest: {
             branch?: string;
+            commitMessage?: string;
             displayName?: string;
             /** @enum {string} */
             harness?: "claude-code" | "codex" | "aider" | "opencode" | "grok" | "droid" | "amp" | "agy" | "crush" | "cursor" | "qwen" | "copilot" | "goose" | "auggie" | "continue" | "devin" | "cline" | "kimi" | "kiro" | "kilocode" | "vibe" | "pi" | "autohand";
@@ -1075,6 +1109,7 @@ export interface components {
             /** @enum {string} */
             kind?: "worker" | "orchestrator";
             model?: string;
+            prTitle?: string;
             projectId: string;
             prompt?: string;
         };
@@ -1297,6 +1332,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["APIError"];
+                };
+            };
+        };
+    };
+    getGitHubAuthStatus: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GitHubAuthStatusResponse"];
                 };
             };
         };

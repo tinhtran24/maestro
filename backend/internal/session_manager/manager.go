@@ -316,7 +316,15 @@ func (m *Manager) Spawn(ctx context.Context, cfg ports.SpawnConfig) (domain.Sess
 		return domain.SessionRecord{}, fmt.Errorf("spawn %s: runtime: %w", id, err)
 	}
 
-	metadata := domain.SessionMetadata{Branch: ws.Branch, WorkspacePath: ws.Path, RuntimeHandleID: handle.ID, Prompt: prompt}
+	metadata := domain.SessionMetadata{
+		Branch:          ws.Branch,
+		WorkspacePath:   ws.Path,
+		RuntimeHandleID: handle.ID,
+		Prompt:          prompt,
+		SuggestedBranch: ws.Branch,
+		CommitMessage:   cfg.CommitMessage,
+		PRTitle:         cfg.PRTitle,
+	}
 	if err := m.lcm.MarkSpawned(ctx, id, metadata); err != nil {
 		_ = m.runtime.Destroy(ctx, handle)
 		m.destroySpawnWorkspace(ctx, ws, workspaceProject)

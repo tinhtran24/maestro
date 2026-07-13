@@ -30,6 +30,9 @@ type SessionMetadata struct {
 	RuntimeHandleID string `json:"runtimeHandleId,omitempty"`
 	AgentSessionID  string `json:"agentSessionId,omitempty"`
 	Prompt          string `json:"prompt,omitempty"`
+	SuggestedBranch string `json:"suggestedBranch,omitempty"`
+	CommitMessage   string `json:"commitMessage,omitempty"`
+	PRTitle         string `json:"prTitle,omitempty"`
 	// PreviewURL is the browser preview target the desktop app opens for this
 	// session. Set via `to preview` (POST /sessions/{id}/preview); persisted so
 	// it survives a daemon restart. Empty means no preview has been requested.

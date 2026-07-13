@@ -69,6 +69,23 @@ beforeEach(() => {
 	postMock.mockResolvedValue({ data: { report: { projectsImported: 2, projectsSkipped: 1 } }, error: undefined });
 	setMigration.mockResolvedValue(undefined);
 	getUpdate.mockResolvedValue({ enabled: true, channel: "latest", nightlyAck: false });
+	getMock.mockImplementation((path: string) => {
+		if (path === "/api/v1/github/auth") {
+			return Promise.resolve({
+				data: {
+					status: {
+						installed: true,
+						authenticated: true,
+						source: "gh",
+						binaryPath: "/usr/bin/gh",
+						message: "GitHub CLI authentication is available.",
+					},
+				},
+				error: undefined,
+			});
+		}
+		return Promise.resolve({ data: { available: true, legacyRoot: "/home/u/.thanos" }, error: undefined });
+	});
 	setUpdate.mockResolvedValue(undefined);
 	updGetStatus.mockResolvedValue({ state: "idle" });
 	updCheck.mockResolvedValue(undefined);
@@ -81,8 +98,34 @@ beforeEach(() => {
 describe("GlobalSettingsForm", () => {
 	it("renders the Updates and Migration sections", async () => {
 		renderForm();
+		expect(await screen.findByText("GitHub")).toBeInTheDocument();
 		expect(await screen.findByText("Updates")).toBeInTheDocument();
 		expect(screen.getByText("Migration")).toBeInTheDocument();
+	});
+
+	it("shows GitHub auth guidance when credentials are missing", async () => {
+		getMock.mockImplementation((path: string) => {
+			if (path === "/api/v1/github/auth") {
+				return Promise.resolve({
+					data: {
+						status: {
+							installed: false,
+							authenticated: false,
+							source: "none",
+							message: "GitHub CLI is not installed.",
+							installCommand: "brew install gh",
+							loginCommand: "gh auth login",
+						},
+					},
+					error: undefined,
+				});
+			}
+			return Promise.resolve({ data: { available: true, legacyRoot: "/home/u/.thanos" }, error: undefined });
+		});
+		renderForm();
+		expect(await screen.findByText("Action needed")).toBeInTheDocument();
+		expect(screen.getByText("brew install gh")).toBeInTheDocument();
+		expect(screen.getByText("gh auth login")).toBeInTheDocument();
 	});
 
 	it("shows the nightly warning and saves the loaded channel", async () => {

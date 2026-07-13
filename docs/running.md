@@ -164,6 +164,10 @@ is written to OS-default app-data locations.
   honor it).
 - **`gh: executable file not found`**: install the GitHub CLI (`brew install gh`)
   for PR/SCM features, or ignore it if you don't need them.
+- **Tracker intake stays in failure backoff**: open Global Settings → GitHub and
+  refresh auth status. Thanos checks `THANOS_GITHUB_TOKEN`, `GITHUB_TOKEN`, and
+  `gh auth token`, then shows install/login guidance without exposing token
+  values.
 - **pnpm skips Electron's postinstall** (`Ignored build scripts: electron`): the
   approvals live in `app/pnpm-workspace.yaml` (`onlyBuiltDependencies`); if the
   Electron binary is missing, run `node app/node_modules/electron/install.js`.

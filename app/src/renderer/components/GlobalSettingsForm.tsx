@@ -1,4 +1,5 @@
 import { DashboardSubhead } from "./DashboardSubhead";
+import { GitHubAuthSection } from "./GitHubAuthSection";
 import { MigrationSection } from "./MigrationSection";
 import { UpdatesSection } from "./UpdatesSection";
 
@@ -11,6 +12,7 @@ export function GlobalSettingsForm() {
 			<DashboardSubhead title="Global settings" subtitle="Settings that apply across all projects" />
 			<div className="min-h-0 flex-1 overflow-y-auto p-[18px]">
 				<div className="mx-auto flex max-w-2xl flex-col gap-4">
+					<GitHubAuthSection />
 					<UpdatesSection />
 					<MigrationSection />
 				</div>

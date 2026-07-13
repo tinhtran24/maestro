@@ -181,6 +181,9 @@ type Session struct {
 	FirstSignalAt   sql.NullTime
 	PreviewURL      string
 	PreviewRevision int64
+	SuggestedBranch string
+	CommitMessage   string
+	PRTitle         string
 }
 
 type SessionFinalization struct {

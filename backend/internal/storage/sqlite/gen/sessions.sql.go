@@ -16,7 +16,7 @@ import (
 const getSession = `-- name: GetSession :one
 SELECT id, project_id, num, issue_id, kind, harness,
     activity_state, activity_last_at, is_terminated, branch, workspace_path,
-    runtime_handle_id, agent_session_id, prompt, created_at, updated_at, display_name, first_signal_at, preview_url, preview_revision
+    runtime_handle_id, agent_session_id, prompt, created_at, updated_at, display_name, first_signal_at, preview_url, preview_revision, suggested_branch, commit_message, pr_title
 FROM sessions WHERE id = ?
 `
 
@@ -44,6 +44,9 @@ func (q *Queries) GetSession(ctx context.Context, id domain.SessionID) (Session,
 		&i.FirstSignalAt,
 		&i.PreviewURL,
 		&i.PreviewRevision,
+		&i.SuggestedBranch,
+		&i.CommitMessage,
+		&i.PRTitle,
 	)
 	return i, err
 }
@@ -53,8 +56,9 @@ INSERT INTO sessions (
     id, project_id, num, issue_id, kind, harness, display_name,
     activity_state, activity_last_at, first_signal_at, is_terminated,
     branch, workspace_path, runtime_handle_id, agent_session_id, prompt,
+    suggested_branch, commit_message, pr_title,
     preview_url, preview_revision, created_at, updated_at
-) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 `
 
 type InsertSessionParams struct {
@@ -74,6 +78,9 @@ type InsertSessionParams struct {
 	RuntimeHandleID string
 	AgentSessionID  string
 	Prompt          string
+	SuggestedBranch string
+	CommitMessage   string
+	PRTitle         string
 	PreviewURL      string
 	PreviewRevision int64
 	CreatedAt       time.Time
@@ -98,6 +105,9 @@ func (q *Queries) InsertSession(ctx context.Context, arg InsertSessionParams) er
 		arg.RuntimeHandleID,
 		arg.AgentSessionID,
 		arg.Prompt,
+		arg.SuggestedBranch,
+		arg.CommitMessage,
+		arg.PRTitle,
 		arg.PreviewURL,
 		arg.PreviewRevision,
 		arg.CreatedAt,
@@ -109,7 +119,7 @@ func (q *Queries) InsertSession(ctx context.Context, arg InsertSessionParams) er
 const listAllSessions = `-- name: ListAllSessions :many
 SELECT id, project_id, num, issue_id, kind, harness,
     activity_state, activity_last_at, is_terminated, branch, workspace_path,
-    runtime_handle_id, agent_session_id, prompt, created_at, updated_at, display_name, first_signal_at, preview_url, preview_revision
+    runtime_handle_id, agent_session_id, prompt, created_at, updated_at, display_name, first_signal_at, preview_url, preview_revision, suggested_branch, commit_message, pr_title
 FROM sessions ORDER BY project_id, num
 `
 
@@ -143,6 +153,9 @@ func (q *Queries) ListAllSessions(ctx context.Context) ([]Session, error) {
 			&i.FirstSignalAt,
 			&i.PreviewURL,
 			&i.PreviewRevision,
+			&i.SuggestedBranch,
+			&i.CommitMessage,
+			&i.PRTitle,
 		); err != nil {
 			return nil, err
 		}
@@ -160,7 +173,7 @@ func (q *Queries) ListAllSessions(ctx context.Context) ([]Session, error) {
 const listSessionsByProject = `-- name: ListSessionsByProject :many
 SELECT id, project_id, num, issue_id, kind, harness,
     activity_state, activity_last_at, is_terminated, branch, workspace_path,
-    runtime_handle_id, agent_session_id, prompt, created_at, updated_at, display_name, first_signal_at, preview_url, preview_revision
+    runtime_handle_id, agent_session_id, prompt, created_at, updated_at, display_name, first_signal_at, preview_url, preview_revision, suggested_branch, commit_message, pr_title
 FROM sessions WHERE project_id = ? ORDER BY num
 `
 
@@ -194,6 +207,9 @@ func (q *Queries) ListSessionsByProject(ctx context.Context, projectID domain.Pr
 			&i.FirstSignalAt,
 			&i.PreviewURL,
 			&i.PreviewRevision,
+			&i.SuggestedBranch,
+			&i.CommitMessage,
+			&i.PRTitle,
 		); err != nil {
 			return nil, err
 		}
@@ -287,6 +303,7 @@ UPDATE sessions SET
     issue_id = ?, kind = ?, harness = ?, display_name = ?,
     activity_state = ?, activity_last_at = ?, first_signal_at = ?, is_terminated = ?,
     branch = ?, workspace_path = ?, runtime_handle_id = ?, agent_session_id = ?, prompt = ?,
+    suggested_branch = ?, commit_message = ?, pr_title = ?,
     preview_url = ?, preview_revision = ?, updated_at = ?
 WHERE id = ?
 `
@@ -305,6 +322,9 @@ type UpdateSessionParams struct {
 	RuntimeHandleID string
 	AgentSessionID  string
 	Prompt          string
+	SuggestedBranch string
+	CommitMessage   string
+	PRTitle         string
 	PreviewURL      string
 	PreviewRevision int64
 	UpdatedAt       time.Time
@@ -326,6 +346,9 @@ func (q *Queries) UpdateSession(ctx context.Context, arg UpdateSessionParams) er
 		arg.RuntimeHandleID,
 		arg.AgentSessionID,
 		arg.Prompt,
+		arg.SuggestedBranch,
+		arg.CommitMessage,
+		arg.PRTitle,
 		arg.PreviewURL,
 		arg.PreviewRevision,
 		arg.UpdatedAt,
