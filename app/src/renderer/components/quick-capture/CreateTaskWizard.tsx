@@ -35,6 +35,16 @@ export interface TaskSuggestions {
 	prTitle: string;
 }
 
+export const TASK_COMPLETION_FOOTER =
+	"Implement the requested change in this repository, run the relevant checks, and open or update a pull request when ready.";
+
+function withTaskCompletionFooter(prompt: string): string {
+	const cleanPrompt = prompt.trim();
+	if (!cleanPrompt) return TASK_COMPLETION_FOOTER;
+	if (cleanPrompt.includes(TASK_COMPLETION_FOOTER)) return cleanPrompt;
+	return `${cleanPrompt}\n\n${TASK_COMPLETION_FOOTER}`;
+}
+
 export function suggestTaskMetadata(title: string): TaskSuggestions {
 	const cleaned = cleanTaskTitle(title) || "update task";
 	const isFix = /\b(bug|fix|defect|regression|crash|error|fail|failure|broken|missing|credential)\b/i.test(cleaned);
@@ -99,7 +109,7 @@ export function taskCreationBody({
 		branch: suggestions?.branch,
 		commitMessage: suggestions?.commitMessage,
 		prTitle: suggestions?.prTitle,
-		prompt,
+		prompt: withTaskCompletionFooter(prompt),
 	};
 }
 

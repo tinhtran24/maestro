@@ -119,6 +119,7 @@ type fakeProvider struct {
 	mu           sync.Mutex
 	repoGuards   map[string]ports.SCMGuardResult
 	checkGuards  map[string]ports.SCMGuardResult
+	checkErrs    map[string]error
 	openPRs      map[string][]ports.SCMPRObservation
 	listErr      error
 	observations map[string]ports.SCMObservation
@@ -178,6 +179,9 @@ func (p *fakeProvider) ListOpenPRsByRepo(_ context.Context, repo ports.SCMRepo) 
 	return p.openPRs[prKey(repo, 0)], nil
 }
 func (p *fakeProvider) CommitChecksGuard(_ context.Context, repo ports.SCMRepo, sha, _ string) (ports.SCMGuardResult, error) {
+	if err := p.checkErrs[commitKey(repo, sha)]; err != nil {
+		return ports.SCMGuardResult{}, err
+	}
 	return p.checkGuards[commitKey(repo, sha)], nil
 }
 func (p *fakeProvider) FetchPullRequests(_ context.Context, refs []ports.SCMPRRef) ([]ports.SCMObservation, error) {
@@ -280,6 +284,20 @@ func TestRepoForTrackedPRUsesPersistedRepoWhenCurrentScanDropsUpstream(t *testin
 	}
 	if repo.Provider != "github" || repo.Host != "github.com" || repo.Repo != "upstream/api" {
 		t.Fatalf("repo = %#v, want persisted upstream/api tuple", repo)
+	}
+	if repo.Owner != "upstream" || repo.Name != "api" {
+		t.Fatalf("repo owner/name = %q/%q, want upstream/api", repo.Owner, repo.Name)
+	}
+}
+
+func TestRepoForTrackedPRRejectsInvalidPersistedRepoTuple(t *testing.T) {
+	pr := knownPR(42)
+	pr.Provider = "github"
+	pr.Host = "github.com"
+	pr.Repo = "/"
+	repo, ok := repoForTrackedPR(pr, []ports.SCMRepo{testRepo})
+	if ok {
+		t.Fatalf("invalid persisted repo should not produce GraphQL repo %#v", repo)
 	}
 }
 
@@ -455,6 +473,41 @@ func TestPoll_RepoETag304SkipsListPRs(t *testing.T) {
 	}
 	if provider.listCalls != 0 {
 		t.Fatalf("ListOpenPRsByRepo called on 304: %d", provider.listCalls)
+	}
+}
+
+func TestPoll_CommitCheckNotFoundStillRefreshesPRMetadata(t *testing.T) {
+	store := testStoreWithSession()
+	local := knownPR(13)
+	local.HeadSHA = "missing-sha"
+	local.CI = domain.CIFailing
+	local.CIHash = "old-ci"
+	store.prs[domain.SessionID("p-1")] = []domain.PullRequest{local}
+
+	merged := testObs(13)
+	merged.PR.State = string(domain.PRStateMerged)
+	merged.PR.Merged = true
+	merged.PR.Closed = true
+	provider := &fakeProvider{
+		repoGuards:   map[string]ports.SCMGuardResult{prKey(testRepo, 0): {ETag: "v1", NotModified: true}},
+		checkErrs:    map[string]error{commitKey(testRepo, "missing-sha"): ports.ErrSCMNotFound},
+		observations: map[string]ports.SCMObservation{prKey(testRepo, 13): merged},
+	}
+	obs := newTestObserver(store, provider, &fakeLifecycle{}, time.Unix(1, 0).UTC())
+	obs.Cache.RepoPRListETag[prKey(testRepo, 0)] = "v1"
+
+	if err := obs.Poll(context.Background()); err != nil {
+		t.Fatal(err)
+	}
+	if len(provider.fetchBatches) != 1 || len(provider.fetchBatches[0]) != 1 || provider.fetchBatches[0][0].Number != 13 {
+		t.Fatalf("commit-check 404 should still refresh PR metadata, got %#v", provider.fetchBatches)
+	}
+	if len(store.writes) == 0 {
+		t.Fatal("expected merged PR write")
+	}
+	got := store.writes[len(store.writes)-1].pr
+	if !got.Merged || got.CI != domain.CIPassing {
+		t.Fatalf("merged PR did not replace stale CI state: merged=%v ci=%s", got.Merged, got.CI)
 	}
 }
 

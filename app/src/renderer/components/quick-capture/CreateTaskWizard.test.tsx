@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { suggestTaskMetadata, taskCreationBody } from "./CreateTaskWizard";
+import { TASK_COMPLETION_FOOTER, suggestTaskMetadata, taskCreationBody } from "./CreateTaskWizard";
 
 describe("taskCreationBody", () => {
 	it("omits native CLI model overrides while preserving the selected execution agent", () => {
@@ -23,11 +23,24 @@ describe("taskCreationBody", () => {
 			branch: "feature/implement-task-creation",
 			commitMessage: "feat: implement task creation",
 			prTitle: "feat: implement task creation",
+			prompt: `Implement task creation\n\n${TASK_COMPLETION_FOOTER}`,
 		});
 		expect(body).not.toHaveProperty("model");
 	});
 
-	it("suggests branch and finalization metadata when the task is created", () => {
+	it("does not duplicate the completion footer when the prompt already includes it", () => {
+		const body = taskCreationBody({
+			projectId: "proj-1",
+			agent: "codex",
+			agentTouched: true,
+			issueId: "Implement task creation",
+			prompt: `Implement task creation\n\n${TASK_COMPLETION_FOOTER}`,
+		});
+
+		expect(body.prompt).toBe(`Implement task creation\n\n${TASK_COMPLETION_FOOTER}`);
+	});
+
+	it("suggests branch and PR metadata when the task is created", () => {
 		expect(suggestTaskMetadata("Fix issue: tracker intake credential diagnostics")).toEqual({
 			branch: "bugfix/tracker-intake-credential-diagnostics",
 			commitMessage: "fix(tracker): tracker intake credential diagnostics",

@@ -107,6 +107,33 @@ func newProviderForTest(t *testing.T, f *fakeGH) *Provider {
 
 func ctx() context.Context { return context.Background() }
 
+func TestNormalizeGitHubRepoHydratesRepoOnlyTuple(t *testing.T) {
+	got := normalizeGitHubRepo(ports.SCMRepo{Provider: "github", Host: "github.com", Repo: "tinhtran24/thanos"})
+	if got.Owner != "tinhtran24" || got.Name != "thanos" || got.Repo != "tinhtran24/thanos" {
+		t.Fatalf("repo = %#v, want hydrated owner/name", got)
+	}
+}
+
+func TestCommitChecksGuardHydratesRepoOnlyTuple(t *testing.T) {
+	f := newFakeGH(t)
+	f.on(http.MethodGet, "/repos/tinhtran24/thanos/commits/sha1/check-runs", func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("ETag", `"checks"`)
+		_, _ = w.Write([]byte(`{"total_count":0,"check_runs":[]}`))
+	})
+	p := newProviderForTest(t, f)
+
+	res, err := p.CommitChecksGuard(ctx(), ports.SCMRepo{Provider: "github", Host: "github.com", Repo: "tinhtran24/thanos"}, "sha1", "")
+	if err != nil {
+		t.Fatalf("CommitChecksGuard: %v", err)
+	}
+	if res.ETag == "" {
+		t.Fatal("CommitChecksGuard returned empty ETag")
+	}
+	if f.callsTo(http.MethodGet, "/repos/tinhtran24/thanos/commits/sha1/check-runs") != 1 {
+		t.Fatalf("unexpected calls: %#v", f.calls())
+	}
+}
+
 // ---------------------------------------------------------------------------
 // Fixture builders. Each test composes a REST pull + GraphQL response so
 // it can pin the exact shape it cares about without sharing global state

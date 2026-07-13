@@ -23,7 +23,6 @@ import (
 	"github.com/tinhtran/thanos/backend/internal/preview"
 	"github.com/tinhtran/thanos/backend/internal/runfile"
 	agentsvc "github.com/tinhtran/thanos/backend/internal/service/agent"
-	finalizationsvc "github.com/tinhtran/thanos/backend/internal/service/finalization"
 	importsvc "github.com/tinhtran/thanos/backend/internal/service/importer"
 	notificationsvc "github.com/tinhtran/thanos/backend/internal/service/notification"
 	"github.com/tinhtran/thanos/backend/internal/service/planner"
@@ -140,7 +139,6 @@ func Run() error {
 	lcStack.trackerDone = startTrackerIntake(ctx, store, sessionSvc, log)
 	previewDone := preview.NewPoller(store, sessionSvc, "http://"+cfg.Addr(), preview.PollerConfig{Logger: log}).Start(ctx)
 	agentSvc := agentsvc.New()
-	finalizationSvc := finalizationsvc.New(store, nil)
 	go func() {
 		if _, err := agentSvc.Refresh(ctx); err != nil {
 			log.Warn("initial agent catalog refresh failed", "err", err)
@@ -160,7 +158,6 @@ func Run() error {
 		CDC:                store,
 		Events:             cdcPipe.Broadcaster,
 		Activity:           lcStack.LCM,
-		Finalization:       finalizationSvc,
 		Telemetry:          telemetrySink,
 	})
 	if err != nil {

@@ -78,42 +78,6 @@ func TestProjectCRUDAndArchive(t *testing.T) {
 	}
 }
 
-func TestSessionFinalizationPersistsAndAdvancesIdempotently(t *testing.T) {
-	s := newTestStore(t)
-	ctx := context.Background()
-	seedProject(t, s, "fin")
-	worker, err := s.CreateSession(ctx, sampleRecord("fin"))
-	if err != nil {
-		t.Fatal(err)
-	}
-	orchRec := sampleRecord("fin")
-	orchRec.Kind = domain.KindOrchestrator
-	orch, err := s.CreateSession(ctx, orchRec)
-	if err != nil {
-		t.Fatal(err)
-	}
-	now := time.Now().UTC().Truncate(time.Second)
-	if err := s.RequestSessionFinalization(ctx, worker.ID, now); err != nil {
-		t.Fatal(err)
-	}
-	if err := s.RequestSessionFinalization(ctx, worker.ID, now.Add(time.Second)); err != nil {
-		t.Fatalf("duplicate request: %v", err)
-	}
-	if ok, err := s.ClaimSessionFinalization(ctx, worker.ID, orch.ID, now); err != nil || !ok {
-		t.Fatalf("claim: ok=%v err=%v", ok, err)
-	}
-	if ok, err := s.AdvanceSessionFinalization(ctx, worker.ID, orch.ID, domain.FinalizationPending, domain.FinalizationVerifyingGit, now); err != nil || !ok {
-		t.Fatalf("advance: ok=%v err=%v", ok, err)
-	}
-	if ok, err := s.AdvanceSessionFinalization(ctx, worker.ID, orch.ID, domain.FinalizationPending, domain.FinalizationVerifyingGit, now); err != nil || ok {
-		t.Fatalf("replayed stale transition: ok=%v err=%v", ok, err)
-	}
-	got, exists, err := s.GetSessionFinalization(ctx, worker.ID)
-	if err != nil || !exists || got.State != domain.FinalizationVerifyingGit || got.OrchestratorID != orch.ID {
-		t.Fatalf("flow = %#v exists=%v err=%v", got, exists, err)
-	}
-}
-
 func TestProjectConfigRoundTrips(t *testing.T) {
 	s := newTestStore(t)
 	ctx := context.Background()

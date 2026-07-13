@@ -186,16 +186,6 @@ type Session struct {
 	PRTitle         string
 }
 
-type SessionFinalization struct {
-	SessionID      string
-	OrchestratorID sql.NullString
-	State          string
-	RequestedAt    time.Time
-	UpdatedAt      time.Time
-	CompletedAt    sql.NullTime
-	LastError      string
-}
-
 type SessionWorktree struct {
 	SessionID    domain.SessionID
 	RepoName     string

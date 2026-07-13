@@ -18,8 +18,8 @@ type SpawnConfig struct {
 	Harness   domain.AgentHarness
 	Branch    string
 	Prompt    string
-	// CommitMessage and PRTitle are task-creation suggestions persisted for the
-	// orchestrator finalization handoff. They are metadata, not agent output.
+	// CommitMessage and PRTitle are task-creation suggestions persisted for
+	// commit and pull-request naming. They are metadata, not agent output.
 	CommitMessage string
 	PRTitle       string
 	// DisplayName is the user-facing sidebar label. Empty falls back to the
