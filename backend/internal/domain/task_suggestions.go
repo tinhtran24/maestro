@@ -9,7 +9,8 @@ import (
 var nonBranchChars = regexp.MustCompile(`[^a-z0-9._/-]+`)
 
 // TaskSuggestions are generated when a task is created and persisted with the
-// session so finalization does not depend on an agent inventing handoff text.
+// session so commit and pull-request naming does not depend on an agent
+// inventing handoff text.
 type TaskSuggestions struct {
 	Branch        string `json:"branch,omitempty"`
 	CommitMessage string `json:"commitMessage,omitempty"`

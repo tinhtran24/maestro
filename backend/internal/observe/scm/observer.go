@@ -573,7 +573,9 @@ func (o *Observer) workspaceSCMSessionRepos(ctx context.Context, proj domain.Pro
 
 func repoForTrackedPR(pr domain.PullRequest, repos []ports.SCMRepo) (ports.SCMRepo, bool) {
 	if pr.Provider != "" && pr.Host != "" && pr.Repo != "" {
-		return ports.SCMRepo{Provider: pr.Provider, Host: pr.Host, Repo: pr.Repo}, true
+		if repo, ok := repoFromTrackedPR(pr); ok {
+			return repo, true
+		}
 	}
 	if pr.Repo != "" {
 		for _, repo := range repos {
@@ -592,6 +594,16 @@ func repoForTrackedPR(pr domain.PullRequest, repos []ports.SCMRepo) (ports.SCMRe
 		}
 	}
 	return repos[0], len(repos) > 0
+}
+
+func repoFromTrackedPR(pr domain.PullRequest) (ports.SCMRepo, bool) {
+	full := strings.TrimSpace(pr.Repo)
+	owner := ownerOf(full)
+	name := nameOf(full)
+	if owner == "" || name == "" || owner == full {
+		return ports.SCMRepo{}, false
+	}
+	return ports.SCMRepo{Provider: pr.Provider, Host: pr.Host, Owner: owner, Name: name, Repo: full}, true
 }
 
 func matchesTrackedPRRepo(pr domain.PullRequest, repo ports.SCMRepo) bool {
@@ -810,7 +822,9 @@ func (o *Observer) selectRefreshCandidates(ctx context.Context, subjects map[str
 			res, err := o.provider.CommitChecksGuard(ctx, s.repo, s.known.HeadSHA, prev)
 			if err != nil {
 				o.logger.Error("scm observer: commit check-runs guard failed", "pr", s.known.URL, "sha", s.known.HeadSHA, "err", err)
-				if markRepoFailed != nil {
+				if errors.Is(err, ports.ErrSCMNotFound) {
+					candidate = true
+				} else if markRepoFailed != nil {
 					markRepoFailed(s.repo)
 				}
 			} else if !res.NotModified {

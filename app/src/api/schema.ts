@@ -210,23 +210,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/orchestrators/{id}/finalizations/{sessionId}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Advance one orchestrator-owned task finalization step */
-        post: operations["advanceSessionFinalization"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/v1/plan": {
         parameters: {
             query?: never;
@@ -378,23 +361,6 @@ export interface paths {
         put?: never;
         /** Report an agent activity-state signal for a session */
         post: operations["setSessionActivity"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/sessions/{sessionId}/complete": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Report that a worker coding session is complete */
-        post: operations["completeSession"];
         delete?: never;
         options?: never;
         head?: never;
@@ -626,10 +592,6 @@ export interface components {
             name?: null | string;
             path: string;
             projectId?: null | string;
-        };
-        AdvanceFinalizationRequest: {
-            /** @enum {string} */
-            state: "verifying_git" | "testing" | "committing" | "pushing" | "claiming_pr" | "persisting_metadata" | "cleaning_runtime" | "review_pending" | "done";
         };
         AgentConfig: {
             model?: string;
@@ -964,21 +926,6 @@ export interface components {
             message: string;
             ok: boolean;
             sessionId: string;
-        };
-        SessionFinalization: {
-            /** Format: date-time */
-            completedAt?: null | string;
-            lastError?: string;
-            orchestratorId?: string;
-            /** Format: date-time */
-            requestedAt: string;
-            sessionId: string;
-            state: string;
-            /** Format: date-time */
-            updatedAt: string;
-        };
-        SessionFinalizationResponse: {
-            finalization: components["schemas"]["SessionFinalization"];
         };
         SessionPRCISummary: {
             failingChecks: components["schemas"]["SessionPRFailingCheck"][];
@@ -1774,80 +1721,6 @@ export interface operations {
             };
         };
     };
-    advanceSessionFinalization: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description Orchestrator session identifier, e.g. project-orchestrator. */
-                id: string;
-                /** @description Session identifier, e.g. project-1. */
-                sessionId: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["AdvanceFinalizationRequest"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["SessionFinalizationResponse"];
-                };
-            };
-            /** @description Bad Request */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["APIError"];
-                };
-            };
-            /** @description Forbidden */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["APIError"];
-                };
-            };
-            /** @description Not Found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["APIError"];
-                };
-            };
-            /** @description Conflict */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["APIError"];
-                };
-            };
-            /** @description Internal Server Error */
-            500: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["APIError"];
-                };
-            };
-        };
-    };
     planTask: {
         parameters: {
             query?: never;
@@ -2498,56 +2371,6 @@ export interface operations {
             };
             /** @description Not Implemented */
             501: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["APIError"];
-                };
-            };
-        };
-    };
-    completeSession: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description Session identifier, e.g. project-1. */
-                sessionId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Accepted */
-            202: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["SessionFinalizationResponse"];
-                };
-            };
-            /** @description Forbidden */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["APIError"];
-                };
-            };
-            /** @description Not Found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["APIError"];
-                };
-            };
-            /** @description Internal Server Error */
-            500: {
                 headers: {
                     [name: string]: unknown;
                 };

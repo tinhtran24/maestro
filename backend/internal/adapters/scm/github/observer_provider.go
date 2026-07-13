@@ -47,6 +47,7 @@ func (p *Provider) ParseRepository(remote string) (ports.SCMRepo, bool) {
 
 // RepoPRListGuard checks GitHub's cheap open-PR-list ETag guard.
 func (p *Provider) RepoPRListGuard(ctx context.Context, repo ports.SCMRepo, etag string) (ports.SCMGuardResult, error) {
+	repo = normalizeGitHubRepo(repo)
 	q := url.Values{}
 	q.Set("state", "open")
 	q.Set("sort", "updated")
@@ -65,6 +66,7 @@ func (p *Provider) RepoPRListGuard(ctx context.Context, repo ports.SCMRepo, etag
 // concurrent open PRs, and the observer only calls this when the repo PR-list
 // ETag guard reports a change.
 func (p *Provider) ListOpenPRsByRepo(ctx context.Context, repo ports.SCMRepo) ([]ports.SCMPRObservation, error) {
+	repo = normalizeGitHubRepo(repo)
 	const perPage = 100
 	out := []ports.SCMPRObservation{}
 	for page := 1; ; page++ {
@@ -96,6 +98,7 @@ func (p *Provider) CommitChecksGuard(ctx context.Context, repo ports.SCMRepo, he
 	if strings.TrimSpace(headSHA) == "" {
 		return ports.SCMGuardResult{}, fmt.Errorf("%w: empty head sha", ErrNotFound)
 	}
+	repo = normalizeGitHubRepo(repo)
 	q := url.Values{}
 	q.Set("per_page", "1")
 	resp, err := p.client.doRESTWithETag(ctx, repoPath(repo.Owner, repo.Name, "commits", headSHA, "check-runs"), q, etag)
@@ -115,6 +118,7 @@ func (p *Provider) FetchPullRequests(ctx context.Context, refs []ports.SCMPRRef)
 	if len(refs) > 25 {
 		return nil, fmt.Errorf("github scm: batch size %d exceeds 25", len(refs))
 	}
+	refs = normalizeSCMPRRefs(refs)
 	query, aliases := buildSCMBatchQuery(refs)
 	data, err := p.client.doGraphQL(ctx, query, nil)
 	if err != nil {
@@ -142,6 +146,7 @@ func (p *Provider) FetchFailedCheckLogTail(ctx context.Context, repo ports.SCMRe
 	if check.ProviderID == "" {
 		return "", nil
 	}
+	repo = normalizeGitHubRepo(repo)
 	jobID, err := strconv.ParseInt(check.ProviderID, 10, 64)
 	if err != nil {
 		return "", fmt.Errorf("github scm: parse check provider id %q: %w", check.ProviderID, err)
@@ -158,6 +163,7 @@ func (p *Provider) FetchFailedCheckLogTail(ctx context.Context, repo ports.SCMRe
 
 // FetchReviewThreads fetches review threads separately from the fast PR/CI path.
 func (p *Provider) FetchReviewThreads(ctx context.Context, ref ports.SCMPRRef) (ports.SCMReviewObservation, error) {
+	ref.Repo = normalizeGitHubRepo(ref.Repo)
 	latest, reviews, decision, pi, err := p.fetchReviewThreadPage(ctx, ref, "", true)
 	if err != nil {
 		return ports.SCMReviewObservation{}, err
@@ -660,6 +666,40 @@ func splitOwnerRepo(p string) (string, string, bool) {
 
 func makeGitHubRepo(host, owner, name string) ports.SCMRepo {
 	return ports.SCMRepo{Provider: "github", Host: host, Owner: owner, Name: name, Repo: owner + "/" + name}
+}
+
+func normalizeGitHubRepo(repo ports.SCMRepo) ports.SCMRepo {
+	if repo.Owner != "" && repo.Name != "" {
+		if repo.Provider == "" {
+			repo.Provider = "github"
+		}
+		if repo.Host == "" {
+			repo.Host = "github.com"
+		}
+		if repo.Repo == "" {
+			repo.Repo = repo.Owner + "/" + repo.Name
+		}
+		return repo
+	}
+	if parsed, ok := parseGitHubRepo(repo.Repo); ok {
+		if repo.Provider != "" {
+			parsed.Provider = repo.Provider
+		}
+		if repo.Host != "" {
+			parsed.Host = repo.Host
+		}
+		return parsed
+	}
+	return repo
+}
+
+func normalizeSCMPRRefs(refs []ports.SCMPRRef) []ports.SCMPRRef {
+	out := make([]ports.SCMPRRef, len(refs))
+	for i, ref := range refs {
+		ref.Repo = normalizeGitHubRepo(ref.Repo)
+		out[i] = ref
+	}
+	return out
 }
 
 func isGitHubHost(host string) bool {

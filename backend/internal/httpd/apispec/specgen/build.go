@@ -132,7 +132,6 @@ var schemaNames = map[string]string{
 	"DomainSessionID":           "SessionID",
 	"DomainIssueID":             "IssueID",
 	"DomainSession":             "Session",
-	"DomainSessionFinalization": "SessionFinalization",
 	"DomainProjectConfig":       "ProjectConfig",
 	"DomainTrackerIntakeConfig": "TrackerIntakeConfig",
 	"DomainAgentConfig":         "AgentConfig",
@@ -175,8 +174,6 @@ var schemaNames = map[string]string{
 	"ControllersListSessionPRsResponse":           "ListSessionPRsResponse",
 	"ControllersSetActivityRequest":               "SetActivityRequest",
 	"ControllersSetActivityResponse":              "SetActivityResponse",
-	"ControllersAdvanceFinalizationRequest":       "AdvanceFinalizationRequest",
-	"ControllersSessionFinalizationResponse":      "SessionFinalizationResponse",
 	"ControllersSpawnOrchestratorRequest":         "SpawnOrchestratorRequest",
 	"ControllersSpawnOrchestratorResponse":        "SpawnOrchestratorResponse",
 	"ControllersOrchestratorResponse":             "OrchestratorResponse",
@@ -755,17 +752,6 @@ func sessionOperations() []operation {
 			},
 		},
 		{
-			method: http.MethodPost, path: "/api/v1/sessions/{sessionId}/complete", id: "completeSession", tag: "sessions",
-			summary:    "Report that a worker coding session is complete",
-			pathParams: []any{controllers.SessionIDParam{}},
-			resps: []respUnit{
-				{http.StatusAccepted, controllers.SessionFinalizationResponse{}},
-				{http.StatusForbidden, envelope.APIError{}},
-				{http.StatusNotFound, envelope.APIError{}},
-				{http.StatusInternalServerError, envelope.APIError{}},
-			},
-		},
-		{
 			method: http.MethodGet, path: "/api/v1/orchestrators", id: "listOrchestrators", tag: "sessions",
 			summary: "List orchestrator sessions across projects",
 			resps: []respUnit{
@@ -795,20 +781,6 @@ func sessionOperations() []operation {
 				{http.StatusNotFound, envelope.APIError{}},
 				{http.StatusInternalServerError, envelope.APIError{}},
 				{http.StatusNotImplemented, envelope.APIError{}},
-			},
-		},
-		{
-			method: http.MethodPost, path: "/api/v1/orchestrators/{id}/finalizations/{sessionId}", id: "advanceSessionFinalization", tag: "sessions",
-			summary:    "Advance one orchestrator-owned task finalization step",
-			pathParams: []any{controllers.OrchestratorIDParam{}, controllers.SessionIDParam{}},
-			reqBody:    controllers.AdvanceFinalizationRequest{},
-			resps: []respUnit{
-				{http.StatusOK, controllers.SessionFinalizationResponse{}},
-				{http.StatusBadRequest, envelope.APIError{}},
-				{http.StatusForbidden, envelope.APIError{}},
-				{http.StatusNotFound, envelope.APIError{}},
-				{http.StatusConflict, envelope.APIError{}},
-				{http.StatusInternalServerError, envelope.APIError{}},
 			},
 		},
 	}
