@@ -12,8 +12,8 @@ import (
 	"path/filepath"
 	"runtime"
 
-	"github.com/tinhtran/thanos/backend/internal/adapters/agent/hookutil"
-	"github.com/tinhtran/thanos/backend/internal/ports"
+	"github.com/tinhtran24/maestro/backend/internal/adapters/agent/hookutil"
+	"github.com/tinhtran24/maestro/backend/internal/ports"
 )
 
 // BinarySpec describes where one agent's CLI binary can live. ResolveBinary

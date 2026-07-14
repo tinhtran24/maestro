@@ -7,8 +7,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/tinhtran/thanos/backend/internal/cdc"
-	"github.com/tinhtran/thanos/backend/internal/ports"
+	"github.com/tinhtran24/maestro/backend/internal/cdc"
+	"github.com/tinhtran24/maestro/backend/internal/ports"
 )
 
 // EventSource is the session-state feed the "sessions" channel forwards. The CDC

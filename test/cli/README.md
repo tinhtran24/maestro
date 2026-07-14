@@ -1,17 +1,17 @@
-# `to` CLI end-to-end tests
+# `maestro` CLI end-to-end tests
 
-These tests drive the **real `to` binary** the way a user would — `start` →
+These tests drive the **real `maestro` binary** the way a user would — `start` →
 `status` → `doctor` → `stop`, plus the daemon-control HTTP surface — and assert
 the whole thing works. They run against **isolated, throwaway state** (a per-test
 temp run-file + data dir + an OS-assigned free loopback port), so they never
-touch a developer's real Thanos installation.
+touch a developer's real Maestro installation.
 
 ## Two tiers
 
-| Tier                          | What                                                                                                                                                                                                                                                                  | Where                                                |
-| ----------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------- |
-| **Comprehensive (primary)**   | A cross-platform Go suite that builds `to` and exercises the full behaviour. Runs natively on **ubuntu + macOS + windows** — the only way to cover the OS-specific process-detach paths (`setsid` vs `CREATE_NEW_PROCESS_GROUP`) and `os.UserConfigDir()` resolution. | `backend/internal/cli/e2e_test.go` (build tag `e2e`) |
-| **Fresh-install (hardening)** | Proves a freshly installed binary works on a clean machine with no Go toolchain and no developer state.                                                                                                                                                               | `test/cli/Dockerfile` + `test/cli/install-check.sh`  |
+| Tier                          | What                                                                                                                                                                                                                                                                       | Where                                                |
+| ----------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------- |
+| **Comprehensive (primary)**   | A cross-platform Go suite that builds `maestro` and exercises the full behaviour. Runs natively on **ubuntu + macOS + windows** — the only way to cover the OS-specific process-detach paths (`setsid` vs `CREATE_NEW_PROCESS_GROUP`) and `os.UserConfigDir()` resolution. | `backend/internal/cli/e2e_test.go` (build tag `e2e`) |
+| **Fresh-install (hardening)** | Proves a freshly installed binary works on a clean machine with no Go toolchain and no developer state.                                                                                                                                                                    | `test/cli/Dockerfile` + `test/cli/install-check.sh`  |
 
 ## Run it
 
@@ -23,8 +23,8 @@ go test -tags e2e ./internal/cli/...              # run it
 go test -tags e2e -v -run TestE2E ./internal/cli/...   # verbose: prints every command + output
 ```
 
-It builds its own `to` binary; `git` must be on PATH (required by `doctor`).
-`-v` logs each `to` invocation and its full output, which is the audit trail you
+It builds its own `maestro` binary; `git` must be on PATH (required by `doctor`).
+`-v` logs each `maestro` invocation and its full output, which is the audit trail you
 get for free from `go test`.
 
 **Fresh-machine install, in a clean container:**
@@ -41,7 +41,7 @@ docker run --rm --init to-cli-smoke
 
 `TestE2E_VersionAndHelp` (version/`--version`/help, daemon hidden) ·
 `TestE2E_DoctorDoesNotTouchTheStore` (doctor text + `--json`; proves it does
-**not** create/migrate `thanos.db`) · `TestE2E_StatusStopped` (stopped + idempotent
+**not** create/migrate `maestro.db`) · `TestE2E_StatusStopped` (stopped + idempotent
 stop) · `TestE2E_Lifecycle` (start, ready, idempotent, daemon-created store,
 `/healthz` identity, stop, run-file cleanup) · `TestE2E_ShutdownGuard` (the
 `/shutdown` CSRF + DNS-rebinding 403 guard, daemon survives) ·
@@ -65,5 +65,5 @@ detach path and per-OS config-dir resolution. The container stays as a thin
   `postShutdown` helpers.
 - **Add an OS:** extend the `matrix.os` list in `.github/workflows/cli-e2e.yml`.
 - Deeper per-OS path assertions (state resolves under the OS-native config dir
-  when `THANOS_RUN_FILE`/`THANOS_DATA_DIR` are unset) fit best as unit tests in
+  when `MAESTRO_RUN_FILE`/`MAESTRO_DATA_DIR` are unset) fit best as unit tests in
   `internal/config`.

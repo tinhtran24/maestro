@@ -13,16 +13,16 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/tinhtran/thanos/backend/internal/adapters/agent/activitydispatch"
+	"github.com/tinhtran24/maestro/backend/internal/adapters/agent/activitydispatch"
 )
 
-// sessionIDPattern bounds the THANOS_SESSION_ID we will place in a request path to
+// sessionIDPattern bounds the MAESTRO_SESSION_ID we will place in a request path to
 // the id alphabet the daemon issues. Validating the externally-set env value
 // before it reaches the loopback URL keeps it from steering the request.
 var sessionIDPattern = regexp.MustCompile(`^[A-Za-z0-9_-]+$`)
 
 const (
-	// hooksLogName is the file under THANOS_DATA_DIR where hook delivery failures
+	// hooksLogName is the file under MAESTRO_DATA_DIR where hook delivery failures
 	// are appended. Agent hook runners swallow stderr, so without a durable
 	// sink a dead activity feed (e.g. an unreachable daemon) stays invisible.
 	hooksLogName = "hooks.log"
@@ -39,13 +39,13 @@ type setActivityAPIRequest struct {
 	State string `json:"state"`
 }
 
-// newHooksCommand builds the hidden `to hooks <agent> <event>` command that
+// newHooksCommand builds the hidden `maestro hooks <agent> <event>` command that
 // agent CLIs invoke from their workspace-local hook config. It reads the native
-// hook payload from stdin and the Thanos session id from THANOS_SESSION_ID, derives an
+// hook payload from stdin and the Maestro session id from MAESTRO_SESSION_ID, derives an
 // activity state for the event, and reports it to the daemon.
 //
 // It is best-effort by design: a hook must never break the user's agent, so a
-// non-Thanos session (no THANOS_SESSION_ID), an event that carries no activity signal,
+// non-Maestro session (no MAESTRO_SESSION_ID), an event that carries no activity signal,
 // or an unreachable daemon all exit 0 rather than erroring.
 func newHooksCommand(ctx *commandContext) *cobra.Command {
 	return &cobra.Command{
@@ -60,9 +60,9 @@ func newHooksCommand(ctx *commandContext) *cobra.Command {
 }
 
 func (c *commandContext) runHook(ctx context.Context, agent, event string) error {
-	sessionID := strings.TrimSpace(os.Getenv("THANOS_SESSION_ID"))
+	sessionID := strings.TrimSpace(os.Getenv("MAESTRO_SESSION_ID"))
 	if !sessionIDPattern.MatchString(sessionID) {
-		// Not an Thanos-managed session (unset/empty), or an id we won't put in a
+		// Not an Maestro-managed session (unset/empty), or an id we won't put in a
 		// request path. Return before reading stdin so a manual invocation
 		// without a piped payload can't block on EOF.
 		return nil
@@ -92,11 +92,11 @@ func (c *commandContext) runHook(ctx context.Context, agent, event string) error
 
 // reportHookFailure surfaces a hook delivery failure without breaking the
 // agent: stderr for the agent's hook runner, plus a best-effort append to
-// $THANOS_DATA_DIR/hooks.log so the failure can be diagnosed after the fact.
+// $MAESTRO_DATA_DIR/hooks.log so the failure can be diagnosed after the fact.
 func (c *commandContext) reportHookFailure(agent, event, sessionID string, cause error) {
-	msg := fmt.Sprintf("to hooks %s %s: %v", agent, event, cause)
+	msg := fmt.Sprintf("maestro hooks %s %s: %v", agent, event, cause)
 	_, _ = fmt.Fprintln(c.deps.Err, msg)
-	dataDir := strings.TrimSpace(os.Getenv("THANOS_DATA_DIR"))
+	dataDir := strings.TrimSpace(os.Getenv("MAESTRO_DATA_DIR"))
 	if dataDir == "" {
 		return
 	}
@@ -116,7 +116,7 @@ func appendHooksLog(dataDir, line string) {
 	if info, err := os.Stat(path); err == nil && info.Size() > maxHooksLogBytes {
 		flags = os.O_TRUNC | os.O_CREATE | os.O_WRONLY
 	}
-	f, err := os.OpenFile(path, flags, 0o600) //nolint:gosec // path is rooted in Thanos's own data dir
+	f, err := os.OpenFile(path, flags, 0o600) //nolint:gosec // path is rooted in Maestro's own data dir
 	if err != nil {
 		return
 	}

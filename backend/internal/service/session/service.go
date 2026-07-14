@@ -8,11 +8,11 @@ import (
 	"sync"
 	"time"
 
-	"github.com/tinhtran/thanos/backend/internal/domain"
-	"github.com/tinhtran/thanos/backend/internal/httpd/apierr"
-	"github.com/tinhtran/thanos/backend/internal/ports"
-	sessionmanager "github.com/tinhtran/thanos/backend/internal/session_manager"
-	"github.com/tinhtran/thanos/backend/internal/telemetrymeta"
+	"github.com/tinhtran24/maestro/backend/internal/domain"
+	"github.com/tinhtran24/maestro/backend/internal/httpd/apierr"
+	"github.com/tinhtran24/maestro/backend/internal/ports"
+	sessionmanager "github.com/tinhtran24/maestro/backend/internal/session_manager"
+	"github.com/tinhtran24/maestro/backend/internal/telemetrymeta"
 )
 
 // Store is the read-only persistence surface needed to assemble controller-facing session read models.
@@ -171,7 +171,7 @@ func (s *Service) requireProject(ctx context.Context, id domain.ProjectID) (doma
 		return domain.ProjectRecord{}, fmt.Errorf("get project %s: %w", id, err)
 	}
 	if !ok {
-		return domain.ProjectRecord{}, apierr.NotFound("PROJECT_NOT_FOUND", "Unknown project. Register it with `to project add`")
+		return domain.ProjectRecord{}, apierr.NotFound("PROJECT_NOT_FOUND", "Unknown project. Register it with `maestro project add`")
 	}
 	return rec, nil
 }
@@ -306,7 +306,7 @@ func (s *Service) SpawnOrchestrator(ctx context.Context, projectID domain.Projec
 	return sess, nil
 }
 
-const orchestratorRetireNotice = "Thanos is replacing this project orchestrator. Stop coordinating new work now; a fresh orchestrator will take over on the canonical branch."
+const orchestratorRetireNotice = "Maestro is replacing this project orchestrator. Stop coordinating new work now; a fresh orchestrator will take over on the canonical branch."
 
 func (s *Service) sendRetireNotice(ctx context.Context, id domain.SessionID) error {
 	if err := s.manager.Send(ctx, id, orchestratorRetireNotice); err != nil {
@@ -560,7 +560,7 @@ func toAPIError(err error) error {
 		return apierr.Conflict("SESSION_NOT_RESUMABLE",
 			"This session has no saved agent session or prompt to resume from", nil)
 	case errors.Is(err, sessionmanager.ErrProjectNotResolvable):
-		return apierr.Invalid("PROJECT_NOT_RESOLVABLE", "Project is not registered or has no repo. Register it with `to project add`", nil)
+		return apierr.Invalid("PROJECT_NOT_RESOLVABLE", "Project is not registered or has no repo. Register it with `maestro project add`", nil)
 	case errors.Is(err, sessionmanager.ErrUnknownHarness):
 		return apierr.Invalid("UNKNOWN_HARNESS", err.Error(), nil)
 	case errors.Is(err, sessionmanager.ErrMissingHarness):

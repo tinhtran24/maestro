@@ -5,7 +5,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/tinhtran/thanos/backend/internal/config"
+	"github.com/tinhtran24/maestro/backend/internal/config"
 )
 
 // TestCORS exercises the allowlist boundary on a real router: trusted origins

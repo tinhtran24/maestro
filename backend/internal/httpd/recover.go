@@ -10,9 +10,9 @@ import (
 
 	"github.com/go-chi/chi/v5/middleware"
 
-	"github.com/tinhtran/thanos/backend/internal/httpd/envelope"
-	"github.com/tinhtran/thanos/backend/internal/ports"
-	"github.com/tinhtran/thanos/backend/internal/telemetrymeta"
+	"github.com/tinhtran24/maestro/backend/internal/httpd/envelope"
+	"github.com/tinhtran24/maestro/backend/internal/ports"
+	"github.com/tinhtran24/maestro/backend/internal/telemetrymeta"
 )
 
 func recoverTelemetry(log *slog.Logger, sink ports.EventSink) func(http.Handler) http.Handler {

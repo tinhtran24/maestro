@@ -3,7 +3,7 @@ package ports
 import (
 	"time"
 
-	"github.com/tinhtran/thanos/backend/internal/domain"
+	"github.com/tinhtran24/maestro/backend/internal/domain"
 )
 
 // NotificationIntent is the lifecycle-to-notification-producer contract. It is

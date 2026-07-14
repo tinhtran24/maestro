@@ -10,7 +10,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/tinhtran/thanos/backend/internal/ports"
+	"github.com/tinhtran24/maestro/backend/internal/ports"
 )
 
 // canonicalTempDir returns a t.TempDir() with symlinks resolved so the
@@ -30,10 +30,10 @@ func canonicalTempDir(t *testing.T) string {
 // these values as TOML.
 func sessionHookFlags() []string {
 	return []string{
-		"-c", `hooks.SessionStart=[{hooks=[{type="command",command="to hooks codex session-start",timeout=5}]}]`,
-		"-c", `hooks.UserPromptSubmit=[{hooks=[{type="command",command="to hooks codex user-prompt-submit",timeout=5}]}]`,
-		"-c", `hooks.PermissionRequest=[{hooks=[{type="command",command="to hooks codex permission-request",timeout=5}]}]`,
-		"-c", `hooks.Stop=[{hooks=[{type="command",command="to hooks codex stop",timeout=5}]}]`,
+		"-c", `hooks.SessionStart=[{hooks=[{type="command",command="maestro hooks codex session-start",timeout=5}]}]`,
+		"-c", `hooks.UserPromptSubmit=[{hooks=[{type="command",command="maestro hooks codex user-prompt-submit",timeout=5}]}]`,
+		"-c", `hooks.PermissionRequest=[{hooks=[{type="command",command="maestro hooks codex permission-request",timeout=5}]}]`,
+		"-c", `hooks.Stop=[{hooks=[{type="command",command="maestro hooks codex stop",timeout=5}]}]`,
 	}
 }
 
@@ -256,20 +256,20 @@ func TestGetConfigSpecExposesModelOverride(t *testing.T) {
 	}
 }
 
-// legacyHooksJSON builds a hooks.json in the shape older Thanos versions wrote:
-// Thanos-managed entries plus one user-defined Stop hook.
+// legacyHooksJSON builds a hooks.json in the shape older Maestro versions wrote:
+// Maestro-managed entries plus one user-defined Stop hook.
 func legacyHooksJSON() string {
 	return `{
   "hooks": {
     "Stop": [
       {"matcher": null, "hooks": [
         {"type": "command", "command": "custom stop hook", "timeout": 3},
-        {"type": "command", "command": "to hooks codex stop", "timeout": 30}
+        {"type": "command", "command": "maestro hooks codex stop", "timeout": 30}
       ]}
     ],
     "UserPromptSubmit": [
       {"matcher": null, "hooks": [
-        {"type": "command", "command": "to hooks codex user-prompt-submit", "timeout": 30}
+        {"type": "command", "command": "maestro hooks codex user-prompt-submit", "timeout": 30}
       ]}
     ]
   },
@@ -340,10 +340,10 @@ func TestGetAgentHooksStripsLegacyAOEntries(t *testing.T) {
 		t.Fatalf("user Stop hook not preserved: %#v", config.Hooks["Stop"])
 	}
 	if _, ok := config.Hooks["UserPromptSubmit"]; ok {
-		t.Fatalf("UserPromptSubmit left behind after its only entry was Thanos's: %#v", config.Hooks)
+		t.Fatalf("UserPromptSubmit left behind after its only entry was Maestro's: %#v", config.Hooks)
 	}
 	if !strings.Contains(string(data), "unmanagedKey") {
-		t.Fatalf("top-level keys Thanos doesn't manage were dropped: %s", data)
+		t.Fatalf("top-level keys Maestro doesn't manage were dropped: %s", data)
 	}
 }
 

@@ -15,13 +15,13 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/tinhtran/thanos/backend/internal/domain"
-	"github.com/tinhtran/thanos/backend/internal/ports"
+	"github.com/tinhtran24/maestro/backend/internal/domain"
+	"github.com/tinhtran24/maestro/backend/internal/ports"
 )
 
 const (
 	defaultBaseURL   = "https://api.github.com"
-	defaultUserAgent = "to-thanos/tracker-github"
+	defaultUserAgent = "to-maestro/tracker-github"
 
 	// Status labels used by humans (and other tooling) on GitHub Issues.
 	// Get's reverse mapping recognizes them so an externally-labeled issue

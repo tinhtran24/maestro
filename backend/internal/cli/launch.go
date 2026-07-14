@@ -11,13 +11,13 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/tinhtran/thanos/backend/internal/agentlaunch"
+	"github.com/tinhtran24/maestro/backend/internal/agentlaunch"
 )
 
 func newLaunchCommand(ctx *commandContext) *cobra.Command {
 	return &cobra.Command{
 		Use:    "launch",
-		Short:  "Launch an Thanos-managed agent process (internal)",
+		Short:  "Launch an Maestro-managed agent process (internal)",
 		Hidden: true,
 		Args:   noArgs,
 		RunE: func(cmd *cobra.Command, _ []string) error {
@@ -29,7 +29,7 @@ func newLaunchCommand(ctx *commandContext) *cobra.Command {
 func (c *commandContext) launchAgent(ctx context.Context) error {
 	specPath := strings.TrimSpace(os.Getenv(agentlaunch.EnvSpecPath))
 	if specPath == "" {
-		return errors.New("launch: THANOS_LAUNCH_SPEC is required")
+		return errors.New("launch: MAESTRO_LAUNCH_SPEC is required")
 	}
 	spec, err := agentlaunch.ReadAndRemove(specPath)
 	if err != nil {

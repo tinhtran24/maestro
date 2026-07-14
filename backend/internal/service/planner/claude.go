@@ -94,14 +94,14 @@ func isCodex(agent string) bool {
 }
 
 // resolve finds the CLI binary for the agent. Explicit override and, for Claude,
-// THANOS_CLAUDE_BIN win; then PATH; then common install locations. The agent id
+// MAESTRO_CLAUDE_BIN win; then PATH; then common install locations. The agent id
 // doubles as the binary name for non-Claude agents (codex, aider, cursor, …).
 func (c *CLIRunner) resolve(agent string) string {
 	if c.Binary != "" {
 		return c.Binary
 	}
 	if isClaude(agent) {
-		if env := strings.TrimSpace(os.Getenv("THANOS_CLAUDE_BIN")); env != "" {
+		if env := strings.TrimSpace(os.Getenv("MAESTRO_CLAUDE_BIN")); env != "" {
 			return env
 		}
 		if p := lookupBinary("claude"); p != "" {

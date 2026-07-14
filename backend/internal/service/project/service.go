@@ -10,11 +10,11 @@ import (
 	"sync"
 	"time"
 
-	"github.com/tinhtran/thanos/backend/internal/config"
-	"github.com/tinhtran/thanos/backend/internal/domain"
-	"github.com/tinhtran/thanos/backend/internal/httpd/apierr"
-	"github.com/tinhtran/thanos/backend/internal/ports"
-	aoprocess "github.com/tinhtran/thanos/backend/internal/process"
+	"github.com/tinhtran24/maestro/backend/internal/config"
+	"github.com/tinhtran24/maestro/backend/internal/domain"
+	"github.com/tinhtran24/maestro/backend/internal/httpd/apierr"
+	"github.com/tinhtran24/maestro/backend/internal/ports"
+	aoprocess "github.com/tinhtran24/maestro/backend/internal/process"
 )
 
 // Manager is the controller-facing contract for the /api/v1/projects surface.
@@ -62,7 +62,7 @@ var _ Manager = (*Service)(nil)
 
 // Deps captures optional collaborators for project use-cases.
 type Deps struct {
-	// DefaultHarness is the daemon's configured default agent (THANOS_AGENT).
+	// DefaultHarness is the daemon's configured default agent (MAESTRO_AGENT).
 	// When empty, the service falls back to config.DefaultAgent.
 	DefaultHarness domain.AgentHarness
 	Store          Store

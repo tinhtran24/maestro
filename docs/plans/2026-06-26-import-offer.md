@@ -4,19 +4,19 @@
 
 **Goal:** Replace the first-boot CLI import prompt with a daemon API (`GET`/`POST /api/v1/import`) and a dashboard banner. **Scope: projects + per-project settings only** (no orchestrator sessions, no transcript relocation), a faithful port of `tinhtran/ReverbCode` PR #320.
 
-**Architecture:** `to start` becomes headless. The `legacyimport` engine is simplified to import projects only. A new `service/importer` wraps it with a detection probe (`Status`) and a trigger (`Run`) that writes through the daemon's shared store. An HTTP controller exposes both; the Electron renderer polls status and shows an `ImportOffer` banner. Because startup is now headless, the Electron main process also gains always-on discovery of a daemon it didn't spawn.
+**Architecture:** `maestro start` becomes headless. The `legacyimport` engine is simplified to import projects only. A new `service/importer` wraps it with a detection probe (`Status`) and a trigger (`Run`) that writes through the daemon's shared store. An HTTP controller exposes both; the Electron renderer polls status and shows an `ImportOffer` banner. Because startup is now headless, the Electron main process also gains always-on discovery of a daemon it didn't spawn.
 
 **Tech Stack:** Go (chi, sqlc, code-first OpenAPI via `cmd/genspec`), React + @tanstack/react-query + openapi-fetch, Electron, vitest.
 
 ## Global Constraints
 
-- Module path: `github.com/tinhtran/thanos/backend`.
+- Module path: `github.com/tinhtran24/maestro/backend`.
 - **No em dashes** anywhere (prose, comments, copy). Use `.`/`,`/`(...)`.
 - `openapi.yaml` and `frontend/src/api/schema.ts` are **generated** (never hand-edit); change the Go reflection source then run `npm run api:spec && npm run api:ts`.
-- All app state under `~/.thanos` only (already enforced; don't regress).
-- Branch: `to/thanos-3/import-offer` (sibling of `…/root`). PR target `main` on `tinhtran24/thanos`.
+- All app state under `~/.maestro` only (already enforced; don't regress).
+- Branch: `maestro/maestro-3/import-offer` (sibling of `…/root`). PR target `main` on `AgentWrapper/maestro`.
 - **Reference:** this repo sits exactly at PR #320's base, so the change set lines up 1:1 with that PR. Where a step says "PR-verbatim," copy the PR's content for that file.
-- Commit immediately after each task (Thanos worktrees can be force-removed).
+- Commit immediately after each task (Maestro worktrees can be force-removed).
 
 ## File Structure
 
@@ -115,7 +115,7 @@ func quote(s string) string {
 - [ ] **Step 1: Write `importer.go`** (projects-only: no `DataDir`):
 
 ```go
-// Package importer is the controller-facing service for the legacy-Thanos import.
+// Package importer is the controller-facing service for the legacy-Maestro import.
 // It wraps the internal/legacyimport engine with the two operations the
 // dashboard needs: a detection probe ("is a legacy install available?") and a
 // trigger that runs the import through the live daemon's store, so the daemon
@@ -126,8 +126,8 @@ package importer
 import (
 	"context"
 
-	"github.com/tinhtran/thanos/backend/internal/domain"
-	"github.com/tinhtran/thanos/backend/internal/legacyimport"
+	"github.com/tinhtran24/maestro/backend/internal/domain"
+	"github.com/tinhtran24/maestro/backend/internal/legacyimport"
 )
 
 // Store is the storage slice the import service needs: the legacy importer's
@@ -139,7 +139,7 @@ type Store interface {
 	ListProjects(ctx context.Context) ([]domain.ProjectRecord, error)
 }
 
-// Status reports whether a legacy Thanos install is available to import. Available
+// Status reports whether a legacy Maestro install is available to import. Available
 // is true only when legacy data is present AND the rewrite database holds no
 // projects yet (the first-boot condition); a populated database is assumed
 // already imported (or started fresh on purpose), so the offer is not surfaced.
@@ -158,7 +158,7 @@ type Service interface {
 type Deps struct {
 	// Store is the rewrite's durable store (the daemon's shared *sqlite.Store).
 	Store Store
-	// Root overrides the legacy Thanos root to read. Empty -> the default.
+	// Root overrides the legacy Maestro root to read. Empty -> the default.
 	Root string
 }
 
@@ -223,7 +223,7 @@ func (m *Manager) Run(ctx context.Context) (legacyimport.Report, error) {
 - [ ] **Step 1:** Add to `dto.go` (add the `legacyimport` import):
 
 ```go
-// ImportStatusResponse is the body of GET /api/v1/import: whether a legacy Thanos
+// ImportStatusResponse is the body of GET /api/v1/import: whether a legacy Maestro
 // install is available to import, and the root the daemon would read from.
 type ImportStatusResponse struct {
 	Available  bool   `json:"available"`
@@ -266,24 +266,24 @@ type ImportRunResponse struct {
   - `NewAPI`: add `imports: &controllers.ImportController{Svc: deps.Import},` (after the `notifications:` line).
   - `Register` timeout group: add `a.imports.Register(r)` (after `a.notifications.Register(r)`).
 - [ ] **Step 2:** `daemon.go` edits:
-  - Add import: `importsvc "github.com/tinhtran/thanos/backend/internal/service/importer"`.
+  - Add import: `importsvc "github.com/tinhtran24/maestro/backend/internal/service/importer"`.
   - In the `httpd.APIDeps{...}` literal, add: `Import: importsvc.New(importsvc.Deps{Store: store}),` (projects-only: **no** `DataDir`).
 - [ ] **Step 3:** `cd backend && go build ./... && go test ./internal/httpd/... ./internal/service/importer/...` → expect PASS (gate for Task 3's tests too).
 - [ ] **Step 4:** Commit: `feat(daemon): mount import service on the API`
 
 ---
 
-## Task 6: Make `to start` headless
+## Task 6: Make `maestro start` headless
 
 **Files:** Modify `backend/internal/cli/start.go`
 
 - [ ] **Step 1:** Delete the `maybeFirstBootImport` method and its call. Replace the call + the comment above it with:
 
 ```go
-	// `to start` is headless: it only launches the daemon. Detecting a legacy Thanos
+	// `maestro start` is headless: it only launches the daemon. Detecting a legacy Maestro
 	// install and offering to import it is the dashboard's job (it polls
 	// GET /api/v1/import and POSTs to run the import through the live daemon).
-	// `to import` remains for explicit offline imports.
+	// `maestro import` remains for explicit offline imports.
 ```
 
 - [ ] **Step 2:** Remove now-unused imports `…/internal/legacyimport` and `…/internal/storage/sqlite`. Keep `config`. Leave `cli/import.go`, `confirm`, `stdinIsInteractive`, `writeImportSummary` untouched.
@@ -323,7 +323,7 @@ type ImportRunResponse struct {
 **Files:** Create `frontend/src/renderer/components/ImportOffer.tsx`, `…/ImportOffer.test.tsx`
 
 - [ ] **Step 1 (TDD):** Create `ImportOffer.test.tsx` PR-verbatim (mocks `../lib/api-client`; asserts offer-shown/hidden/accept/decline/error). Run `npm --prefix frontend run test -- ImportOffer` → expect FAIL (component missing).
-- [ ] **Step 2:** Create `ImportOffer.tsx` PR-verbatim. Heading "Import projects from your earlier Thanos?"; body copy "Importing brings in your projects. Your old files are never modified, and you can do this later instead." (projects-only, no orchestrator mention). Built from `ui/button` (`primary`/`ghost`, size `sm`). Re-run → expect PASS.
+- [ ] **Step 2:** Create `ImportOffer.tsx` PR-verbatim. Heading "Import projects from your earlier Maestro?"; body copy "Importing brings in your projects. Your old files are never modified, and you can do this later instead." (projects-only, no orchestrator mention). Built from `ui/button` (`primary`/`ghost`, size `sm`). Re-run → expect PASS.
 - [ ] **Step 3:** Commit: `feat(renderer): ImportOffer dashboard banner`
 
 ---
@@ -336,7 +336,7 @@ type ImportRunResponse struct {
 
 ```tsx
 {
-	/* First-run legacy-Thanos import opt-in. Renders only when the daemon
+	/* First-run legacy-Maestro import opt-in. Renders only when the daemon
 			    reports an importable install, and only on the top-level board. */
 }
 {
@@ -356,13 +356,13 @@ type ImportRunResponse struct {
 - [ ] `npm --prefix frontend run typecheck && npm --prefix frontend run test` → green.
 - [ ] Confirm `git status` shows **no** uncommitted drift in `openapi.yaml`/`schema.ts` after a fresh `npm run api:spec && npm run api:ts`.
 - [ ] **Full build** (per the build-verification rule; rollup tree-shaking can hide missing emits): run the frontend production build.
-- [ ] `to preview` the dashboard against a daemon pointed at a seeded `~/.thanos` legacy root with an empty rewrite DB; verify the banner appears, Import imports the projects + retires the banner, Not now dismisses.
+- [ ] `maestro preview` the dashboard against a daemon pointed at a seeded `~/.maestro` legacy root with an empty rewrite DB; verify the banner appears, Import imports the projects + retires the banner, Not now dismisses.
 
 ---
 
 ## Self-Review
 
-**Spec coverage:** ✅ engine simplified to projects-only (T1); `service/importer` status+run (T2); `GET`/`POST /api/v1/import` + 501 (T3); OpenAPI + schema.ts regen (T4); api/daemon wiring (T5); headless `to start` (T6); external daemon discovery (T7); `useImportStatus`/`useRunImport` (T8); `ImportOffer` + board render (T9/T10). Matches PR #320 1:1.
+**Spec coverage:** ✅ engine simplified to projects-only (T1); `service/importer` status+run (T2); `GET`/`POST /api/v1/import` + 501 (T3); OpenAPI + schema.ts regen (T4); api/daemon wiring (T5); headless `maestro start` (T6); external daemon discovery (T7); `useImportStatus`/`useRunImport` (T8); `ImportOffer` + board render (T9/T10). Matches PR #320 1:1.
 
 **Placeholder scan:** none — every new file has full source or is "PR-verbatim" for an existing PR file; every edit names the symbol and location.
 

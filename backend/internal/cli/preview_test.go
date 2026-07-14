@@ -49,7 +49,7 @@ func previewServer(t *testing.T, status int, respBody string) (*httptest.Server,
 }
 
 func TestPreview_WithURLArg(t *testing.T) {
-	t.Setenv("THANOS_SESSION_ID", "aa-47")
+	t.Setenv("MAESTRO_SESSION_ID", "aa-47")
 	cfg := setConfigEnv(t)
 	srv, capture := previewServer(t, http.StatusOK, `{"ok":true}`)
 	writeRunFileFor(t, cfg, srv)
@@ -75,7 +75,7 @@ func TestPreview_WithURLArg(t *testing.T) {
 }
 
 func TestPreview_NoArgPostsEmptyURL(t *testing.T) {
-	t.Setenv("THANOS_SESSION_ID", "aa-47")
+	t.Setenv("MAESTRO_SESSION_ID", "aa-47")
 	cfg := setConfigEnv(t)
 	srv, capture := previewServer(t, http.StatusOK, `{"ok":true}`)
 	writeRunFileFor(t, cfg, srv)
@@ -92,7 +92,7 @@ func TestPreview_NoArgPostsEmptyURL(t *testing.T) {
 }
 
 func TestPreviewClear_DeletesSessionPreview(t *testing.T) {
-	t.Setenv("THANOS_SESSION_ID", "aa-47")
+	t.Setenv("MAESTRO_SESSION_ID", "aa-47")
 	cfg := setConfigEnv(t)
 	srv, capture := previewServer(t, http.StatusOK, `{"ok":true}`)
 	writeRunFileFor(t, cfg, srv)
@@ -112,7 +112,7 @@ func TestPreviewClear_DeletesSessionPreview(t *testing.T) {
 }
 
 func TestPreviewClear_MissingSessionIDIsUsageError(t *testing.T) {
-	t.Setenv("THANOS_SESSION_ID", "")
+	t.Setenv("MAESTRO_SESSION_ID", "")
 	cfg := setConfigEnv(t)
 	srv, capture := previewServer(t, http.StatusOK, `{"ok":true}`)
 	writeRunFileFor(t, cfg, srv)
@@ -121,18 +121,18 @@ func TestPreviewClear_MissingSessionIDIsUsageError(t *testing.T) {
 		ProcessAlive: func(int) bool { return true },
 	}, "preview", "clear")
 	if err == nil {
-		t.Fatal("expected usage error when THANOS_SESSION_ID is unset")
+		t.Fatal("expected usage error when MAESTRO_SESSION_ID is unset")
 	}
 	if got := ExitCode(err); got != 2 {
 		t.Fatalf("exit code = %d, want 2", got)
 	}
 	if capture.called {
-		t.Fatal("daemon should not be contacted when THANOS_SESSION_ID is unset")
+		t.Fatal("daemon should not be contacted when MAESTRO_SESSION_ID is unset")
 	}
 }
 
 func TestPreview_MissingSessionIDIsUsageError(t *testing.T) {
-	t.Setenv("THANOS_SESSION_ID", "")
+	t.Setenv("MAESTRO_SESSION_ID", "")
 	cfg := setConfigEnv(t)
 	srv, capture := previewServer(t, http.StatusOK, `{"ok":true}`)
 	writeRunFileFor(t, cfg, srv)
@@ -141,21 +141,21 @@ func TestPreview_MissingSessionIDIsUsageError(t *testing.T) {
 		ProcessAlive: func(int) bool { return true },
 	}, "preview", "http://localhost:5173")
 	if err == nil {
-		t.Fatal("expected usage error when THANOS_SESSION_ID is unset")
+		t.Fatal("expected usage error when MAESTRO_SESSION_ID is unset")
 	}
 	if got := ExitCode(err); got != 2 {
 		t.Fatalf("exit code = %d, want 2", got)
 	}
-	if !strings.Contains(err.Error(), "THANOS_SESSION_ID is not set") {
+	if !strings.Contains(err.Error(), "MAESTRO_SESSION_ID is not set") {
 		t.Fatalf("error missing usage message: %v", err)
 	}
 	if capture.called {
-		t.Fatal("daemon should not be contacted when THANOS_SESSION_ID is unset")
+		t.Fatal("daemon should not be contacted when MAESTRO_SESSION_ID is unset")
 	}
 }
 
 func TestPreview_TooManyArgsIsUsageError(t *testing.T) {
-	t.Setenv("THANOS_SESSION_ID", "aa-47")
+	t.Setenv("MAESTRO_SESSION_ID", "aa-47")
 	setConfigEnv(t)
 	_, _, err := executeCLI(t, Deps{}, "preview", "url1", "url2")
 	if got := ExitCode(err); got != 2 {
@@ -164,7 +164,7 @@ func TestPreview_TooManyArgsIsUsageError(t *testing.T) {
 }
 
 func TestPreviewClear_TooManyArgsIsUsageError(t *testing.T) {
-	t.Setenv("THANOS_SESSION_ID", "aa-47")
+	t.Setenv("MAESTRO_SESSION_ID", "aa-47")
 	setConfigEnv(t)
 	_, _, err := executeCLI(t, Deps{}, "preview", "clear", "extra")
 	if got := ExitCode(err); got != 2 {
@@ -191,7 +191,7 @@ func TestPreview_HelpIncludesExamples(t *testing.T) {
 }
 
 func TestPreview_BlankSessionIDIsUsageError(t *testing.T) {
-	t.Setenv("THANOS_SESSION_ID", " \t ")
+	t.Setenv("MAESTRO_SESSION_ID", " \t ")
 	cfg := setConfigEnv(t)
 	srv, capture := previewServer(t, http.StatusOK, `{"ok":true}`)
 	writeRunFileFor(t, cfg, srv)
@@ -200,12 +200,12 @@ func TestPreview_BlankSessionIDIsUsageError(t *testing.T) {
 		ProcessAlive: func(int) bool { return true },
 	}, "preview")
 	if err == nil {
-		t.Fatal("expected usage error when THANOS_SESSION_ID is blank")
+		t.Fatal("expected usage error when MAESTRO_SESSION_ID is blank")
 	}
 	if got := ExitCode(err); got != 2 {
 		t.Fatalf("exit code = %d, want 2", got)
 	}
 	if capture.called {
-		t.Fatal("daemon should not be contacted when THANOS_SESSION_ID is blank")
+		t.Fatal("daemon should not be contacted when MAESTRO_SESSION_ID is blank")
 	}
 }

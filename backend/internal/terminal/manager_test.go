@@ -8,8 +8,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/tinhtran/thanos/backend/internal/cdc"
-	"github.com/tinhtran/thanos/backend/internal/ports"
+	"github.com/tinhtran24/maestro/backend/internal/cdc"
+	"github.com/tinhtran24/maestro/backend/internal/ports"
 )
 
 // fakeConn is an in-memory wsConn driven by channels.

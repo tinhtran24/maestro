@@ -1,4 +1,4 @@
-// Package daemon owns the Thanos backend process: config loading,
+// Package daemon owns the Maestro backend process: config loading,
 // loopback HTTP serving, durable storage, CDC fan-out, lifecycle wiring, and
 // graceful shutdown.
 package daemon
@@ -13,23 +13,23 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/tinhtran/thanos/backend/internal/adapters/runtime/runtimeselect"
-	"github.com/tinhtran/thanos/backend/internal/config"
-	"github.com/tinhtran/thanos/backend/internal/daemon/supervisor"
-	"github.com/tinhtran/thanos/backend/internal/domain"
-	"github.com/tinhtran/thanos/backend/internal/httpd"
-	"github.com/tinhtran/thanos/backend/internal/notify"
-	"github.com/tinhtran/thanos/backend/internal/ports"
-	"github.com/tinhtran/thanos/backend/internal/preview"
-	"github.com/tinhtran/thanos/backend/internal/runfile"
-	agentsvc "github.com/tinhtran/thanos/backend/internal/service/agent"
-	importsvc "github.com/tinhtran/thanos/backend/internal/service/importer"
-	notificationsvc "github.com/tinhtran/thanos/backend/internal/service/notification"
-	"github.com/tinhtran/thanos/backend/internal/service/planner"
-	projectsvc "github.com/tinhtran/thanos/backend/internal/service/project"
-	"github.com/tinhtran/thanos/backend/internal/skillassets"
-	"github.com/tinhtran/thanos/backend/internal/storage/sqlite"
-	"github.com/tinhtran/thanos/backend/internal/terminal"
+	"github.com/tinhtran24/maestro/backend/internal/adapters/runtime/runtimeselect"
+	"github.com/tinhtran24/maestro/backend/internal/config"
+	"github.com/tinhtran24/maestro/backend/internal/daemon/supervisor"
+	"github.com/tinhtran24/maestro/backend/internal/domain"
+	"github.com/tinhtran24/maestro/backend/internal/httpd"
+	"github.com/tinhtran24/maestro/backend/internal/notify"
+	"github.com/tinhtran24/maestro/backend/internal/ports"
+	"github.com/tinhtran24/maestro/backend/internal/preview"
+	"github.com/tinhtran24/maestro/backend/internal/runfile"
+	agentsvc "github.com/tinhtran24/maestro/backend/internal/service/agent"
+	importsvc "github.com/tinhtran24/maestro/backend/internal/service/importer"
+	notificationsvc "github.com/tinhtran24/maestro/backend/internal/service/notification"
+	"github.com/tinhtran24/maestro/backend/internal/service/planner"
+	projectsvc "github.com/tinhtran24/maestro/backend/internal/service/project"
+	"github.com/tinhtran24/maestro/backend/internal/skillassets"
+	"github.com/tinhtran24/maestro/backend/internal/storage/sqlite"
+	"github.com/tinhtran24/maestro/backend/internal/terminal"
 )
 
 // Run starts the daemon and blocks until it exits. SIGINT/SIGTERM drive
@@ -37,7 +37,7 @@ import (
 func Run() error {
 	// Enrich PATH before any tool lookup so tmux/git/agent binaries resolve even
 	// when launched from a GUI (Finder/Dock) with a minimal environment, or when
-	// THANOS_TMUX_BIN points at a custom tmux install.
+	// MAESTRO_TMUX_BIN points at a custom tmux install.
 	augmentToolPath()
 
 	cfg, err := config.Load()
@@ -70,11 +70,11 @@ func Run() error {
 	}
 	defer func() { _ = store.Close() }()
 
-	// Refresh the embedded using-to skill into the data dir so worker sessions
+	// Refresh the embedded using-maestro skill into the data dir so worker sessions
 	// in any project can read the to CLI catalog from a stable absolute path.
-	// Non-fatal: the skill is an enhancement over `to --help`, not required.
+	// Non-fatal: the skill is an enhancement over `maestro --help`, not required.
 	if err := skillassets.Install(cfg.DataDir); err != nil {
-		log.Warn("install using-to skill", "err", err)
+		log.Warn("install using-maestro skill", "err", err)
 	}
 
 	telemetrySink := newTelemetrySink(cfg, store, log)
@@ -125,7 +125,7 @@ func Run() error {
 
 	// Wire the controller-facing session service over the same store + LCM, the
 	// selected runtime, a gitworktree workspace, the per-session agent resolver
-	// (THANOS_AGENT validated here for compatibility), and the agent messenger, then mount it
+	// (MAESTRO_AGENT validated here for compatibility), and the agent messenger, then mount it
 	// on the API.
 	sessionSvc, reviewSvc, sessMgr, err := startSession(cfg, runtimeAdapter, store, lcStack.LCM, messenger, telemetrySink, log)
 	if err != nil {

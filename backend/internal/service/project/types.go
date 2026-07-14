@@ -1,6 +1,6 @@
 package project
 
-import "github.com/tinhtran/thanos/backend/internal/domain"
+import "github.com/tinhtran24/maestro/backend/internal/domain"
 
 // Summary is the row shape returned by GET /api/v1/projects.
 type Summary struct {

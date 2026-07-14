@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/tinhtran/thanos/backend/internal/domain"
+	"github.com/tinhtran24/maestro/backend/internal/domain"
 )
 
 var statusNow = time.Date(2026, 6, 10, 12, 0, 0, 0, time.UTC)

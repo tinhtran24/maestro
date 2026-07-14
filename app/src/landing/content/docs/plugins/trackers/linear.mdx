@@ -1,6 +1,6 @@
 ---
 title: Linear tracker
-description: Linear issues. Direct API key or Composio-mediated — Thanos picks the right transport automatically.
+description: Linear issues. Direct API key or Composio-mediated — Maestro picks the right transport automatically.
 ---
 
 <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", margin: "0.5rem 0 1.25rem" }}>
@@ -26,7 +26,7 @@ The Linear tracker supports two transports and auto-picks between them:
    ```bash
    export LINEAR_API_KEY=lin_api_...
    ```
-3. Configure Thanos:
+3. Configure Maestro:
    ```yaml
    tracker: linear
    projects:
@@ -46,7 +46,7 @@ export COMPOSIO_API_KEY=...
 export COMPOSIO_ENTITY_ID=...      # optional; defaults to "default"
 ```
 
-Thanos detects this and routes Linear calls through Composio — no separate Linear token needed. `COMPOSIO_ENTITY_ID` is optional; if omitted it defaults to `"default"`.
+Maestro detects this and routes Linear calls through Composio — no separate Linear token needed. `COMPOSIO_ENTITY_ID` is optional; if omitted it defaults to `"default"`.
 
 ## Per-project config
 
@@ -59,13 +59,13 @@ Thanos detects this and routes Linear calls through Composio — no separate Lin
 
 Linear issues expose a `branchName` field — the string shown in the **Copy git branch name** button in the Linear UI (formatted according to your workspace settings in **Settings → Integrations → GitHub → Branch format**).
 
-When Thanos spawns an agent for a Linear issue it:
+When Maestro spawns an agent for a Linear issue it:
 
 1. Reads the issue's `branchName` field from the Linear API (if present and git-safe).
 2. Falls back to `feat/<issue-id>` if `branchName` is absent or contains characters that aren't valid in a branch name.
 
-You can customise the format globally via Linear's branch format settings — Thanos will pick up whatever Linear generates automatically.
+You can customise the format globally via Linear's branch format settings — Maestro will pick up whatever Linear generates automatically.
 
 ## Issue identifiers
 
-Linear uses `TEAM-42`-style identifiers, not numbers. `to spawn TEAM-42` works as you'd expect.
+Linear uses `TEAM-42`-style identifiers, not numbers. `maestro spawn TEAM-42` works as you'd expect.

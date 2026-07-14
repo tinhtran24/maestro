@@ -6,7 +6,7 @@ function devApiBaseUrl(): string {
 	return typeof window === "undefined" ? "http://127.0.0.1:3001" : window.location.origin;
 }
 
-const explicitApiBaseUrl = import.meta.env.VITE_THANOS_API_BASE_URL;
+const explicitApiBaseUrl = import.meta.env.VITE_MAESTRO_API_BASE_URL;
 const initialApiBaseUrl = explicitApiBaseUrl ?? (import.meta.env.DEV ? devApiBaseUrl() : "http://127.0.0.1:3001");
 
 let runtimeApiBaseUrl: string | null = explicitApiBaseUrl ?? null;
@@ -161,7 +161,7 @@ async function runtimeFetch(input: Request): Promise<Response> {
 	const baseUrl = runtimeApiBaseUrl;
 	if (baseUrl === null) {
 		reportApiError(operation, "daemon_unavailable", 503);
-		return new Response(JSON.stringify({ message: "Thanos daemon is not ready." }), {
+		return new Response(JSON.stringify({ message: "Maestro daemon is not ready." }), {
 			status: 503,
 			headers: { "Content-Type": "application/json" },
 		});

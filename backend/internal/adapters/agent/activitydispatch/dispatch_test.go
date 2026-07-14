@@ -3,7 +3,7 @@ package activitydispatch
 import (
 	"testing"
 
-	"github.com/tinhtran/thanos/backend/internal/domain"
+	"github.com/tinhtran24/maestro/backend/internal/domain"
 )
 
 // Every deriver key must be a known harness name: SupportsHarness equates the

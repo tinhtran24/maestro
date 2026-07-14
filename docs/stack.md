@@ -1,6 +1,6 @@
-# Thanos technical stack
+# Maestro technical stack
 
-This is the source of truth for library and runtime choices in the Thanos rewrite.
+This is the source of truth for library and runtime choices in the Maestro rewrite.
 Keep this document about durable technology decisions; use `STATUS.md` for
 implementation progress and `architecture.md` for component behavior and
 invariants.
@@ -11,7 +11,7 @@ invariants.
   place.
 - Keep the backend daemon boring: explicit process control, explicit SQL,
   narrow adapters, and observable failure modes.
-- Shell out where Thanos needs the user's real developer-machine behavior, especially
+- Shell out where Maestro needs the user's real developer-machine behavior, especially
   for Git and terminal multiplexers.
 - Keep high-volume terminal output out of SQLite; store structured state in the
   database and stream/log payload-heavy data separately.
@@ -26,7 +26,7 @@ invariants.
 | Runtime adapter    | `tmux` CLI via `os/exec` (Darwin/Linux), conpty pty-host (Windows), selected by `runtimeselect` | Implemented            | Terminal multiplexing fits long-running sessions, attach/debug workflows, and adapter isolation.                                    |
 | Terminal PTY       | `github.com/creack/pty`                                                                         | Implemented            | PTY-backed terminal sessions with resize/input/output control.                                                                      |
 | Git/worktrees      | `git` CLI via `os/exec`                                                                         | Implemented            | Uses real repo behavior, credentials, hooks, LFS, submodules, and user config.                                                      |
-| HTTP API           | `net/http` + `github.com/go-chi/chi/v5`                                                         | Implemented            | Lightweight, idiomatic router without committing Thanos to a large web framework.                                                       |
+| HTTP API           | `net/http` + `github.com/go-chi/chi/v5`                                                         | Implemented            | Lightweight, idiomatic router without committing Maestro to a large web framework.                                                  |
 | WebSocket          | `github.com/coder/websocket`                                                                    | Implemented            | Small WebSocket library for terminal streaming.                                                                                     |
 | Storage            | SQLite in WAL mode via `database/sql`                                                           | Implemented            | Local daemon, single writer, many dashboard/API reads, no external DB setup.                                                        |
 | SQLite driver      | `modernc.org/sqlite`                                                                            | Implemented            | Current pure-Go driver in `backend/internal/storage/sqlite`; keep it swappable behind `database/sql`.                               |
@@ -45,7 +45,7 @@ invariants.
 ### SQLite driver validation
 
 Current main uses `modernc.org/sqlite`. Before release packaging is locked,
-validate `github.com/ncruces/go-sqlite3/driver` against Thanos's WAL, migration,
+validate `github.com/ncruces/go-sqlite3/driver` against Maestro's WAL, migration,
 and `change_log`/CDC workload. It is the preferred no-CGO candidate if it passes
 compatibility and performance checks.
 
@@ -70,15 +70,15 @@ config surface appears.
 
 ## Explicitly avoided for V1
 
-| Avoid                                                          | Reason                                                                                        |
-| -------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
-| GORM                                                           | Thanos needs explicit transactional SQL and CDC-triggered writes.                                 |
-| Gin/Fiber                                                      | `net/http` + `chi` is enough for a local daemon API.                                          |
-| `go-git` as the primary Git engine                             | Thanos should match installed Git behavior, credentials, hooks, LFS, submodules, and user config. |
-| `github.com/spf13/viper` / `github.com/knadh/koanf` by default | Env/default loading plus SQLite-backed config is enough for V1.                               |
-| Temporal / NATS / Kafka / Redis                                | V1 is a local daemon with SQLite and CDC, not a distributed control plane.                    |
-| Full plugin framework                                          | Keep adapter interfaces narrow until product needs justify a plugin runtime.                  |
-| Multi-sink CDC fan-out                                         | Start with one durable local delivery path; add fan-out later if needed.                      |
+| Avoid                                                          | Reason                                                                                             |
+| -------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| GORM                                                           | Maestro needs explicit transactional SQL and CDC-triggered writes.                                 |
+| Gin/Fiber                                                      | `net/http` + `chi` is enough for a local daemon API.                                               |
+| `go-git` as the primary Git engine                             | Maestro should match installed Git behavior, credentials, hooks, LFS, submodules, and user config. |
+| `github.com/spf13/viper` / `github.com/knadh/koanf` by default | Env/default loading plus SQLite-backed config is enough for V1.                                    |
+| Temporal / NATS / Kafka / Redis                                | V1 is a local daemon with SQLite and CDC, not a distributed control plane.                         |
+| Full plugin framework                                          | Keep adapter interfaces narrow until product needs justify a plugin runtime.                       |
+| Multi-sink CDC fan-out                                         | Start with one durable local delivery path; add fan-out later if needed.                           |
 
 ## Current stack mapping
 

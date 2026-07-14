@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Cross-compile the Go `to` binary (backend/cmd/to) for every supported
+# Cross-compile the Go `maestro` binary (backend/cmd/maestro) for every supported
 # platform and drop each into the matching platform package's bin/ dir.
 #
 # Run this from any cwd before `npm publish`. It is the ONLY way the binaries
@@ -8,7 +8,7 @@
 #
 # CGO-free build (modernc.org/sqlite driver) so cross-compilation needs no C
 # toolchain. Prod build: no -ldflags, so cli.releaseRepo keeps its default
-# (tinhtran24/thanos).
+# (AgentWrapper/maestro).
 set -euo pipefail
 
 # Repo layout: this script lives at <repo>/packages/build-binaries.sh.
@@ -18,20 +18,20 @@ BACKEND_DIR="${REPO_ROOT}/backend"
 
 # pkg_dir : npm_os : npm_arch : GOOS : GOARCH : bin_name
 TARGETS=(
-  "thanos-darwin-arm64:darwin:arm64:darwin:arm64:to"
-  "thanos-darwin-x64:darwin:x64:darwin:amd64:to"
-  "thanos-win32-x64:win32:x64:windows:amd64:to.exe"
-  "thanos-linux-x64:linux:x64:linux:amd64:to"
+  "maestro-darwin-arm64:darwin:arm64:darwin:arm64:maestro"
+  "maestro-darwin-x64:darwin:x64:darwin:amd64:maestro"
+  "maestro-win32-x64:win32:x64:windows:amd64:maestro.exe"
+  "maestro-linux-x64:linux:x64:linux:amd64:maestro"
 )
 
-echo "Building to binaries from ${BACKEND_DIR}/cmd/to"
+echo "Building maestro binaries from ${BACKEND_DIR}/cmd/maestro"
 for t in "${TARGETS[@]}"; do
   IFS=":" read -r pkg npm_os npm_arch goos goarch bin <<<"$t"
   out="${SCRIPT_DIR}/${pkg}/bin/${bin}"
   mkdir -p "${SCRIPT_DIR}/${pkg}/bin"
   echo "  -> ${pkg} (GOOS=${goos} GOARCH=${goarch}) -> bin/${bin}"
   (cd "${BACKEND_DIR}" && CGO_ENABLED=0 GOOS="${goos}" GOARCH="${goarch}" \
-    go build -o "${out}" ./cmd/to)
+    go build -o "${out}" ./cmd/maestro)
   chmod 0755 "${out}"
 done
 

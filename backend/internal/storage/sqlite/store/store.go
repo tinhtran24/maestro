@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/tinhtran/thanos/backend/internal/storage/sqlite/gen"
+	"github.com/tinhtran24/maestro/backend/internal/storage/sqlite/gen"
 )
 
 // Store is the SQLite-backed persistence layer. It routes writes to a single

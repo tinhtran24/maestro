@@ -17,10 +17,10 @@ import (
 	"runtime"
 	"sync"
 
-	"github.com/tinhtran/thanos/backend/internal/adapters"
-	"github.com/tinhtran/thanos/backend/internal/adapters/agent/agentbase"
-	"github.com/tinhtran/thanos/backend/internal/adapters/agent/hookutil"
-	"github.com/tinhtran/thanos/backend/internal/ports"
+	"github.com/tinhtran24/maestro/backend/internal/adapters"
+	"github.com/tinhtran24/maestro/backend/internal/adapters/agent/agentbase"
+	"github.com/tinhtran24/maestro/backend/internal/adapters/agent/hookutil"
+	"github.com/tinhtran24/maestro/backend/internal/ports"
 )
 
 const adapterID = "aider"
@@ -95,9 +95,9 @@ func normalizePermissionMode(mode ports.PermissionMode) ports.PermissionMode {
 	return mode
 }
 
-// appendApprovalFlags maps Thanos's permission modes onto Aider's flags. The mapping
+// appendApprovalFlags maps Maestro's permission modes onto Aider's flags. The mapping
 // is lossy: Aider has no graduated approval ladder and no sandbox, so multiple
-// Thanos modes collapse onto the same Aider behavior.
+// Maestro modes collapse onto the same Aider behavior.
 func appendApprovalFlags(cmd *[]string, mode ports.PermissionMode) {
 	switch normalizePermissionMode(mode) {
 	case ports.PermissionModeDefault:

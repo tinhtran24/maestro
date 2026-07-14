@@ -19,10 +19,10 @@ vendor/
 /backend/backend
 # bundled daemon binary produced by app/scripts/build-daemon.mjs
 /app/daemon/
-thanos.yaml
+maestro.yaml
 
 # Backend runtime data artifacts (SQLite store + WAL, CDC event log).
-# Created at THANOS_DATA_DIR (outside the repo by default); ignored here so a
+# Created at MAESTRO_DATA_DIR (outside the repo by default); ignored here so a
 # data dir pointed at the tree never gets committed.
 *.db
 *.db-shm
@@ -30,10 +30,10 @@ thanos.yaml
 session-events.jsonl
 session-events.jsonl.*
 
-# Thanos local session state
-.thanos/
+# Maestro local session state
+.maestro/
 
-# Thanos reviewer scratch output. The reviewer agent runs inside the worker's
+# Maestro reviewer scratch output. The reviewer agent runs inside the worker's
 # worktree; its review writeup must never be committed onto the worker branch.
 /review.md
 

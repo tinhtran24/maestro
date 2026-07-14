@@ -2,14 +2,14 @@
 //
 // It builds the argv to launch `claude` as an interactive session inside a
 // session's worktree, installs worktree-local hooks that report normalized
-// session metadata (native id, title, summary) back into Thanos's store,
+// session metadata (native id, title, summary) back into Maestro's store,
 // and supports resume: GetLaunchCommand pins a stable `--session-id` so
 // GetRestoreCommand can rebuild `claude --resume <uuid>`. SessionInfo reads the
 // hook-captured metadata from the store — it does not parse transcripts.
 // GetConfigSpec remains a no-op (no agent-specific config keys yet).
 //
 // Claude Code starts an interactive session by default (no -p/--print), which
-// is exactly what Thanos wants: a live agent the user can attach to in the
+// is exactly what Maestro wants: a live agent the user can attach to in the
 // browser terminal or via `tmux attach`. The initial task prompt is passed
 // as the positional argument; the orchestrator system prompt (if any) is
 // appended to Claude's default system prompt so its built-in coding
@@ -30,19 +30,19 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/tinhtran/thanos/backend/internal/adapters"
-	"github.com/tinhtran/thanos/backend/internal/adapters/agent/agentbase"
-	"github.com/tinhtran/thanos/backend/internal/adapters/agent/binaryutil"
-	"github.com/tinhtran/thanos/backend/internal/ports"
+	"github.com/tinhtran24/maestro/backend/internal/adapters"
+	"github.com/tinhtran24/maestro/backend/internal/adapters/agent/agentbase"
+	"github.com/tinhtran24/maestro/backend/internal/adapters/agent/binaryutil"
+	"github.com/tinhtran24/maestro/backend/internal/ports"
 )
 
 const (
 	// adapterID is the registry id and the value users pass to
-	// `to spawn --agent`.
+	// `maestro spawn --agent`.
 	adapterID = "claude-code"
 )
 
-// claudeSessionNamespace seeds the UUIDv5 derivation that maps an Thanos
+// claudeSessionNamespace seeds the UUIDv5 derivation that maps an Maestro
 // session id onto a stable Claude Code `--session-id`. A fixed namespace makes
 // the mapping deterministic, so GetLaunchCommand (which pins --session-id at
 // launch) and GetRestoreCommand (which recomputes it as a fallback for
@@ -121,11 +121,11 @@ func (p *Plugin) GetConfigSpec(ctx context.Context) (ports.ConfigSpec, error) {
 //	       [-- <prompt>]
 //
 // --session-id pins Claude's native session UUID to a value derived from the
-// Thanos session id, so the session is resumable later (see
+// Maestro session id, so the session is resumable later (see
 // GetRestoreCommand) and its transcript is locatable (see SessionInfo) without
 // a separate capture step.
 //
-// <mode> is acceptEdits, auto, or bypassPermissions. Thanos's "default"
+// <mode> is acceptEdits, auto, or bypassPermissions. Maestro's "default"
 // mode emits no --permission-mode flag, so Claude's TUI resolves the starting
 // mode from ~/.claude/settings.json exactly as a normal launch.
 //
@@ -182,11 +182,11 @@ func (p *Plugin) GetLaunchCommand(ctx context.Context, cfg ports.LaunchConfig) (
 // PreLaunch is an optional capability the spawn engine invokes (via type
 // assertion) immediately before creating the session. Claude Code shows a
 // blocking "do you trust this folder?" dialog the first time it runs in any
-// directory. Every Thanos worktree is a fresh path, so without this the
+// directory. Every Maestro worktree is a fresh path, so without this the
 // agent would hang at that prompt with no one to answer it.
 //
-// An Thanos worktree is derived from the repo the user is already running
-// Thanos in, so it is inherently trusted. PreLaunch records that trust in
+// An Maestro worktree is derived from the repo the user is already running
+// Maestro in, so it is inherently trusted. PreLaunch records that trust in
 // ~/.claude.json before launch, additively and atomically, so it cannot
 // clobber a concurrently-running Claude instance's config.
 func (p *Plugin) PreLaunch(ctx context.Context, cfg ports.LaunchConfig) error {
@@ -207,7 +207,7 @@ func (p *Plugin) PreLaunch(ctx context.Context, cfg ports.LaunchConfig) error {
 // session: `claude [--permission-mode <mode>] --resume <agentSessionId>`. It
 // prefers the hook-captured native session id from
 // cfg.Session.Metadata["agentSessionId"]; for sessions created before hooks
-// captured it, it falls back to the deterministic UUID Thanos pins via
+// captured it, it falls back to the deterministic UUID Maestro pins via
 // --session-id at launch. ok is false only when neither is available, so the
 // caller fresh-spawns. The command re-applies the permission mode (resume
 // otherwise reverts to the configured default) but not the prompt/system
@@ -219,7 +219,7 @@ func (p *Plugin) GetRestoreCommand(ctx context.Context, cfg ports.RestoreConfig)
 
 	sessionID := strings.TrimSpace(cfg.Session.Metadata[ports.MetadataKeyAgentSessionID])
 	if sessionID == "" && cfg.Session.ID != "" {
-		// Explicit fallback for pre-hook sessions: the id Thanos
+		// Explicit fallback for pre-hook sessions: the id Maestro
 		// deterministically pinned via --session-id at launch.
 		sessionID = claudeSessionUUID(cfg.Session.ID)
 	}
@@ -245,7 +245,7 @@ func (p *Plugin) GetRestoreCommand(ctx context.Context, cfg ports.RestoreConfig)
 }
 
 // SessionInfo surfaces the normalized session metadata that the Claude Code
-// hooks persisted into Thanos's store: the native session id, the title (the
+// hooks persisted into Maestro's store: the native session id, the title (the
 // first user prompt), and the summary (the final assistant message). It reads
 // only from session.Metadata — never from transcript files — and returns
 // ok=false when none of those fields are present. Metadata is intentionally nil:
@@ -362,8 +362,8 @@ func claudeConfigAuthStatus(path string) (ports.AgentAuthStatus, bool, error) {
 	return ports.AgentAuthStatusUnknown, false, nil
 }
 
-// claudeSessionUUID maps an Thanos session id onto a stable Claude Code
-// session UUID via UUIDv5 over a fixed namespace, so the same Thanos session
+// claudeSessionUUID maps an Maestro session id onto a stable Claude Code
+// session UUID via UUIDv5 over a fixed namespace, so the same Maestro session
 // always resolves to the same Claude session.
 func claudeSessionUUID(aoSessionID string) string {
 	return uuid.NewSHA1(claudeSessionNamespace, []byte(aoSessionID)).String()
@@ -382,7 +382,7 @@ func resolveSystemPrompt(cfg ports.LaunchConfig) (string, error) {
 	return cfg.SystemPrompt, nil
 }
 
-// appendPermissionFlags maps Thanos's permission modes onto Claude Code's
+// appendPermissionFlags maps Maestro's permission modes onto Claude Code's
 // --permission-mode values:
 //   - default            → no flag. Claude's TUI resolves the starting mode
 //     from ~/.claude/settings.json (defaultMode), exactly as a normal launch.

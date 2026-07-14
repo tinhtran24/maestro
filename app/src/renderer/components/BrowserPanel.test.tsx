@@ -115,7 +115,7 @@ describe("BrowserPanel", () => {
 		hookState.navState = { ...hookState.navState, error: "Connection refused" };
 		render(<BrowserPanel active onTogglePopOut={() => undefined} poppedOut={false} session={session} />);
 
-		expect(screen.getByText("Enter a dev-server URL to preview it here.")).toBeInTheDocument();
+		expect(screen.getByText("Enter a dev-server URL maestro preview it here.")).toBeInTheDocument();
 		expect(screen.getByText("Connection refused")).toBeInTheDocument();
 	});
 

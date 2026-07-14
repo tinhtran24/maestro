@@ -14,7 +14,7 @@ func TestAugmentToolPath(t *testing.T) {
 
 	t.Run("appends missing common tool dirs, preserving existing order", func(t *testing.T) {
 		t.Setenv("PATH", "/usr/bin:/bin")
-		t.Setenv("THANOS_TMUX_BIN", "")
+		t.Setenv("MAESTRO_TMUX_BIN", "")
 		augmentToolPath()
 		got := os.Getenv("PATH")
 		if !strings.HasPrefix(got, "/usr/bin:/bin") {
@@ -27,7 +27,7 @@ func TestAugmentToolPath(t *testing.T) {
 
 	t.Run("does not duplicate dirs already present", func(t *testing.T) {
 		t.Setenv("PATH", "/opt/homebrew/bin:/usr/bin")
-		t.Setenv("THANOS_TMUX_BIN", "")
+		t.Setenv("MAESTRO_TMUX_BIN", "")
 		augmentToolPath()
 		got := os.Getenv("PATH")
 		if strings.Count(got, "/opt/homebrew/bin") != 1 {
@@ -35,13 +35,13 @@ func TestAugmentToolPath(t *testing.T) {
 		}
 	})
 
-	t.Run("adds THANOS_TMUX_BIN directory", func(t *testing.T) {
+	t.Run("adds MAESTRO_TMUX_BIN directory", func(t *testing.T) {
 		t.Setenv("PATH", "/usr/bin")
-		t.Setenv("THANOS_TMUX_BIN", "/custom/prefix/bin/tmux")
+		t.Setenv("MAESTRO_TMUX_BIN", "/custom/prefix/bin/tmux")
 		augmentToolPath()
 		got := os.Getenv("PATH")
 		if !strings.Contains(got, "/custom/prefix/bin") {
-			t.Fatalf("PATH missing THANOS_TMUX_BIN dir: %q", got)
+			t.Fatalf("PATH missing MAESTRO_TMUX_BIN dir: %q", got)
 		}
 	})
 }

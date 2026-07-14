@@ -6,7 +6,7 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/tinhtran/thanos/backend/internal/httpd/envelope"
+	"github.com/tinhtran24/maestro/backend/internal/httpd/envelope"
 )
 
 // corsMiddleware grants cross-origin read access to the allowlisted browser

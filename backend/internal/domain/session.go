@@ -34,12 +34,12 @@ type SessionMetadata struct {
 	CommitMessage   string `json:"commitMessage,omitempty"`
 	PRTitle         string `json:"prTitle,omitempty"`
 	// PreviewURL is the browser preview target the desktop app opens for this
-	// session. Set via `to preview` (POST /sessions/{id}/preview); persisted so
+	// session. Set via `maestro preview` (POST /sessions/{id}/preview); persisted so
 	// it survives a daemon restart. Empty means no preview has been requested.
 	PreviewURL string `json:"previewUrl,omitempty"`
-	// PreviewRevision is a monotonic counter bumped on every `to preview` call,
+	// PreviewRevision is a monotonic counter bumped on every `maestro preview` call,
 	// even when PreviewURL is unchanged. The desktop browser panel keys
-	// navigation on it so a repeated `to preview <same-url>` still refreshes.
+	// navigation on it so a repeated `maestro preview <same-url>` still refreshes.
 	PreviewRevision int64 `json:"previewRevision,omitempty"`
 }
 

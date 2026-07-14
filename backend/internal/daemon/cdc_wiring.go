@@ -4,8 +4,8 @@ import (
 	"context"
 	"log/slog"
 
-	"github.com/tinhtran/thanos/backend/internal/cdc"
-	"github.com/tinhtran/thanos/backend/internal/storage/sqlite"
+	"github.com/tinhtran24/maestro/backend/internal/cdc"
+	"github.com/tinhtran24/maestro/backend/internal/storage/sqlite"
 )
 
 // cdcPipeline owns the running CDC poller and live-event broadcaster. The DB

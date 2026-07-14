@@ -12,9 +12,9 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/tinhtran/thanos/backend/internal/config"
-	"github.com/tinhtran/thanos/backend/internal/runfile"
-	"github.com/tinhtran/thanos/backend/internal/terminal"
+	"github.com/tinhtran24/maestro/backend/internal/config"
+	"github.com/tinhtran24/maestro/backend/internal/runfile"
+	"github.com/tinhtran24/maestro/backend/internal/terminal"
 )
 
 // Server is the daemon's HTTP server together with its lifecycle: bind the
@@ -36,9 +36,9 @@ type Server struct {
 // which case the /mux terminal surface is not mounted.
 //
 // If the configured port is already held, it falls back to an OS-assigned
-// ephemeral port rather than failing. A genuine peer Thanos daemon is ruled out
+// ephemeral port rather than failing. A genuine peer Maestro daemon is ruled out
 // upstream (the running.json + /healthz check in daemon.Run), so a conflict here
-// means a non-Thanos process owns the port; exiting would only leave the desktop
+// means a non-Maestro process owns the port; exiting would only leave the desktop
 // supervisor stuck on "daemon not ready". The actual bound port is logged
 // ("daemon listening") and written to running.json, both of which the supervisor
 // reads, so the fallback propagates to the renderer with no UI changes.
@@ -49,7 +49,7 @@ func NewWithDeps(cfg config.Config, log *slog.Logger, termMgr *terminal.Manager,
 		if !errors.Is(err, syscall.EADDRINUSE) {
 			return nil, fmt.Errorf("bind %s: %w", cfg.Addr(), err)
 		}
-		// Configured port is taken by a non-Thanos process: retry on an ephemeral port.
+		// Configured port is taken by a non-Maestro process: retry on an ephemeral port.
 		fallback, ferr := net.Listen("tcp", net.JoinHostPort(cfg.Host, "0"))
 		if ferr != nil {
 			return nil, fmt.Errorf("bind %s (in use) and ephemeral fallback: %w", cfg.Addr(), ferr)
@@ -89,7 +89,7 @@ func (s *Server) Run(ctx context.Context) error {
 		PID:       os.Getpid(),
 		Port:      s.boundPort(),
 		StartedAt: time.Now().UTC(),
-		Owner:     os.Getenv("THANOS_OWNER"),
+		Owner:     os.Getenv("MAESTRO_OWNER"),
 	}
 	if err := runfile.Write(s.cfg.RunFilePath, info); err != nil {
 		_ = s.listen.Close()

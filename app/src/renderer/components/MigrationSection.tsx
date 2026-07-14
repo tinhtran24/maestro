@@ -55,7 +55,7 @@ function formatTime(iso?: string): string {
 	return Number.isNaN(d.getTime()) ? "" : d.toLocaleString();
 }
 
-// MigrationSection is a drop-in Settings card for re-running the legacy-Thanos
+// MigrationSection is a drop-in Settings card for re-running the legacy-Maestro
 // import. It reads the persisted migration decision + the daemon's availability,
 // shows the last report/error, and exposes a Run / Re-run button that calls the
 // idempotent POST /api/v1/import (safe even when completed/declined/failed).
@@ -113,8 +113,8 @@ export function MigrationSection() {
 			</CardHeader>
 			<CardContent className="flex flex-col gap-4">
 				<p className="text-[12px] leading-5 text-muted-foreground">
-					Import projects and orchestrator sessions from an earlier Thanos install. Your old files are never
-					modified, and this is safe to run more than once.
+					Import projects and orchestrator sessions from an earlier Maestro install. Your old files are never modified,
+					and this is safe to run more than once.
 				</p>
 
 				<div className="flex flex-col gap-2 text-[12px]">

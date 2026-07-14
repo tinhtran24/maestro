@@ -18,7 +18,7 @@ description: Merge requests, discussions, and pipelines via the glab CLI.
 glab auth login
 ```
 
-```yaml title="thanos.yaml"
+```yaml title="maestro.yaml"
 scm: gitlab
 scmConfig:
   host: gitlab.com # default; override for self-hosted
@@ -32,11 +32,11 @@ scmConfig:
 | Review         | Review       | Discussion / note |
 | CI status      | Check runs   | Pipelines / jobs  |
 
-Thanos normalises these internally — the dashboard and lifecycle state machine don't know which you use.
+Maestro normalises these internally — the dashboard and lifecycle state machine don't know which you use.
 
 ## Webhook endpoint
 
-Thanos's dashboard receives webhook events at:
+Maestro's dashboard receives webhook events at:
 
 ```
 POST /api/webhooks
@@ -76,13 +76,13 @@ Full `webhook.*` sub-object:
 | `deliveryHeader`  | `x-gitlab-event-uuid` | Header carrying the delivery UUID        |
 | `maxBodyBytes`    | unlimited             | Reject payloads larger than this (bytes) |
 
-**Verification**: GitLab sends the configured secret as a literal string in `X-Gitlab-Token`. Thanos compares this value directly (no HMAC — unlike GitHub's SHA-256 approach).
+**Verification**: GitLab sends the configured secret as a literal string in `X-Gitlab-Token`. Maestro compares this value directly (no HMAC — unlike GitHub's SHA-256 approach).
 
 Polling is still active as a fallback — webhooks are a latency optimisation, not a hard dependency.
 
 ## Automated review authors
 
-Thanos ignores review comments from known bot accounts so they don't block the merge-readiness check. The full list:
+Maestro ignores review comments from known bot accounts so they don't block the merge-readiness check. The full list:
 
 **Hardcoded bots:**
 
@@ -99,4 +99,4 @@ Thanos ignores review comments from known bot accounts so they don't block the m
 
 **Runtime catch-all:** any username matching `/^project_\d+_bot/` (GitLab project access tokens) or ending in `[bot]`.
 
-See [Review loop — bot detection](/docs/guides/review-loop#automated-review-bugbot-detection) for how Thanos uses this list during the review-pending → mergeable transition.
+See [Review loop — bot detection](/docs/guides/review-loop#automated-review-bugbot-detection) for how Maestro uses this list during the review-pending → mergeable transition.

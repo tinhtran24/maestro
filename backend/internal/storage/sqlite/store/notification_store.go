@@ -9,9 +9,9 @@ import (
 	moderncsqlite "modernc.org/sqlite"
 	sqlite3 "modernc.org/sqlite/lib"
 
-	"github.com/tinhtran/thanos/backend/internal/domain"
-	notificationsvc "github.com/tinhtran/thanos/backend/internal/service/notification"
-	"github.com/tinhtran/thanos/backend/internal/storage/sqlite/gen"
+	"github.com/tinhtran24/maestro/backend/internal/domain"
+	notificationsvc "github.com/tinhtran24/maestro/backend/internal/service/notification"
+	"github.com/tinhtran24/maestro/backend/internal/storage/sqlite/gen"
 )
 
 var _ notificationsvc.Store = (*Store)(nil)

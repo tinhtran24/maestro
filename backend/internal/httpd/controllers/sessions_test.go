@@ -14,12 +14,12 @@ import (
 	"testing"
 	"time"
 
-	"github.com/tinhtran/thanos/backend/internal/config"
-	"github.com/tinhtran/thanos/backend/internal/domain"
-	"github.com/tinhtran/thanos/backend/internal/httpd"
-	"github.com/tinhtran/thanos/backend/internal/httpd/apierr"
-	"github.com/tinhtran/thanos/backend/internal/ports"
-	sessionsvc "github.com/tinhtran/thanos/backend/internal/service/session"
+	"github.com/tinhtran24/maestro/backend/internal/config"
+	"github.com/tinhtran24/maestro/backend/internal/domain"
+	"github.com/tinhtran24/maestro/backend/internal/httpd"
+	"github.com/tinhtran24/maestro/backend/internal/httpd/apierr"
+	"github.com/tinhtran24/maestro/backend/internal/ports"
+	sessionsvc "github.com/tinhtran24/maestro/backend/internal/service/session"
 )
 
 type fakeSessionService struct {
@@ -160,7 +160,7 @@ func (f *fakeSessionService) ListPRs(_ context.Context, id domain.SessionID) ([]
 	if _, ok := f.sessions[id]; !ok {
 		return nil, apierr.NotFound("SESSION_NOT_FOUND", "Unknown session")
 	}
-	return []domain.PRFacts{{URL: "https://github.com/tinhtran/thanos/pull/142", Number: 142, CI: domain.CIPassing, Review: domain.ReviewRequired, Mergeability: domain.MergeMergeable, UpdatedAt: time.Date(2026, 6, 4, 12, 0, 0, 0, time.UTC)}}, nil
+	return []domain.PRFacts{{URL: "https://github.com/tinhtran24/maestro/pull/142", Number: 142, CI: domain.CIPassing, Review: domain.ReviewRequired, Mergeability: domain.MergeMergeable, UpdatedAt: time.Date(2026, 6, 4, 12, 0, 0, 0, time.UTC)}}, nil
 }
 
 func (f *fakeSessionService) ListPRSummaries(_ context.Context, id domain.SessionID) ([]sessionsvc.PRSummary, error) {
@@ -171,13 +171,13 @@ func (f *fakeSessionService) ListPRSummaries(_ context.Context, id domain.Sessio
 		return nil, apierr.NotFound("SESSION_NOT_FOUND", "Unknown session")
 	}
 	return []sessionsvc.PRSummary{{
-		URL:          "https://github.com/tinhtran/thanos/pull/142",
-		HTMLURL:      "https://github.com/tinhtran/thanos/pull/142",
+		URL:          "https://github.com/tinhtran24/maestro/pull/142",
+		HTMLURL:      "https://github.com/tinhtran24/maestro/pull/142",
 		Number:       142,
 		Title:        "Wire SCM summaries",
 		State:        domain.PRStateOpen,
 		Provider:     "github",
-		Repo:         "tinhtran/thanos",
+		Repo:         "tinhtran24/maestro",
 		Author:       "ada",
 		SourceBranch: "codex/scm-observer-v1",
 		TargetBranch: "main",
@@ -186,7 +186,7 @@ func (f *fakeSessionService) ListPRSummaries(_ context.Context, id domain.Sessio
 			Name:       "unit",
 			Status:     domain.PRCheckFailed,
 			Conclusion: "failure",
-			URL:        "https://github.com/tinhtran/thanos/actions/runs/1",
+			URL:        "https://github.com/tinhtran24/maestro/actions/runs/1",
 		}}},
 		Review: sessionsvc.PRReviewSummary{
 			Decision:                   domain.ReviewChangesRequest,
@@ -194,14 +194,14 @@ func (f *fakeSessionService) ListPRSummaries(_ context.Context, id domain.Sessio
 			UnresolvedBy: []sessionsvc.PRUnresolvedReviewer{{
 				ReviewerID: "reviewer-a",
 				Count:      1,
-				ReviewURL:  "https://github.com/tinhtran/thanos/pull/142#pullrequestreview-1",
-				Links:      []sessionsvc.PRReviewCommentLink{{URL: "https://github.com/tinhtran/thanos/pull/142#discussion_r1", File: "main.go", Line: 12}},
+				ReviewURL:  "https://github.com/tinhtran24/maestro/pull/142#pullrequestreview-1",
+				Links:      []sessionsvc.PRReviewCommentLink{{URL: "https://github.com/tinhtran24/maestro/pull/142#discussion_r1", File: "main.go", Line: 12}},
 			}},
 		},
 		Mergeability: sessionsvc.PRMergeabilitySummary{
 			State:   domain.MergeConflicting,
 			Reasons: []string{"conflicts"},
-			PRURL:   "https://github.com/tinhtran/thanos/pull/142",
+			PRURL:   "https://github.com/tinhtran24/maestro/pull/142",
 		},
 		UpdatedAt: time.Date(2026, 6, 4, 12, 0, 0, 0, time.UTC),
 	}}, nil
@@ -446,7 +446,7 @@ func TestSessionsAPI_SetPreviewEmptyURLAutodetectsIndex(t *testing.T) {
 func TestSessionsAPI_SetPreviewEmptyURLPrefersWorkspaceEntryOverExistingTarget(t *testing.T) {
 	svc := newFakeSessionService()
 	workspace := t.TempDir()
-	// An index.html exists, so bare `to preview` returns to the workspace entry
+	// An index.html exists, so bare `maestro preview` returns to the workspace entry
 	// instead of sticking to the last explicit target.
 	if err := os.WriteFile(filepath.Join(workspace, "index.html"), []byte(`<html></html>`), 0o644); err != nil {
 		t.Fatalf("write index: %v", err)
@@ -692,7 +692,7 @@ func TestSessionsAPI_SpawnBranchNotFetchedReturnsTypedError(t *testing.T) {
 
 // TestSessionsAPI_SpawnRejectsOverlongDisplayName asserts the spawn endpoint
 // caps displayName at 20 characters even though the field itself is optional
-// (the desktop new-task dialog omits it). `to spawn` enforces the same limit
+// (the desktop new-task dialog omits it). `maestro spawn` enforces the same limit
 // CLI-side before the request is sent.
 func TestSessionsAPI_SpawnRejectsOverlongDisplayName(t *testing.T) {
 	srv := newSessionTestServer(t, newFakeSessionService())

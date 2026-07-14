@@ -14,13 +14,13 @@ import (
 	"sync"
 	"time"
 
-	"github.com/tinhtran/thanos/backend/internal/ports"
+	"github.com/tinhtran24/maestro/backend/internal/ports"
 )
 
 const (
 	defaultRESTBaseURL = "https://api.github.com"
 	defaultGraphQLURL  = "https://api.github.com/graphql"
-	defaultUserAgent   = "to-thanos/scm-github"
+	defaultUserAgent   = "to-maestro/scm-github"
 )
 
 // Sentinel errors. Provider-level callers should match on these via

@@ -2,29 +2,29 @@
 
 Read and follow [`AGENTS.md`](AGENTS.md) for repository layout, commands, coding conventions, and hard rules.
 
-## App state lives under `~/.thanos` only
+## App state lives under `~/.maestro` only
 
 All app state, the daemon's data dir, `running.json`, worktrees, and the Electron
 supervisor's `userData` (Chromium cache, cookies, local/session storage, crash
-dumps), must resolve under `~/.thanos` (overridable via `THANOS_DATA_DIR`/`THANOS_RUN_FILE`).
+dumps), must resolve under `~/.maestro` (overridable via `MAESTRO_DATA_DIR`/`MAESTRO_RUN_FILE`).
 Never write to or read from `~/Library/Application Support` or any other OS-default
 app-data location. `frontend/src/main.ts` pins Electron's `userData` to
-`~/.thanos/electron`; do not remove that override. See the hard rule in `AGENTS.md`.
+`~/.maestro/electron`; do not remove that override. See the hard rule in `AGENTS.md`.
 
 ## Design System
 
 Always read [`DESIGN.md`](DESIGN.md) before making any visual or UI decision —
-**start with the "clone thanos verbatim" banner at the top**, which
+**start with the "clone maestro verbatim" banner at the top**, which
 governs the current look.
 
-The renderer **clones the thanos web app verbatim**
-(`~/Projects/thanos/packages/web/src`) in looks and design, with a
+The renderer **clones the maestro web app verbatim**
+(`~/Projects/maestro/packages/web/src`) in looks and design, with a
 refined-blue accent and the terminal keeping its own palette. This **supersedes the
 older "match emdash" framing** in DESIGN.md (per explicit user decision 2026-06-10).
 Build new UI from shadcn primitives (`components/ui/*`) where a component fits. Do not
 deviate without explicit user approval. In QA/review, flag any renderer code that
-diverges from **thanos** — do **not** re-flag emdash mismatches.
+diverges from **maestro** — do **not** re-flag emdash mismatches.
 
-When showing or demoing frontend changes, run `to preview [url]` from inside the
+When showing or demoing frontend changes, run `maestro preview [url]` from inside the
 session so the change renders in the desktop browser panel (the inspector rail's
 Browser tab); do not just describe it.

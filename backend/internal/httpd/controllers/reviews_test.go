@@ -10,12 +10,12 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/tinhtran/thanos/backend/internal/config"
-	"github.com/tinhtran/thanos/backend/internal/domain"
-	"github.com/tinhtran/thanos/backend/internal/httpd"
-	"github.com/tinhtran/thanos/backend/internal/ports"
-	reviewcore "github.com/tinhtran/thanos/backend/internal/review"
-	reviewsvc "github.com/tinhtran/thanos/backend/internal/service/review"
+	"github.com/tinhtran24/maestro/backend/internal/config"
+	"github.com/tinhtran24/maestro/backend/internal/domain"
+	"github.com/tinhtran24/maestro/backend/internal/httpd"
+	"github.com/tinhtran24/maestro/backend/internal/ports"
+	reviewcore "github.com/tinhtran24/maestro/backend/internal/review"
+	reviewsvc "github.com/tinhtran24/maestro/backend/internal/service/review"
 )
 
 type fakeReviewService struct {

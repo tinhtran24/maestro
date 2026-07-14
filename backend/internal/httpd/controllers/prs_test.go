@@ -8,9 +8,9 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/tinhtran/thanos/backend/internal/config"
-	"github.com/tinhtran/thanos/backend/internal/httpd"
-	prsvc "github.com/tinhtran/thanos/backend/internal/service/pr"
+	"github.com/tinhtran24/maestro/backend/internal/config"
+	"github.com/tinhtran24/maestro/backend/internal/httpd"
+	prsvc "github.com/tinhtran24/maestro/backend/internal/service/pr"
 )
 
 type fakePRService struct {

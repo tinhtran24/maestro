@@ -5,8 +5,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/tinhtran/thanos/backend/internal/domain"
-	sqlitestore "github.com/tinhtran/thanos/backend/internal/storage/sqlite/store"
+	"github.com/tinhtran24/maestro/backend/internal/domain"
+	sqlitestore "github.com/tinhtran24/maestro/backend/internal/storage/sqlite/store"
 )
 
 func TestTelemetryStore_CreateListAndPrune(t *testing.T) {

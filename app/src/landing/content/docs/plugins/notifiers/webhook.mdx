@@ -12,7 +12,7 @@ description: Generic HTTP POST. Retries, exponential backoff, custom headers.
 
 <PlatformSupport macos="full" linux="full" windows="full" />
 
-Point it at any HTTPS endpoint. Thanos POSTs a JSON event. Use this for PagerDuty-style integrations, custom dashboards, or anything we don't have a dedicated notifier for.
+Point it at any HTTPS endpoint. Maestro POSTs a JSON event. Use this for PagerDuty-style integrations, custom dashboards, or anything we don't have a dedicated notifier for.
 
 ## Setup
 
@@ -24,21 +24,21 @@ to setup webhook
 
 If a webhook notifier is already configured, the command asks whether to use the
 existing webhook URL, add a new webhook URL, or cancel. The add-new path lets you
-paste a different endpoint, go back, or cancel before Thanos sends the setup test.
-Before saving, Thanos also asks which notification priorities the webhook should
+paste a different endpoint, go back, or cancel before Maestro sends the setup test.
+Before saving, Maestro also asks which notification priorities the webhook should
 receive: `urgent-only`, `urgent-action`, or `all`. For scriptable setup, pass
 `--routing-preset <preset>`.
 
 ## Use
 
-```yaml title="thanos.yaml"
+```yaml title="maestro.yaml"
 notifiers:
   webhook:
     plugin: webhook
     url: https://example.com/to-events
     headers:
       Authorization: "Bearer ${MY_TOKEN}"
-      X-Source: "thanos"
+      X-Source: "maestro"
     retries: 5 # default 3
     retryDelayMs: 2000 # default 1000
 
@@ -88,12 +88,12 @@ When actions are attached (e.g. approve/retry buttons in supported notifiers):
 }
 ```
 
-Free-form messages sent via `to send` arrive as:
+Free-form messages sent via `maestro send` arrive as:
 
 ```json
 {
 	"type": "message",
-	"message": "Hello from Thanos",
+	"message": "Hello from Maestro",
 	"context": {}
 }
 ```
@@ -137,11 +137,11 @@ Free-form messages sent via `to send` arrive as:
 The webhook notifier does **not** sign outgoing requests. There is no `X-Signature` or HMAC header added to POSTs. To secure your endpoint:
 
 - Use a secret `Authorization` header (set via `headers.Authorization` in config, passed as `${MY_TOKEN}`).
-- Restrict inbound traffic to your Thanos host via IP allowlist or VPN.
+- Restrict inbound traffic to your Maestro host via IP allowlist or VPN.
 - Use a reverse proxy with mutual TLS if needed.
 
 ## Why use this over a specific notifier
 
 - You want a single endpoint regardless of Slack/Discord/email routing (handled downstream).
-- You're building an internal Thanos dashboard of your own.
+- You're building an internal Maestro dashboard of your own.
 - You want structured events for observability tooling (Datadog, Honeycomb, etc.).

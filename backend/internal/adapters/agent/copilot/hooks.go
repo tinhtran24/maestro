@@ -9,13 +9,13 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/tinhtran/thanos/backend/internal/adapters/agent/hookutil"
-	"github.com/tinhtran/thanos/backend/internal/ports"
+	"github.com/tinhtran24/maestro/backend/internal/adapters/agent/hookutil"
+	"github.com/tinhtran24/maestro/backend/internal/ports"
 )
 
 const (
 	// copilotHooksDir is the repository-scope hooks directory Copilot CLI reads
-	// (.github/hooks/*.json). Thanos writes a single dedicated file there so it never
+	// (.github/hooks/*.json). Maestro writes a single dedicated file there so it never
 	// disturbs other hook files the user or repo may ship.
 	copilotHooksDir      = ".github/hooks"
 	copilotHooksFileName = "to.json"
@@ -23,15 +23,15 @@ const (
 	// copilotHooksVersion is the schema version of the hooks file (Copilot uses 1).
 	copilotHooksVersion = 1
 
-	// copilotHookCommandPrefix identifies the hook commands Thanos owns, so install
-	// skips duplicates and uninstall recognizes Thanos entries by prefix without an
+	// copilotHookCommandPrefix identifies the hook commands Maestro owns, so install
+	// skips duplicates and uninstall recognizes Maestro entries by prefix without an
 	// embedded template to diff against. The CLI dispatcher routes
-	// `to hooks copilot <event>` to DeriveActivityState.
-	copilotHookCommandPrefix = "to hooks copilot "
+	// `maestro hooks copilot <event>` to DeriveActivityState.
+	copilotHookCommandPrefix = "maestro hooks copilot "
 	copilotHookTimeoutSec    = 30
 )
 
-// copilotHookFile is the on-disk shape of .github/hooks/to.json. Thanos owns this
+// copilotHookFile is the on-disk shape of .github/hooks/to.json. Maestro owns this
 // dedicated file outright, so it only models the keys it manages (version,
 // disableAllHooks, hooks); user-defined hooks live in their own .github/hooks/*
 // files and are never touched.
@@ -52,18 +52,18 @@ type copilotHookEntry struct {
 	TimeoutSec int    `json:"timeoutSec,omitempty"`
 }
 
-// copilotHookSpec describes one hook Thanos installs, defined in code rather than
+// copilotHookSpec describes one hook Maestro installs, defined in code rather than
 // read from an embedded settings file.
 type copilotHookSpec struct {
 	// Event is the native Copilot camelCase event name (sessionStart, ...).
 	Event string
-	// Command is the Thanos sub-command suffix (session-start, ...). It is appended
+	// Command is the Maestro sub-command suffix (session-start, ...). It is appended
 	// to copilotHookCommandPrefix to form both the bash and powershell command,
 	// and is the value DeriveActivityState switches on.
 	Command string
 }
 
-// copilotManagedHooks is the source of truth for the hooks Thanos installs. The Thanos
+// copilotManagedHooks is the source of truth for the hooks Maestro installs. The Maestro
 // sub-command names (session-start, user-prompt-submit, permission-request,
 // stop) are exactly what DeriveActivityState in activity.go switches on.
 //
@@ -71,7 +71,7 @@ type copilotHookSpec struct {
 // https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/use-hooks
 // (sessionStart, sessionEnd, userPromptSubmitted, preToolUse, postToolUse,
 // errorOccurred, agentStop). Copilot does not document a "permissionRequest"
-// event — the closest signal that Thanos's permission-request sub-command can
+// event — the closest signal that Maestro's permission-request sub-command can
 // piggyback on is preToolUse, which fires before any tool invocation, including
 // the ones that would otherwise prompt the user for approval. This is a
 // many-to-one collapse: every preToolUse currently produces ActivityWaitingInput
@@ -84,10 +84,10 @@ var copilotManagedHooks = []copilotHookSpec{
 	{Event: "agentStop", Command: "stop"},
 }
 
-// GetAgentHooks installs Thanos's Copilot hooks into the worktree-local
+// GetAgentHooks installs Maestro's Copilot hooks into the worktree-local
 // .github/hooks/to.json file (the repository-scope hooks config Copilot CLI
-// reads). The hooks report normalized activity-state signals back into Thanos's
-// store. Existing Thanos entries are not duplicated and any unrelated keys are
+// reads). The hooks report normalized activity-state signals back into Maestro's
+// store. Existing Maestro entries are not duplicated and any unrelated keys are
 // preserved, so the install is idempotent.
 func (p *Plugin) GetAgentHooks(ctx context.Context, cfg ports.WorkspaceHookConfig) error {
 	if err := ctx.Err(); err != nil {
@@ -128,7 +128,7 @@ func (p *Plugin) GetAgentHooks(ctx context.Context, cfg ports.WorkspaceHookConfi
 	return nil
 }
 
-// UninstallHooks removes Thanos's Copilot hooks from the workspace-local
+// UninstallHooks removes Maestro's Copilot hooks from the workspace-local
 // .github/hooks/to.json file, leaving user-defined hooks and unrelated keys
 // untouched. A missing file is a no-op.
 func (p *Plugin) UninstallHooks(ctx context.Context, workspacePath string) error {
@@ -163,7 +163,7 @@ func (p *Plugin) UninstallHooks(ctx context.Context, workspacePath string) error
 	return nil
 }
 
-// AreHooksInstalled reports whether any Thanos Copilot hook is present in the
+// AreHooksInstalled reports whether any Maestro Copilot hook is present in the
 // workspace-local hooks file. A missing file means none are installed.
 func (p *Plugin) AreHooksInstalled(ctx context.Context, workspacePath string) (bool, error) {
 	if err := ctx.Err(); err != nil {
@@ -197,7 +197,7 @@ func copilotHooksPath(workspacePath string) string {
 }
 
 // readCopilotHooks loads the hooks file. A missing or empty file yields an empty
-// file struct with a nil hooks map (and the Thanos schema version, used on write).
+// file struct with a nil hooks map (and the Maestro schema version, used on write).
 func readCopilotHooks(hooksPath string) (copilotHookFile, error) {
 	file := copilotHookFile{Version: copilotHooksVersion}
 
@@ -244,7 +244,7 @@ func writeCopilotHooks(hooksPath string, file copilotHookFile) error {
 	return nil
 }
 
-// isCopilotManagedHook reports whether an entry is one Thanos owns, recognized by the
+// isCopilotManagedHook reports whether an entry is one Maestro owns, recognized by the
 // command prefix on either the bash or powershell command.
 func isCopilotManagedHook(entry copilotHookEntry) bool {
 	return strings.HasPrefix(entry.Bash, copilotHookCommandPrefix) ||
@@ -260,7 +260,7 @@ func copilotHookCommandExists(entries []copilotHookEntry, command string) bool {
 	return false
 }
 
-// removeCopilotManagedHooks strips Thanos hook entries from a slice, preserving
+// removeCopilotManagedHooks strips Maestro hook entries from a slice, preserving
 // user-defined entries in order.
 func removeCopilotManagedHooks(entries []copilotHookEntry) []copilotHookEntry {
 	kept := make([]copilotHookEntry, 0, len(entries))

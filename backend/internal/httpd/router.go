@@ -13,12 +13,12 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 
-	"github.com/tinhtran/thanos/backend/internal/config"
-	"github.com/tinhtran/thanos/backend/internal/daemonmeta"
-	"github.com/tinhtran/thanos/backend/internal/httpd/envelope"
-	"github.com/tinhtran/thanos/backend/internal/ports"
-	"github.com/tinhtran/thanos/backend/internal/telemetrymeta"
-	"github.com/tinhtran/thanos/backend/internal/terminal"
+	"github.com/tinhtran24/maestro/backend/internal/config"
+	"github.com/tinhtran24/maestro/backend/internal/daemonmeta"
+	"github.com/tinhtran24/maestro/backend/internal/httpd/envelope"
+	"github.com/tinhtran24/maestro/backend/internal/ports"
+	"github.com/tinhtran24/maestro/backend/internal/telemetrymeta"
+	"github.com/tinhtran24/maestro/backend/internal/terminal"
 )
 
 // ControlDeps carries the daemon-control hooks the router exposes, such as the

@@ -42,7 +42,7 @@ export function DocsMissingPage() {
 									<span className="docs-missing-dot-yellow" />
 									<span className="docs-missing-dot-green" />
 								</div>
-								<p className="docs-missing-command">$ to docs resolve</p>
+								<p className="docs-missing-command">$ maestro docs resolve</p>
 								<p className="docs-missing-status">status: missing</p>
 								<p>next: /docs</p>
 							</div>

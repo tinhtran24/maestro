@@ -8,10 +8,10 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/tinhtran/thanos/backend/internal/adapters"
-	"github.com/tinhtran/thanos/backend/internal/adapters/agent/agentbase"
-	"github.com/tinhtran/thanos/backend/internal/adapters/agent/binaryutil"
-	"github.com/tinhtran/thanos/backend/internal/ports"
+	"github.com/tinhtran24/maestro/backend/internal/adapters"
+	"github.com/tinhtran24/maestro/backend/internal/adapters/agent/agentbase"
+	"github.com/tinhtran24/maestro/backend/internal/adapters/agent/binaryutil"
+	"github.com/tinhtran24/maestro/backend/internal/ports"
 )
 
 const adapterID = "agy"

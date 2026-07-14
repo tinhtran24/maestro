@@ -1,16 +1,16 @@
 ---
 title: Agents overview
-description: Pick the agent that writes the code. Thanos supports five today, and they're swappable per-project.
+description: Pick the agent that writes the code. Maestro supports five today, and they're swappable per-project.
 ---
 
-The agent is the piece that actually writes code. Everything else in Thanos — worktrees, runtimes, notifiers — is plumbing around it.
+The agent is the piece that actually writes code. Everything else in Maestro — worktrees, runtimes, notifiers — is plumbing around it.
 
 <Callout type="info">
-	**PR metadata is captured automatically.** Non-Claude-Code agents (Codex, Cursor, Aider, OpenCode) use `~/.thanos/bin/gh`
-	and `~/.thanos/bin/git` PATH wrappers that intercept commands like `gh pr create` and record the resulting PR number and
-	branch so the dashboard stays in sync. Claude Code uses PostToolUse hooks in `.claude/settings.json` instead — the
-	same metadata is written through Claude Code's native hook system. Both approaches are set up transparently by Thanos; you
-	don't need to configure anything.
+	**PR metadata is captured automatically.** Non-Claude-Code agents (Codex, Cursor, Aider, OpenCode) use
+	`~/.maestro/bin/gh` and `~/.maestro/bin/git` PATH wrappers that intercept commands like `gh pr create` and record the
+	resulting PR number and branch so the dashboard stays in sync. Claude Code uses PostToolUse hooks in
+	`.claude/settings.json` instead — the same metadata is written through Claude Code's native hook system. Both
+	approaches are set up transparently by Maestro; you don't need to configure anything.
 </Callout>
 
 ## Supported agents
@@ -48,14 +48,14 @@ The agent is the piece that actually writes code. Everything else in Thanos — 
 - **Pair-programming style editor**? Aider.
 - **Native IDE-like behavior in the terminal**? Cursor.
 
-## How Thanos talks to them
+## How Maestro talks to them
 
 Two patterns exist:
 
-- **Agent-native hooks** — Claude Code ships a PostToolUse hook in `.claude/settings.json`. Thanos's workspace bootstrap installs it; the agent writes activity events directly to Thanos's JSONL.
-- **PATH wrappers** — Codex, Cursor, Aider, and OpenCode don't have a hook system. Thanos installs small shell wrappers in `~/.thanos/bin/gh` and `~/.thanos/bin/git` and prepends them to `PATH`. When the agent runs `gh pr create` or `git commit`, the wrapper records metadata (PR number, branch, etc.) so the dashboard knows what the agent did.
+- **Agent-native hooks** — Claude Code ships a PostToolUse hook in `.claude/settings.json`. Maestro's workspace bootstrap installs it; the agent writes activity events directly to Maestro's JSONL.
+- **PATH wrappers** — Codex, Cursor, Aider, and OpenCode don't have a hook system. Maestro installs small shell wrappers in `~/.maestro/bin/gh` and `~/.maestro/bin/git` and prepends them to `PATH`. When the agent runs `gh pr create` or `git commit`, the wrapper records metadata (PR number, branch, etc.) so the dashboard knows what the agent did.
 
-Neither approach requires you to change your agent's config — Thanos sets it up transparently.
+Neither approach requires you to change your agent's config — Maestro sets it up transparently.
 
 ## Mixing agents
 
@@ -75,7 +75,7 @@ projects:
 You can also override at spawn time:
 
 ```bash
-to spawn 42 --agent codex
+maestro spawn 42 --agent codex
 ```
 
 Great for A/B testing which agent does better on a specific kind of issue.

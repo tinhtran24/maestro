@@ -33,6 +33,7 @@ export function emptyDraft(): TaskDraft {
 		priority: "P2",
 		labels: [],
 		acceptanceCriteria: [],
+		analysis: "",
 		technicalNotes: "",
 		likelyFiles: [],
 		risks: [],
@@ -42,6 +43,8 @@ export function emptyDraft(): TaskDraft {
 		openQuestions: [],
 		missingInformation: [],
 		suggestedAgent: "",
+		suggestedBranch: "",
+		suggestedCommit: "",
 		confidence: { overall: 0, title: 0, priority: 0, acceptanceCriteria: 0 },
 	};
 }

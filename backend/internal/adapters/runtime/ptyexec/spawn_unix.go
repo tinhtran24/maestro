@@ -17,7 +17,7 @@ import (
 
 	"github.com/creack/pty"
 
-	"github.com/tinhtran/thanos/backend/internal/ports"
+	"github.com/tinhtran24/maestro/backend/internal/ports"
 )
 
 // Spawn starts argv on a real PTY via creack/pty, sized rows×cols from birth

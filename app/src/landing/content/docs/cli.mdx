@@ -1,6 +1,6 @@
 ---
 title: CLI reference
-description: Every `to` command, every flag, drawn from the source.
+description: Every `maestro` command, every flag, drawn from the source.
 ---
 
 import { Callout } from "fumadocs-ui/components/callout";
@@ -22,8 +22,8 @@ to
 ├── open [target]               Open session(s) in terminal tabs
 ├── verify [issue]              Mark an issue as verified (or failed) after staging check
 ├── doctor                      Run install, environment, and runtime health checks
-├── update                      Check for updates and upgrade Thanos
-├── init                        (deprecated — use to start)
+├── update                      Check for updates and upgrade Maestro
+├── init                        (deprecated — use maestro start)
 ├── config-help                 Print the config schema and a guide
 ├── notify                      test
 ├── session                     ls, attach, kill, cleanup, restore, claim-pr, remap
@@ -33,7 +33,7 @@ to
 
 ## Core commands
 
-### `to start [project]`
+### `maestro start [project]`
 
 > Start orchestrator agent and dashboard (auto-creates config on first run, adds projects by path/URL)
 
@@ -45,20 +45,20 @@ to
 | `--dev`             | —       | Use Next.js dev server with hot reload (monorepo only; ignored in npm installs) |
 | `--interactive`     | —       | Prompt to configure config settings                                             |
 
-Positional `[project]` — project id, local path, or repo URL. If omitted and no config exists in `cwd`, Thanos creates `thanos.yaml`.
+Positional `[project]` — project id, local path, or repo URL. If omitted and no config exists in `cwd`, Maestro creates `maestro.yaml`.
 
-If Thanos is already running, you'll get an interactive prompt to open/restart/spawn-new/quit. Non-TTY callers get info + `process.exit(0)`.
+If Maestro is already running, you'll get an interactive prompt to open/restart/spawn-new/quit. Non-TTY callers get info + `process.exit(0)`.
 
-### `to stop [project]`
+### `maestro stop [project]`
 
 > Stop orchestrator agent and dashboard
 
-| Flag              | Default | Purpose                                          |
-| ----------------- | ------- | ------------------------------------------------ |
-| `--purge-session` | —       | Delete the mapped OpenCode session when stopping |
-| `--all`           | —       | Stop all running Thanos instances on this machine    |
+| Flag              | Default | Purpose                                            |
+| ----------------- | ------- | -------------------------------------------------- |
+| `--purge-session` | —       | Delete the mapped OpenCode session when stopping   |
+| `--all`           | —       | Stop all running Maestro instances on this machine |
 
-### `to status`
+### `maestro status`
 
 > Show all sessions with branch, activity, PR, and CI status
 
@@ -71,7 +71,7 @@ If Thanos is already running, you'll get an interactive prompt to open/restart/s
 
 `--watch` and `--json` are mutually exclusive. Falls back to tmux session discovery if no config is found.
 
-### `to spawn [issue]`
+### `maestro spawn [issue]`
 
 > Spawn a single agent session
 
@@ -86,11 +86,11 @@ If Thanos is already running, you'll get an interactive prompt to open/restart/s
 Positional `[first]` — issue identifier. The project is auto-detected from `cwd`.
 
 <Callout type="warn">
-	The old two-arg form `to spawn &lt;project&gt; &lt;issue&gt;` is rejected with an error. Use `-p` or run from inside a
-	worktree.
+	The old two-arg form `maestro spawn &lt;project&gt; &lt;issue&gt;` is rejected with an error. Use `-p` or run from
+	inside a worktree.
 </Callout>
 
-### `to batch-spawn <issues...>`
+### `maestro batch-spawn <issues...>`
 
 > Spawn sessions for multiple issues with duplicate detection
 
@@ -100,7 +100,7 @@ Positional `[first]` — issue identifier. The project is auto-detected from `cw
 
 Skips duplicates within the batch and any issues that already have an active session.
 
-### `to send <session> [message...]`
+### `maestro send <session> [message...]`
 
 > Send a message to a session with busy detection and retry
 
@@ -112,7 +112,7 @@ Skips duplicates within the batch and any issues that already have an active ses
 
 Positional: `<session>` required, `[message...]` variadic. One of inline message or `--file` is required. Long messages (>200 chars or multiline) go via tmux paste-buffer + temp file.
 
-### `to review-check [project]`
+### `maestro review-check [project]`
 
 > Check PRs for review comments and trigger agents to address them
 
@@ -122,7 +122,7 @@ Positional: `<session>` required, `[message...]` variadic. One of inline message
 
 Checks all projects if `[project]` is omitted.
 
-### `to dashboard`
+### `maestro dashboard`
 
 > Start the web dashboard
 
@@ -132,9 +132,9 @@ Checks all projects if `[project]` is omitted.
 | `--no-open`         | —                       | Don't open the browser                    |
 | `--rebuild`         | —                       | Clean stale Next.js artifacts and rebuild |
 
-If the build looks stale you'll see a suggestion to run `to dashboard --rebuild`.
+If the build looks stale you'll see a suggestion to run `maestro dashboard --rebuild`.
 
-### `to open [target]`
+### `maestro open [target]`
 
 > Open session(s) in terminal tabs
 
@@ -144,7 +144,7 @@ If the build looks stale you'll see a suggestion to run `to dashboard --rebuild`
 
 Positional `[target]` — session name, project id, or `"all"`. Defaults to all sessions. Falls back to printing the dashboard URL when the native terminal helper isn't available (anywhere but macOS + iTerm2).
 
-### `to verify [issue]`
+### `maestro verify [issue]`
 
 > Mark an issue as verified (or failed) after checking the fix on staging
 
@@ -157,7 +157,7 @@ Positional `[target]` — session name, project id, or `"all"`. Defaults to all 
 
 `[issue]` is required unless `--list` is passed.
 
-### `to doctor`
+### `maestro doctor`
 
 > Run install, environment, and runtime health checks
 
@@ -166,11 +166,11 @@ Positional `[target]` — session name, project id, or `"all"`. Defaults to all 
 | `--fix`         | —       | Apply safe fixes for launcher and stale-temp issues       |
 | `--test-notify` | —       | Send a test notification through each configured notifier |
 
-Runs `to-doctor.sh` for shell-level checks, then TypeScript checks (version freshness, plugin resolution, notifier connectivity). OpenClaw is the only notifier probed without side effects.
+Runs `maestro-doctor.sh` for shell-level checks, then TypeScript checks (version freshness, plugin resolution, notifier connectivity). OpenClaw is the only notifier probed without side effects.
 
-### `to update`
+### `maestro update`
 
-> Check for updates and upgrade Thanos to the latest version
+> Check for updates and upgrade Maestro to the latest version
 
 | Flag           | Default | Purpose                                                            |
 | -------------- | ------- | ------------------------------------------------------------------ |
@@ -178,17 +178,17 @@ Runs `to-doctor.sh` for shell-level checks, then TypeScript checks (version fres
 | `--smoke-only` | —       | Run smoke tests without fetching or rebuilding (git installs only) |
 | `--check`      | —       | Print version info as JSON; don't upgrade                          |
 
-Behavior depends on how Thanos was installed — git, npm-global, pnpm-global, or unknown (manual instructions printed).
+Behavior depends on how Maestro was installed — git, npm-global, pnpm-global, or unknown (manual instructions printed).
 
-### `to config-help`
+### `maestro config-help`
 
-> Show config schema and guide for creating `thanos.yaml`
+> Show config schema and guide for creating `maestro.yaml`
 
 No flags.
 
 ## Notify subcommands
 
-### `to notify test`
+### `maestro notify test`
 
 > Send a manual demo notification without spawning sessions
 
@@ -206,7 +206,7 @@ No flags.
 
 ## Session subcommands
 
-### `to session ls`
+### `maestro session ls`
 
 > List all sessions
 
@@ -216,13 +216,13 @@ No flags.
 | `-a, --all`          | —       | Include orchestrator sessions |
 | `--json`             | —       | Output JSON                   |
 
-### `to session attach <session>`
+### `maestro session attach <session>`
 
 > Attach to a session's tmux window
 
 No flags. Attaches via `tmux attach-session`. Only meaningful with `runtime: tmux`.
 
-### `to session kill <session>`
+### `maestro session kill <session>`
 
 > Kill a session and remove its worktree
 
@@ -230,7 +230,7 @@ No flags. Attaches via `tmux attach-session`. Only meaningful with `runtime: tmu
 | ----------------- | ------- | ---------------------------------- |
 | `--purge-session` | —       | Delete the mapped OpenCode session |
 
-### `to session cleanup`
+### `maestro session cleanup`
 
 > Kill sessions where PR is merged or issue is closed
 
@@ -239,7 +239,7 @@ No flags. Attaches via `tmux attach-session`. Only meaningful with `runtime: tmu
 | `-p, --project <id>` | —       | Filter to one project         |
 | `--dry-run`          | —       | Show what would be cleaned up |
 
-### `to session claim-pr <pr> [session]`
+### `maestro session claim-pr <pr> [session]`
 
 > Attach an existing PR to a session
 
@@ -247,17 +247,17 @@ No flags. Attaches via `tmux attach-session`. Only meaningful with `runtime: tmu
 | -------------------- | ------- | ------------------------------------------------- |
 | `--assign-on-github` | —       | Assign the PR to the authenticated user on GitHub |
 
-If `[session]` is omitted, falls back to `THANOS_SESSION_NAME` / `THANOS_SESSION` env vars.
+If `[session]` is omitted, falls back to `MAESTRO_SESSION_NAME` / `MAESTRO_SESSION` env vars.
 
-### `to session restore <session>`
+### `maestro session restore <session>`
 
 > Restore a terminated or crashed session in-place
 
 No flags. Relaunches the agent inside the same worktree and rewires session metadata.
 
-### `to session remap <session>`
+### `maestro session remap <session>`
 
-> Re-discover and persist OpenCode session mapping for an Thanos session
+> Re-discover and persist OpenCode session mapping for an Maestro session
 
 | Flag          | Default | Purpose                  |
 | ------------- | ------- | ------------------------ |
@@ -265,28 +265,28 @@ No flags. Relaunches the agent inside the same worktree and rewires session meta
 
 ## Setup subcommands
 
-Notifier setup commands that write Thanos config support `--routing-preset <preset>`.
+Notifier setup commands that write Maestro config support `--routing-preset <preset>`.
 Valid presets are `urgent-only`, `urgent-action`, and `all`. In interactive
-mode, Thanos asks which notification priorities the notifier should receive before
+mode, Maestro asks which notification priorities the notifier should receive before
 writing `notificationRouting`.
 
-| Command                         | Purpose                                                |
-| ------------------------------- | ------------------------------------------------------ |
-| `to setup dashboard`            | Configure dashboard notification retention and routing |
-| `to setup desktop`              | Configure native desktop notifications                 |
-| `to setup webhook`              | Configure a generic HTTP webhook                       |
-| `to setup slack`                | Configure a Slack incoming webhook                     |
-| `to setup discord`              | Configure a Discord incoming webhook                   |
-| `to setup composio`             | Open the interactive Composio setup hub                |
-| `to setup composio-slack`       | Configure Slack through Composio                       |
-| `to setup composio-discord`     | Configure Discord webhook mode through Composio        |
-| `to setup composio-discord-bot` | Configure Discord bot mode through Composio            |
-| `to setup composio-mail`        | Configure Gmail through Composio                       |
-| `to setup openclaw`             | Configure OpenClaw gateway notifications               |
+| Command                              | Purpose                                                |
+| ------------------------------------ | ------------------------------------------------------ |
+| `maestro setup dashboard`            | Configure dashboard notification retention and routing |
+| `maestro setup desktop`              | Configure native desktop notifications                 |
+| `maestro setup webhook`              | Configure a generic HTTP webhook                       |
+| `maestro setup slack`                | Configure a Slack incoming webhook                     |
+| `maestro setup discord`              | Configure a Discord incoming webhook                   |
+| `maestro setup composio`             | Open the interactive Composio setup hub                |
+| `maestro setup composio-slack`       | Configure Slack through Composio                       |
+| `maestro setup composio-discord`     | Configure Discord webhook mode through Composio        |
+| `maestro setup composio-discord-bot` | Configure Discord bot mode through Composio            |
+| `maestro setup composio-mail`        | Configure Gmail through Composio                       |
+| `maestro setup openclaw`             | Configure OpenClaw gateway notifications               |
 
-### `to setup openclaw`
+### `maestro setup openclaw`
 
-> Connect Thanos notifications to an OpenClaw gateway
+> Connect Maestro notifications to an OpenClaw gateway
 
 | Flag                            | Default                     | Purpose                                                                            |
 | ------------------------------- | --------------------------- | ---------------------------------------------------------------------------------- |
@@ -294,17 +294,17 @@ writing `notificationRouting`.
 | `--token <token>`               | —                           | Remote/manual fallback; local setup should read `hooks.token` from OpenClaw config |
 | `--openclaw-config-path <path>` | `~/.openclaw/openclaw.json` | OpenClaw config path that contains `hooks.token`                                   |
 | `--routing-preset <preset>`     | —                           | `urgent-only` · `urgent-action` · `all`                                            |
-| `--refresh`                     | —                           | Reuse existing values and rewrite Thanos config                                        |
+| `--refresh`                     | —                           | Reuse existing values and rewrite Maestro config                                   |
 | `--no-test`                     | —                           | Skip the setup token probe                                                         |
 | `--force`                       | —                           | Replace a conflicting `notifiers.openclaw` entry                                   |
 | `--status`                      | —                           | Show OpenClaw config, gateway state, and token probe status                        |
 | `--non-interactive`             | —                           | Skip prompts — auto-detect OpenClaw on localhost                                   |
 
-Interactive mode (TTY) uses `@clack/prompts` with review/change steps for the gateway URL, OpenClaw config path, and routing preset. OpenClaw owns the token in `hooks.token`; Thanos does not generate it or write shell-profile exports.
+Interactive mode (TTY) uses `@clack/prompts` with review/change steps for the gateway URL, OpenClaw config path, and routing preset. OpenClaw owns the token in `hooks.token`; Maestro does not generate it or write shell-profile exports.
 
 ## Plugin subcommands
 
-### `to plugin list`
+### `maestro plugin list`
 
 > List bundled marketplace plugins
 
@@ -314,15 +314,15 @@ Interactive mode (TTY) uses `@clack/prompts` with review/change steps for the ga
 | `--type <slot>` | —       | Filter by slot: `agent`, `runtime`, `tracker`, `scm`, `notifier`, `workspace`, `terminal` |
 | `--refresh`     | —       | Re-fetch the marketplace catalog                                                          |
 
-### `to plugin search <query>`
+### `maestro plugin search <query>`
 
 > Search the bundled marketplace catalog
 
 No flags.
 
-### `to plugin create [directory]`
+### `maestro plugin create [directory]`
 
-> Scaffold a new Thanos plugin package
+> Scaffold a new Maestro plugin package
 
 | Flag                    | Default | Purpose                         |
 | ----------------------- | ------- | ------------------------------- |
@@ -333,19 +333,19 @@ No flags.
 | `--package-name <name>` | derived | npm package name                |
 | `--non-interactive`     | —       | Use all flags without prompting |
 
-### `to plugin install <reference>`
+### `maestro plugin install <reference>`
 
 > Install a plugin into the current config
 
-| Flag                            | Default                     | Purpose                                                           |
-| ------------------------------- | --------------------------- | ----------------------------------------------------------------- |
-| `--url <url>`                   | —                           | Passed to `to setup openclaw` when installing `notifier-openclaw` |
-| `--token <token>`               | —                           | Remote/manual OpenClaw token fallback                             |
-| `--openclaw-config-path <path>` | `~/.openclaw/openclaw.json` | OpenClaw config path that contains `hooks.token`                  |
+| Flag                            | Default                     | Purpose                                                                |
+| ------------------------------- | --------------------------- | ---------------------------------------------------------------------- |
+| `--url <url>`                   | —                           | Passed to `maestro setup openclaw` when installing `notifier-openclaw` |
+| `--token <token>`               | —                           | Remote/manual OpenClaw token fallback                                  |
+| `--openclaw-config-path <path>` | `~/.openclaw/openclaw.json` | OpenClaw config path that contains `hooks.token`                       |
 
 `<reference>` is a marketplace id, npm package name, or local path.
 
-### `to plugin update [reference]`
+### `maestro plugin update [reference]`
 
 > Update installer-managed plugins in the current config
 
@@ -355,7 +355,7 @@ No flags.
 
 Requires either `[reference]` or `--all`.
 
-### `to plugin uninstall <reference>`
+### `maestro plugin uninstall <reference>`
 
 > Remove a plugin from the current config
 
@@ -365,16 +365,16 @@ No flags.
 
 A few env vars affect every command:
 
-| Variable                            | Purpose                                                                              |
-| ----------------------------------- | ------------------------------------------------------------------------------------ |
-| `THANOS_DATA_DIR`                       | Override the `~/.thanos` base directory.                                                 |
-| `THANOS_LOG_LEVEL`                      | `error` · `warn` · `info` · `debug` · `trace`                                        |
-| `THANOS_CONFIG_PATH`                    | Absolute path to a specific `thanos.yaml`. Overrides CWD-based search.   |
-| `THANOS_SESSION_ID` · `THANOS_SESSION_NAME` | Auto-set inside spawned sessions; used by `claim-pr` default                         |
-| `THANOS_PROJECT_ID`                     | Set by Thanos inside spawned sessions. Used by `to spawn` to resolve the active project. |
-| `PORT`                              | Next.js dashboard port. Overrides `config.port`.                                     |
-| `TERMINAL_PORT`                     | WebSocket mux server port (default 14800).                                           |
-| `DIRECT_TERMINAL_PORT`              | Direct PTY WebSocket port (default 14801).                                           |
-| `NEXT_PUBLIC_TERMINAL_WS_PATH`      | Override the WebSocket path used by the terminal client (for reverse-proxy setups).  |
+| Variable                                      | Purpose                                                                                        |
+| --------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| `MAESTRO_DATA_DIR`                            | Override the `~/.maestro` base directory.                                                      |
+| `MAESTRO_LOG_LEVEL`                           | `error` · `warn` · `info` · `debug` · `trace`                                                  |
+| `MAESTRO_CONFIG_PATH`                         | Absolute path to a specific `maestro.yaml`. Overrides CWD-based search.                        |
+| `MAESTRO_SESSION_ID` · `MAESTRO_SESSION_NAME` | Auto-set inside spawned sessions; used by `claim-pr` default                                   |
+| `MAESTRO_PROJECT_ID`                          | Set by Maestro inside spawned sessions. Used by `maestro spawn` to resolve the active project. |
+| `PORT`                                        | Next.js dashboard port. Overrides `config.port`.                                               |
+| `TERMINAL_PORT`                               | WebSocket mux server port (default 14800).                                                     |
+| `DIRECT_TERMINAL_PORT`                        | Direct PTY WebSocket port (default 14801).                                                     |
+| `NEXT_PUBLIC_TERMINAL_WS_PATH`                | Override the WebSocket path used by the terminal client (for reverse-proxy setups).            |
 
 Agent-specific env vars are documented on each [agent plugin's page](/docs/plugins/agents).

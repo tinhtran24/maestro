@@ -3,7 +3,7 @@ package session
 import (
 	"time"
 
-	"github.com/tinhtran/thanos/backend/internal/domain"
+	"github.com/tinhtran24/maestro/backend/internal/domain"
 )
 
 // noSignalGrace is how long after spawn/restore a session may stay silent

@@ -9,11 +9,11 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/tinhtran/thanos/backend/internal/config"
-	"github.com/tinhtran/thanos/backend/internal/httpd"
-	"github.com/tinhtran/thanos/backend/internal/httpd/controllers"
-	"github.com/tinhtran/thanos/backend/internal/legacyimport"
-	importsvc "github.com/tinhtran/thanos/backend/internal/service/importer"
+	"github.com/tinhtran24/maestro/backend/internal/config"
+	"github.com/tinhtran24/maestro/backend/internal/httpd"
+	"github.com/tinhtran24/maestro/backend/internal/httpd/controllers"
+	"github.com/tinhtran24/maestro/backend/internal/legacyimport"
+	importsvc "github.com/tinhtran24/maestro/backend/internal/service/importer"
 )
 
 // fakeImportService is a test double for controllers.ImportService.
@@ -41,7 +41,7 @@ func newImportTestServer(t *testing.T, svc controllers.ImportService) *httptest.
 }
 
 func TestImportAPI_Status(t *testing.T) {
-	svc := &fakeImportService{statusResult: importsvc.Status{Available: true, LegacyRoot: "/home/u/.thanos"}}
+	svc := &fakeImportService{statusResult: importsvc.Status{Available: true, LegacyRoot: "/home/u/.maestro"}}
 	srv := newImportTestServer(t, svc)
 	body, status, headers := doRequest(t, srv, "GET", "/api/v1/import", "")
 	if status != http.StatusOK {
@@ -50,7 +50,7 @@ func TestImportAPI_Status(t *testing.T) {
 	assertJSON(t, headers)
 	var resp controllers.ImportStatusResponse
 	mustJSON(t, body, &resp)
-	if !resp.Available || resp.LegacyRoot != "/home/u/.thanos" {
+	if !resp.Available || resp.LegacyRoot != "/home/u/.maestro" {
 		t.Fatalf("status = %+v", resp)
 	}
 }

@@ -16,19 +16,19 @@ Every session gets a full `git clone`. Heavier on disk than `worktree`, but simp
 
 ## Use
 
-```yaml title="thanos.yaml"
+```yaml title="maestro.yaml"
 workspace: clone
 workspaceConfig:
-  cloneDir: ~/.thanos-clones # default
+  cloneDir: ~/.maestro-clones # default
 ```
 
-| Config key | Default        | What it does                  |
-| ---------- | -------------- | ----------------------------- |
-| `cloneDir` | `~/.thanos-clones` | Base directory for all clones |
+| Config key | Default             | What it does                  |
+| ---------- | ------------------- | ----------------------------- |
+| `cloneDir` | `~/.maestro-clones` | Base directory for all clones |
 
 ## How it works
 
-- On spawn, Thanos runs `git clone --reference <source> <cloneDir>/{sessionId}`. The `--reference` flag means the new clone borrows objects from your existing checkout — much faster than a cold clone.
+- On spawn, Maestro runs `git clone --reference <source> <cloneDir>/{sessionId}`. The `--reference` flag means the new clone borrows objects from your existing checkout — much faster than a cold clone.
 - The agent gets a fully independent working tree with its own `.git`.
 - On cleanup, the directory is removed outright.
 

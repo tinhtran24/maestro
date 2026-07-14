@@ -5,12 +5,12 @@ import (
 	"context"
 	"strings"
 
-	workeragent "github.com/tinhtran/thanos/backend/internal/adapters/agent/opencode"
-	"github.com/tinhtran/thanos/backend/internal/domain"
-	"github.com/tinhtran/thanos/backend/internal/ports"
+	workeragent "github.com/tinhtran24/maestro/backend/internal/adapters/agent/opencode"
+	"github.com/tinhtran24/maestro/backend/internal/domain"
+	"github.com/tinhtran24/maestro/backend/internal/ports"
 )
 
-const reviewerConfig = `{"permission":{"*":"deny","read":"allow","glob":"allow","grep":"allow","bash":{"*":"deny","gh api *":"allow","git diff*":"allow","git log*":"allow","git show*":"allow","git status*":"allow","to review submit *":"allow","printf * | gh api *":"allow","printf * | to review submit *":"allow"}}}`
+const reviewerConfig = `{"permission":{"*":"deny","read":"allow","glob":"allow","grep":"allow","bash":{"*":"deny","gh api *":"allow","git diff*":"allow","git log*":"allow","git show*":"allow","git status*":"allow","maestro review submit *":"allow","printf * | gh api *":"allow","printf * | maestro review submit *":"allow"}}}`
 
 // Reviewer is the opencode code-review adapter.
 type Reviewer struct {

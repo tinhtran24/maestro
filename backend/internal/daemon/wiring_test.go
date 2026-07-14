@@ -9,17 +9,17 @@ import (
 	"testing"
 	"time"
 
-	"github.com/tinhtran/thanos/backend/internal/adapters"
-	"github.com/tinhtran/thanos/backend/internal/adapters/runtime/runtimeselect"
-	"github.com/tinhtran/thanos/backend/internal/adapters/runtime/tmux"
-	telemetryadapter "github.com/tinhtran/thanos/backend/internal/adapters/telemetry"
-	"github.com/tinhtran/thanos/backend/internal/cdc"
-	"github.com/tinhtran/thanos/backend/internal/config"
-	"github.com/tinhtran/thanos/backend/internal/domain"
-	"github.com/tinhtran/thanos/backend/internal/lifecycle"
-	"github.com/tinhtran/thanos/backend/internal/ports"
-	sessionmanager "github.com/tinhtran/thanos/backend/internal/session_manager"
-	"github.com/tinhtran/thanos/backend/internal/storage/sqlite"
+	"github.com/tinhtran24/maestro/backend/internal/adapters"
+	"github.com/tinhtran24/maestro/backend/internal/adapters/runtime/runtimeselect"
+	"github.com/tinhtran24/maestro/backend/internal/adapters/runtime/tmux"
+	telemetryadapter "github.com/tinhtran24/maestro/backend/internal/adapters/telemetry"
+	"github.com/tinhtran24/maestro/backend/internal/cdc"
+	"github.com/tinhtran24/maestro/backend/internal/config"
+	"github.com/tinhtran24/maestro/backend/internal/domain"
+	"github.com/tinhtran24/maestro/backend/internal/lifecycle"
+	"github.com/tinhtran24/maestro/backend/internal/ports"
+	sessionmanager "github.com/tinhtran24/maestro/backend/internal/session_manager"
+	"github.com/tinhtran24/maestro/backend/internal/storage/sqlite"
 )
 
 // TestWiring_WriteFlowsToBroadcaster exercises the real boot path end to end:
@@ -208,14 +208,14 @@ func TestStartTrackerIntake_RunsEvenWithoutEnabledProjects(t *testing.T) {
 }
 
 func TestTrackerTokenSourcePrefersAOGitHubToken(t *testing.T) {
-	t.Setenv("THANOS_GITHUB_TOKEN", "to-token")
+	t.Setenv("MAESTRO_GITHUB_TOKEN", "to-token")
 	t.Setenv("GITHUB_TOKEN", "github-token")
 	token, err := (&trackerTokenSource{}).Token(context.Background())
 	if err != nil {
 		t.Fatal(err)
 	}
 	if token != "to-token" {
-		t.Fatalf("token = %q, want THANOS_GITHUB_TOKEN", token)
+		t.Fatalf("token = %q, want MAESTRO_GITHUB_TOKEN", token)
 	}
 }
 

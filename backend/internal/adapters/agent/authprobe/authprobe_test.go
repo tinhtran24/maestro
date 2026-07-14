@@ -5,7 +5,7 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/tinhtran/thanos/backend/internal/ports"
+	"github.com/tinhtran24/maestro/backend/internal/ports"
 )
 
 func TestCLIStatus_Mocked(t *testing.T) {

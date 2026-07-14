@@ -2,7 +2,7 @@
 //
 // Grok Build is xAI's terminal coding agent (binary "grok"). It supports
 // Claude Code compatibility for hooks, skills, etc., so we reuse the claude
-// hook installation (which writes .claude/settings.local.json with Thanos
+// hook installation (which writes .claude/settings.local.json with Maestro
 // hook commands). Grok will pick them up via its compat layer.
 //
 // Launch uses `-p <prompt>` for the initial task (in-command delivery).
@@ -19,11 +19,11 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/tinhtran/thanos/backend/internal/adapters"
-	"github.com/tinhtran/thanos/backend/internal/adapters/agent/agentbase"
-	"github.com/tinhtran/thanos/backend/internal/adapters/agent/binaryutil"
-	"github.com/tinhtran/thanos/backend/internal/adapters/agent/claudecode"
-	"github.com/tinhtran/thanos/backend/internal/ports"
+	"github.com/tinhtran24/maestro/backend/internal/adapters"
+	"github.com/tinhtran24/maestro/backend/internal/adapters/agent/agentbase"
+	"github.com/tinhtran24/maestro/backend/internal/adapters/agent/binaryutil"
+	"github.com/tinhtran24/maestro/backend/internal/adapters/agent/claudecode"
+	"github.com/tinhtran24/maestro/backend/internal/ports"
 )
 
 var grokBinarySpec = binaryutil.BinarySpec{
@@ -97,7 +97,7 @@ func (p *Plugin) GetLaunchCommand(ctx context.Context, cfg ports.LaunchConfig) (
 //	 Grok automatically reads Claude Code ... hooks ... alongside .grok/."
 //
 // This means Grok will pick up the .claude/settings.local.json (and the
-// Thanos hook commands we install there) in the worktree. The hook payloads for
+// Maestro hook commands we install there) in the worktree. The hook payloads for
 // SessionStart / UserPromptSubmit / Stop etc. are compatible, so we get
 // title/summary/agentSessionId + activity for free without a separate native
 // .grok/hooks/ implementation or code duplication.
@@ -105,13 +105,13 @@ func (p *Plugin) GetAgentHooks(ctx context.Context, cfg ports.WorkspaceHookConfi
 	if err := ctx.Err(); err != nil {
 		return err
 	}
-	// Delegate; the installed commands will be "to hooks claude-code <evt>"
+	// Delegate; the installed commands will be "maestro hooks claude-code <evt>"
 	// so the existing CLI hook dispatcher routes them to claude derive logic.
 	// This works because of Grok's documented zero-config Claude compat.
 	return (&claudecode.Plugin{}).GetAgentHooks(ctx, cfg)
 }
 
-// UninstallHooks removes the Claude Code-compatible Thanos hooks Grok uses.
+// UninstallHooks removes the Claude Code-compatible Maestro hooks Grok uses.
 func (p *Plugin) UninstallHooks(ctx context.Context, workspacePath string) error {
 	if err := ctx.Err(); err != nil {
 		return err
@@ -119,7 +119,7 @@ func (p *Plugin) UninstallHooks(ctx context.Context, workspacePath string) error
 	return (&claudecode.Plugin{}).UninstallHooks(ctx, workspacePath)
 }
 
-// AreHooksInstalled reports whether the delegated Claude Code-compatible Thanos
+// AreHooksInstalled reports whether the delegated Claude Code-compatible Maestro
 // hooks are present for this Grok workspace.
 func (p *Plugin) AreHooksInstalled(ctx context.Context, workspacePath string) (bool, error) {
 	if err := ctx.Err(); err != nil {

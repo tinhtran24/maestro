@@ -96,10 +96,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Check whether a legacy Thanos install is available to import */
+        /** Check whether a legacy Maestro install is available to import */
         get: operations["getImportStatus"];
         put?: never;
-        /** Run the legacy Thanos project import through the daemon store */
+        /** Run the legacy Maestro project import through the daemon store */
         post: operations["runImport"];
         delete?: never;
         options?: never;
@@ -679,6 +679,8 @@ export interface components {
         };
         DomainGitWorkflowConfig: {
             enabled?: boolean;
+            /** @enum {string} */
+            provider?: "github" | "gitlab" | "bitbucket" | "bitbucket-server";
         };
         DomainReviewerConfig: {
             harness: string;
@@ -800,6 +802,7 @@ export interface components {
         };
         PlannerTaskDraft: {
             acceptanceCriteria: string[];
+            analysis: string;
             confidence: components["schemas"]["PlannerConfidence"];
             dependencies: string[];
             description: string;
@@ -812,6 +815,8 @@ export interface components {
             risks: string[];
             scope: string;
             suggestedAgent: string;
+            suggestedBranch: string;
+            suggestedCommit: string;
             technicalNotes: string;
             title: string;
             userStory: string;
@@ -1061,7 +1066,7 @@ export interface components {
             prompt?: string;
         };
         SubmitReviewInput: {
-            /** @description Review body recorded by Thanos. Required for changes_requested. */
+            /** @description Review body recorded by Maestro. Required for changes_requested. */
             body?: string;
             /** @description Id of the GitHub PR review the reviewer posted, if any. */
             githubReviewId?: string;
@@ -1073,7 +1078,7 @@ export interface components {
             verdict?: string;
         };
         SubmitReviewItem: {
-            /** @description Review body recorded by Thanos. Required for changes_requested. */
+            /** @description Review body recorded by Maestro. Required for changes_requested. */
             body?: string;
             /** @description Id of the GitHub PR review the reviewer posted, if any. */
             githubReviewId?: string;

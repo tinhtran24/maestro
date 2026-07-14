@@ -1,6 +1,6 @@
 import type { ITheme } from "@xterm/xterm";
 
-/** xterm palettes harmonized to styles.css tokens (thanos pattern). */
+/** xterm palettes harmonized to styles.css tokens (maestro pattern). */
 export function buildTerminalThemes(): { dark: ITheme; light: ITheme } {
 	const accent = {
 		cursor: "#f59f4c",

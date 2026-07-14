@@ -1,29 +1,29 @@
 # Milestones & Delivery Plan
 
-Phased plan to clone the Thanos frontend onto the already-cloned Thanos backend. Each
+Phased plan to clone the Maestro frontend onto the already-cloned Maestro backend. Each
 phase ends with a runnable, testable increment. "Port" = copy from
-`thanos-main/frontend/src/**` and adjust names/paths (`to` → thanos,
-`~/.thanos` → `~/.thanos`, backend module path).
+`maestro-main/frontend/src/**` and adjust names/paths (`maestro` → maestro,
+`~/.maestro` → `~/.maestro`, backend module path).
 
 ## Phase 0 — Scaffold (foundation)
 
-- [ ] Create `thanos/frontend/` from the Thanos frontend: `package.json`, `tsconfig`,
+- [ ] Create `maestro/frontend/` from the Maestro frontend: `package.json`, `tsconfig`,
       `vite.*.config.ts`, `forge.config.ts`, `components.json`, `index.html`,
       `vitest.config.ts`, `playwright.config.ts`, Tailwind setup.
-- [ ] Install deps (npm or pnpm — match Thanos's lockfile choice).
+- [ ] Install deps (npm or pnpm — match Maestro's lockfile choice).
 - [ ] Generate API types: `npm run api:ts` → `src/api/schema.ts` from
       `backend/internal/httpd/apispec/openapi.yaml`. Fix the script's relative path.
-- [ ] Update `scripts/build-daemon.mjs` to build `thanos/backend/cmd/to`.
+- [ ] Update `scripts/build-daemon.mjs` to build `maestro/backend/cmd/maestro`.
 - **Done when**: `npm run dev:web` serves an empty shell; `npm run typecheck` passes.
 
 ## Phase 1 — Electron shell + daemon lifecycle
 
 - [ ] Port `src/main/*`, `src/preload.ts`, `src/shared/daemon-*`, `shell-env`.
-- [ ] Pin `userData` to `~/.thanos/electron`.
-- [ ] Wire discover → attach → launch (bundled `to`) → takeover.
+- [ ] Pin `userData` to `~/.maestro/electron`.
+- [ ] Wire discover → attach → launch (bundled `maestro`) → takeover.
 - [ ] Port `useDaemonStatus` + `lib/daemon-status`.
 - **Done when**: `npm run dev` opens the window, spawns/attaches the daemon, and the
-      status indicator shows "connected". Main-process tests pass.
+  status indicator shows "connected". Main-process tests pass.
 
 ## Phase 2 — App chrome + routing
 
@@ -32,7 +32,7 @@ phase ends with a runnable, testable increment. "Port" = copy from
       `SessionInspector`, `useResizable`, `ui-store`.
 - [ ] Wire `QueryClientProvider`, router, `TelemetryBoundary`.
 - **Done when**: navigation between dashboard / project / session / PRs / settings
-      works with empty states. Shell/topbar/sidebar tests pass.
+  works with empty states. Shell/topbar/sidebar tests pass.
 
 ## Phase 3 — Read path (board + live events)
 
@@ -49,7 +49,7 @@ phase ends with a runnable, testable increment. "Port" = copy from
       `useSessionScmSummary`, `useAgentsQuery`, `agent-options`.
 - [ ] Wire create/config/delete project; spawn/send/kill/restore/rollback session.
 - **Done when**: user can register a project, spawn a worker, send a prompt, and
-      kill it end-to-end.
+  kill it end-to-end.
 
 ## Phase 5 — Terminal
 
@@ -70,7 +70,7 @@ phase ends with a runnable, testable increment. "Port" = copy from
       orchestrator dialogs + `spawn/restart-orchestrator`.
 - [ ] Wire PR claim/merge/resolve-comments, review trigger/submit, orchestrator CRUD.
 - **Done when**: PR list + summary render; review can be triggered; orchestrator can
-      be spawned/replaced.
+  be spawned/replaced.
 
 ## Phase 8 — Notifications, settings, migration, updates
 
@@ -78,20 +78,20 @@ phase ends with a runnable, testable increment. "Port" = copy from
 - [ ] Port `GlobalSettingsForm`, `UpdatesSection`, `update-settings`, `auto-updater`.
 - [ ] Port `MigrationPopup`, `MigrationSection`, `useMigrationOffer` + import wiring.
 - **Done when**: notifications stream and mark-read; settings persist; legacy import
-      offer works; update check runs.
+  offer works; update check runs.
 
 ## Phase 9 — Telemetry, polish, packaging
 
 - [ ] Port telemetry (`telemetry`, `posthog-config`) behind opt-out boundary.
-- [ ] Full Vitest + Playwright suites green at parity with Thanos.
+- [ ] Full Vitest + Playwright suites green at parity with Maestro.
 - [ ] `electron-forge make` produces installers (zip/deb/rpm); auto-update channel set.
-- **Done when**: `make` builds a distributable that boots against the Thanos daemon.
+- **Done when**: `make` builds a distributable that boots against the Maestro daemon.
 
 ## Acceptance (whole app)
 
-- Every feature in `03_features.md` works against `thanos/backend`.
+- Every feature in `03_features.md` works against `maestro/backend`.
 - All ported unit + e2e tests pass.
-- No writes outside `~/.thanos`.
+- No writes outside `~/.maestro`.
 - `src/api/schema.ts` is generated (not hand-written) and current with the backend spec.
 
 ## Suggested execution note

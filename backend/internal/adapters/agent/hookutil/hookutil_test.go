@@ -20,7 +20,7 @@ func TestEnsureWorkspaceGitignoreWritesSelfIgnoringFile(t *testing.T) {
 	if !strings.Contains(content, GitignoreSentinel) {
 		t.Fatalf("content missing sentinel: %q", content)
 	}
-	// Entries are anchored so only Thanos's files in THIS directory are ignored —
+	// Entries are anchored so only Maestro's files in THIS directory are ignored —
 	// an agent's own files (even in the same dir) must keep counting as dirt.
 	for _, want := range []string{"/.gitignore\n", "/hooks.json\n", "/config.toml\n"} {
 		if !strings.Contains(content, want) {

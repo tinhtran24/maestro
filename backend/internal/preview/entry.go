@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/tinhtran/thanos/backend/internal/domain"
+	"github.com/tinhtran24/maestro/backend/internal/domain"
 )
 
 var entryCandidates = []string{"index.html", "public/index.html", "dist/index.html", "build/index.html"}

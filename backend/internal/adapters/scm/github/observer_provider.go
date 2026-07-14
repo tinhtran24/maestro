@@ -17,8 +17,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/tinhtran/thanos/backend/internal/domain"
-	"github.com/tinhtran/thanos/backend/internal/ports"
+	"github.com/tinhtran24/maestro/backend/internal/domain"
+	"github.com/tinhtran24/maestro/backend/internal/ports"
 )
 
 const scmBatchCheckContextLimit = 20
@@ -62,7 +62,7 @@ func (p *Provider) RepoPRListGuard(ctx context.Context, repo ports.SCMRepo, etag
 
 // ListOpenPRsByRepo lists every open pull request in the repository so the
 // observer can attribute each to a session by head-branch prefix. It paginates
-// the REST pulls endpoint; Thanos repos are not expected to carry thousands of
+// the REST pulls endpoint; Maestro repos are not expected to carry thousands of
 // concurrent open PRs, and the observer only calls this when the repo PR-list
 // ETag guard reports a change.
 func (p *Provider) ListOpenPRsByRepo(ctx context.Context, repo ports.SCMRepo) ([]ports.SCMPRObservation, error) {

@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"testing"
 
-	"github.com/tinhtran/thanos/backend/internal/httpd/apispec"
-	"github.com/tinhtran/thanos/backend/internal/httpd/apispec/specgen"
+	"github.com/tinhtran24/maestro/backend/internal/httpd/apispec"
+	"github.com/tinhtran24/maestro/backend/internal/httpd/apispec/specgen"
 )
 
 // TestBuild_MatchesEmbedded is the drift guard: the committed (embedded)

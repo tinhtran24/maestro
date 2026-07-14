@@ -7,7 +7,7 @@ import (
 )
 
 // TestInstall_WritesSkillAndIsIdempotent: Install must lay down the embedded
-// skill (SKILL.md plus a commands file) under <dataDir>/skills/using-to, and a
+// skill (SKILL.md plus a commands file) under <dataDir>/skills/using-maestro, and a
 // second run must clobber cleanly, leaving no stale files. This is the whole
 // contract the daemon boot hook relies on.
 func TestInstall_WritesSkillAndIsIdempotent(t *testing.T) {
@@ -25,6 +25,14 @@ func TestInstall_WritesSkillAndIsIdempotent(t *testing.T) {
 	}
 	if _, err := os.Stat(filepath.Join(Dir(dataDir), "commands", "spawn.md")); err != nil {
 		t.Fatalf("commands/spawn.md missing: %v", err)
+	}
+
+	// The dev-lifecycle skill installs alongside using-maestro.
+	lifecycleFile := filepath.Join(LifecycleDir(dataDir), "SKILL.md")
+	if b, err := os.ReadFile(lifecycleFile); err != nil {
+		t.Fatalf("read %s: %v", lifecycleFile, err)
+	} else if len(b) == 0 {
+		t.Fatalf("dev-lifecycle SKILL.md is empty")
 	}
 
 	// A stale file inside the skill dir must not survive a reinstall (clobber).

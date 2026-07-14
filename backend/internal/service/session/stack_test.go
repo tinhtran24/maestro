@@ -3,7 +3,7 @@ package session
 import (
 	"testing"
 
-	"github.com/tinhtran/thanos/backend/internal/domain"
+	"github.com/tinhtran24/maestro/backend/internal/domain"
 )
 
 // live builds an idle, non-terminated session that has already signaled, so the

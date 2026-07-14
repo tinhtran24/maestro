@@ -6,15 +6,15 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/tinhtran/thanos/backend/internal/daemonmeta"
-	"github.com/tinhtran/thanos/backend/internal/runfile"
+	"github.com/tinhtran24/maestro/backend/internal/daemonmeta"
+	"github.com/tinhtran24/maestro/backend/internal/runfile"
 )
 
 // staleProbeTimeout bounds the startup ownership probe so a run-file pointing at
 // an unreachable port cannot stall daemon startup.
 const staleProbeTimeout = 2 * time.Second
 
-// runFileOwnerServing reports whether an Thanos daemon matching info is actually
+// runFileOwnerServing reports whether an Maestro daemon matching info is actually
 // serving on the recorded loopback port.
 //
 // runfile.CheckStale only confirms the recorded PID is alive, which is not

@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/tinhtran/thanos/backend/internal/domain"
+	"github.com/tinhtran24/maestro/backend/internal/domain"
 )
 
 // mapPermission maps a legacy AgentPermissionMode to the rewrite PermissionMode

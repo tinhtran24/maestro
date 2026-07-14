@@ -4,7 +4,7 @@ set -euo pipefail
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 repo_root="$(cd "${script_dir}/.." && pwd)"
 backend_dir="${repo_root}/backend"
-build_dir="${XDG_CACHE_HOME:-${HOME}/.cache}/tinhtran/thanos/bin"
+build_dir="${XDG_CACHE_HOME:-${HOME}/.cache}/tinhtran24/maestro/bin"
 
 can_write_dir() {
   local dir="$1"
@@ -88,14 +88,14 @@ select_install_dir() {
 
 command -v go >/dev/null
 goexe="$(go env GOEXE)"
-binary_name="ao${goexe}"
+binary_name="maestro${goexe}"
 binary_path="${build_dir}/${binary_name}"
 
 mkdir -p "${build_dir}"
-(cd "${backend_dir}" && go build -o "${binary_path}" ./cmd/to)
+(cd "${backend_dir}" && go build -o "${binary_path}" ./cmd/maestro)
 
 if ! install_dir="$(select_install_dir)"; then
-  printf 'Could not find a writable directory on PATH for to\n' >&2
+  printf 'Could not find a writable directory on PATH for maestro\n' >&2
   exit 1
 fi
 install_path="${install_dir}/${binary_name}"
@@ -104,17 +104,19 @@ shim_path=""
 install_file "${binary_path}" "${install_path}"
 
 if [[ -n "${goexe}" ]]; then
+  # Legacy `to` shim (deprecated) forwards to the maestro binary.
   shim_path="${install_dir}/to"
   printf '%s\n' \
     '#!/usr/bin/env bash' \
+    'echo "\`to\` is deprecated; use \`maestro\` (Thanos is now Maestro)." >&2' \
     'script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"' \
-    'exec "${script_dir}/to.exe" "$@"' > "${shim_path}"
+    'exec "${script_dir}/maestro.exe" "$@"' > "${shim_path}"
   chmod +x "${shim_path}"
 fi
 
 resolved="$(resolve_ao)"
 if [[ -z "${resolved}" ]]; then
-  printf 'to did not resolve on PATH after installing %s\n' "${install_path}" >&2
+  printf 'maestro did not resolve on PATH after installing %s\n' "${install_path}" >&2
   exit 1
 fi
 resolved_path="$(absolute_path "${resolved}")"

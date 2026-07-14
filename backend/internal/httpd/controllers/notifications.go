@@ -9,10 +9,10 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
-	"github.com/tinhtran/thanos/backend/internal/domain"
-	"github.com/tinhtran/thanos/backend/internal/httpd/apispec"
-	"github.com/tinhtran/thanos/backend/internal/httpd/envelope"
-	notificationsvc "github.com/tinhtran/thanos/backend/internal/service/notification"
+	"github.com/tinhtran24/maestro/backend/internal/domain"
+	"github.com/tinhtran24/maestro/backend/internal/httpd/apispec"
+	"github.com/tinhtran24/maestro/backend/internal/httpd/envelope"
+	notificationsvc "github.com/tinhtran24/maestro/backend/internal/service/notification"
 )
 
 // NotificationService is the controller-facing notification service contract.

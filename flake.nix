@@ -1,5 +1,5 @@
 {
-  description = "thanos development shell";
+  description = "maestro development shell";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";

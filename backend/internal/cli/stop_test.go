@@ -6,11 +6,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/tinhtran/thanos/backend/internal/runfile"
+	"github.com/tinhtran24/maestro/backend/internal/runfile"
 )
 
 // TestWaitForStoppedKeepsRunFileFromConcurrentStart guards against deleting a
-// fresh daemon's handshake: if a concurrent `to start` replaces running.json
+// fresh daemon's handshake: if a concurrent `maestro start` replaces running.json
 // with a new live PID while we are polling the PID we stopped, waitForStopped
 // must report stopped but leave the new run-file intact.
 func TestWaitForStoppedKeepsRunFileFromConcurrentStart(t *testing.T) {

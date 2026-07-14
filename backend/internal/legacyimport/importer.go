@@ -9,8 +9,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/tinhtran/thanos/backend/internal/domain"
-	aoprocess "github.com/tinhtran/thanos/backend/internal/process"
+	"github.com/tinhtran24/maestro/backend/internal/domain"
+	aoprocess "github.com/tinhtran24/maestro/backend/internal/process"
 )
 
 // Store is the narrow slice of the rewrite's native storage layer the importer
@@ -24,7 +24,7 @@ type Store interface {
 
 // Options configure one import run.
 type Options struct {
-	// Root is the legacy state root to read (default ~/.thanos).
+	// Root is the legacy state root to read (default ~/.maestro).
 	Root string
 	// DryRun parses + plans every row but writes nothing.
 	DryRun bool

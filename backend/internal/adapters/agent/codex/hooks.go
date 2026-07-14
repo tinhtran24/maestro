@@ -9,18 +9,18 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/tinhtran/thanos/backend/internal/adapters/agent/hookutil"
-	"github.com/tinhtran/thanos/backend/internal/ports"
+	"github.com/tinhtran24/maestro/backend/internal/adapters/agent/hookutil"
+	"github.com/tinhtran24/maestro/backend/internal/ports"
 )
 
-// Codex (0.136+) never loads hook config from Thanos's per-session worktrees, so
-// Thanos's hooks ride the launch command as `-c` session-flag config instead of
+// Codex (0.136+) never loads hook config from Maestro's per-session worktrees, so
+// Maestro's hooks ride the launch command as `-c` session-flag config instead of
 // workspace files:
 //
 //   - Project-local `.codex/` layers only load when the directory is trusted,
 //     and for linked git worktrees Codex sources hook declarations from the
 //     matching `.codex/` folder in the ROOT checkout, not the worktree. A
-//     hooks.json written into an Thanos worktree is therefore dead config.
+//     hooks.json written into an Maestro worktree is therefore dead config.
 //   - Hooks passed as `-c 'hooks.<Event>=[...]'` land in Codex's session-flags
 //     config layer, which is not trust-gated and aggregates with (never
 //     replaces) the user's own hooks from `~/.codex`. They carry no persisted
@@ -30,11 +30,11 @@ const (
 	codexHooksDirName  = ".codex"
 	codexHooksFileName = "hooks.json"
 
-	// codexHookCommandPrefix identifies the hook commands Thanos owns, so the
-	// legacy-file cleanup and uninstall recognize Thanos entries by prefix
+	// codexHookCommandPrefix identifies the hook commands Maestro owns, so the
+	// legacy-file cleanup and uninstall recognize Maestro entries by prefix
 	// without an embedded template to diff against.
-	codexHookCommandPrefix = "to hooks codex "
-	// codexHookTimeout caps how long Codex waits on one Thanos hook callback. The
+	codexHookCommandPrefix = "maestro hooks codex "
+	// codexHookTimeout caps how long Codex waits on one Maestro hook callback. The
 	// callback is a loopback POST that normally returns in milliseconds; a
 	// tight cap keeps a hung daemon from stalling the agent's turn.
 	codexHookTimeout = 5
@@ -57,13 +57,13 @@ type codexHookEntry struct {
 	Timeout int    `json:"timeout,omitempty"`
 }
 
-// codexHookSpec describes one hook Thanos delivers via launch-command config.
+// codexHookSpec describes one hook Maestro delivers via launch-command config.
 type codexHookSpec struct {
 	Event   string
 	Command string
 }
 
-// codexManagedHooks is the source of truth for the hooks Thanos delivers. Event
+// codexManagedHooks is the source of truth for the hooks Maestro delivers. Event
 // names must not contain dots: they are spliced into a dotted `-c` key path,
 // and Codex splits that path on every dot without honoring quoting.
 var codexManagedHooks = []codexHookSpec{
@@ -73,7 +73,7 @@ var codexManagedHooks = []codexHookSpec{
 	{Event: "Stop", Command: codexHookCommandPrefix + "stop"},
 }
 
-// appendSessionHookFlags adds Thanos's activity hooks to the argv as `-c`
+// appendSessionHookFlags adds Maestro's activity hooks to the argv as `-c`
 // session-flag config, one flag per managed event.
 func appendSessionHookFlags(cmd *[]string) {
 	for _, spec := range codexManagedHooks {
@@ -153,10 +153,10 @@ func containsTOMLControl(s string) bool {
 }
 
 // GetAgentHooks no longer installs workspace files — Codex never loads them
-// from Thanos's worktrees (see the package comment above); the hooks ride the
-// launch command instead. It still strips hook entries that older Thanos versions
+// from Maestro's worktrees (see the package comment above); the hooks ride the
+// launch command instead. It still strips hook entries that older Maestro versions
 // wrote into the worktree-local .codex/hooks.json so reused or restored
-// worktrees don't keep dead Thanos config, preserving user-defined hooks.
+// worktrees don't keep dead Maestro config, preserving user-defined hooks.
 func (p *Plugin) GetAgentHooks(ctx context.Context, cfg ports.WorkspaceHookConfig) error {
 	if err := ctx.Err(); err != nil {
 		return err
@@ -170,7 +170,7 @@ func (p *Plugin) GetAgentHooks(ctx context.Context, cfg ports.WorkspaceHookConfi
 	return nil
 }
 
-// UninstallHooks removes Thanos's legacy Codex hooks from the workspace-local
+// UninstallHooks removes Maestro's legacy Codex hooks from the workspace-local
 // .codex/hooks.json file, leaving user-defined hooks untouched. A missing file
 // is a no-op.
 func (p *Plugin) UninstallHooks(ctx context.Context, workspacePath string) error {
@@ -186,8 +186,8 @@ func (p *Plugin) UninstallHooks(ctx context.Context, workspacePath string) error
 	return nil
 }
 
-// removeLegacyWorkspaceHooks strips Thanos-owned entries from a workspace-local
-// hooks.json left behind by older Thanos versions. Files without one are untouched.
+// removeLegacyWorkspaceHooks strips Maestro-owned entries from a workspace-local
+// hooks.json left behind by older Maestro versions. Files without one are untouched.
 func removeLegacyWorkspaceHooks(workspacePath string) error {
 	hooksPath := codexHooksPath(workspacePath)
 	if _, err := os.Stat(hooksPath); errors.Is(err, os.ErrNotExist) {
@@ -225,7 +225,7 @@ func removeLegacyWorkspaceHooks(workspacePath string) error {
 	return writeCodexHooks(hooksPath, topLevel, rawHooks)
 }
 
-// AreHooksInstalled reports whether any legacy Thanos Codex hook is still present
+// AreHooksInstalled reports whether any legacy Maestro Codex hook is still present
 // in the workspace-local hooks file. A missing file means none are installed.
 func (p *Plugin) AreHooksInstalled(ctx context.Context, workspacePath string) (bool, error) {
 	if err := ctx.Err(); err != nil {
@@ -265,7 +265,7 @@ func codexHooksPath(workspacePath string) string {
 }
 
 // readCodexHooks loads the hooks file into a top-level raw map plus the decoded
-// "hooks" sub-map, preserving keys Thanos doesn't manage. A missing or empty
+// "hooks" sub-map, preserving keys Maestro doesn't manage. A missing or empty
 // file yields empty maps.
 func readCodexHooks(hooksPath string) (topLevel, rawHooks map[string]json.RawMessage, err error) {
 	topLevel = map[string]json.RawMessage{}
@@ -324,7 +324,7 @@ func isCodexManagedHook(command string) bool {
 }
 
 // countCodexHooks totals the hook entries across groups so the legacy cleanup
-// can tell whether stripping Thanos entries changed anything, including removals
+// can tell whether stripping Maestro entries changed anything, including removals
 // inside a group that survives.
 func countCodexHooks(groups []codexMatcherGroup) int {
 	total := 0
@@ -334,7 +334,7 @@ func countCodexHooks(groups []codexMatcherGroup) int {
 	return total
 }
 
-// removeCodexManagedHooks strips Thanos hook entries from every group,
+// removeCodexManagedHooks strips Maestro hook entries from every group,
 // dropping any group left without hooks.
 func removeCodexManagedHooks(groups []codexMatcherGroup) []codexMatcherGroup {
 	result := make([]codexMatcherGroup, 0, len(groups))

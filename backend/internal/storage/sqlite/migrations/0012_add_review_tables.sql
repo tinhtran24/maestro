@@ -1,4 +1,4 @@
--- Configurable Thanos code review (issue #192). review holds one row per worker
+-- Configurable Maestro code review (issue #192). review holds one row per worker
 -- session under review (session_id UNIQUE); a repeat trigger reuses the row.
 -- review_run holds the per-pass facts. The reviewer agent posts its review to
 -- the PR itself; `to review submit` records the verdict and body on the run.

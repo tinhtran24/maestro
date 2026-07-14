@@ -3,7 +3,7 @@ package telemetry
 import (
 	"context"
 
-	"github.com/tinhtran/thanos/backend/internal/ports"
+	"github.com/tinhtran24/maestro/backend/internal/ports"
 )
 
 // NoopSink discards every event.

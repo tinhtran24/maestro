@@ -7,8 +7,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/tinhtran/thanos/backend/internal/domain"
-	"github.com/tinhtran/thanos/backend/internal/ports"
+	"github.com/tinhtran24/maestro/backend/internal/domain"
+	"github.com/tinhtran24/maestro/backend/internal/ports"
 )
 
 var ctx = context.Background()
@@ -163,7 +163,7 @@ func TestMarkSpawnedStoresRuntimeMetadata(t *testing.T) {
 
 // TestMarkSpawned_StampsUTCActivity locks the lifecycle clock to UTC so
 // activity-driven timestamps match the session manager's spawn timestamps. A
-// local clock here left `to session get` showing created in UTC but updated in
+// local clock here left `maestro session get` showing created in UTC but updated in
 // local time.
 func TestMarkSpawned_StampsUTCActivity(t *testing.T) {
 	m, st, _ := newManager()
@@ -577,16 +577,16 @@ func TestApplyReviewResultSendsAndDedupsThroughPRSignature(t *testing.T) {
 		t.Fatalf("outcome/messages = %q/%v, want sent once", outcome, msg.msgs)
 	}
 	got := msg.msgs[0]
-	for _, want := range []string{"[Thanos reviewer]", "PR: " + result.PRURL, "Verdict: changes_requested", "Review body:\nfix the bug", "GitHub review: 98[2J765"} {
+	for _, want := range []string{"[Maestro reviewer]", "PR: " + result.PRURL, "Verdict: changes_requested", "Review body:\nfix the bug", "GitHub review: 98[2J765"} {
 		if !strings.Contains(got, want) {
-			t.Fatalf("Thanos review nudge missing %q: %q", want, got)
+			t.Fatalf("Maestro review nudge missing %q: %q", want, got)
 		}
 	}
 	if strings.Contains(got, "\x1b") {
-		t.Fatalf("Thanos review nudge should sanitize control bytes: %q", got)
+		t.Fatalf("Maestro review nudge should sanitize control bytes: %q", got)
 	}
 	if st.signatures[result.PRURL] == "" {
-		t.Fatal("Thanos review nudge did not persist sendOnce signature")
+		t.Fatal("Maestro review nudge did not persist sendOnce signature")
 	}
 
 	outcome, err = m.ApplyReviewResult(ctx, "mer-1", result)

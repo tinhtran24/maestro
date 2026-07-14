@@ -7,16 +7,13 @@ package daemon
 import (
 	"context"
 	"errors"
-	"fmt"
 	"log/slog"
-	"os"
-	"os/exec"
-	"strings"
 
-	scmgithub "github.com/tinhtran/thanos/backend/internal/adapters/scm/github"
-	"github.com/tinhtran/thanos/backend/internal/lifecycle"
-	scmobserve "github.com/tinhtran/thanos/backend/internal/observe/scm"
-	"github.com/tinhtran/thanos/backend/internal/storage/sqlite"
+	scmgithub "github.com/tinhtran24/maestro/backend/internal/adapters/scm/github"
+	"github.com/tinhtran24/maestro/backend/internal/domain"
+	"github.com/tinhtran24/maestro/backend/internal/lifecycle"
+	scmobserve "github.com/tinhtran24/maestro/backend/internal/observe/scm"
+	"github.com/tinhtran24/maestro/backend/internal/storage/sqlite"
 )
 
 // startSCMObserver wires the provider-neutral SCM observer with the GitHub
@@ -24,28 +21,30 @@ import (
 // observer performs a lazy credential check in its background goroutine, logs
 // one warning, and disables itself before any provider API calls.
 func startSCMObserver(ctx context.Context, store *sqlite.Store, lcm *lifecycle.Manager, logger *slog.Logger) <-chan struct{} {
-	provider, err := newGitHubSCMProvider(logger)
+	github, err := newGitHubSCMProvider(logger)
 	if err != nil {
 		logSCMProviderDisabled(logger, err)
 		return closedDone()
 	}
+	// Register every SCM adapter behind the dispatcher. Today only GitHub ships
+	// an observation adapter, so this behaves identically to a bare GitHub
+	// provider; adding GitLab/Bitbucket is a one-line registration here plus the
+	// adapter, with no observer-level change.
+	provider := scmobserve.NewMultiProvider(
+		scmobserve.RegisteredProvider{Name: domain.SCMProviderGitHub, Provider: github},
+	)
 	observer := scmobserve.New(provider, store, lcm, scmobserve.Config{Logger: logger})
 	return observer.Start(ctx)
 }
 
 func newGitHubSCMProvider(logger *slog.Logger) (*scmgithub.Provider, error) {
-	if strings.TrimSpace(os.Getenv("THANOS_GITHUB_TOKEN")) == "" && strings.TrimSpace(os.Getenv("GITHUB_TOKEN")) == "" {
-		if _, err := exec.LookPath("gh"); err != nil {
-			return nil, fmt.Errorf("GitHub CLI not installed; install it with `brew install gh`, then run `gh auth login`")
-		}
-	}
 	tokens := scmgithub.FallbackTokenSource{
-		scmgithub.EnvTokenSource{EnvVars: []string{"THANOS_GITHUB_TOKEN"}},
-		&scmgithub.GHTokenSource{},
+		scmgithub.EnvTokenSource{EnvVars: []string{"MAESTRO_GITHUB_TOKEN"}},
+		&scmgithub.GitCredentialTokenSource{},
 	}
 	// Avoid token preflight on daemon startup and session service construction.
-	// gh may prompt or be slow; provider calls resolve credentials lazily when
-	// claim-pr or the background observer needs GitHub.
+	// Git credential helpers may prompt or be slow; provider calls resolve
+	// credentials lazily when claim-pr or the background observer needs GitHub.
 	return scmgithub.NewProvider(scmgithub.ProviderOptions{Token: tokens, SkipTokenPreflight: true, Logger: logger})
 }
 

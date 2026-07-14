@@ -8,7 +8,7 @@ import (
 	"runtime"
 	"testing"
 
-	"github.com/tinhtran/thanos/backend/internal/ports"
+	"github.com/tinhtran24/maestro/backend/internal/ports"
 )
 
 func TestResolveBinaryPrefersPath(t *testing.T) {

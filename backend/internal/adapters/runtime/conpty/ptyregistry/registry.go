@@ -1,6 +1,6 @@
 // Package ptyregistry is a sideband JSON list of live Windows pty-host
-// processes so to stop can find and graceful-kill them even when session
-// metadata is lost. Ported from thanos's windows-pty-registry.ts.
+// processes so maestro stop can find and graceful-kill them even when session
+// metadata is lost. Ported from maestro's windows-pty-registry.ts.
 package ptyregistry
 
 import (
@@ -23,15 +23,15 @@ type Entry struct {
 // pidalive_windows.go).
 var pidAlive = defaultPidAlive
 
-// registryFile resolves ~/.thanos/windows-pty-hosts.json. Uses os.UserHomeDir()
+// registryFile resolves ~/.maestro/windows-pty-hosts.json. Uses os.UserHomeDir()
 // so t.Setenv("HOME", dir) in tests redirects reads/writes to a temp dir.
-// ponytail: HOME-based resolution; no THANOS_DATA_DIR override needed here.
+// ponytail: HOME-based resolution; no MAESTRO_DATA_DIR override needed here.
 func registryFile() (string, error) {
 	home, err := os.UserHomeDir()
 	if err != nil {
 		return "", err
 	}
-	return filepath.Join(home, ".thanos", "windows-pty-hosts.json"), nil
+	return filepath.Join(home, ".maestro", "windows-pty-hosts.json"), nil
 }
 
 // readRaw reads and defensively parses the registry. Missing file or malformed

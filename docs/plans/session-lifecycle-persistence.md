@@ -36,13 +36,13 @@ commit-tree`) so tracked + staged + new (non-ignored) files are captured,
    over `git stash create`, which silently drops all untracked files, and over
    `git stash push -u`, which mutates the worktree and the global stash stack.)
 5. **Do not weaken the existing dirty-worktree refusal** used by interactive
-   `to session kill` / `to cleanup`. Add a separate `ForceDestroy` that the
+   `maestro session kill` / `maestro cleanup`. Add a separate `ForceDestroy` that the
    shutdown path calls only AFTER the work is captured. Adding `--force` to the
    shared remove path would silently destroy work in the interactive flows.
 
 ## Global Constraints (binding — reviewers enforce verbatim)
 
-- App state resolves under `~/.thanos` only (`THANOS_DATA_DIR`/`THANOS_RUN_FILE`
+- App state resolves under `~/.maestro` only (`MAESTRO_DATA_DIR`/`MAESTRO_RUN_FILE`
   overridable). Never `~/Library/Application Support`. The manifest is the
   existing SQLite DB at the configured data dir; preserve refs live in each
   project repo's `.git`.

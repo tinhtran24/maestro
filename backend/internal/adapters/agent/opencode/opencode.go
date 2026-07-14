@@ -2,16 +2,16 @@
 // launching new TUI sessions, resuming sessions by native id, installing a
 // workspace-local activity plugin, and reading plugin-derived session info.
 //
-// opencode differs from Claude Code and Codex in two ways Thanos has to bridge:
+// opencode differs from Claude Code and Codex in two ways Maestro has to bridge:
 //   - It has no native command-hook config (no settings.local.json / hooks.json
 //     equivalent). Its only lifecycle-extensibility surface is a JS/TS plugin
-//     loaded from .opencode/plugins/, so GetAgentHooks installs an Thanos-owned
+//     loaded from .opencode/plugins/, so GetAgentHooks installs an Maestro-owned
 //     plugin file (see hooks.go) instead of merging JSON.
 //   - Its CLI exposes only one approval flag (--dangerously-skip-permissions)
 //     and no system-prompt flag, so the graduated permission modes and the
 //     system prompt are deferred to opencode's own config.
 //
-// Thanos-managed sessions derive native session identity and display metadata from
+// Maestro-managed sessions derive native session identity and display metadata from
 // the opencode plugin's reported events, mirroring the Codex adapter.
 package opencode
 
@@ -28,17 +28,17 @@ import (
 	"sync"
 	"time"
 
-	"github.com/tinhtran/thanos/backend/internal/adapters"
-	"github.com/tinhtran/thanos/backend/internal/adapters/agent/agentbase"
-	"github.com/tinhtran/thanos/backend/internal/adapters/agent/hookutil"
-	"github.com/tinhtran/thanos/backend/internal/ports"
+	"github.com/tinhtran24/maestro/backend/internal/adapters"
+	"github.com/tinhtran24/maestro/backend/internal/adapters/agent/agentbase"
+	"github.com/tinhtran24/maestro/backend/internal/adapters/agent/hookutil"
+	"github.com/tinhtran24/maestro/backend/internal/ports"
 
 	_ "modernc.org/sqlite" // register sqlite driver for opencode session metadata probes
 )
 
 const (
 	// adapterID is the registry id and the value users pass to
-	// `to spawn --agent`. It matches domain.HarnessOpenCode.
+	// `maestro spawn --agent`. It matches domain.HarnessOpenCode.
 	adapterID = "opencode"
 
 	// opencodeAgentSessionIDMetadataKey is the session-metadata key the opencode
@@ -323,7 +323,7 @@ func opencodeDBCount(ctx context.Context, db *sql.DB, query string) (int, error)
 	return count, nil
 }
 
-// appendPermissionFlags maps Thanos's permission modes onto opencode's single
+// appendPermissionFlags maps Maestro's permission modes onto opencode's single
 // approval flag. opencode exposes only --dangerously-skip-permissions (no
 // graduated accept-edits/auto modes), so:
 //   - bypass-permissions → --dangerously-skip-permissions

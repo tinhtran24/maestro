@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/tinhtran/thanos/backend/internal/cdc"
-	"github.com/tinhtran/thanos/backend/internal/storage/sqlite/gen"
+	"github.com/tinhtran24/maestro/backend/internal/cdc"
+	"github.com/tinhtran24/maestro/backend/internal/storage/sqlite/gen"
 )
 
 // EventsAfter implements cdc.Source over the SQLite change_log table.

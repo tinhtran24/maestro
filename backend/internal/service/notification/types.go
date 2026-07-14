@@ -1,7 +1,7 @@
 // Package notification exposes read-only notification DTOs for REST controllers.
 package notification
 
-import "github.com/tinhtran/thanos/backend/internal/domain"
+import "github.com/tinhtran24/maestro/backend/internal/domain"
 
 // TargetKind describes what a dashboard should navigate to for a notification.
 type TargetKind string

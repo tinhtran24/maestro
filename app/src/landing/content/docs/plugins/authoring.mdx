@@ -1,13 +1,13 @@
 ---
 title: Authoring a plugin
-description: Write a custom runtime, agent, workspace, tracker, SCM, notifier, or terminal plugin for Thanos.
+description: Write a custom runtime, agent, workspace, tracker, SCM, notifier, or terminal plugin for Maestro.
 ---
 
 import { Callout } from "fumadocs-ui/components/callout";
 import { Step, Steps } from "fumadocs-ui/components/steps";
 import { Card, Cards } from "fumadocs-ui/components/card";
 
-Thanos's seven user-pluggable slots (Runtime, Agent, Workspace, Tracker, SCM, Notifier, Terminal) are all resolved at startup from the plugin registry. Each slot is backed by a TypeScript interface defined in `packages/core/src/types.ts`. Adding a new tracker, notifier, or any other integration is a matter of publishing an npm package — or pointing to a local path — that exports a manifest, a `create()` factory, and an optional `detect()` probe as its default export.
+Maestro's seven user-pluggable slots (Runtime, Agent, Workspace, Tracker, SCM, Notifier, Terminal) are all resolved at startup from the plugin registry. Each slot is backed by a TypeScript interface defined in `packages/core/src/types.ts`. Adding a new tracker, notifier, or any other integration is a matter of publishing an npm package — or pointing to a local path — that exports a manifest, a `create()` factory, and an optional `detect()` probe as its default export.
 
 ---
 
@@ -41,7 +41,7 @@ Called once during startup. `config` contains whatever key-value pairs appear un
 
 ### `detect()` (optional)
 
-Return `true` when the system has what your plugin needs — a binary on PATH, an environment variable, a running process. Thanos uses this to warn about missing dependencies at startup rather than at first use.
+Return `true` when the system has what your plugin needs — a binary on PATH, an environment variable, a running process. Maestro uses this to warn about missing dependencies at startup rather than at first use.
 
 ### Default export
 
@@ -77,9 +77,9 @@ export default { manifest, create, detect } satisfies PluginModule<Notifier>;
 
 ---
 
-## Create a plugin with `to plugin create`
+## Create a plugin with `maestro plugin create`
 
-The fastest way to start is `to plugin create`. It runs an interactive prompt (using `@clack/prompts`) and writes a ready-to-build package.
+The fastest way to start is `maestro plugin create`. It runs an interactive prompt (using `@clack/prompts`) and writes a ready-to-build package.
 
 <Steps>
 <Step>
@@ -110,13 +110,13 @@ Add `--non-interactive` to require all fields to be provided via flags (useful i
 
 The CLI asks for four things, in order:
 
-| Prompt              | Example input                                                |
-| ------------------- | ------------------------------------------------------------ |
-| Plugin display name | `PagerDuty`                                                  |
-| Plugin slot         | `notifier` (selected from a list of all 7 slots)             |
-| Short description   | `Route urgent alerts to PagerDuty`                           |
-| Author              | `Alice`                                                      |
-| Package name        | `to-plugin-notifier-pagerduty` (pre-filled from slot + name) |
+| Prompt              | Example input                                                     |
+| ------------------- | ----------------------------------------------------------------- |
+| Plugin display name | `PagerDuty`                                                       |
+| Plugin slot         | `notifier` (selected from a list of all 7 slots)                  |
+| Short description   | `Route urgent alerts to PagerDuty`                                |
+| Author              | `Alice`                                                           |
+| Package name        | `maestro-plugin-notifier-pagerduty` (pre-filled from slot + name) |
 
 </Step>
 <Step>
@@ -129,7 +129,7 @@ The scaffold is written to `./{normalized-name}/` (or the directory you provided
 pagerduty/
 ├── package.json       # type: module, main: dist/index.js, exports map
 ├── tsconfig.json      # ES2022 + Node16 modules, strict mode
-├── README.md          # Thanos config snippets for local and npm installs
+├── README.md          # Maestro config snippets for local and npm installs
 ├── .gitignore         # dist/, node_modules/
 └── src/
     └── index.ts       # manifest + stub create() + default export
@@ -186,7 +186,7 @@ npm run build
 </Step>
 <Step>
 
-### Register it in `thanos.yaml`
+### Register it in `maestro.yaml`
 
 For local development, use `source: local`:
 
@@ -245,7 +245,7 @@ Agent plugins have the richest interface. Methods are split into required and op
 | Method             | Purpose                                                           | Returns `null`?      |
 | ------------------ | ----------------------------------------------------------------- | -------------------- |
 | `getLaunchCommand` | Shell command to start the agent                                  | No                   |
-| `getEnvironment`   | Env vars for the process (must include `~/.thanos/bin` in PATH)       | No                   |
+| `getEnvironment`   | Env vars for the process (must include `~/.maestro/bin` in PATH)  | No                   |
 | `detectActivity`   | Terminal-output activity classification (deprecated but required) | No                   |
 | `getActivityState` | JSONL/API-based activity detection                                | Yes (if no data)     |
 | `isProcessRunning` | Check whether the process is still alive                          | No (returns `false`) |
@@ -361,15 +361,15 @@ export function create(config?: Record<string, unknown>): Notifier {
 
 ## Loading paths
 
-Thanos resolves plugins through four mechanisms, tried in this order:
+Maestro resolves plugins through four mechanisms, tried in this order:
 
 ### 1. Bundled
 
-Plugins under `packages/plugins/` in the Thanos monorepo are registered automatically. No config is required.
+Plugins under `packages/plugins/` in the Maestro monorepo are registered automatically. No config is required.
 
 ### 2. Registry / npm (`source: registry` or `source: npm`)
 
-An npm package. Thanos installs it into its internal plugin cache on first use and keeps the version pinned in `thanos.yaml`.
+An npm package. Maestro installs it into its internal plugin cache on first use and keeps the version pinned in `maestro.yaml`.
 
 ```yaml
 plugins:
@@ -379,11 +379,11 @@ plugins:
     version: "^1.0.0"
 ```
 
-Use `to plugin install to-plugin-notifier-pagerduty` to add this block automatically.
+Use `maestro plugin install to-plugin-notifier-pagerduty` to add this block automatically.
 
 ### 3. Local path (`source: local`)
 
-A filesystem path. Useful during development. Path is resolved relative to `thanos.yaml`.
+A filesystem path. Useful during development. Path is resolved relative to `maestro.yaml`.
 
 ```yaml
 plugins:
@@ -392,7 +392,7 @@ plugins:
     path: ./plugins/pagerduty
 ```
 
-Thanos will import `dist/index.js` (falling back to `index.js`) from that directory.
+Maestro will import `dist/index.js` (falling back to `index.js`) from that directory.
 
 ### 4. Inline shortcut
 
@@ -420,16 +420,16 @@ projects:
 
 ---
 
-## `to plugin` subcommands
+## `maestro plugin` subcommands
 
-| Command                           | Description                                                                                                                                                                                                 |
-| --------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `to plugin list`                  | List plugins from the bundled marketplace catalog. Add `--installed` to show only what's in your config. Filter by slot with `--type <slot>`. Add `--refresh` to pull the latest catalog from the registry. |
-| `to plugin search <query>`        | Search the bundled catalog by name, package, description, or slot.                                                                                                                                          |
-| `to plugin create [dir]`          | Scaffold a new plugin package interactively.                                                                                                                                                                |
-| `to plugin install <reference>`   | Install a plugin by marketplace ID, package name, or local path. Writes the entry to `thanos.yaml`.                                                                                             |
-| `to plugin update [reference]`    | Update an installer-managed plugin. Pass `--all` to update everything.                                                                                                                                      |
-| `to plugin uninstall <reference>` | Remove a plugin from the config.                                                                                                                                                                            |
+| Command                                | Description                                                                                                                                                                                                 |
+| -------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `maestro plugin list`                  | List plugins from the bundled marketplace catalog. Add `--installed` to show only what's in your config. Filter by slot with `--type <slot>`. Add `--refresh` to pull the latest catalog from the registry. |
+| `maestro plugin search <query>`        | Search the bundled catalog by name, package, description, or slot.                                                                                                                                          |
+| `maestro plugin create [dir]`          | Scaffold a new plugin package interactively.                                                                                                                                                                |
+| `maestro plugin install <reference>`   | Install a plugin by marketplace ID, package name, or local path. Writes the entry to `maestro.yaml`.                                                                                                        |
+| `maestro plugin update [reference]`    | Update an installer-managed plugin. Pass `--all` to update everything.                                                                                                                                      |
+| `maestro plugin uninstall <reference>` | Remove a plugin from the config.                                                                                                                                                                            |
 
 ---
 
@@ -449,7 +449,7 @@ All utilities are exported from `@tinhtran/to-core`. The source lives in `packag
 | Export                     | Purpose                                                                                                            |
 | -------------------------- | ------------------------------------------------------------------------------------------------------------------ |
 | `readLastJsonlEntry`       | Efficiently read the last entry from an agent's native JSONL log.                                                  |
-| `readLastActivityEntry`    | Read the last entry from the Thanos activity JSONL (`{workspace}/.thanos/activity.jsonl`).                                 |
+| `readLastActivityEntry`    | Read the last entry from the Maestro activity JSONL (`{workspace}/.maestro/activity.jsonl`).                       |
 | `checkActivityLogState`    | Extract `waiting_input` or `blocked` from an activity entry (with staleness cap). Returns `null` for other states. |
 | `getActivityFallbackState` | Age-based decay fallback: converts an activity entry into `active` / `ready` / `idle` using entry timestamp.       |
 | `recordTerminalActivity`   | Shared `recordActivity` implementation — classifies, deduplicates, and appends to the activity JSONL.              |
@@ -458,11 +458,11 @@ All utilities are exported from `@tinhtran/to-core`. The source lives in `packag
 
 **Workspace setup (agent plugins):**
 
-| Export                         | Purpose                                                                                                                                                         |
-| ------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `setupPathWrapperWorkspace`    | Install `~/.thanos/bin/gh` and `~/.thanos/bin/git` PATH wrappers and write `.thanos/AGENTS.md` in the workspace. Required for PATH-wrapper agents (Codex, Aider, OpenCode). |
-| `buildAgentPath`               | Prepend `~/.thanos/bin` to a PATH string.                                                                                                                           |
-| `normalizeAgentPermissionMode` | Normalize legacy permission mode aliases (e.g. `"skip"` → `"permissionless"`).                                                                                  |
+| Export                         | Purpose                                                                                                                                                                        |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `setupPathWrapperWorkspace`    | Install `~/.maestro/bin/gh` and `~/.maestro/bin/git` PATH wrappers and write `.maestro/AGENTS.md` in the workspace. Required for PATH-wrapper agents (Codex, Aider, OpenCode). |
+| `buildAgentPath`               | Prepend `~/.maestro/bin` to a PATH string.                                                                                                                                     |
+| `normalizeAgentPermissionMode` | Normalize legacy permission mode aliases (e.g. `"skip"` → `"permissionless"`).                                                                                                 |
 
 **Constants:**
 
@@ -585,7 +585,7 @@ async getActivityState(session, readyThresholdMs?): Promise<ActivityDetection | 
 }
 ```
 
-For agents that don't have a native session API (most new agents), skip step 3 and rely entirely on the Thanos activity JSONL written by `recordActivity`. The full specification — including hook patterns, `isProcessRunning` requirements, and the 7 required test cases — is in the "Agent Plugin Implementation Standards" section of `CLAUDE.md` in the project root.
+For agents that don't have a native session API (most new agents), skip step 3 and rely entirely on the Maestro activity JSONL written by `recordActivity`. The full specification — including hook patterns, `isProcessRunning` requirements, and the 7 required test cases — is in the "Agent Plugin Implementation Standards" section of `CLAUDE.md` in the project root.
 
 ---
 
@@ -600,7 +600,7 @@ For agents that don't have a native session API (most new agents), skip step 3 a
 	<Card title="Plugin catalog" description="Browse every bundled plugin grouped by slot." href="/docs/plugins" />
 	<Card
 		title="Configuration reference"
-		description="How plugins are referenced in thanos.yaml."
+		description="How plugins are referenced in maestro.yaml."
 		href="/docs/configuration"
 	/>
 </Cards>

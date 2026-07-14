@@ -11,9 +11,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/tinhtran/thanos/backend/internal/domain"
-	"github.com/tinhtran/thanos/backend/internal/httpd/apierr"
-	aoprocess "github.com/tinhtran/thanos/backend/internal/process"
+	"github.com/tinhtran24/maestro/backend/internal/domain"
+	"github.com/tinhtran24/maestro/backend/internal/httpd/apierr"
+	aoprocess "github.com/tinhtran24/maestro/backend/internal/process"
 )
 
 var workspaceRootIgnoreDenylist = []string{
@@ -165,7 +165,7 @@ func detectWorkspaceChildren(ctx context.Context, parent string, projectID domai
 				"Child repository name is reserved for internal use",
 				map[string]any{
 					"path":         child,
-					"suggestedFix": fmt.Sprintf("Rename the directory %q — the name %q is reserved by Thanos for the workspace root.", child, domain.RootWorkspaceRepoName),
+					"suggestedFix": fmt.Sprintf("Rename the directory %q — the name %q is reserved by Maestro for the workspace root.", child, domain.RootWorkspaceRepoName),
 				})
 		}
 		if err := validateWorkspaceChild(ctx, child); err != nil {
@@ -236,7 +236,7 @@ func adoptWorkspaceParent(ctx context.Context, parent string, repos []domain.Wor
 	if err := guardNoGitlinks(ctx, parent); err != nil {
 		return err
 	}
-	if _, err := gitOutput(ctx, parent, "commit", "-m", "chore: configure Thanos workspace ignores", "--", ".gitignore"); err != nil {
+	if _, err := gitOutput(ctx, parent, "commit", "-m", "chore: configure Maestro workspace ignores", "--", ".gitignore"); err != nil {
 		return apierr.Invalid("WORKSPACE_PARENT_COMMIT_FAILED", "Failed to commit workspace parent .gitignore", map[string]any{"error": err.Error()})
 	}
 	return nil
@@ -276,7 +276,7 @@ func initWorkspaceParent(ctx context.Context, parent string, repos []domain.Work
 	if err := guardNoGitlinks(ctx, parent); err != nil {
 		return err
 	}
-	if _, err := gitOutput(ctx, parent, "commit", "-m", "chore: initialize Thanos workspace root"); err != nil {
+	if _, err := gitOutput(ctx, parent, "commit", "-m", "chore: initialize Maestro workspace root"); err != nil {
 		return apierr.Invalid("WORKSPACE_PARENT_COMMIT_FAILED", "Failed to create workspace parent initial commit", map[string]any{"error": err.Error()})
 	}
 	return nil

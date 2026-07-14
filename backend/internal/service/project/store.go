@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/tinhtran/thanos/backend/internal/domain"
+	"github.com/tinhtran24/maestro/backend/internal/domain"
 )
 
 // Store is the durable project persistence surface required by Service.

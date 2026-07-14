@@ -8,7 +8,7 @@ const steps = [
 	{
 		num: "STEP 02",
 		title: "Configure",
-		desc: "Create an thanos.yaml. Pick your agents, tracker, and notifiers.",
+		desc: "Create an maestro.yaml. Pick your agents, tracker, and notifiers.",
 		cmd: "to start",
 	},
 	{ num: "STEP 03", title: "Launch", desc: "Assign issues and watch agents spawn.", cmd: "to batch-spawn 1 2 3" },

@@ -6,10 +6,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/tinhtran/thanos/backend/internal/adapters"
-	agentregistry "github.com/tinhtran/thanos/backend/internal/adapters/agent/registry"
-	"github.com/tinhtran/thanos/backend/internal/domain"
-	"github.com/tinhtran/thanos/backend/internal/ports"
+	"github.com/tinhtran24/maestro/backend/internal/adapters"
+	agentregistry "github.com/tinhtran24/maestro/backend/internal/adapters/agent/registry"
+	"github.com/tinhtran24/maestro/backend/internal/domain"
+	"github.com/tinhtran24/maestro/backend/internal/ports"
 )
 
 type fakeAgent struct {

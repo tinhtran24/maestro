@@ -10,7 +10,7 @@ import (
 func TestLoadDefaults(t *testing.T) {
 	// Clear every recognised var so we observe pure defaults regardless of the
 	// surrounding environment.
-	for _, k := range []string{"THANOS_PORT", "THANOS_REQUEST_TIMEOUT", "THANOS_SHUTDOWN_TIMEOUT", "THANOS_RUN_FILE", "THANOS_DATA_DIR", "THANOS_AGENT", "THANOS_ALLOWED_ORIGINS", "THANOS_TELEMETRY_EVENTS", "THANOS_TELEMETRY_METRICS", "THANOS_TELEMETRY_REMOTE", "THANOS_TELEMETRY_POSTHOG_KEY", "THANOS_TELEMETRY_POSTHOG_HOST"} {
+	for _, k := range []string{"MAESTRO_PORT", "MAESTRO_REQUEST_TIMEOUT", "MAESTRO_SHUTDOWN_TIMEOUT", "MAESTRO_RUN_FILE", "MAESTRO_DATA_DIR", "MAESTRO_AGENT", "MAESTRO_ALLOWED_ORIGINS", "MAESTRO_TELEMETRY_EVENTS", "MAESTRO_TELEMETRY_METRICS", "MAESTRO_TELEMETRY_REMOTE", "MAESTRO_TELEMETRY_POSTHOG_KEY", "MAESTRO_TELEMETRY_POSTHOG_HOST"} {
 		t.Setenv(k, "")
 	}
 
@@ -37,14 +37,14 @@ func TestLoadDefaults(t *testing.T) {
 	if err != nil {
 		t.Fatalf("UserHomeDir: %v", err)
 	}
-	wantRunFilePath := filepath.Join(homeDir, ".thanos", "running.json")
+	wantRunFilePath := filepath.Join(homeDir, ".maestro", "running.json")
 	if cfg.RunFilePath != wantRunFilePath {
 		t.Errorf("RunFilePath = %q, want %q", cfg.RunFilePath, wantRunFilePath)
 	}
 	if cfg.DataDir == "" {
 		t.Error("DataDir is empty, want a resolved default path")
 	}
-	wantDataDir := filepath.Join(homeDir, ".thanos", "data")
+	wantDataDir := filepath.Join(homeDir, ".maestro", "data")
 	if cfg.DataDir != wantDataDir {
 		t.Errorf("DataDir = %q, want %q", cfg.DataDir, wantDataDir)
 	}
@@ -54,16 +54,16 @@ func TestLoadDefaults(t *testing.T) {
 }
 
 func TestLoadOverrides(t *testing.T) {
-	t.Setenv("THANOS_PORT", "4002")
-	t.Setenv("THANOS_REQUEST_TIMEOUT", "5s")
-	t.Setenv("THANOS_SHUTDOWN_TIMEOUT", "3s")
-	t.Setenv("THANOS_RUN_FILE", "/tmp/to-test-running.json")
-	t.Setenv("THANOS_DATA_DIR", "/tmp/to-test-data")
-	t.Setenv("THANOS_TELEMETRY_EVENTS", "on")
-	t.Setenv("THANOS_TELEMETRY_METRICS", "off")
-	t.Setenv("THANOS_TELEMETRY_REMOTE", "posthog")
-	t.Setenv("THANOS_TELEMETRY_POSTHOG_KEY", "phc_test")
-	t.Setenv("THANOS_TELEMETRY_POSTHOG_HOST", "https://eu.i.posthog.com")
+	t.Setenv("MAESTRO_PORT", "4002")
+	t.Setenv("MAESTRO_REQUEST_TIMEOUT", "5s")
+	t.Setenv("MAESTRO_SHUTDOWN_TIMEOUT", "3s")
+	t.Setenv("MAESTRO_RUN_FILE", "/tmp/to-test-running.json")
+	t.Setenv("MAESTRO_DATA_DIR", "/tmp/to-test-data")
+	t.Setenv("MAESTRO_TELEMETRY_EVENTS", "on")
+	t.Setenv("MAESTRO_TELEMETRY_METRICS", "off")
+	t.Setenv("MAESTRO_TELEMETRY_REMOTE", "posthog")
+	t.Setenv("MAESTRO_TELEMETRY_POSTHOG_KEY", "phc_test")
+	t.Setenv("MAESTRO_TELEMETRY_POSTHOG_HOST", "https://eu.i.posthog.com")
 
 	cfg, err := Load()
 	if err != nil {
@@ -97,19 +97,19 @@ func TestLoadInvalid(t *testing.T) {
 		name string
 		env  map[string]string
 	}{
-		{"non-numeric port", map[string]string{"THANOS_PORT": "abc"}},
-		{"port out of range", map[string]string{"THANOS_PORT": "70000"}},
-		{"bad request timeout", map[string]string{"THANOS_REQUEST_TIMEOUT": "soon"}},
-		{"bad shutdown timeout", map[string]string{"THANOS_SHUTDOWN_TIMEOUT": "later"}},
-		{"zero request timeout", map[string]string{"THANOS_REQUEST_TIMEOUT": "0s"}},
-		{"negative request timeout", map[string]string{"THANOS_REQUEST_TIMEOUT": "-1s"}},
-		{"zero shutdown timeout", map[string]string{"THANOS_SHUTDOWN_TIMEOUT": "0s"}},
-		{"negative shutdown timeout", map[string]string{"THANOS_SHUTDOWN_TIMEOUT": "-5s"}},
-		{"null origin", map[string]string{"THANOS_ALLOWED_ORIGINS": "app://renderer,null"}},
-		{"wildcard origin", map[string]string{"THANOS_ALLOWED_ORIGINS": "*"}},
-		{"bad telemetry events", map[string]string{"THANOS_TELEMETRY_EVENTS": "maybe"}},
-		{"bad telemetry metrics", map[string]string{"THANOS_TELEMETRY_METRICS": "maybe"}},
-		{"bad telemetry remote", map[string]string{"THANOS_TELEMETRY_REMOTE": "otlp"}},
+		{"non-numeric port", map[string]string{"MAESTRO_PORT": "abc"}},
+		{"port out of range", map[string]string{"MAESTRO_PORT": "70000"}},
+		{"bad request timeout", map[string]string{"MAESTRO_REQUEST_TIMEOUT": "soon"}},
+		{"bad shutdown timeout", map[string]string{"MAESTRO_SHUTDOWN_TIMEOUT": "later"}},
+		{"zero request timeout", map[string]string{"MAESTRO_REQUEST_TIMEOUT": "0s"}},
+		{"negative request timeout", map[string]string{"MAESTRO_REQUEST_TIMEOUT": "-1s"}},
+		{"zero shutdown timeout", map[string]string{"MAESTRO_SHUTDOWN_TIMEOUT": "0s"}},
+		{"negative shutdown timeout", map[string]string{"MAESTRO_SHUTDOWN_TIMEOUT": "-5s"}},
+		{"null origin", map[string]string{"MAESTRO_ALLOWED_ORIGINS": "app://renderer,null"}},
+		{"wildcard origin", map[string]string{"MAESTRO_ALLOWED_ORIGINS": "*"}},
+		{"bad telemetry events", map[string]string{"MAESTRO_TELEMETRY_EVENTS": "maybe"}},
+		{"bad telemetry metrics", map[string]string{"MAESTRO_TELEMETRY_METRICS": "maybe"}},
+		{"bad telemetry remote", map[string]string{"MAESTRO_TELEMETRY_REMOTE": "otlp"}},
 	}
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
@@ -125,7 +125,7 @@ func TestLoadInvalid(t *testing.T) {
 
 func TestLoadAllowedOrigins(t *testing.T) {
 	t.Run("default includes the packaged renderer origin", func(t *testing.T) {
-		t.Setenv("THANOS_ALLOWED_ORIGINS", "")
+		t.Setenv("MAESTRO_ALLOWED_ORIGINS", "")
 		cfg, err := Load()
 		if err != nil {
 			t.Fatalf("Load: %v", err)
@@ -142,7 +142,7 @@ func TestLoadAllowedOrigins(t *testing.T) {
 	})
 
 	t.Run("override replaces defaults and trims entries", func(t *testing.T) {
-		t.Setenv("THANOS_ALLOWED_ORIGINS", " app://renderer , http://localhost:9999 ,")
+		t.Setenv("MAESTRO_ALLOWED_ORIGINS", " app://renderer , http://localhost:9999 ,")
 		cfg, err := Load()
 		if err != nil {
 			t.Fatalf("Load: %v", err)

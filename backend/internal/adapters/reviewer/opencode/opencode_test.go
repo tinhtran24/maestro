@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/tinhtran/thanos/backend/internal/ports"
+	"github.com/tinhtran24/maestro/backend/internal/ports"
 )
 
 type captureAgent struct {
@@ -61,7 +61,7 @@ func TestReviewCommandUsesReadOnlyPermissionPolicy(t *testing.T) {
 		t.Fatalf("permission policy = %#v", permission)
 	}
 	bash := permission["bash"].(map[string]any)
-	if bash["*"] != "deny" || bash["gh api *"] != "allow" || bash["to review submit *"] != "allow" {
+	if bash["*"] != "deny" || bash["gh api *"] != "allow" || bash["maestro review submit *"] != "allow" {
 		t.Fatalf("bash policy = %#v", bash)
 	}
 }
@@ -81,7 +81,7 @@ func TestBashAllowlistCoversPromptRequiredCommands(t *testing.T) {
 		},
 		{
 			name:    "local review submit",
-			command: `printf '%s' '{ "reviews": [] }' | to review submit --session sess-1 --reviews -`,
+			command: `printf '%s' '{ "reviews": [] }' | maestro review submit --session sess-1 --reviews -`,
 			allowed: true,
 		},
 		{

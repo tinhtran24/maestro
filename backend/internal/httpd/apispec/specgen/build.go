@@ -15,9 +15,9 @@ import (
 	openapi "github.com/swaggest/openapi-go"
 	"github.com/swaggest/openapi-go/openapi31"
 
-	"github.com/tinhtran/thanos/backend/internal/httpd/controllers"
-	"github.com/tinhtran/thanos/backend/internal/httpd/envelope"
-	projectsvc "github.com/tinhtran/thanos/backend/internal/service/project"
+	"github.com/tinhtran24/maestro/backend/internal/httpd/controllers"
+	"github.com/tinhtran24/maestro/backend/internal/httpd/envelope"
+	projectsvc "github.com/tinhtran24/maestro/backend/internal/service/project"
 )
 
 // Build reflects the Go contract types and the operation registry below into
@@ -47,7 +47,7 @@ func Build() ([]byte, error) {
 		jsonschema.InterceptDefName(schemaName),
 	)
 
-	r.Spec.SetTitle("Thanos HTTP daemon")
+	r.Spec.SetTitle("Maestro HTTP daemon")
 	r.Spec.SetVersion("0.1.0-route-shell")
 	r.Spec.SetDescription("Loopback-only HTTP surface served by the Go daemon. " +
 		"Generated from Go (code-first) — do not edit by hand; run `go generate ./...`.")
@@ -70,9 +70,7 @@ func Build() ([]byte, error) {
 		*(&openapi31.Tag{Name: "events"}).WithDescription(
 			"Server-sent CDC event stream with durable replay"),
 		*(&openapi31.Tag{Name: "import"}).WithDescription(
-			"Legacy Thanos project import (availability probe and run)"),
-		*(&openapi31.Tag{Name: "github"}).WithDescription(
-			"Global GitHub CLI and token diagnostics"),
+			"Legacy Maestro project import (availability probe and run)"),
 	}
 
 	for _, op := range operations() {
@@ -160,8 +158,6 @@ var schemaNames = map[string]string{
 	"ControllersSendSessionMessageResponse":       "SendSessionMessageResponse",
 	"ControllersClaimPRResponse":                  "ClaimPRResponse",
 	"ControllersClaimPRRequest":                   "ClaimPRRequest",
-	"ControllersGitHubAuthStatus":                 "GitHubAuthStatus",
-	"ControllersGitHubAuthStatusResponse":         "GitHubAuthStatusResponse",
 	"ControllersSessionPRFacts":                   "SessionPRFacts",
 	"ControllersSessionPRSummary":                 "SessionPRSummary",
 	"ControllersSessionPRCISummary":               "SessionPRCISummary",
@@ -296,21 +292,8 @@ func operations() []operation {
 	ops = append(ops, reviewOperations()...)
 	ops = append(ops, notificationOperations()...)
 	ops = append(ops, importOperations()...)
-	ops = append(ops, githubOperations()...)
 	ops = append(ops, plannerOperations()...)
 	return ops
-}
-
-func githubOperations() []operation {
-	return []operation{
-		{
-			method: http.MethodGet, path: "/api/v1/github/auth", id: "getGitHubAuthStatus", tag: "github",
-			summary: "Check global GitHub CLI and token readiness",
-			resps: []respUnit{
-				{http.StatusOK, controllers.GitHubAuthStatusResponse{}},
-			},
-		},
-	}
 }
 
 // plannerOperations declares the 1 /plan operation. Must stay 1:1 with the
@@ -372,7 +355,7 @@ func importOperations() []operation {
 	return []operation{
 		{
 			method: http.MethodGet, path: "/api/v1/import", id: "getImportStatus", tag: "import",
-			summary: "Check whether a legacy Thanos install is available to import",
+			summary: "Check whether a legacy Maestro install is available to import",
 			resps: []respUnit{
 				{http.StatusOK, controllers.ImportStatusResponse{}},
 				{http.StatusInternalServerError, envelope.APIError{}},
@@ -381,7 +364,7 @@ func importOperations() []operation {
 		},
 		{
 			method: http.MethodPost, path: "/api/v1/import", id: "runImport", tag: "import",
-			summary: "Run the legacy Thanos project import through the daemon store",
+			summary: "Run the legacy Maestro project import through the daemon store",
 			resps: []respUnit{
 				{http.StatusOK, controllers.ImportRunResponse{}},
 				{http.StatusInternalServerError, envelope.APIError{}},

@@ -9,7 +9,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/tinhtran/thanos/backend/internal/domain"
+	"github.com/tinhtran24/maestro/backend/internal/domain"
 )
 
 const listChecksByPR = `-- name: ListChecksByPR :many

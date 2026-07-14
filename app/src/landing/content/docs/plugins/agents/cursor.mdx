@@ -12,7 +12,7 @@ import { Accordions, Accordion } from "fumadocs-ui/components/accordion";
 	</span>
 </div>
 
-The [Cursor Agent CLI](https://cursor.com/docs) brings Cursor's editing model to a terminal. Thanos spawns it per session, wraps `gh`/`git`, and tracks activity via the Thanos activity log.
+The [Cursor Agent CLI](https://cursor.com/docs) brings Cursor's editing model to a terminal. Maestro spawns it per session, wraps `gh`/`git`, and tracks activity via the Maestro activity log.
 
 <PlatformSupport macos="full" linux="full" windows="full" />
 
@@ -32,7 +32,7 @@ You should see "Cursor Agent" in the output. If you don't, the `agent` binary in
 
 ## Use
 
-```yaml title="thanos.yaml"
+```yaml title="maestro.yaml"
 agent: cursor
 ```
 
@@ -40,9 +40,9 @@ No plugin-level config.
 
 ## How it works
 
-- **Launch:** Thanos runs `agent` inside the worktree.
-- **Activity tracking:** Thanos writes a JSONL to `{workspace}/.thanos/activity.jsonl` each poll cycle based on terminal output classification. The dashboard reads from there.
-- **PR + git tracking:** PATH wrappers at `~/.thanos/bin/gh` / `~/.thanos/bin/git` intercept calls to record PR metadata.
+- **Launch:** Maestro runs `agent` inside the worktree.
+- **Activity tracking:** Maestro writes a JSONL to `{workspace}/.maestro/activity.jsonl` each poll cycle based on terminal output classification. The dashboard reads from there.
+- **PR + git tracking:** PATH wrappers at `~/.maestro/bin/gh` / `~/.maestro/bin/git` intercept calls to record PR metadata.
 - **Session resume:** Not supported — every spawn is a fresh Cursor session.
 
 ## Detection
@@ -51,22 +51,22 @@ The plugin's `detect()` checks `agent --help` output for the strings `Cursor Age
 
 ## Environment variables
 
-| Variable        | Set by Thanos | Purpose                    |
-| --------------- | --------- | -------------------------- |
-| `THANOS_SESSION_ID` | ✓         | Thanos session id              |
-| `THANOS_ISSUE_ID`   | ✓         | Issue identifier           |
-| `PATH`          | ✓         | Prepends `~/.thanos/bin`       |
-| `GH_PATH`       | ✓         | Absolute path to real `gh` |
+| Variable             | Set by Maestro | Purpose                    |
+| -------------------- | -------------- | -------------------------- |
+| `MAESTRO_SESSION_ID` | ✓              | Maestro session id         |
+| `MAESTRO_ISSUE_ID`   | ✓              | Issue identifier           |
+| `PATH`               | ✓              | Prepends `~/.maestro/bin`  |
+| `GH_PATH`            | ✓              | Absolute path to real `gh` |
 
 ## Troubleshooting
 
 <Accordions>
-	<Accordion title="Thanos says Cursor Agent isn't detected">
+	<Accordion title="Maestro says Cursor Agent isn't detected">
 		The plugin only recognises the real Cursor binary by its help output. Run `agent --help` — if you see a different
 		tool's help, remove or shadow it, or reinstall Cursor Agent.
 	</Accordion>
 	<Accordion title="Dashboard never leaves `active`">
-		Cursor doesn't emit its own session JSONL. Thanos classifies based on terminal output — if your terminal is being
-		captured by another tool, the classification can drift. `to doctor` will flag this.
+		Cursor doesn't emit its own session JSONL. Maestro classifies based on terminal output — if your terminal is being
+		captured by another tool, the classification can drift. `maestro doctor` will flag this.
 	</Accordion>
 </Accordions>

@@ -23,15 +23,15 @@ import (
 
 	"testing"
 
-	"github.com/tinhtran/thanos/backend/internal/config"
+	"github.com/tinhtran24/maestro/backend/internal/config"
 
-	"github.com/tinhtran/thanos/backend/internal/domain"
+	"github.com/tinhtran24/maestro/backend/internal/domain"
 
-	"github.com/tinhtran/thanos/backend/internal/httpd"
+	"github.com/tinhtran24/maestro/backend/internal/httpd"
 
-	projectsvc "github.com/tinhtran/thanos/backend/internal/service/project"
+	projectsvc "github.com/tinhtran24/maestro/backend/internal/service/project"
 
-	"github.com/tinhtran/thanos/backend/internal/storage/sqlite"
+	"github.com/tinhtran24/maestro/backend/internal/storage/sqlite"
 )
 
 // emptyGetManager returns a GetResult that sets neither Project nor Degraded —
@@ -120,7 +120,7 @@ func TestProjectsAPI_ListAddGet(t *testing.T) {
 
 	srv := newTestServer(t)
 
-	repo := gitRepo(t, "thanos")
+	repo := gitRepo(t, "maestro")
 
 	body, status, headers := doRequest(t, srv, "GET", "/api/v1/projects", "")
 
@@ -144,7 +144,7 @@ func TestProjectsAPI_ListAddGet(t *testing.T) {
 
 	}
 
-	body, status, _ = doRequest(t, srv, "POST", "/api/v1/projects", `{"path":`+quote(repo)+`,"projectId":"to","name":"Thanos"}`)
+	body, status, _ = doRequest(t, srv, "POST", "/api/v1/projects", `{"path":`+quote(repo)+`,"projectId":"to","name":"Maestro"}`)
 
 	if status != http.StatusCreated {
 
@@ -158,7 +158,7 @@ func TestProjectsAPI_ListAddGet(t *testing.T) {
 
 	mustJSON(t, body, &add)
 
-	if add.Project.ID != "to" || add.Project.Name != "Thanos" || add.Project.DefaultBranch != "main" {
+	if add.Project.ID != "to" || add.Project.Name != "Maestro" || add.Project.DefaultBranch != "main" {
 
 		t.Fatalf("created project = %#v", add.Project)
 

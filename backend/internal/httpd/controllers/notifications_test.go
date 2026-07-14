@@ -11,12 +11,12 @@ import (
 	"testing"
 	"time"
 
-	"github.com/tinhtran/thanos/backend/internal/config"
-	"github.com/tinhtran/thanos/backend/internal/domain"
-	"github.com/tinhtran/thanos/backend/internal/httpd"
-	"github.com/tinhtran/thanos/backend/internal/httpd/apierr"
-	"github.com/tinhtran/thanos/backend/internal/httpd/controllers"
-	notificationsvc "github.com/tinhtran/thanos/backend/internal/service/notification"
+	"github.com/tinhtran24/maestro/backend/internal/config"
+	"github.com/tinhtran24/maestro/backend/internal/domain"
+	"github.com/tinhtran24/maestro/backend/internal/httpd"
+	"github.com/tinhtran24/maestro/backend/internal/httpd/apierr"
+	"github.com/tinhtran24/maestro/backend/internal/httpd/controllers"
+	notificationsvc "github.com/tinhtran24/maestro/backend/internal/service/notification"
 )
 
 type fakeNotificationService struct {

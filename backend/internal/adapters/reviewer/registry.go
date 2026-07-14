@@ -6,11 +6,11 @@ package reviewer
 import (
 	"fmt"
 
-	"github.com/tinhtran/thanos/backend/internal/adapters/reviewer/claudecode"
-	"github.com/tinhtran/thanos/backend/internal/adapters/reviewer/codex"
-	"github.com/tinhtran/thanos/backend/internal/adapters/reviewer/opencode"
-	"github.com/tinhtran/thanos/backend/internal/domain"
-	"github.com/tinhtran/thanos/backend/internal/ports"
+	"github.com/tinhtran24/maestro/backend/internal/adapters/reviewer/claudecode"
+	"github.com/tinhtran24/maestro/backend/internal/adapters/reviewer/codex"
+	"github.com/tinhtran24/maestro/backend/internal/adapters/reviewer/opencode"
+	"github.com/tinhtran24/maestro/backend/internal/domain"
+	"github.com/tinhtran24/maestro/backend/internal/ports"
 )
 
 // Adapter is a registered reviewer: a ports.Reviewer that names its harness.

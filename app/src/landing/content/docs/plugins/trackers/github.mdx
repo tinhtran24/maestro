@@ -12,7 +12,7 @@ description: Issues via the gh CLI. Zero API tokens to manage — gh auth login 
 
 <PlatformSupport macos="full" linux="full" windows="full" />
 
-The default tracker. Uses the [`gh` CLI](https://cli.github.com) for everything, so you never paste a PAT into Thanos.
+The default tracker. Uses the [`gh` CLI](https://cli.github.com) for everything, so you never paste a PAT into Maestro.
 
 ## Setup
 
@@ -22,7 +22,7 @@ gh auth login
 
 Pick **GitHub.com → HTTPS → Login with a web browser**. Then:
 
-```yaml title="thanos.yaml"
+```yaml title="maestro.yaml"
 tracker: github
 projects:
   myproject:
@@ -49,4 +49,4 @@ No plugin-level config keys. The `github` tracker doesn't need anything beyond y
 
 - **`gh: authentication required`** — run `gh auth login`.
 - **`could not resolve to an Issue`** — the issue number is wrong, or `repo` doesn't match the project.
-- **Rate limits** — Thanos batches and paces issue lookups, but heavy bursts can still hit limits. `gh` reports them clearly in logs.
+- **Rate limits** — Maestro batches and paces issue lookups, but heavy bursts can still hit limits. `gh` reports them clearly in logs.

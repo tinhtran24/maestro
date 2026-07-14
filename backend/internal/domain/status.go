@@ -19,7 +19,7 @@ const (
 	StatusIdle             SessionStatus = "idle"
 	StatusTerminated       SessionStatus = "terminated"
 	// StatusNoSignal marks a live session whose agent has never delivered a
-	// hook callback for the current spawn/restore: Thanos cannot tell whether the
+	// hook callback for the current spawn/restore: Maestro cannot tell whether the
 	// agent is working or stuck (broken hook pipeline, blocked interactive
 	// prompt). Rendered instead of a confident idle.
 	StatusNoSignal SessionStatus = "no_signal"

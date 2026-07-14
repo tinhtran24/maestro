@@ -3,7 +3,7 @@ package ports
 import (
 	"errors"
 
-	"github.com/tinhtran/thanos/backend/internal/domain"
+	"github.com/tinhtran24/maestro/backend/internal/domain"
 )
 
 // ErrSessionNotFound reports an observation for an unknown session id.

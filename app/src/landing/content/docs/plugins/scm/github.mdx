@@ -20,7 +20,7 @@ The default SCM. Uses `gh` for PR + review + CI polling. Optional webhook suppor
 gh auth login
 ```
 
-```yaml title="thanos.yaml"
+```yaml title="maestro.yaml"
 scm: github
 projects:
   myproject:
@@ -29,7 +29,7 @@ projects:
 
 ## Webhook endpoint
 
-Thanos's dashboard receives webhook events at:
+Maestro's dashboard receives webhook events at:
 
 ```
 POST /api/webhooks
@@ -70,16 +70,16 @@ Full `webhook.*` sub-object:
 | `deliveryHeader`  | `x-github-delivery`   | Header carrying the delivery UUID           |
 | `maxBodyBytes`    | unlimited             | Reject payloads larger than this (bytes)    |
 
-**Signature**: HMAC-SHA256 over the raw request body. Thanos compares the computed digest against the value in `x-hub-signature-256` using a constant-time comparison.
+**Signature**: HMAC-SHA256 over the raw request body. Maestro compares the computed digest against the value in `x-hub-signature-256` using a constant-time comparison.
 
 Polling is still active as a fallback — webhooks are a latency optimisation, not a hard dependency.
 
 ## Batch enrichment (performance)
 
-On every poll cycle Thanos issues a **single batched GraphQL query** that fetches PR state, CI check results, review decisions, and merge readiness for all active sessions in a project at once. This replaces N × 3 REST calls with a single request.
+On every poll cycle Maestro issues a **single batched GraphQL query** that fetches PR state, CI check results, review decisions, and merge readiness for all active sessions in a project at once. This replaces N × 3 REST calls with a single request.
 
-For rate-limit debugging: even with dozens of concurrent sessions, Thanos stays well under GitHub's primary rate limit. If you do hit limits, the batch enricher backs off and queues — see [Troubleshooting](/docs/troubleshooting).
+For rate-limit debugging: even with dozens of concurrent sessions, Maestro stays well under GitHub's primary rate limit. If you do hit limits, the batch enricher backs off and queues — see [Troubleshooting](/docs/troubleshooting).
 
 ## Rate limits
 
-Thanos paces `gh` calls per-project. If you hit limits anyway, batch-enrichment backs off and queues — see [Troubleshooting](/docs/troubleshooting) for the diagnostic steps.
+Maestro paces `gh` calls per-project. If you hit limits anyway, batch-enrichment backs off and queues — see [Troubleshooting](/docs/troubleshooting) for the diagnostic steps.
