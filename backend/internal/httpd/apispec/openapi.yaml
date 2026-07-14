@@ -1885,7 +1885,7 @@ components:
           enum:
           - none
           - gh
-          - THANOS_GITHUB_TOKEN
+          - MAESTRO_GITHUB_TOKEN
           - GITHUB_TOKEN
           type: string
       required:
@@ -2997,5 +2997,3 @@ tags:
   name: events
 - description: Legacy Maestro project import (availability probe and run)
   name: import
-- description: Global GitHub CLI and token diagnostics
-  name: github
