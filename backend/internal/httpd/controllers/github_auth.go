@@ -10,8 +10,8 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
-	"github.com/tinhtran/thanos/backend/internal/httpd/envelope"
-	aoprocess "github.com/tinhtran/thanos/backend/internal/process"
+	"github.com/tinhtran24/maestro/backend/internal/httpd/envelope"
+	aoprocess "github.com/tinhtran24/maestro/backend/internal/process"
 )
 
 const githubAuthProbeTimeout = 5 * time.Second
