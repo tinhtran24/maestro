@@ -1557,15 +1557,30 @@ func (m *Manager) buildSystemPrompt(ctx context.Context, kind domain.SessionKind
 		return "", err
 	}
 	if kind == domain.KindWorker && project.Config.Git.Enabled {
-		base += "\n\n" + gitWorkflowPrompt()
+		base += "\n\n" + gitWorkflowPrompt(project.Config.Git.Provider)
 	}
 	return base + m.aoSkillPointer() + systemPromptGuard, nil
 }
 
-func gitWorkflowPrompt() string {
-	return `## Git completion workflow
+// gitWorkflowPrompt returns the opt-in completion workflow appended to a
+// worker's system prompt. The commit/push step is provider-neutral; only the
+// open-request step is tailored so the agent is asked to open a pull request or
+// merge request with the provider-correct CLI. Thanos stores no provider token:
+// the agent pushes and opens the request through the user's own credentials.
+func gitWorkflowPrompt(provider domain.SCMProvider) string {
+	const commitPush = "Before reporting this task complete, run git status. Commit only the task's intended changes as a small, atomic Conventional Commit (for example, feat: add native model selection or fix: handle planner output). Then push the current task branch with git push -u origin HEAD. Use the user's existing Git remote credentials (SSH or Git credential helper); never request or store a provider token. If commit or push fails, report the exact blocker and leave the working tree intact."
 
-Before reporting this task complete, run git status. Commit only the task's intended changes as a small, atomic Conventional Commit (for example, feat: add native model selection or fix: handle planner output). Then push the current task branch with git push -u origin HEAD. Use the user's existing Git remote credentials (SSH or Git credential helper); never request or store a GitHub token. If commit or push fails, report the exact blocker and leave the working tree intact.`
+	var open string
+	switch provider {
+	case domain.SCMProviderGitLab:
+		open = "After pushing, open a merge request targeting the base branch with `glab mr create --fill`, or the GitLab web UI if glab is unavailable."
+	case domain.SCMProviderBitbucket, domain.SCMProviderBitbucketServer:
+		open = "After pushing, open a pull request targeting the base branch through the Bitbucket web UI or its REST API (Bitbucket has no first-party CLI)."
+	default: // github and the empty/unset default
+		open = "After pushing, open a pull request targeting the base branch with `gh pr create --fill`, or the GitHub web UI if gh is unavailable."
+	}
+
+	return "## Git completion workflow\n\n" + commitPush + " " + open
 }
 
 // aoSkillPointer is appended to every agent system prompt. It points the agent

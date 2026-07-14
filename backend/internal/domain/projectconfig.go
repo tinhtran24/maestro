@@ -58,9 +58,39 @@ type ProjectConfig struct {
 }
 
 // GitWorkflowConfig controls optional Git actions requested of worker agents.
-// It is disabled by default; Thanos never stores a GitHub token for this.
+// It is disabled by default; Thanos never stores a provider token for this —
+// the agent pushes and opens the PR/MR through the user's own git and provider
+// credentials.
 type GitWorkflowConfig struct {
 	Enabled bool `json:"enabled,omitempty"`
+	// Provider selects the wording of the completion prompt so the agent is
+	// asked to open a pull request or merge request with the provider-correct
+	// CLI. It defaults to github when Enabled. This is independent of SCM
+	// observation: a provider without a shipped observation adapter still gets
+	// correct auto-PR instructions here.
+	Provider SCMProvider `json:"provider,omitempty" enum:"github,gitlab,bitbucket,bitbucket-server"`
+}
+
+// WithDefaults fills the provider only when the workflow is enabled. Disabled
+// workflows leave the zero value untouched so empty configs still store as
+// NULL/absent.
+func (c GitWorkflowConfig) WithDefaults() GitWorkflowConfig {
+	if c.Enabled && c.Provider == "" {
+		c.Provider = SCMProviderGitHub
+	}
+	return c
+}
+
+// Validate rejects an unknown provider when the workflow is enabled.
+func (c GitWorkflowConfig) Validate() error {
+	if !c.Enabled {
+		return nil
+	}
+	c = c.WithDefaults()
+	if !c.Provider.IsKnown() {
+		return fmt.Errorf("git.provider: unsupported provider %q", c.Provider)
+	}
+	return nil
 }
 
 // ReviewerConfig names one reviewer agent by harness. The harness is drawn from
@@ -109,6 +139,7 @@ func (c ProjectConfig) WithDefaults() ProjectConfig {
 		c.DefaultBranch = def.DefaultBranch
 	}
 	c.TrackerIntake = c.TrackerIntake.WithDefaults()
+	c.Git = c.Git.WithDefaults()
 	return c
 }
 
@@ -146,6 +177,9 @@ func (c ProjectConfig) Validate() error {
 		}
 	}
 	if err := c.TrackerIntake.Validate(); err != nil {
+		return err
+	}
+	if err := c.Git.Validate(); err != nil {
 		return err
 	}
 	return nil

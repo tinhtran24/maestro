@@ -35,6 +35,11 @@ func TestProjectConfigValidate(t *testing.T) {
 		{"tracker intake unknown provider", ProjectConfig{TrackerIntake: TrackerIntakeConfig{Enabled: true, Provider: "linear", Assignee: "alice"}}, true},
 		{"tracker intake repo with whitespace", ProjectConfig{TrackerIntake: TrackerIntakeConfig{Enabled: true, Repo: " acme/demo", Assignee: "alice"}}, true},
 		{"tracker intake assignee with whitespace", ProjectConfig{TrackerIntake: TrackerIntakeConfig{Enabled: true, Assignee: " alice"}}, true},
+		{"git disabled ignores provider", ProjectConfig{Git: GitWorkflowConfig{Provider: "linear"}}, false},
+		{"git enabled defaults provider", ProjectConfig{Git: GitWorkflowConfig{Enabled: true}}, false},
+		{"git enabled explicit gitlab", ProjectConfig{Git: GitWorkflowConfig{Enabled: true, Provider: SCMProviderGitLab}}, false},
+		{"git enabled explicit bitbucket-server", ProjectConfig{Git: GitWorkflowConfig{Enabled: true, Provider: SCMProviderBitbucketServer}}, false},
+		{"git enabled unknown provider", ProjectConfig{Git: GitWorkflowConfig{Enabled: true, Provider: "gitea"}}, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -88,6 +93,16 @@ func TestProjectConfigWithDefaults(t *testing.T) {
 	got = (ProjectConfig{}).WithDefaults()
 	if got.TrackerIntake.Provider != "" {
 		t.Fatalf("disabled TrackerIntake.Provider = %q, want empty", got.TrackerIntake.Provider)
+	}
+
+	got = (ProjectConfig{Git: GitWorkflowConfig{Enabled: true}}).WithDefaults()
+	if got.Git.Provider != SCMProviderGitHub {
+		t.Fatalf("Git.Provider = %q, want %q", got.Git.Provider, SCMProviderGitHub)
+	}
+
+	got = (ProjectConfig{}).WithDefaults()
+	if got.Git.Provider != "" {
+		t.Fatalf("disabled Git.Provider = %q, want empty", got.Git.Provider)
 	}
 }
 

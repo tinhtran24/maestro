@@ -1827,6 +1827,13 @@ components:
       properties:
         enabled:
           type: boolean
+        provider:
+          enum:
+          - github
+          - gitlab
+          - bitbucket
+          - bitbucket-server
+          type: string
       type: object
     DomainReviewerConfig:
       properties:
