@@ -69,6 +69,12 @@ func (s *Store) inTx(ctx context.Context, what string, fn func(*gen.Queries) err
 func (s *Store) UpsertTask(ctx context.Context, t Task) error {
 	s.writeMu.Lock()
 	defer s.writeMu.Unlock()
+	return s.q.UpsertMemoryTask(ctx, upsertTaskParams(t))
+}
+
+// upsertTaskParams builds the generated insert params, defaulting empty JSON
+// blobs to empty arrays so a row always holds valid JSON.
+func upsertTaskParams(t Task) gen.UpsertMemoryTaskParams {
 	prs := t.PRsJSON
 	if prs == "" {
 		prs = "[]"
@@ -77,7 +83,7 @@ func (s *Store) UpsertTask(ctx context.Context, t Task) error {
 	if decisions == "" {
 		decisions = "[]"
 	}
-	return s.q.UpsertMemoryTask(ctx, gen.UpsertMemoryTaskParams{
+	return gen.UpsertMemoryTaskParams{
 		ID:            t.ID,
 		EventID:       t.EventID,
 		SessionID:     t.SessionID,
@@ -92,7 +98,65 @@ func (s *Store) UpsertTask(ctx context.Context, t Task) error {
 		OccurredAt:    t.OccurredAt.UTC(),
 		PrsJson:       prs,
 		DecisionsJson: decisions,
+	}
+}
+
+// ApplyTask folds one completed task into the projection atomically: it upserts
+// the task row, replaces the task's file and test edges, and advances the
+// projection offset (memory_meta) to eventID, all in a single transaction. A
+// reader therefore never sees a half-applied task, and a crash leaves the offset
+// consistent with the rows. It is idempotent: re-applying the same event
+// reproduces the identical projection.
+func (s *Store) ApplyTask(ctx context.Context, t Task, files, tests []string, eventID string, at time.Time) error {
+	s.writeMu.Lock()
+	defer s.writeMu.Unlock()
+	return s.inTx(ctx, "apply task", func(q *gen.Queries) error {
+		if err := q.UpsertMemoryTask(ctx, upsertTaskParams(t)); err != nil {
+			return err
+		}
+		if err := q.DeleteMemoryFilesByTask(ctx, t.ID); err != nil {
+			return err
+		}
+		for _, p := range files {
+			if err := q.AddMemoryFile(ctx, gen.AddMemoryFileParams{TaskID: t.ID, Path: p}); err != nil {
+				return err
+			}
+		}
+		if err := q.DeleteMemoryTestsByTask(ctx, t.ID); err != nil {
+			return err
+		}
+		for _, p := range tests {
+			if err := q.AddMemoryTest(ctx, gen.AddMemoryTestParams{TaskID: t.ID, Path: p}); err != nil {
+				return err
+			}
+		}
+		return q.UpsertMemoryMeta(ctx, gen.UpsertMemoryMetaParams{LastEventID: eventID, UpdatedAt: at.UTC()})
 	})
+}
+
+// Reset clears every projected row, returning the database to its post-migration
+// empty state so Rebuild can replay the event log from scratch. It does not drop
+// the schema or the file.
+func (s *Store) Reset(ctx context.Context) error {
+	s.writeMu.Lock()
+	defer s.writeMu.Unlock()
+	tx, err := s.db.BeginTx(ctx, nil)
+	if err != nil {
+		return fmt.Errorf("memorydb: begin reset: %w", err)
+	}
+	defer func() { _ = tx.Rollback() }()
+	for _, stmt := range []string{
+		"DELETE FROM memory_task_edge",
+		"DELETE FROM memory_test",
+		"DELETE FROM memory_file",
+		"DELETE FROM memory_task",
+		"DELETE FROM memory_meta",
+	} {
+		if _, err := tx.ExecContext(ctx, stmt); err != nil {
+			return fmt.Errorf("memorydb: reset %q: %w", stmt, err)
+		}
+	}
+	return tx.Commit()
 }
 
 // GetTask returns the task with the given id. The bool is false when no such
