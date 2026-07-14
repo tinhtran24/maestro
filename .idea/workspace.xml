@@ -4,35 +4,19 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="ab904008-d3c3-488d-a287-421dd9b93abe" name="Changes" comment="feature: thanos task plan">
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+    <list default="true" id="ab904008-d3c3-488d-a287-421dd9b93abe" name="Changes" comment="feature: git">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/api/schema.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/api/schema.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/renderer/components/ProjectSettingsForm.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/renderer/components/ProjectSettingsForm.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/renderer/components/quick-capture/AIExtractionCard.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/renderer/components/quick-capture/AIExtractionCard.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/renderer/components/quick-capture/CreateTaskWizard.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/renderer/components/quick-capture/CreateTaskWizard.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/renderer/components/quick-capture/PlanPreviewCard.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/renderer/components/quick-capture/PlanPreviewCard.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/renderer/components/quick-capture/TaskReviewFlow.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/renderer/components/quick-capture/TaskReviewFlow.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/renderer/components/quick-capture/types.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/renderer/components/quick-capture/types.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/internal/adapters/scm/github/auth.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/adapters/scm/github/auth.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/internal/adapters/scm/github/provider.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/adapters/scm/github/provider.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/internal/adapters/scm/github/provider_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/adapters/scm/github/provider_test.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/internal/adapters/workspace/gitworktree/workspace.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/adapters/workspace/gitworktree/workspace.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/internal/adapters/workspace/gitworktree/workspace_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/adapters/workspace/gitworktree/workspace_test.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/internal/daemon/scm_wiring.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/daemon/scm_wiring.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/internal/domain/projectconfig.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/domain/projectconfig.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/renderer/lib/planner.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/renderer/lib/planner.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/backend/internal/httpd/apispec/openapi.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/httpd/apispec/openapi.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/internal/service/planner/claude.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/service/planner/claude.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/backend/internal/service/planner/planner.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/service/planner/planner.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/internal/service/planner/planner_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/service/planner/planner_test.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/internal/session_manager/git_prompt_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/session_manager/git_prompt_test.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/backend/internal/session_manager/manager.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/session_manager/manager.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/internal/session_manager/manager_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/session_manager/manager_test.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/screenshots/first.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/screenshots/image.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/screenshots/second.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/screenshots/third.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/screenshots/tweet1.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/screenshots/tweet2.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/screenshots/tweet3.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/internal/skillassets/skillassets.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/skillassets/skillassets.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/internal/skillassets/skillassets_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/skillassets/skillassets_test.go" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -43,7 +27,13 @@
     <option name="cachedIndexableFilesCount" value="955" />
   </component>
   <component name="Git.Settings">
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="feature/v2-to" />
+      </map>
+    </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+    <option name="RESET_MODE" value="HARD" />
     <option name="UPDATE_TYPE" value="REBASE" />
   </component>
   <component name="McpProjectServerCommands">
@@ -66,31 +56,31 @@
     <option name="sortByType" value="true" />
     <option name="sortKey" value="BY_TYPE" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;ASKED_MARK_IGNORED_FILES_AS_EXCLUDED&quot;: &quot;true&quot;,
-    &quot;ASKED_SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
-    &quot;JavaScript Debug.index.html.executor&quot;: &quot;Run&quot;,
-    &quot;JavaScript Debug.localhost:34115.executor&quot;: &quot;Debug&quot;,
-    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.MCP Project settings loaded&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
-    &quot;codeWithMe.voiceChat.enabledByDefault&quot;: &quot;false&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;feature/v2-to&quot;,
-    &quot;javascript.preferred.runtime.type.id&quot;: &quot;node&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/Users/trantinh/tool/thanos&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;ts.external.directory.path&quot;: &quot;/Users/trantinh/tool/thanos/app/node_modules/typescript/lib&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ASKED_MARK_IGNORED_FILES_AS_EXCLUDED": "true",
+    "ASKED_SHARE_PROJECT_CONFIGURATION_FILES": "true",
+    "JavaScript Debug.index.html.executor": "Run",
+    "JavaScript Debug.localhost:34115.executor": "Debug",
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.MCP Project settings loaded": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
+    "codeWithMe.voiceChat.enabledByDefault": "false",
+    "git-widget-placeholder": "feature/lifecycle-task-creation",
+    "javascript.preferred.runtime.type.id": "node",
+    "last_opened_file_path": "/Users/trantinh/tool/thanos",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "ts.external.directory.path": "/Users/trantinh/tool/thanos/app/node_modules/typescript/lib",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/docs" />
@@ -140,6 +130,7 @@
       <workItem from="1783473862987" duration="6821000" />
       <workItem from="1783481148222" duration="5333000" />
       <workItem from="1783733605064" duration="2562000" />
+      <workItem from="1783993337818" duration="2102000" />
     </task>
     <task id="LOCAL-00001" summary="feature: update layout ui">
       <option name="closed" value="true" />
@@ -236,14 +227,9 @@
     <option name="version" value="3" />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
-    <option name="OPEN_GENERIC_TABS">
-      <map>
-        <entry key="6debf16b-97c0-4865-9f90-34eae1f0b262" value="TOOL_WINDOW" />
-      </map>
-    </option>
     <option name="TAB_STATES">
       <map>
-        <entry key="6debf16b-97c0-4865-9f90-34eae1f0b262">
+        <entry key="MAIN">
           <value>
             <State>
               <option name="FILTERS">
@@ -251,20 +237,12 @@
                   <entry key="branch">
                     <value>
                       <list>
-                        <option value="HEAD" />
-                      </list>
-                    </value>
-                  </entry>
-                  <entry key="roots">
-                    <value>
-                      <list>
-                        <option value="$PROJECT_DIR$" />
+                        <option value="feature/v2-to" />
                       </list>
                     </value>
                   </entry>
                 </map>
               </option>
-              <option name="SHOW_ONLY_AFFECTED_CHANGES" value="true" />
             </State>
           </value>
         </entry>

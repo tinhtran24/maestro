@@ -44,7 +44,9 @@ export function TaskReviewFlow({
 						onClick={() => setTab(t.id)}
 						className={cn(
 							"-mb-px border-b-2 px-3 py-1.5 text-[12px] transition",
-							tab === t.id ? "border-violet-500 text-foreground" : "border-transparent text-muted-foreground hover:text-foreground",
+							tab === t.id
+								? "border-violet-500 text-foreground"
+								: "border-transparent text-muted-foreground hover:text-foreground",
 						)}
 					>
 						{t.label}
@@ -58,7 +60,20 @@ export function TaskReviewFlow({
 						<TextField value={draft.title} onChange={(v) => onChange({ title: v })} />
 					</Field>
 					<Field label="User story">
-						<TextArea value={draft.userStory} onChange={(v) => onChange({ userStory: v })} rows={2} placeholder="As a … I want … so that …" />
+						<TextArea
+							value={draft.userStory}
+							onChange={(v) => onChange({ userStory: v })}
+							rows={2}
+							placeholder="As a … I want … so that …"
+						/>
+					</Field>
+					<Field label="Analysis">
+						<TextArea
+							value={draft.analysis}
+							onChange={(v) => onChange({ analysis: v })}
+							rows={3}
+							placeholder="Problem understanding and approach"
+						/>
 					</Field>
 					<Field label="Priority">
 						<PrioritySelect value={draft.priority} onChange={(v) => onChange({ priority: v })} />
@@ -70,10 +85,33 @@ export function TaskReviewFlow({
 						<TextArea value={draft.technicalNotes} onChange={(v) => onChange({ technicalNotes: v })} rows={4} />
 					</Field>
 					<Field label="Likely files">
-						<StringList values={draft.likelyFiles ?? []} onChange={(v) => onChange({ likelyFiles: v })} placeholder="src/…" />
+						<StringList
+							values={draft.likelyFiles ?? []}
+							onChange={(v) => onChange({ likelyFiles: v })}
+							placeholder="src/…"
+						/>
+					</Field>
+					<Field label="Suggested branch">
+						<TextField
+							value={draft.suggestedBranch}
+							onChange={(v) => onChange({ suggestedBranch: v })}
+							placeholder="feature/short-description"
+						/>
+					</Field>
+					<Field label="Suggested commit">
+						<TextField
+							value={draft.suggestedCommit}
+							onChange={(v) => onChange({ suggestedCommit: v })}
+							placeholder="feat(scope): summary"
+						/>
 					</Field>
 					<Field label="Additional context (optional)">
-						<TextArea value={extraContext} onChange={onExtraContext} rows={2} placeholder="Anything else the agent should know" />
+						<TextArea
+							value={extraContext}
+							onChange={onExtraContext}
+							rows={2}
+							placeholder="Anything else the agent should know"
+						/>
 					</Field>
 				</div>
 			) : null}

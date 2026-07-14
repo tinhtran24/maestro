@@ -1,4 +1,4 @@
-import { Bot, FileText } from "lucide-react";
+import { Bot, FileText, GitBranch, GitCommitHorizontal } from "lucide-react";
 import type { TaskDraft } from "./types";
 
 // PlanPreviewCard shows the planner's initial high-level execution plan and the
@@ -10,7 +10,9 @@ export function PlanPreviewCard({ draft }: { draft: TaskDraft }) {
 				<Bot className="size-4 text-violet-400" aria-hidden="true" />
 				<span className="font-medium text-foreground">AI Plan Preview</span>
 			</div>
-			<p className="text-[12px] text-muted-foreground">The planner will use this context to create an execution plan.</p>
+			<p className="text-[12px] text-muted-foreground">
+				The planner will use this context to create an execution plan.
+			</p>
 
 			{draft.plan?.length ? (
 				<div className="space-y-1.5">
@@ -26,12 +28,33 @@ export function PlanPreviewCard({ draft }: { draft: TaskDraft }) {
 				</div>
 			) : null}
 
+			{draft.suggestedBranch || draft.suggestedCommit ? (
+				<div className="space-y-1.5">
+					<span className="text-[11px] font-medium text-muted-foreground">Suggested delivery</span>
+					{draft.suggestedBranch ? (
+						<div className="flex items-center gap-1.5 font-mono text-[11px] text-foreground">
+							<GitBranch className="size-3 text-violet-400" aria-hidden="true" />
+							{draft.suggestedBranch}
+						</div>
+					) : null}
+					{draft.suggestedCommit ? (
+						<div className="flex items-center gap-1.5 font-mono text-[11px] text-foreground">
+							<GitCommitHorizontal className="size-3 text-violet-400" aria-hidden="true" />
+							{draft.suggestedCommit}
+						</div>
+					) : null}
+				</div>
+			) : null}
+
 			{draft.likelyFiles?.length ? (
 				<div className="space-y-1.5">
 					<span className="text-[11px] font-medium text-muted-foreground">Likely files</span>
 					<div className="flex flex-wrap gap-1.5">
 						{draft.likelyFiles.map((f) => (
-							<span key={f} className="inline-flex items-center gap-1 rounded-md border border-border bg-surface px-1.5 py-0.5 font-mono text-[11px] text-muted-foreground">
+							<span
+								key={f}
+								className="inline-flex items-center gap-1 rounded-md border border-border bg-surface px-1.5 py-0.5 font-mono text-[11px] text-muted-foreground"
+							>
 								<FileText className="size-3" aria-hidden="true" />
 								{f}
 							</span>

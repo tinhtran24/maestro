@@ -1559,7 +1559,7 @@ func (m *Manager) buildSystemPrompt(ctx context.Context, kind domain.SessionKind
 	if kind == domain.KindWorker && project.Config.Git.Enabled {
 		base += "\n\n" + gitWorkflowPrompt(project.Config.Git.Provider)
 	}
-	return base + m.aoSkillPointer() + systemPromptGuard, nil
+	return base + m.aoSkillPointer() + m.lifecycleSkillPointer() + systemPromptGuard, nil
 }
 
 // gitWorkflowPrompt returns the opt-in completion workflow appended to a
@@ -1580,7 +1580,11 @@ func gitWorkflowPrompt(provider domain.SCMProvider) string {
 		open = "After pushing, open a pull request targeting the base branch with `gh pr create --fill`, or the GitHub web UI if gh is unavailable."
 	}
 
-	return "## Git completion workflow\n\n" + commitPush + " " + open
+	const lifecycle = "Take this task through Development then Testing, surfacing each phase so the orchestrator can track progress:\n" +
+		"1. Development — implement the plan in small, surgical slices tied to the task.\n" +
+		"2. Testing — add or update tests at the boundary you changed and run the project's relevant checks; do not move on while any check fails.\n\n"
+
+	return "## Git completion workflow\n\n" + lifecycle + commitPush + " " + open
 }
 
 // aoSkillPointer is appended to every agent system prompt. It points the agent
@@ -1595,6 +1599,17 @@ func (m *Manager) aoSkillPointer() string {
 	commandsGlob := filepath.Join(dir, "commands", "*.md")
 	return "\n\n" + "## Using the to CLI\n\n" +
 		"When you need to use the `to` CLI, read `" + skillFile + "` first (and the relevant `" + commandsGlob + "`) for the full command catalog, flags, and examples."
+}
+
+// lifecycleSkillPointer points every session at the dev-lifecycle skill the
+// daemon installs under the data dir. It carries the Analysis+Plan /
+// Development+Testing method and the branch-naming and Conventional Commit
+// conventions, so the standing prompt stays a short pointer rather than
+// inlining the whole method.
+func (m *Manager) lifecycleSkillPointer() string {
+	skillFile := filepath.Join(skillassets.LifecycleDir(m.dataDir), "SKILL.md")
+	return "\n\n" + "## Development lifecycle\n\n" +
+		"Follow the delivery method in `" + skillFile + "`: when creating a task do Analysis then Plan; when executing one do Development then Testing; and name branches and write commits per the conventions in that file."
 }
 
 func (m *Manager) workspaceProjectPrompt(ctx context.Context, kind domain.SessionKind, projectID domain.ProjectID) (string, error) {
@@ -1656,7 +1671,9 @@ Message workers with `+"`to send`"+`, for example:
 
 To discover any other Thanos command, run `+"`to --help`"+` (and `+"`to <command> --help`"+` for details on one).
 
-Use workers for focused implementation tasks, track their progress, synthesize their results, and only step into implementation directly for true emergencies or small coordination fixes.`, project, project)
+Use workers for focused implementation tasks, track their progress, synthesize their results, and only step into implementation directly for true emergencies or small coordination fixes.
+
+Coordinate each task through the delivery lifecycle: Analysis and Plan when the task is framed, then Development and Testing while a worker executes it. Make each phase visible — surface when a worker moves from development into testing, and confirm tests pass before a task is treated as done.`, project, project)
 }
 
 func workspaceOrchestratorPrompt(repos []domain.WorkspaceRepoRecord) string {

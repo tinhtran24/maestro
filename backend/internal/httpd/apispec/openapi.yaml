@@ -2122,6 +2122,8 @@ components:
           items:
             type: string
           type: array
+        analysis:
+          type: string
         confidence:
           $ref: '#/components/schemas/PlannerConfidence'
         dependencies:
@@ -2160,6 +2162,10 @@ components:
           type: string
         suggestedAgent:
           type: string
+        suggestedBranch:
+          type: string
+        suggestedCommit:
+          type: string
         technicalNotes:
           type: string
         title:
@@ -2173,6 +2179,7 @@ components:
       - priority
       - labels
       - acceptanceCriteria
+      - analysis
       - technicalNotes
       - likelyFiles
       - risks
@@ -2182,6 +2189,8 @@ components:
       - openQuestions
       - missingInformation
       - suggestedAgent
+      - suggestedBranch
+      - suggestedCommit
       - confidence
       type: object
     ProbeAgentResponse:

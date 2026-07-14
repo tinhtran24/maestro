@@ -20,32 +20,61 @@ import (
 	"embed"
 )
 
-//go:embed using-to
+//go:embed using-to dev-lifecycle
 var files embed.FS
 
-// SkillName is the installed skill's directory name under <dataDir>/skills.
+// SkillName is the using-to skill's directory name under <dataDir>/skills. It
+// stays the exported default because the to-CLI prompt pointer cites Dir().
 const SkillName = "using-to"
 
-// Dir returns the absolute directory the skill installs into for a given data
-// dir. Callers building prompts use this so the path they cite always matches
-// where Install writes.
+// LifecycleSkillName is the dev-lifecycle skill's directory name. It carries the
+// Analysis+Plan / Development+Testing method and the branch/commit conventions
+// that the planner and orchestrator prompts point at.
+const LifecycleSkillName = "dev-lifecycle"
+
+// skillNames is every embedded skill Install lays down under <dataDir>/skills.
+var skillNames = []string{SkillName, LifecycleSkillName}
+
+// Dir returns the absolute directory the using-to skill installs into for a
+// given data dir. Callers building prompts use this so the path they cite always
+// matches where Install writes.
 func Dir(dataDir string) string {
-	return filepath.Join(dataDir, "skills", SkillName)
+	return SkillDir(dataDir, SkillName)
 }
 
-// Install writes the embedded using-to skill into <dataDir>/skills/using-to,
-// replacing any existing copy. It runs once at daemon boot, before any session
-// spawns, so a plain clobber-and-write needs no locking: there are no
-// concurrent readers yet. A failure is returned but is non-fatal to boot (the
-// skill enhances `to --help`, it is not load-bearing).
+// LifecycleDir returns the absolute directory the dev-lifecycle skill installs
+// into for a given data dir.
+func LifecycleDir(dataDir string) string {
+	return SkillDir(dataDir, LifecycleSkillName)
+}
+
+// SkillDir returns the absolute install directory for a named embedded skill.
+func SkillDir(dataDir, name string) string {
+	return filepath.Join(dataDir, "skills", name)
+}
+
+// Install writes every embedded skill into <dataDir>/skills/<name>, replacing
+// any existing copy. It runs once at daemon boot, before any session spawns, so
+// a plain clobber-and-write needs no locking: there are no concurrent readers
+// yet. A failure is returned but is non-fatal to boot (the skills enhance agent
+// prompts, they are not load-bearing).
 func Install(dataDir string) error {
-	dest := Dir(dataDir)
+	for _, name := range skillNames {
+		if err := installSkill(dataDir, name); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func installSkill(dataDir, name string) error {
+	dest := SkillDir(dataDir, name)
 	if err := os.RemoveAll(dest); err != nil {
 		return fmt.Errorf("clear skill dir %q: %w", dest, err)
 	}
-	// embed.FS always uses forward-slash paths rooted at "using-to"; map each
+	// embed.FS always uses forward-slash paths rooted at the skill name; map each
 	// onto <dataDir>/skills/<same path> with the platform separator.
-	return fs.WalkDir(files, SkillName, func(p string, d fs.DirEntry, err error) error {
+	return fs.WalkDir(files, name, func(p string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err
 		}
