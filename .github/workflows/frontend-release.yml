@@ -65,6 +65,14 @@ jobs:
           go-version-file: backend/go.mod
           cache-dependency-path: backend/go.sum
       - run: npm ci
+      # Version the build from the release tag (desktop-v<X.Y.Z>) rather than the
+      # committed package.json, so the forge publisher's v<version> release and
+      # every downstream `v$(package.json version)` read match the tag. On
+      # workflow_dispatch (no tag) this is skipped and package.json is used.
+      - name: Set app version from release tag
+        if: startsWith(github.ref, 'refs/tags/desktop-v')
+        shell: bash
+        run: npm version "${GITHUB_REF_NAME#desktop-v}" --no-git-tag-version --allow-same-version
       - name: macOS signing setup
         if: startsWith(matrix.os, 'macos')
         uses: ./.github/actions/macos-signing-setup
@@ -191,6 +199,10 @@ jobs:
           go-version-file: backend/go.mod
           cache-dependency-path: backend/go.sum
       - run: npm ci
+      - name: Set app version from release tag
+        if: startsWith(github.ref, 'refs/tags/desktop-v')
+        shell: bash
+        run: npm version "${GITHUB_REF_NAME#desktop-v}" --no-git-tag-version --allow-same-version
       - name: macOS signing setup
         uses: ./.github/actions/macos-signing-setup
         with:
@@ -253,6 +265,10 @@ jobs:
           cache-dependency-path: frontend/package-lock.json
       # feed.mjs imports app-builder-lib's blockmap generator, so deps are needed.
       - run: npm ci
+      - name: Set app version from release tag
+        if: startsWith(github.ref, 'refs/tags/desktop-v')
+        shell: bash
+        run: npm version "${GITHUB_REF_NAME#desktop-v}" --no-git-tag-version --allow-same-version
       - name: Generate and upload the latest feed
         shell: bash
         env:
