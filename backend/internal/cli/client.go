@@ -104,10 +104,10 @@ func (c *commandContext) doJSONPath(ctx context.Context, method, path string, bo
 		return err
 	}
 	if info == nil {
-		return fmt.Errorf("Maestro daemon is not running — start it with `maestro start`")
+		return fmt.Errorf("maestro daemon is not running — start it with `maestro start`")
 	}
 	if !c.deps.ProcessAlive(info.PID) {
-		return fmt.Errorf("Maestro daemon is not running (stale run-file at %s) — start it with `maestro start`", cfg.RunFilePath)
+		return fmt.Errorf("maestro daemon is not running (stale run-file at %s) — start it with `maestro start`", cfg.RunFilePath)
 	}
 
 	var reader io.Reader = http.NoBody
