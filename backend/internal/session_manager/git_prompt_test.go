@@ -30,6 +30,10 @@ func TestGitWorkflowPromptProvider(t *testing.T) {
 			if !strings.Contains(got, tc.wantOpen) {
 				t.Errorf("prompt for %q missing %q:\n%s", tc.provider, tc.wantOpen, got)
 			}
+			// Every provider's prompt sequences Development then Testing.
+			if !strings.Contains(got, "Development") || !strings.Contains(got, "Testing") {
+				t.Errorf("prompt for %q missing Development/Testing lifecycle:\n%s", tc.provider, got)
+			}
 		})
 	}
 

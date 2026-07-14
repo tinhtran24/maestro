@@ -22,22 +22,31 @@ var ErrUnavailable = errors.New("planner: claude CLI not available")
 // TaskDraft is the structured task the planner infers from raw input. Every
 // field is best-effort; the UI lets the user review and edit before creating.
 type TaskDraft struct {
-	Title              string     `json:"title"`
-	Description        string     `json:"description"`
-	UserStory          string     `json:"userStory"`
-	Priority           string     `json:"priority"` // P0 | P1 | P2 | P3
-	Labels             []string   `json:"labels"`
-	AcceptanceCriteria []string   `json:"acceptanceCriteria"`
-	TechnicalNotes     string     `json:"technicalNotes"`
-	LikelyFiles        []string   `json:"likelyFiles"`
-	Risks              []string   `json:"risks"`
-	Dependencies       []string   `json:"dependencies"`
-	Scope              string     `json:"scope"`
-	Plan               []string   `json:"plan"`
-	OpenQuestions      []string   `json:"openQuestions"`
-	MissingInformation []string   `json:"missingInformation"`
-	SuggestedAgent     string     `json:"suggestedAgent"`
-	Confidence         Confidence `json:"confidence"`
+	Title              string   `json:"title"`
+	Description        string   `json:"description"`
+	UserStory          string   `json:"userStory"`
+	Priority           string   `json:"priority"` // P0 | P1 | P2 | P3
+	Labels             []string `json:"labels"`
+	AcceptanceCriteria []string `json:"acceptanceCriteria"`
+	// Analysis is the planner's synthesized problem understanding and approach
+	// rationale — the "Analysis" half of the Analysis+Plan lifecycle step.
+	Analysis           string   `json:"analysis"`
+	TechnicalNotes     string   `json:"technicalNotes"`
+	LikelyFiles        []string `json:"likelyFiles"`
+	Risks              []string `json:"risks"`
+	Dependencies       []string `json:"dependencies"`
+	Scope              string   `json:"scope"`
+	Plan               []string `json:"plan"`
+	OpenQuestions      []string `json:"openQuestions"`
+	MissingInformation []string `json:"missingInformation"`
+	SuggestedAgent     string   `json:"suggestedAgent"`
+	// SuggestedBranch is a `<prefix>/<short-description>` branch name drawn from
+	// the feature/bugfix/hotfix/refactor/chore/docs/test taxonomy.
+	SuggestedBranch string `json:"suggestedBranch"`
+	// SuggestedCommit is an example Conventional Commit subject
+	// (`type(scope): summary`) for the first commit of this task.
+	SuggestedCommit string     `json:"suggestedCommit"`
+	Confidence      Confidence `json:"confidence"`
 }
 
 // Confidence carries 0–100 confidence scores the UI renders as badges.
@@ -159,14 +168,23 @@ func buildPrompt(input string, attachments []string) string {
 	var b strings.Builder
 	b.WriteString("You are a senior engineering planner for an AI development workbench. ")
 	b.WriteString("Convert the raw input below into ONE structured engineering task.\n\n")
+	b.WriteString("Work the Analysis-then-Plan method: first ANALYZE (understand the problem, the user story, ")
+	b.WriteString("observable acceptance criteria, scope, risks, and the areas of code it touches), then PLAN ")
+	b.WriteString("(decompose into small, dependency-ordered, independently verifiable steps).\n\n")
 	b.WriteString("Respond with ONLY a single minified JSON object — no prose, no markdown, no code fences. ")
 	b.WriteString("Use exactly these keys:\n")
 	b.WriteString(`title (string), description (string), userStory (string, "As a ... I want ... so that ..."), `)
 	b.WriteString("priority (one of \"P0\",\"P1\",\"P2\",\"P3\"), labels (string[]), acceptanceCriteria (string[]), ")
+	b.WriteString("analysis (string: a short synthesized problem understanding and approach rationale), ")
 	b.WriteString("technicalNotes (string), likelyFiles (string[]), risks (string[]), dependencies (string[]), ")
 	b.WriteString("scope (\"XS\"|\"S\"|\"M\"|\"L\"|\"XL\"), plan (string[] of short high-level steps), ")
 	b.WriteString("openQuestions (string[]), missingInformation (string[] of specific facts you need but were not given), ")
 	b.WriteString("suggestedAgent (string, e.g. \"claude\"), ")
+	b.WriteString("suggestedBranch (string \"<prefix>/<short-kebab-description>\" where prefix is one of ")
+	b.WriteString("feature|bugfix|hotfix|refactor|chore|docs|test, chosen to match the task's nature), ")
+	b.WriteString("suggestedCommit (string: a Conventional Commit subject \"type(scope): imperative summary\" ")
+	b.WriteString("where type is one of feat|fix|refactor|docs|test|chore|build|ci|perf; ")
+	b.WriteString("feature->feat, bugfix/hotfix->fix, others keep their name), ")
 	b.WriteString("confidence (object with integer 0-100 fields: overall, title, priority, acceptanceCriteria).\n")
 	b.WriteString("Infer priority, labels, acceptance criteria and the rest yourself; do not ask the user to fill them in.\n\n")
 	if len(attachments) > 0 {
@@ -264,5 +282,11 @@ func normalize(d TaskDraft) TaskDraft {
 	d.Confidence.Title = clamp(d.Confidence.Title)
 	d.Confidence.Priority = clamp(d.Confidence.Priority)
 	d.Confidence.AcceptanceCriteria = clamp(d.Confidence.AcceptanceCriteria)
+
+	// Always emit a valid branch/commit suggestion: keep the model's value when
+	// it already fits the taxonomy, otherwise derive one so the UI and worker
+	// never see an empty or malformed convention.
+	d.SuggestedBranch = normalizeBranch(d.SuggestedBranch, d.Title, d.Labels)
+	d.SuggestedCommit = normalizeCommit(d.SuggestedCommit, d.SuggestedBranch, d.Title)
 	return d
 }

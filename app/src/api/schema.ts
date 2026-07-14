@@ -802,6 +802,7 @@ export interface components {
         };
         PlannerTaskDraft: {
             acceptanceCriteria: string[];
+            analysis: string;
             confidence: components["schemas"]["PlannerConfidence"];
             dependencies: string[];
             description: string;
@@ -814,6 +815,8 @@ export interface components {
             risks: string[];
             scope: string;
             suggestedAgent: string;
+            suggestedBranch: string;
+            suggestedCommit: string;
             technicalNotes: string;
             title: string;
             userStory: string;

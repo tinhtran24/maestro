@@ -27,6 +27,14 @@ func TestInstall_WritesSkillAndIsIdempotent(t *testing.T) {
 		t.Fatalf("commands/spawn.md missing: %v", err)
 	}
 
+	// The dev-lifecycle skill installs alongside using-to.
+	lifecycleFile := filepath.Join(LifecycleDir(dataDir), "SKILL.md")
+	if b, err := os.ReadFile(lifecycleFile); err != nil {
+		t.Fatalf("read %s: %v", lifecycleFile, err)
+	} else if len(b) == 0 {
+		t.Fatalf("dev-lifecycle SKILL.md is empty")
+	}
+
 	// A stale file inside the skill dir must not survive a reinstall (clobber).
 	stale := filepath.Join(Dir(dataDir), "stale.md")
 	if err := os.WriteFile(stale, []byte("old"), 0o644); err != nil {

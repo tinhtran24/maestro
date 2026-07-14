@@ -35,6 +35,7 @@ export function composeSessionPrompt(draft: TaskDraft, extraContext?: string): s
 	const lines: string[] = [];
 	if (draft.description) lines.push(draft.description.trim(), "");
 	if (draft.userStory) lines.push(`User story: ${draft.userStory}`, "");
+	if (draft.analysis) lines.push("Analysis:", draft.analysis.trim(), "");
 	if (draft.acceptanceCriteria?.length) {
 		lines.push("Acceptance criteria:");
 		for (const c of draft.acceptanceCriteria) lines.push(`- ${c}`);
@@ -50,6 +51,12 @@ export function composeSessionPrompt(draft: TaskDraft, extraContext?: string): s
 	if (draft.openQuestions?.length) {
 		lines.push("Open questions:");
 		for (const q of draft.openQuestions) lines.push(`- ${q}`);
+		lines.push("");
+	}
+	if (draft.suggestedBranch || draft.suggestedCommit) {
+		lines.push("Suggested delivery:");
+		if (draft.suggestedBranch) lines.push(`- Branch: ${draft.suggestedBranch}`);
+		if (draft.suggestedCommit) lines.push(`- First commit: ${draft.suggestedCommit}`);
 		lines.push("");
 	}
 	if (extraContext?.trim()) lines.push("Additional context:", extraContext.trim(), "");
