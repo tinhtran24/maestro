@@ -10,8 +10,8 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
-	"github.com/tinhtran/thanos/backend/internal/httpd/envelope"
-	aoprocess "github.com/tinhtran/thanos/backend/internal/process"
+	"github.com/tinhtran24/maestro/backend/internal/httpd/envelope"
+	aoprocess "github.com/tinhtran24/maestro/backend/internal/process"
 )
 
 const githubAuthProbeTimeout = 5 * time.Second
@@ -61,7 +61,7 @@ func probeGitHubAuth(ctx context.Context, runner GitHubAuthRunner) GitHubAuthSta
 }
 
 func envGitHubTokenSource() string {
-	for _, name := range []string{"THANOS_GITHUB_TOKEN", "GITHUB_TOKEN"} {
+	for _, name := range []string{"MAESTRO_GITHUB_TOKEN", "GITHUB_TOKEN"} {
 		if strings.TrimSpace(os.Getenv(name)) != "" {
 			return name
 		}

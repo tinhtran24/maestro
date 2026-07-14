@@ -181,7 +181,9 @@ function SummaryView({ session }: { session: WorkspaceSession }) {
 		queryKey: ["project", session.workspaceId],
 		enabled: prSummaries.length === 0 && Boolean(session.workspaceId),
 		queryFn: async () => {
-			const { data, error } = await apiClient.GET("/api/v1/projects/{id}", { params: { path: { id: session.workspaceId } } });
+			const { data, error } = await apiClient.GET("/api/v1/projects/{id}", {
+				params: { path: { id: session.workspaceId } },
+			});
 			if (error) throw new Error(apiErrorMessage(error));
 			return data?.status === "ok" ? (data.project as components["schemas"]["Project"]) : undefined;
 		},
@@ -195,11 +197,18 @@ function SummaryView({ session }: { session: WorkspaceSession }) {
 		<div role="tabpanel">
 			<Section
 				title={prSectionTitle}
-				action={createPRURL ? (
-					<a href={createPRURL} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-[11px] font-medium text-accent hover:underline">
-						Open pull request <ArrowUpRight aria-hidden="true" className="h-3 w-3" strokeWidth={2} />
-					</a>
-				) : null}
+				action={
+					createPRURL ? (
+						<a
+							href={createPRURL}
+							target="_blank"
+							rel="noopener noreferrer"
+							className="inline-flex items-center gap-1 text-[11px] font-medium text-accent hover:underline"
+						>
+							Open pull request <ArrowUpRight aria-hidden="true" className="h-3 w-3" strokeWidth={2} />
+						</a>
+					) : null
+				}
 			>
 				{prSummaries.length === 0 ? (
 					<p className="inspector-empty">No pull request opened yet.</p>

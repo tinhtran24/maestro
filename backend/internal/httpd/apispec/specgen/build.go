@@ -138,6 +138,8 @@ var schemaNames = map[string]string{
 	"ControllersListProjectsResponse":             "ListProjectsResponse",
 	"ControllersProjectResponse":                  "ProjectResponse",
 	"ControllersAgentIDParam":                     "AgentIDParam",
+	"ControllersGitHubAuthStatus":                 "GitHubAuthStatus",
+	"ControllersGitHubAuthStatusResponse":         "GitHubAuthStatusResponse",
 	"ControllersGetProjectResponse":               "ProjectGetResponse",
 	"ControllersProjectOrDegraded":                "ProjectOrDegraded",
 	"ControllersListSessionsQuery":                "ListSessionsQuery",
@@ -293,7 +295,22 @@ func operations() []operation {
 	ops = append(ops, notificationOperations()...)
 	ops = append(ops, importOperations()...)
 	ops = append(ops, plannerOperations()...)
+	ops = append(ops, githubOperations()...)
 	return ops
+}
+
+// githubOperations declares the 1 /github/auth operation. Must stay 1:1 with the
+// route GitHubAuthController.Register mounts (enforced by the parity test).
+func githubOperations() []operation {
+	return []operation{
+		{
+			method: http.MethodGet, path: "/api/v1/github/auth", id: "getGitHubAuthStatus", tag: "github",
+			summary: "Check global GitHub CLI and token readiness",
+			resps: []respUnit{
+				{http.StatusOK, controllers.GitHubAuthStatusResponse{}},
+			},
+		},
+	}
 }
 
 // plannerOperations declares the 1 /plan operation. Must stay 1:1 with the

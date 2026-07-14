@@ -693,7 +693,7 @@ export interface components {
             loginCommand?: string;
             message?: string;
             /** @enum {string} */
-            source: "none" | "gh" | "THANOS_GITHUB_TOKEN" | "GITHUB_TOKEN";
+            source: "none" | "gh" | "MAESTRO_GITHUB_TOKEN" | "GITHUB_TOKEN";
         };
         GitHubAuthStatusResponse: {
             status: components["schemas"]["GitHubAuthStatus"];
