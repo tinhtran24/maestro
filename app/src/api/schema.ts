@@ -679,6 +679,8 @@ export interface components {
         };
         DomainGitWorkflowConfig: {
             enabled?: boolean;
+            /** @enum {string} */
+            provider?: "github" | "gitlab" | "bitbucket" | "bitbucket-server";
         };
         DomainReviewerConfig: {
             harness: string;

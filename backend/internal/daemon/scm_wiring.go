@@ -14,6 +14,7 @@ import (
 	"strings"
 
 	scmgithub "github.com/tinhtran/thanos/backend/internal/adapters/scm/github"
+	"github.com/tinhtran/thanos/backend/internal/domain"
 	"github.com/tinhtran/thanos/backend/internal/lifecycle"
 	scmobserve "github.com/tinhtran/thanos/backend/internal/observe/scm"
 	"github.com/tinhtran/thanos/backend/internal/storage/sqlite"
@@ -24,11 +25,18 @@ import (
 // observer performs a lazy credential check in its background goroutine, logs
 // one warning, and disables itself before any provider API calls.
 func startSCMObserver(ctx context.Context, store *sqlite.Store, lcm *lifecycle.Manager, logger *slog.Logger) <-chan struct{} {
-	provider, err := newGitHubSCMProvider(logger)
+	github, err := newGitHubSCMProvider(logger)
 	if err != nil {
 		logSCMProviderDisabled(logger, err)
 		return closedDone()
 	}
+	// Register every SCM adapter behind the dispatcher. Today only GitHub ships
+	// an observation adapter, so this behaves identically to a bare GitHub
+	// provider; adding GitLab/Bitbucket is a one-line registration here plus the
+	// adapter, with no observer-level change.
+	provider := scmobserve.NewMultiProvider(
+		scmobserve.RegisteredProvider{Name: domain.SCMProviderGitHub, Provider: github},
+	)
 	observer := scmobserve.New(provider, store, lcm, scmobserve.Config{Logger: logger})
 	return observer.Start(ctx)
 }
