@@ -13,7 +13,7 @@ func TestProjectConfigValidate(t *testing.T) {
 		{"bad permission", ProjectConfig{AgentConfig: AgentConfig{Permissions: "yolo"}}, true},
 		{"good session prefix", ProjectConfig{SessionPrefix: "to"}, false},
 		{"session prefix with slash", ProjectConfig{SessionPrefix: "to/project"}, true},
-		{"session prefix with backslash", ProjectConfig{SessionPrefix: `to\project`}, true},
+		{"session prefix with backslash", ProjectConfig{SessionPrefix: `maestro\project`}, true},
 		{"session prefix traversal component", ProjectConfig{SessionPrefix: ".."}, true},
 		{"good role override", ProjectConfig{Worker: RoleOverride{Harness: HarnessCodex}}, false},
 		{"unknown role harness", ProjectConfig{Orchestrator: RoleOverride{Harness: "nope"}}, true},

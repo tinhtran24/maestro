@@ -10,7 +10,7 @@ import (
 
 	winpty "github.com/aymanbagabas/go-pty"
 
-	"github.com/tinhtran/thanos/backend/internal/ports"
+	"github.com/tinhtran24/maestro/backend/internal/ports"
 )
 
 // detachGrace mirrors the Unix value: how long Close waits for the attach

@@ -8,8 +8,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/tinhtran/thanos/backend/internal/adapters"
-	"github.com/tinhtran/thanos/backend/internal/ports"
+	"github.com/tinhtran24/maestro/backend/internal/adapters"
+	"github.com/tinhtran24/maestro/backend/internal/ports"
 )
 
 func TestManifest(t *testing.T) {
@@ -251,7 +251,7 @@ func TestGetAgentHooksInstallsIntoFactoryHooksJSON(t *testing.T) {
 func TestGetAgentHooksIdempotentAndPreservesUserHooks(t *testing.T) {
 	plugin := &Plugin{resolvedBinary: "droid"}
 	ws := t.TempDir()
-	// Seed a user-defined hook Thanos must preserve.
+	// Seed a user-defined hook Maestro must preserve.
 	if err := os.MkdirAll(droidHooksPath(ws)[:len(droidHooksPath(ws))-len(droidHooksFileName)], 0o750); err != nil {
 		t.Fatal(err)
 	}
@@ -274,9 +274,9 @@ func TestGetAgentHooksIdempotentAndPreservesUserHooks(t *testing.T) {
 	if !strings.Contains(body, "echo mine") {
 		t.Fatalf("user hook dropped:\n%s", body)
 	}
-	// The Thanos stop command must appear exactly once despite two installs.
+	// The Maestro stop command must appear exactly once despite two installs.
 	if n := strings.Count(body, droidHookCommandPrefix+"stop"); n != 1 {
-		t.Fatalf("Thanos stop command count = %d, want 1 (idempotent):\n%s", n, body)
+		t.Fatalf("Maestro stop command count = %d, want 1 (idempotent):\n%s", n, body)
 	}
 }
 
@@ -304,7 +304,7 @@ func TestUninstallHooksRemovesAOHooksLeavesUserHooks(t *testing.T) {
 	}
 	body := string(data)
 	if strings.Contains(body, droidHookCommandPrefix) {
-		t.Fatalf("Thanos hooks not removed:\n%s", body)
+		t.Fatalf("Maestro hooks not removed:\n%s", body)
 	}
 	if !strings.Contains(body, "echo mine") {
 		t.Fatalf("user hook dropped on uninstall:\n%s", body)

@@ -10,7 +10,7 @@ import (
 	"database/sql"
 	"time"
 
-	"github.com/tinhtran/thanos/backend/internal/domain"
+	"github.com/tinhtran24/maestro/backend/internal/domain"
 )
 
 const claimPRForSession = `-- name: ClaimPRForSession :exec

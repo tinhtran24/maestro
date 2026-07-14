@@ -18,11 +18,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/tinhtran/thanos/backend/internal/domain"
-	"github.com/tinhtran/thanos/backend/internal/lifecycle"
-	scmobserve "github.com/tinhtran/thanos/backend/internal/observe/scm"
-	"github.com/tinhtran/thanos/backend/internal/ports"
-	"github.com/tinhtran/thanos/backend/internal/storage/sqlite"
+	"github.com/tinhtran24/maestro/backend/internal/domain"
+	"github.com/tinhtran24/maestro/backend/internal/lifecycle"
+	scmobserve "github.com/tinhtran24/maestro/backend/internal/observe/scm"
+	"github.com/tinhtran24/maestro/backend/internal/ports"
+	"github.com/tinhtran24/maestro/backend/internal/storage/sqlite"
 )
 
 var scmTestRepo = ports.SCMRepo{

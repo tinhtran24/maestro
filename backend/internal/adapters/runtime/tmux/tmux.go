@@ -15,9 +15,9 @@ import (
 	"time"
 	"unicode/utf8"
 
-	"github.com/tinhtran/thanos/backend/internal/adapters/runtime/ptyexec"
-	"github.com/tinhtran/thanos/backend/internal/domain"
-	"github.com/tinhtran/thanos/backend/internal/ports"
+	"github.com/tinhtran24/maestro/backend/internal/adapters/runtime/ptyexec"
+	"github.com/tinhtran24/maestro/backend/internal/domain"
+	"github.com/tinhtran24/maestro/backend/internal/ports"
 )
 
 const (
@@ -69,9 +69,9 @@ func (execRunner) Run(ctx context.Context, env []string, name string, args ...st
 func New(opts Options) *Runtime {
 	binary := opts.Binary
 	if binary == "" {
-		// THANOS_TMUX_BIN lets an operator point Thanos at a specific tmux binary
+		// MAESTRO_TMUX_BIN lets an operator point Maestro at a specific tmux binary
 		// (custom build or non-standard prefix) regardless of PATH.
-		if env := getenv("THANOS_TMUX_BIN"); env != "" {
+		if env := getenv("MAESTRO_TMUX_BIN"); env != "" {
 			binary = env
 		} else if path, err := exec.LookPath("tmux"); err == nil {
 			binary = path

@@ -1,36 +1,36 @@
 ---
 title: Introduction
-description: Learn what Thanos does, when to use it, and where to start.
+description: Learn what Maestro does, when to use it, and where to start.
 ---
 
 import { Callout } from "fumadocs-ui/components/callout";
 
-Thanos (**Thanos**) runs AI coding agents in isolated git worktrees and keeps track of the work until it becomes a pull request.
+Maestro (**Maestro**) runs AI coding agents in isolated git worktrees and keeps track of the work until it becomes a pull request.
 
-Use it when you have several well-scoped issues and want agents to work on them at the same time without sharing a checkout, terminal, or branch. Thanos starts each session, watches the agent, tracks the PR, and shows the state of every session in one dashboard.
+Use it when you have several well-scoped issues and want agents to work on them at the same time without sharing a checkout, terminal, or branch. Maestro starts each session, watches the agent, tracks the PR, and shows the state of every session in one dashboard.
 
 <Callout type="info" title="Fastest path">
-	If you are new to Thanos, install it first, then run the quickstart against one small issue. Start with
+	If you are new to Maestro, install it first, then run the quickstart against one small issue. Start with
 	[Installation](/docs/installation), then [Quickstart](/docs/quickstart).
 </Callout>
 
-## What Thanos Is For
+## What Maestro Is For
 
-Thanos is useful when you want to:
+Maestro is useful when you want to:
 
 - Run more than one coding agent at the same time.
 - Keep every agent in its own worktree, branch, and session.
 - Watch agent terminals and PR state from one dashboard.
-- Let Thanos wake an agent when CI fails or a review requests changes.
+- Let Maestro wake an agent when CI fails or a review requests changes.
 - Use different agent CLIs across projects or roles, such as Claude Code, Codex, Cursor, Aider, and OpenCode.
 
-Thanos works best for issues that have a clear outcome: failing tests, small features, focused refactors, migrations, documentation updates, and review follow-ups.
+Maestro works best for issues that have a clear outcome: failing tests, small features, focused refactors, migrations, documentation updates, and review follow-ups.
 
-## What Thanos Does Not Do
+## What Maestro Does Not Do
 
-Thanos does not replace review. It helps agents keep working, but you still decide what gets merged.
+Maestro does not replace review. It helps agents keep working, but you still decide what gets merged.
 
-| Thanos handles                         | You still handle                             |
+| Maestro handles                    | You still handle                             |
 | ---------------------------------- | -------------------------------------------- |
 | Creating isolated workspaces       | Choosing good issues                         |
 | Launching and monitoring agents    | Reviewing code and behavior                  |
@@ -45,9 +45,9 @@ issue -> to spawn -> worktree + agent -> pull request -> CI/review loop -> merge
 
 The dashboard shows this lifecycle as session cards. Open a card to see the live terminal, current activity state, issue link, PR link, and worktree path.
 
-## How Thanos Fits Together
+## How Maestro Fits Together
 
-Thanos is built from plugins. The default setup works out of the box for common GitHub workflows, and you can swap pieces when your setup is different.
+Maestro is built from plugins. The default setup works out of the box for common GitHub workflows, and you can swap pieces when your setup is different.
 
 | Plugin slot | What it controls                  | Examples                                    |
 | ----------- | --------------------------------- | ------------------------------------------- |
@@ -56,9 +56,9 @@ Thanos is built from plugins. The default setup works out of the box for common 
 | Workspace   | Where code is checked out         | git worktree, full clone                    |
 | Tracker     | Where issues come from            | GitHub, GitLab, Linear                      |
 | SCM         | How PRs, reviews, and CI are read | GitHub, GitLab                              |
-| Notifier    | Where Thanos sends updates            | desktop, Slack, Discord, webhook            |
+| Notifier    | Where Maestro sends updates       | desktop, Slack, Discord, webhook            |
 
-Most users start with the defaults and only edit `thanos.yaml` when they need a different agent, runtime, tracker, or notification target.
+Most users start with the defaults and only edit `maestro.yaml` when they need a different agent, runtime, tracker, or notification target.
 
 ## Platform Support
 
@@ -69,8 +69,8 @@ Most users start with the defaults and only edit `thanos.yaml` when they need a 
 	note={
 		<>
 			Windows support is actively improving. Use the process runtime instead of tmux by setting{" "}
-			<code>defaults.runtime: process</code> in <code>thanos.yaml</code>. See{" "}
-			<a href="/docs/platforms">Platforms</a> for details.
+			<code>defaults.runtime: process</code> in <code>maestro.yaml</code>. See <a href="/docs/platforms">Platforms</a>{" "}
+			for details.
 		</>
 	}
 />
@@ -80,11 +80,11 @@ Most users start with the defaults and only edit `thanos.yaml` when they need a 
 <Cards>
 	<Card
 		title="Installation"
-		description="Install Thanos, authenticate your tools, and run the doctor check."
+		description="Install Maestro, authenticate your tools, and run the doctor check."
 		href="/docs/installation"
 	/>
 	<Card title="Quickstart" description="Spawn one agent on one issue and watch it open a PR." href="/docs/quickstart" />
-	<Card title="Configuration" description="Understand the `thanos.yaml` file." href="/docs/configuration" />
+	<Card title="Configuration" description="Understand the `maestro.yaml` file." href="/docs/configuration" />
 	<Card
 		title="Guides"
 		description="Run parallel issues, recover from CI failures, and handle review loops."

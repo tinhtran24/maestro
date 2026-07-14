@@ -1,4 +1,4 @@
-# golangci-lint v2 config for the Thanos backend.
+# golangci-lint v2 config for the Maestro backend.
 # Run: golangci-lint run ./...   (from backend/)
 version: "2"
 
@@ -113,4 +113,4 @@ formatters:
   settings:
     goimports:
       local-prefixes:
-        - github.com/tinhtran/thanos
+        - github.com/tinhtran24/maestro

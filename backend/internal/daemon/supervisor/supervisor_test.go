@@ -11,7 +11,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/tinhtran/thanos/backend/internal/daemon/supervisor"
+	"github.com/tinhtran24/maestro/backend/internal/daemon/supervisor"
 )
 
 // fakeListener queues pre-made conns and blocks (or returns a closed error)

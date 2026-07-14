@@ -1,6 +1,6 @@
 package session
 
-import "github.com/tinhtran/thanos/backend/internal/domain"
+import "github.com/tinhtran24/maestro/backend/internal/domain"
 
 // stackInfo is the derived position of one PR within its session's set of PRs.
 // PRs form a stack when one targets the source branch of another: PR B is a

@@ -13,10 +13,10 @@ import (
 	"github.com/coder/websocket"
 	"github.com/coder/websocket/wsjson"
 
-	"github.com/tinhtran/thanos/backend/internal/adapters/runtime/ptyexec"
-	"github.com/tinhtran/thanos/backend/internal/config"
-	"github.com/tinhtran/thanos/backend/internal/ports"
-	"github.com/tinhtran/thanos/backend/internal/terminal"
+	"github.com/tinhtran24/maestro/backend/internal/adapters/runtime/ptyexec"
+	"github.com/tinhtran24/maestro/backend/internal/config"
+	"github.com/tinhtran24/maestro/backend/internal/ports"
+	"github.com/tinhtran24/maestro/backend/internal/terminal"
 )
 
 // stubSource attaches a throwaway shell command instead of a real mux pane, so

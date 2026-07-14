@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/tinhtran/thanos/backend/internal/domain"
+	"github.com/tinhtran24/maestro/backend/internal/domain"
 )
 
 // fakeStore is an in-memory Store with the importer's idempotency semantics.
@@ -32,7 +32,7 @@ func (f *fakeStore) UpsertProject(_ context.Context, r domain.ProjectRecord) err
 // legacy root.
 func writeLegacyRoot(t *testing.T) string {
 	t.Helper()
-	root := filepath.Join(t.TempDir(), ".thanos")
+	root := filepath.Join(t.TempDir(), ".maestro")
 	mustMkdir(t, filepath.Join(root, "projects", "alpha", "sessions"))
 	mustMkdir(t, filepath.Join(root, "projects", "beta", "sessions"))
 

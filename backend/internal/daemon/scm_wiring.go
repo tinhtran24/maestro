@@ -7,17 +7,13 @@ package daemon
 import (
 	"context"
 	"errors"
-	"fmt"
 	"log/slog"
-	"os"
-	"os/exec"
-	"strings"
 
-	scmgithub "github.com/tinhtran/thanos/backend/internal/adapters/scm/github"
-	"github.com/tinhtran/thanos/backend/internal/domain"
-	"github.com/tinhtran/thanos/backend/internal/lifecycle"
-	scmobserve "github.com/tinhtran/thanos/backend/internal/observe/scm"
-	"github.com/tinhtran/thanos/backend/internal/storage/sqlite"
+	scmgithub "github.com/tinhtran24/maestro/backend/internal/adapters/scm/github"
+	"github.com/tinhtran24/maestro/backend/internal/domain"
+	"github.com/tinhtran24/maestro/backend/internal/lifecycle"
+	scmobserve "github.com/tinhtran24/maestro/backend/internal/observe/scm"
+	"github.com/tinhtran24/maestro/backend/internal/storage/sqlite"
 )
 
 // startSCMObserver wires the provider-neutral SCM observer with the GitHub
@@ -42,18 +38,13 @@ func startSCMObserver(ctx context.Context, store *sqlite.Store, lcm *lifecycle.M
 }
 
 func newGitHubSCMProvider(logger *slog.Logger) (*scmgithub.Provider, error) {
-	if strings.TrimSpace(os.Getenv("THANOS_GITHUB_TOKEN")) == "" && strings.TrimSpace(os.Getenv("GITHUB_TOKEN")) == "" {
-		if _, err := exec.LookPath("gh"); err != nil {
-			return nil, fmt.Errorf("GitHub CLI not installed; install it with `brew install gh`, then run `gh auth login`")
-		}
-	}
 	tokens := scmgithub.FallbackTokenSource{
-		scmgithub.EnvTokenSource{EnvVars: []string{"THANOS_GITHUB_TOKEN"}},
-		&scmgithub.GHTokenSource{},
+		scmgithub.EnvTokenSource{EnvVars: []string{"MAESTRO_GITHUB_TOKEN"}},
+		&scmgithub.GitCredentialTokenSource{},
 	}
 	// Avoid token preflight on daemon startup and session service construction.
-	// gh may prompt or be slow; provider calls resolve credentials lazily when
-	// claim-pr or the background observer needs GitHub.
+	// Git credential helpers may prompt or be slow; provider calls resolve
+	// credentials lazily when claim-pr or the background observer needs GitHub.
 	return scmgithub.NewProvider(scmgithub.ProviderOptions{Token: tokens, SkipTokenPreflight: true, Logger: logger})
 }
 

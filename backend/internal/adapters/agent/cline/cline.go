@@ -3,12 +3,12 @@
 // Cline hooks, and reading hook-derived session info.
 //
 // Cline is an autonomous coding agent that runs in the terminal (binary
-// "cline", installed via `npm i -g cline`). Thanos opens Cline's normal terminal UI
+// "cline", installed via `npm i -g cline`). Maestro opens Cline's normal terminal UI
 // and delivers prompted worker tasks after startup so dashboard terminal
 // attachments stay readable and Cline's startup command parser is bypassed.
 //
-// Thanos-managed sessions derive native session identity from Cline hooks
-// (the workspace-local `.clinerules/hooks/` executable scripts Thanos installs)
+// Maestro-managed sessions derive native session identity from Cline hooks
+// (the workspace-local `.clinerules/hooks/` executable scripts Maestro installs)
 // rather than transcript/cache scans.
 package cline
 
@@ -17,10 +17,10 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/tinhtran/thanos/backend/internal/adapters"
-	"github.com/tinhtran/thanos/backend/internal/adapters/agent/agentbase"
-	"github.com/tinhtran/thanos/backend/internal/adapters/agent/binaryutil"
-	"github.com/tinhtran/thanos/backend/internal/ports"
+	"github.com/tinhtran24/maestro/backend/internal/adapters"
+	"github.com/tinhtran24/maestro/backend/internal/adapters/agent/agentbase"
+	"github.com/tinhtran24/maestro/backend/internal/adapters/agent/binaryutil"
+	"github.com/tinhtran24/maestro/backend/internal/ports"
 )
 
 // Plugin is the Cline agent adapter. It is safe for concurrent use; the binary
@@ -71,7 +71,7 @@ func (p *Plugin) GetLaunchCommand(ctx context.Context, cfg ports.LaunchConfig) (
 	return cmd, nil
 }
 
-// GetPromptDeliveryStrategy reports that Thanos should inject prompted Cline tasks
+// GetPromptDeliveryStrategy reports that Maestro should inject prompted Cline tasks
 // into the interactive terminal after startup.
 func (p *Plugin) GetPromptDeliveryStrategy(ctx context.Context, _ ports.LaunchConfig) (ports.PromptDeliveryStrategy, error) {
 	if err := ctx.Err(); err != nil {

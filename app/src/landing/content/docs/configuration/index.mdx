@@ -1,14 +1,14 @@
 ---
 title: Configuration
-description: How Thanos stores configuration, what belongs in the global registry, and what you should edit per project.
+description: How Maestro stores configuration, what belongs in the global registry, and what you should edit per project.
 ---
 
-Thanos uses configuration in two layers:
+Maestro uses configuration in two layers:
 
-- **Global registry** — remembers which projects Thanos knows about and which repository each project points to.
+- **Global registry** — remembers which projects Maestro knows about and which repository each project points to.
 - **Local project config** — controls behavior for one project: agent, runtime, workspace, rules, reactions, tracker, SCM, and setup commands.
 
-Most users should let `to start` create the registry entry, then edit the local `thanos.yaml` in the project when they want to change behavior.
+Most users should let `maestro start` create the registry entry, then edit the local `maestro.yaml` in the project when they want to change behavior.
 
 <Callout type="info">
 	The old wrapped format with a top-level `projects:` block is still understood for compatibility, but new project-local
@@ -16,23 +16,23 @@ Most users should let `to start` create the registry entry, then edit the local 
 	project config.
 </Callout>
 
-## What Thanos Creates
+## What Maestro Creates
 
-When you run Thanos in a repository, it can register the project globally and create a local config file:
+When you run Maestro in a repository, it can register the project globally and create a local config file:
 
 ```bash
-to start
+maestro start
 ```
 
 The global registry lives at:
 
 ```text
-~/.thanos/config.yaml
+~/.maestro/config.yaml
 ```
 
-That file is Thanos-owned. It stores durable identity:
+That file is Maestro-owned. It stores durable identity:
 
-```yaml title="~/.thanos/config.yaml"
+```yaml title="~/.maestro/config.yaml"
 projects:
   my-app:
     projectId: my-app
@@ -50,12 +50,12 @@ projects:
 The local project config lives inside the repository:
 
 ```text
-my-app/thanos.yaml
+my-app/maestro.yaml
 ```
 
 That file is for behavior:
 
-```yaml title="thanos.yaml"
+```yaml title="maestro.yaml"
 agent: claude-code
 runtime: tmux
 workspace: worktree
@@ -74,15 +74,15 @@ agentRules: |
 
 ## What To Edit
 
-| Goal                                             | Edit                                           |
-| ------------------------------------------------ | ---------------------------------------------- |
-| Change the default agent or model                | Local `thanos.yaml`                |
-| Add `.env` or tool config files to each worktree | Local `symlinks`                               |
-| Run setup commands before the agent starts       | Local `postCreate`                             |
-| Disable or tune automated recovery               | Local or global `reactions`                    |
-| Change notification routing for all projects     | Global registry                                |
-| Rename, remove, or relink a registered project   | Use Thanos commands/dashboard project settings     |
-| Change where Thanos stores sessions                  | Do not hand-edit; re-register/relink if needed |
+| Goal                                             | Edit                                            |
+| ------------------------------------------------ | ----------------------------------------------- |
+| Change the default agent or model                | Local `maestro.yaml`                            |
+| Add `.env` or tool config files to each worktree | Local `symlinks`                                |
+| Run setup commands before the agent starts       | Local `postCreate`                              |
+| Disable or tune automated recovery               | Local or global `reactions`                     |
+| Change notification routing for all projects     | Global registry                                 |
+| Rename, remove, or relink a registered project   | Use Maestro commands/dashboard project settings |
+| Change where Maestro stores sessions             | Do not hand-edit; re-register/relink if needed  |
 
 Do not manually edit `storageKey`, `path`, or `originUrl` unless you are repairing a broken registry entry and already know why it is wrong.
 
@@ -90,7 +90,7 @@ Do not manually edit `storageKey`, `path`, or `originUrl` unless you are repairi
 
 A practical local config usually starts with the agent, runtime, workspace, setup, and rules:
 
-```yaml title="thanos.yaml"
+```yaml title="maestro.yaml"
 agent: claude-code # claude-code | codex | aider | opencode
 runtime: tmux # tmux | process
 workspace: worktree # worktree | clone
@@ -116,7 +116,7 @@ See [Projects](/docs/configuration/projects) for the full project behavior refer
 
 You can set defaults that apply across all registered projects in the global registry:
 
-```yaml title="~/.thanos/config.yaml"
+```yaml title="~/.maestro/config.yaml"
 defaults:
   agent: claude-code
   runtime: tmux
@@ -134,17 +134,17 @@ Project-local values override global defaults.
 
 ## Config Lookup
 
-Thanos resolves configuration in this order:
+Maestro resolves configuration in this order:
 
-1. `THANOS_CONFIG_PATH`, if set.
-2. `thanos.yaml` or `thanos.yml` found by walking upward from the current directory.
+1. `MAESTRO_CONFIG_PATH`, if set.
+2. `maestro.yaml` or `maestro.yml` found by walking upward from the current directory.
 3. The global registry path.
 4. Legacy home-directory fallbacks:
-   - `~/.thanos.yaml`
-   - `~/.thanos.yml`
-   - `~/.config/thanos/config.yaml`
+   - `~/.maestro.yaml`
+   - `~/.maestro.yml`
+   - `~/.config/maestro/config.yaml`
 
-For normal use, run Thanos from inside the repository and keep `thanos.yaml` in the repo root.
+For normal use, run Maestro from inside the repository and keep `maestro.yaml` in the repo root.
 
 ## Top-Level Global Keys
 
@@ -163,12 +163,12 @@ For normal use, run Thanos from inside the repository and keep `thanos.yaml` in 
 
 ## Where Data Lives
 
-Thanos stores runtime data under `~/.thanos/` by storage key. Session files, archived sessions, feedback reports, and observability snapshots are plain files so they can be inspected during debugging.
+Maestro stores runtime data under `~/.maestro/` by storage key. Session files, archived sessions, feedback reports, and observability snapshots are plain files so they can be inspected during debugging.
 
 You usually do not need to configure this. If you need to debug a session, start with:
 
 ```bash
-ls ~/.thanos
+ls ~/.maestro
 ```
 
 ## Next Steps
@@ -182,7 +182,7 @@ ls ~/.thanos
 	<Card
 		title="Reactions"
 		href="/docs/configuration/reactions"
-		description="Control what Thanos does when CI fails, reviews arrive, or agents need help."
+		description="Control what Maestro does when CI fails, reviews arrive, or agents need help."
 	/>
 	<Card
 		title="Remote access"

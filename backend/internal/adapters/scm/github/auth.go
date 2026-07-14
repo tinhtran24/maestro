@@ -9,7 +9,7 @@ import (
 	"sync"
 	"time"
 
-	aoprocess "github.com/tinhtran/thanos/backend/internal/process"
+	aoprocess "github.com/tinhtran24/maestro/backend/internal/process"
 )
 
 // TokenSource yields a GitHub bearer token on demand. Production wires this
@@ -43,7 +43,7 @@ func (s StaticTokenSource) Token(context.Context) (string, error) {
 
 // EnvTokenSource reads the first non-empty value from the listed env vars,
 // falling back to GITHUB_TOKEN. Order matters: a project-scoped variable
-// (THANOS_GITHUB_TOKEN) should win over the global default.
+// (MAESTRO_GITHUB_TOKEN) should win over the global default.
 type EnvTokenSource struct {
 	EnvVars []string
 }

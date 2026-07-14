@@ -333,7 +333,7 @@ function PluginsBack() {
 	return (
 		<div className="p-5 h-full flex flex-col">
 			<div className="flex items-center justify-between mb-3 pb-3 border-b border-[var(--landing-border-subtle)]">
-				<span className="font-mono text-[0.6875rem] text-[var(--landing-fg)]/80">thanos.yaml</span>
+				<span className="font-mono text-[0.6875rem] text-[var(--landing-fg)]/80">maestro.yaml</span>
 				<span className="font-mono text-[0.5625rem] tracking-[0.1em] uppercase text-[var(--landing-muted-dim)]">
 					7 slots
 				</span>
@@ -385,7 +385,7 @@ function PluginsFront() {
 				</span>
 				<span className="text-[var(--landing-muted)] text-base">⇄</span>
 				<span
-					key={`to-${idx}`}
+					key={`maestro-${idx}`}
 					className="landing-chip-swap font-mono text-[0.8125rem] px-2.5 py-1 rounded-md bg-[rgba(255,240,220,0.08)] text-[var(--landing-fg)]/90 border border-[var(--landing-border-default)]"
 				>
 					{p.to}

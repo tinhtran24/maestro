@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/tinhtran/thanos/backend/internal/domain"
-	"github.com/tinhtran/thanos/backend/internal/ports"
-	sessionmanager "github.com/tinhtran/thanos/backend/internal/session_manager"
+	"github.com/tinhtran24/maestro/backend/internal/domain"
+	"github.com/tinhtran24/maestro/backend/internal/ports"
+	sessionmanager "github.com/tinhtran24/maestro/backend/internal/session_manager"
 )
 
 // Launcher spawns, re-notifies, and probes a reviewer over a worker's worktree.
@@ -112,8 +112,8 @@ func (l *agentLauncher) Spawn(ctx context.Context, spec LaunchSpec) (string, err
 }
 
 // pinnedEnv returns the reviewer command's env with PATH pinned to the daemon's
-// own directory, so the bare `to` the reviewer runs (e.g. `to review submit`)
-// resolves to this daemon's CLI rather than a foreign `to` first on the
+// own directory, so the bare `maestro` the reviewer runs (e.g. `maestro review submit`)
+// resolves to this daemon's CLI rather than a foreign `maestro` first on the
 // inherited PATH. Mirrors the worker-session pin in the session manager.
 // Best-effort: an unpinnable daemon (not named "to") keeps the inherited PATH.
 func pinnedEnv(base map[string]string) map[string]string {

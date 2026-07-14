@@ -1,5 +1,5 @@
-// Package legacyimport reads the legacy Thanos flat-file store
-// (~/.thanos) read-only and ports it into the rewrite's native
+// Package legacyimport reads the legacy Maestro flat-file store
+// (~/.maestro) read-only and ports it into the rewrite's native
 // SQLite store. It maps the legacy project registry and per-project settings.
 //
 // This is the Go port of the legacy-side TypeScript reader (tinhtran24 PR
@@ -18,13 +18,13 @@ import (
 var userHomeDir = os.UserHomeDir
 
 // DefaultLegacyRootDir returns the canonical legacy state root,
-// ~/.thanos, or "" when the home directory cannot be resolved.
+// ~/.maestro, or "" when the home directory cannot be resolved.
 func DefaultLegacyRootDir() string {
 	home, err := userHomeDir()
 	if err != nil {
 		return ""
 	}
-	return filepath.Join(home, ".thanos")
+	return filepath.Join(home, ".maestro")
 }
 
 // globalConfigPath is the legacy global config file, root/config.yaml.

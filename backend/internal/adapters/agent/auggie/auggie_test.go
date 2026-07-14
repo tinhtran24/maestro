@@ -6,8 +6,8 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/tinhtran/thanos/backend/internal/adapters"
-	"github.com/tinhtran/thanos/backend/internal/ports"
+	"github.com/tinhtran24/maestro/backend/internal/adapters"
+	"github.com/tinhtran24/maestro/backend/internal/ports"
 )
 
 func TestManifest(t *testing.T) {
@@ -66,7 +66,7 @@ func TestGetLaunchCommandWithPrompt(t *testing.T) {
 }
 
 // TestGetLaunchCommandPermissionModesEmitNoFlag documents that Auggie has no
-// blanket auto-approve flag, so every Thanos permission mode produces the same argv
+// blanket auto-approve flag, so every Maestro permission mode produces the same argv
 // (no permission flag) and defers to the user's Auggie config.
 func TestGetLaunchCommandPermissionModesEmitNoFlag(t *testing.T) {
 	modes := []ports.PermissionMode{

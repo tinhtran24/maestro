@@ -9,8 +9,6 @@ import { composeSessionPrompt, extractTask } from "../../lib/planner";
 import { agentsQueryOptions } from "../../hooks/useAgentsQuery";
 import type { AgentProvider } from "../../types/workspace";
 import { Button } from "../ui/button";
-import { Input } from "../ui/input";
-import { Label } from "../ui/label";
 import { RequiredAgentField } from "../CreateProjectAgentSheet";
 import { cn } from "../../lib/utils";
 import { AIExtractionCard } from "./AIExtractionCard";
@@ -29,90 +27,6 @@ type Props = {
 	onOpenChange: (open: boolean) => void;
 };
 
-export interface TaskSuggestions {
-	branch: string;
-	commitMessage: string;
-	prTitle: string;
-}
-
-export const TASK_COMPLETION_FOOTER =
-	"Implement the requested change in this repository, run the relevant checks, and open or update a pull request when ready.";
-
-function withTaskCompletionFooter(prompt: string): string {
-	const cleanPrompt = prompt.trim();
-	if (!cleanPrompt) return TASK_COMPLETION_FOOTER;
-	if (cleanPrompt.includes(TASK_COMPLETION_FOOTER)) return cleanPrompt;
-	return `${cleanPrompt}\n\n${TASK_COMPLETION_FOOTER}`;
-}
-
-export function suggestTaskMetadata(title: string): TaskSuggestions {
-	const cleaned = cleanTaskTitle(title) || "update task";
-	const isFix = /\b(bug|fix|defect|regression|crash|error|fail|failure|broken|missing|credential)\b/i.test(cleaned);
-	const branchPrefix = isFix ? "bugfix" : "feature";
-	const commitType = isFix ? "fix" : "feat";
-	const scope = inferScope(cleaned);
-	const summary = lowerFirst(cleaned.replace(/[.\s]+$/g, ""));
-	const commitMessage = `${commitType}${scope ? `(${scope})` : ""}: ${summary || "update task"}`;
-	return {
-		branch: `${branchPrefix}/${slugify(cleaned) || "update-task"}`,
-		commitMessage,
-		prTitle: commitMessage,
-	};
-}
-
-function cleanTaskTitle(title: string): string {
-	return title.trim().replace(/^(fix issue|issue|task|github):\s*/i, "").replace(/^#/, "").trim();
-}
-
-function slugify(value: string): string {
-	return value
-		.toLowerCase()
-		.replace(/[^a-z0-9]+/g, "-")
-		.replace(/^-+|-+$/g, "")
-		.slice(0, 64)
-		.replace(/-+$/g, "");
-}
-
-function lowerFirst(value: string): string {
-	if (/^[A-Z]{2}/.test(value)) return value;
-	return value ? value.charAt(0).toLowerCase() + value.slice(1) : value;
-}
-
-function inferScope(value: string): string {
-	const low = value.toLowerCase();
-	for (const scope of ["tracker", "orchestrator", "session", "cli", "github", "auth", "app", "api", "docs"]) {
-		if (low.includes(scope)) return scope;
-	}
-	return "";
-}
-
-export function taskCreationBody({
-	projectId,
-	agent,
-	agentTouched,
-	issueId,
-	prompt,
-	suggestions,
-}: {
-	projectId: string;
-	agent: string;
-	agentTouched: boolean;
-	issueId: string;
-	prompt: string;
-	suggestions?: TaskSuggestions;
-}) {
-	return {
-		projectId,
-		kind: "worker" as const,
-		harness: agentTouched && agent ? (agent as AgentProvider) : undefined,
-		issueId,
-		branch: suggestions?.branch,
-		commitMessage: suggestions?.commitMessage,
-		prTitle: suggestions?.prTitle,
-		prompt: withTaskCompletionFooter(prompt),
-	};
-}
-
 const STEPS: { id: WizardStep; label: string; sub: string; icon: typeof Sparkles }[] = [
 	{ id: "capture", label: "Quick Capture", sub: "AI-powered", icon: Sparkles },
 	{ id: "structure", label: "AI Structure", sub: "Auto-extracted", icon: Bot },
@@ -128,7 +42,6 @@ export function CreateTaskWizard({ open, projectId, onCreated, onOpenChange }: P
 	const [extraContext, setExtraContext] = useState("");
 	const [agent, setAgent] = useState("");
 	const [agentTouched, setAgentTouched] = useState(false);
-	const [suggestions, setSuggestions] = useState<TaskSuggestions>(suggestTaskMetadata(""));
 	const [error, setError] = useState<string | undefined>();
 	const [createdId, setCreatedId] = useState<string | undefined>();
 
@@ -136,7 +49,9 @@ export function CreateTaskWizard({ open, projectId, onCreated, onOpenChange }: P
 		queryKey: ["project", projectId],
 		enabled: open && Boolean(projectId),
 		queryFn: async () => {
-			const { data, error: apiError } = await apiClient.GET("/api/v1/projects/{id}", { params: { path: { id: projectId as string } } });
+			const { data, error: apiError } = await apiClient.GET("/api/v1/projects/{id}", {
+				params: { path: { id: projectId as string } },
+			});
 			if (apiError) throw new Error(apiErrorMessage(apiError));
 			return data?.project as Project;
 		},
@@ -165,7 +80,6 @@ export function CreateTaskWizard({ open, projectId, onCreated, onOpenChange }: P
 			setExtraContext("");
 			setAgent("");
 			setAgentTouched(false);
-			setSuggestions(suggestTaskMetadata(""));
 			setError(undefined);
 			setCreatedId(undefined);
 		}
@@ -187,17 +101,13 @@ export function CreateTaskWizard({ open, projectId, onCreated, onOpenChange }: P
 			return next;
 		});
 	const patchDraft = (patch: Partial<TaskDraft>) => setDraft((d) => ({ ...d, ...patch }));
-	useEffect(() => {
-		if (!open) return;
-		setSuggestions(suggestTaskMetadata(draft.title));
-	}, [draft.title, open]);
 
 	// Step 1 → 2: run the planner.
 	const extractMutation = useMutation({
 		mutationFn: () => extractTask({ input, attachments, agent, projectId }),
 		onMutate: () => {
 			setError(undefined);
-			void captureRendererEvent("thanos.renderer.quick_capture_extract", { project_id: projectId });
+			void captureRendererEvent("maestro.renderer.quick_capture_extract", { project_id: projectId });
 		},
 		onSuccess: ({ draft: d }) => {
 			setDraft({ ...emptyDraft(), ...d });
@@ -210,16 +120,14 @@ export function CreateTaskWizard({ open, projectId, onCreated, onOpenChange }: P
 	const createMutation = useMutation({
 		mutationFn: async () => {
 			if (!projectId) throw new Error("No project selected");
-			const taskAgent = agent || defaultAgent;
 			const { data, error: apiError } = await apiClient.POST("/api/v1/sessions", {
-				body: taskCreationBody({
+				body: {
 					projectId,
-					agent: taskAgent,
-					agentTouched,
+					kind: "worker",
+					harness: agentTouched && agent ? (agent as AgentProvider) : undefined,
 					issueId: draft.title.trim() || "Untitled task",
 					prompt: composeSessionPrompt(draft, extraContext) || draft.title,
-					suggestions,
-				}),
+				},
 			});
 			if (apiError) throw new Error(apiErrorMessage(apiError, "Unable to create task"));
 			if (!data?.session?.id) throw new Error("Task creation returned no session");
@@ -227,7 +135,7 @@ export function CreateTaskWizard({ open, projectId, onCreated, onOpenChange }: P
 		},
 		onSuccess: (id) => {
 			setCreatedId(id);
-			void captureRendererEvent("thanos.renderer.quick_capture_created", { project_id: projectId });
+			void captureRendererEvent("maestro.renderer.quick_capture_created", { project_id: projectId });
 		},
 		onError: (e) => setError(e instanceof Error ? e.message : "Unable to create task"),
 	});
@@ -247,17 +155,31 @@ export function CreateTaskWizard({ open, projectId, onCreated, onOpenChange }: P
 							const active = s.id === step;
 							const done = i < stepIndex || Boolean(createdId);
 							return (
-								<div key={s.id} className={cn("flex items-center gap-2.5 rounded-lg px-2 py-2", active && "bg-violet-500/10")}>
+								<div
+									key={s.id}
+									className={cn("flex items-center gap-2.5 rounded-lg px-2 py-2", active && "bg-violet-500/10")}
+								>
 									<span
 										className={cn(
 											"grid size-7 shrink-0 place-items-center rounded-full border text-[11px]",
-											active ? "border-violet-500 bg-violet-500/20 text-violet-200" : done ? "border-emerald-500/40 bg-emerald-500/15 text-emerald-300" : "border-border text-muted-foreground",
+											active
+												? "border-violet-500 bg-violet-500/20 text-violet-200"
+												: done
+													? "border-emerald-500/40 bg-emerald-500/15 text-emerald-300"
+													: "border-border text-muted-foreground",
 										)}
 									>
 										{done ? <Check className="size-3.5" /> : <s.icon className="size-3.5" />}
 									</span>
 									<div className="min-w-0">
-										<div className={cn("truncate text-[12px] font-medium", active ? "text-foreground" : "text-muted-foreground")}>{s.label}</div>
+										<div
+											className={cn(
+												"truncate text-[12px] font-medium",
+												active ? "text-foreground" : "text-muted-foreground",
+											)}
+										>
+											{s.label}
+										</div>
 										<div className="truncate text-[10px] text-passive">{s.sub}</div>
 									</div>
 								</div>
@@ -275,7 +197,11 @@ export function CreateTaskWizard({ open, projectId, onCreated, onOpenChange }: P
 								) : null}
 							</div>
 							<Dialog.Close asChild>
-								<button type="button" aria-label="Close" className="grid size-7 place-items-center rounded-md text-muted-foreground transition hover:bg-surface hover:text-foreground">
+								<button
+									type="button"
+									aria-label="Close"
+									className="grid size-7 place-items-center rounded-md text-muted-foreground transition hover:bg-surface hover:text-foreground"
+								>
 									<X className="size-4" />
 								</button>
 							</Dialog.Close>
@@ -288,20 +214,21 @@ export function CreateTaskWizard({ open, projectId, onCreated, onOpenChange }: P
 										<Check className="size-7" />
 									</span>
 									<div className="text-[15px] font-semibold text-foreground">Task Created</div>
-									<p className="max-w-sm text-[12px] text-muted-foreground">Planning will start shortly — {agent || "the agent"} will analyze the task and ask questions if needed.</p>
+									<p className="max-w-sm text-[12px] text-muted-foreground">
+										Planning will start shortly — {agent || "the agent"} will analyze the task and ask questions if
+										needed.
+									</p>
 								</div>
 							) : step === "capture" ? (
-								<>
-									<QuickCaptureEditor
-										input={input}
-										onInput={setInput}
-										attachments={attachments}
-										onAddFiles={addFiles}
-										onAddUrl={addUrl}
-										onRemove={removeAttachment}
-										onReorder={reorderAttachment}
-									/>
-								</>
+								<QuickCaptureEditor
+									input={input}
+									onInput={setInput}
+									attachments={attachments}
+									onAddFiles={addFiles}
+									onAddUrl={addUrl}
+									onRemove={removeAttachment}
+									onReorder={reorderAttachment}
+								/>
 							) : step === "structure" ? (
 								<AIExtractionCard draft={draft} onChange={patchDraft} agent={agent} />
 							) : step === "review" ? (
@@ -315,7 +242,7 @@ export function CreateTaskWizard({ open, projectId, onCreated, onOpenChange }: P
 									onExtraContext={setExtraContext}
 								/>
 							) : (
-								<CreateSummary draft={draft} attachments={attachments} agent={agent} suggestions={suggestions} onSuggestions={setSuggestions} />
+								<CreateSummary draft={draft} attachments={attachments} agent={agent} />
 							)}
 
 							{error ? (
@@ -416,20 +343,7 @@ export function CreateTaskWizard({ open, projectId, onCreated, onOpenChange }: P
 	);
 }
 
-function CreateSummary({
-	draft,
-	attachments,
-	agent,
-	suggestions,
-	onSuggestions,
-}: {
-	draft: TaskDraft;
-	attachments: Attachment[];
-	agent: string;
-	suggestions: TaskSuggestions;
-	onSuggestions: (next: TaskSuggestions) => void;
-}) {
-	const patch = (key: keyof TaskSuggestions, value: string) => onSuggestions({ ...suggestions, [key]: value });
+function CreateSummary({ draft, attachments, agent }: { draft: TaskDraft; attachments: Attachment[]; agent: string }) {
 	return (
 		<div className="space-y-3">
 			<div className="flex items-center gap-2 text-[13px] text-foreground">
@@ -449,28 +363,6 @@ function CreateSummary({
 				<div className="mt-2 text-[11px] text-passive">
 					{draft.acceptanceCriteria?.length ?? 0} acceptance criteria · {attachments.length} attachment(s) · agent:{" "}
 					{agent || "project default"}
-				</div>
-			</div>
-			<div className="rounded-lg border border-border bg-surface/50 p-3">
-				<div className="grid gap-3">
-					<div className="grid gap-1.5">
-						<Label htmlFor="task-suggested-branch" className="text-[12px] text-muted-foreground">
-							Branch
-						</Label>
-						<Input id="task-suggested-branch" value={suggestions.branch} onChange={(e) => patch("branch", e.target.value)} />
-					</div>
-					<div className="grid gap-1.5">
-						<Label htmlFor="task-suggested-commit" className="text-[12px] text-muted-foreground">
-							Commit
-						</Label>
-						<Input id="task-suggested-commit" value={suggestions.commitMessage} onChange={(e) => patch("commitMessage", e.target.value)} />
-					</div>
-					<div className="grid gap-1.5">
-						<Label htmlFor="task-suggested-pr-title" className="text-[12px] text-muted-foreground">
-							PR title
-						</Label>
-						<Input id="task-suggested-pr-title" value={suggestions.prTitle} onChange={(e) => patch("prTitle", e.target.value)} />
-					</div>
 				</div>
 			</div>
 		</div>

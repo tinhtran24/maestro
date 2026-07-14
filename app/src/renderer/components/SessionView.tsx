@@ -72,11 +72,11 @@ export function SessionView({ sessionId }: SessionViewProps) {
 		revealedPreviewRef.current = null;
 	}, [sessionId]);
 
-	// `to preview` sets session.previewUrl (streamed over CDC); surface the result
+	// `maestro preview` sets session.previewUrl (streamed over CDC); surface the result
 	// in the inspector rail's Browser tab (opening the rail if collapsed), not the
 	// center pane. Tracked per preview revision so re-revealing fires on every
-	// `to preview` (even a re-run of the same target) while a manual tab switch
-	// sticks for a given revision. `to preview clear` (empty url) does not reveal.
+	// `maestro preview` (even a re-run of the same target) while a manual tab switch
+	// sticks for a given revision. `maestro preview clear` (empty url) does not reveal.
 	useEffect(() => {
 		const revision = previewRevision ?? 0;
 		if (!previewUrl || revealedPreviewRef.current === revision) return;

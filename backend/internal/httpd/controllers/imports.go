@@ -6,10 +6,10 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
-	"github.com/tinhtran/thanos/backend/internal/httpd/apispec"
-	"github.com/tinhtran/thanos/backend/internal/httpd/envelope"
-	"github.com/tinhtran/thanos/backend/internal/legacyimport"
-	importsvc "github.com/tinhtran/thanos/backend/internal/service/importer"
+	"github.com/tinhtran24/maestro/backend/internal/httpd/apispec"
+	"github.com/tinhtran24/maestro/backend/internal/httpd/envelope"
+	"github.com/tinhtran24/maestro/backend/internal/legacyimport"
+	importsvc "github.com/tinhtran24/maestro/backend/internal/service/importer"
 )
 
 // ImportService is the controller-facing import service contract.

@@ -16,8 +16,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/tinhtran/thanos/backend/internal/daemonmeta"
-	"github.com/tinhtran/thanos/backend/internal/runfile"
+	"github.com/tinhtran24/maestro/backend/internal/daemonmeta"
+	"github.com/tinhtran24/maestro/backend/internal/runfile"
 )
 
 func TestRootHelpDoesNotShowDaemon(t *testing.T) {
@@ -183,7 +183,7 @@ func TestStopDoesNotShutdownUnverifiedReusedPID(t *testing.T) {
 	}
 	select {
 	case <-shutdownCalled:
-		t.Fatal("stop requested shutdown from a process whose health probe did not prove Thanos daemon ownership")
+		t.Fatal("stop requested shutdown from a process whose health probe did not prove Maestro daemon ownership")
 	default:
 	}
 	if !strings.Contains(out, `"state": "stopped"`) {
@@ -303,11 +303,11 @@ func setConfigEnv(t *testing.T) testConfig {
 		runFile: filepath.Join(dir, "running.json"),
 		dataDir: filepath.Join(dir, "data"),
 	}
-	t.Setenv("THANOS_RUN_FILE", cfg.runFile)
-	t.Setenv("THANOS_DATA_DIR", cfg.dataDir)
-	t.Setenv("THANOS_PORT", "3001")
-	t.Setenv("THANOS_REQUEST_TIMEOUT", "")
-	t.Setenv("THANOS_SHUTDOWN_TIMEOUT", "")
+	t.Setenv("MAESTRO_RUN_FILE", cfg.runFile)
+	t.Setenv("MAESTRO_DATA_DIR", cfg.dataDir)
+	t.Setenv("MAESTRO_PORT", "3001")
+	t.Setenv("MAESTRO_REQUEST_TIMEOUT", "")
+	t.Setenv("MAESTRO_SHUTDOWN_TIMEOUT", "")
 	return cfg
 }
 

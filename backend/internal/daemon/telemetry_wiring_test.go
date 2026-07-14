@@ -4,9 +4,9 @@ import (
 	"log/slog"
 	"testing"
 
-	telemetryadapter "github.com/tinhtran/thanos/backend/internal/adapters/telemetry"
-	"github.com/tinhtran/thanos/backend/internal/config"
-	"github.com/tinhtran/thanos/backend/internal/storage/sqlite"
+	telemetryadapter "github.com/tinhtran24/maestro/backend/internal/adapters/telemetry"
+	"github.com/tinhtran24/maestro/backend/internal/config"
+	"github.com/tinhtran24/maestro/backend/internal/storage/sqlite"
 )
 
 func TestNewTelemetrySink_DefaultsToNoopWhenDisabled(t *testing.T) {

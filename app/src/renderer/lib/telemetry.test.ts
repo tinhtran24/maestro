@@ -9,7 +9,7 @@ import {
 } from "./telemetry";
 
 describe("telemetry sanitizers", () => {
-	it("builds stable Thanos version context for PostHog events", () => {
+	it("builds stable Maestro version context for PostHog events", () => {
 		expect(buildTelemetryContext(" 1.2.3-nightly.20260707 ", "linux")).toMatchObject({
 			app_version: "1.2.3-nightly.20260707",
 			ao_version: "1.2.3-nightly.20260707",

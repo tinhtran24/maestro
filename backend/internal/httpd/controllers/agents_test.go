@@ -9,9 +9,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/tinhtran/thanos/backend/internal/config"
-	"github.com/tinhtran/thanos/backend/internal/httpd"
-	agentsvc "github.com/tinhtran/thanos/backend/internal/service/agent"
+	"github.com/tinhtran24/maestro/backend/internal/config"
+	"github.com/tinhtran24/maestro/backend/internal/httpd"
+	agentsvc "github.com/tinhtran24/maestro/backend/internal/service/agent"
 )
 
 type fakeAgentCatalog struct {

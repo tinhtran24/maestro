@@ -9,8 +9,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/tinhtran/thanos/backend/internal/daemonmeta"
-	"github.com/tinhtran/thanos/backend/internal/runfile"
+	"github.com/tinhtran24/maestro/backend/internal/daemonmeta"
+	"github.com/tinhtran24/maestro/backend/internal/runfile"
 )
 
 // healthzBody returns a handler that answers /healthz with the given service

@@ -8,9 +8,9 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
-	"github.com/tinhtran/thanos/backend/internal/httpd/apispec"
-	"github.com/tinhtran/thanos/backend/internal/httpd/envelope"
-	"github.com/tinhtran/thanos/backend/internal/service/planner"
+	"github.com/tinhtran24/maestro/backend/internal/httpd/apispec"
+	"github.com/tinhtran24/maestro/backend/internal/httpd/envelope"
+	"github.com/tinhtran24/maestro/backend/internal/service/planner"
 )
 
 // PlanRequest is the POST /api/v1/plan body: raw Quick Capture input plus the

@@ -10,7 +10,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/tinhtran/thanos/backend/internal/runfile"
+	"github.com/tinhtran24/maestro/backend/internal/runfile"
 )
 
 // sendServer wires an httptest server expecting POST /api/v1/sessions/{id}/send
@@ -58,7 +58,7 @@ func sendServer(t *testing.T, status int, respBody string) (*httptest.Server, *s
 }
 
 func TestSend_Success(t *testing.T) {
-	t.Setenv("THANOS_SESSION_ID", "")
+	t.Setenv("MAESTRO_SESSION_ID", "")
 	cfg := setConfigEnv(t)
 	srv, capture := sendServer(t, http.StatusOK,
 		`{"ok":true,"sessionId":"demo-1","message":"hello agent"}`)
@@ -85,7 +85,7 @@ func TestSend_Success(t *testing.T) {
 }
 
 func TestSend_PrefixesMessageWithSenderSessionID(t *testing.T) {
-	t.Setenv("THANOS_SESSION_ID", "aa-47")
+	t.Setenv("MAESTRO_SESSION_ID", "aa-47")
 	cfg := setConfigEnv(t)
 	srv, capture := sendServer(t, http.StatusOK,
 		`{"ok":true,"sessionId":"demo-1","message":"hi"}`)
@@ -110,7 +110,7 @@ func TestSend_PrefixesMessageWithSenderSessionID(t *testing.T) {
 }
 
 func TestSend_BlankSenderSessionIDDoesNotPrefixMessage(t *testing.T) {
-	t.Setenv("THANOS_SESSION_ID", " \t ")
+	t.Setenv("MAESTRO_SESSION_ID", " \t ")
 	cfg := setConfigEnv(t)
 	srv, capture := sendServer(t, http.StatusOK,
 		`{"ok":true,"sessionId":"demo-1","message":"hello agent"}`)
@@ -134,7 +134,7 @@ func TestSend_BlankSenderSessionIDDoesNotPrefixMessage(t *testing.T) {
 }
 
 func TestSend_PreservesMessageWhitespace(t *testing.T) {
-	t.Setenv("THANOS_SESSION_ID", "")
+	t.Setenv("MAESTRO_SESSION_ID", "")
 	cfg := setConfigEnv(t)
 	srv, capture := sendServer(t, http.StatusOK, `{"ok":true,"sessionId":"demo-1","message":"hi"}`)
 	writeRunFileFor(t, cfg, srv)

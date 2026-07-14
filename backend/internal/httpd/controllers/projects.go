@@ -10,10 +10,10 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
-	"github.com/tinhtran/thanos/backend/internal/domain"
-	"github.com/tinhtran/thanos/backend/internal/httpd/apispec"
-	"github.com/tinhtran/thanos/backend/internal/httpd/envelope"
-	projectsvc "github.com/tinhtran/thanos/backend/internal/service/project"
+	"github.com/tinhtran24/maestro/backend/internal/domain"
+	"github.com/tinhtran24/maestro/backend/internal/httpd/apispec"
+	"github.com/tinhtran24/maestro/backend/internal/httpd/envelope"
+	projectsvc "github.com/tinhtran24/maestro/backend/internal/service/project"
 )
 
 // ProjectsController owns the /projects routes. The controller depends only on

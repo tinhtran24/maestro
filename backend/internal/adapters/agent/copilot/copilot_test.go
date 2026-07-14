@@ -9,7 +9,7 @@ import (
 	"runtime"
 	"testing"
 
-	"github.com/tinhtran/thanos/backend/internal/ports"
+	"github.com/tinhtran24/maestro/backend/internal/ports"
 )
 
 func TestManifestID(t *testing.T) {
@@ -374,7 +374,7 @@ func TestGetAgentHooksInstallsCopilotHooks(t *testing.T) {
 	if err := plugin.GetAgentHooks(context.Background(), cfg); err != nil {
 		t.Fatal(err)
 	}
-	// A second install must not duplicate Thanos hook commands.
+	// A second install must not duplicate Maestro hook commands.
 	if err := plugin.GetAgentHooks(context.Background(), cfg); err != nil {
 		t.Fatal(err)
 	}
@@ -480,7 +480,7 @@ func TestHookMethodsRequireWorkspacePath(t *testing.T) {
 	}
 }
 
-// TestCopilotManagedHooksUseDocumentedEventNames pins the JSON keys Thanos writes
+// TestCopilotManagedHooksUseDocumentedEventNames pins the JSON keys Maestro writes
 // into .github/hooks/to.json to the camelCase names Copilot CLI documents
 // (https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/use-hooks).
 // Drifting back to lowercase-dashed or any other casing silently disables the
@@ -498,7 +498,7 @@ func TestCopilotManagedHooksUseDocumentedEventNames(t *testing.T) {
 	for _, spec := range copilotManagedHooks {
 		want, ok := wantEventByCommand[spec.Command]
 		if !ok {
-			t.Fatalf("unexpected Thanos sub-command %q in copilotManagedHooks", spec.Command)
+			t.Fatalf("unexpected Maestro sub-command %q in copilotManagedHooks", spec.Command)
 		}
 		if spec.Event != want {
 			t.Fatalf("command %q event = %q, want %q (Copilot CLI documented camelCase)", spec.Command, spec.Event, want)

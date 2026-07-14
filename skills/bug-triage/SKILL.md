@@ -6,18 +6,18 @@ trigger: User reports a bug, or asks to triage/file an issue for a reported prob
 
 # Bug Triage Skill
 
-Triage bugs into well-structured GitHub issues on the upstream **`tinhtran24/thanos`** repo (issues are enabled there; the `origin` fork is not the issue tracker).
+Triage bugs into well-structured GitHub issues on the upstream **`AgentWrapper/maestro`** repo (issues are enabled there; the `origin` fork is not the issue tracker).
 
-> **Thanos (Thanos) is Go + Electron.** The backend is a Go daemon
+> **Maestro is Go + Electron.** The backend is a Go daemon
 > (`backend/`) exposing a loopback HTTP API on `127.0.0.1:3001`; the frontend is an
 > Electron + React supervisor (`frontend/`). There is **no** pm2/tmux-per-session
 > Node runtime here: the daemon owns lifecycle and terminals run under the **tmux**
 > runtime adapter (ConPTY on Windows). Triage against _this_ Go rewrite, not the old
-> TypeScript thanos implementation.
+> TypeScript maestro implementation.
 
-## ⚠️ Which `to` are you running?
+## ⚠️ Which `maestro` are you running?
 
-**A bare `to` on your PATH may resolve to a different Thanos install** (for example an
+**A bare `maestro` on your PATH may resolve to a different Maestro install** (for example an
 old npm build at `~/.nvm/.../bin/to` that talks to port **:3000**). Triaging with
 the wrong binary produces bugs that don't exist in this rewrite (and misses ones
 that do).
@@ -26,25 +26,25 @@ Before any diagnostics:
 
 ```bash
 which -a to                      # see every to on PATH; expect surprises
-to status 2>/dev/null            # if this shows port 3000, it is NOT this rewrite
+maestro status 2>/dev/null            # if this shows port 3000, it is NOT this rewrite
 ```
 
 Use a rewrite binary explicitly:
 
 ```bash
 # Option A: build from this repo (preferred during triage)
-cd backend && go build -o /tmp/to ./cmd/to
+cd backend && go build -o /tmp/to ./cmd/maestro
 /tmp/to status                   # must report port: 3001
 
 # Option B: the packaged app's bundled daemon
-"/Applications/Thanos.app/Contents/Resources/daemon/to" status
+"/Applications/Maestro.app/Contents/Resources/daemon/to" status
 ```
 
-**Confirm `to status` reports `port: 3001` before trusting any output.** Throughout
-this skill, `to` means _your verified rewrite binary_ (`/tmp/to` or the bundled
+**Confirm `maestro status` reports `port: 3001` before trusting any output.** Throughout
+this skill, `maestro` means _your verified rewrite binary_ (`/tmp/to` or the bundled
 one), never a bare PATH lookup.
 
-> Note: spawned sessions get a PATH pin so the _session's_ `to` resolves to the
+> Note: spawned sessions get a PATH pin so the _session's_ `maestro` resolves to the
 > daemon's own executable (see `hookPATH` in
 > `backend/internal/session_manager/manager.go`). That pin only applies inside
 > sessions; your interactive shell is still on its own PATH, so pin it yourself.
@@ -52,11 +52,11 @@ one), never a bare PATH lookup.
 ## 1. Pre-flight
 
 - **Pull latest code:** `git fetch upstream && git log --oneline upstream/main -5`.
-  Stale code means bad triage. (`upstream` = `tinhtran24/thanos`.)
-- **Target repo:** Always file on **`tinhtran24/thanos`** (the upstream
+  Stale code means bad triage. (`upstream` = `AgentWrapper/maestro`.)
+- **Target repo:** Always file on **`AgentWrapper/maestro`** (the upstream
   product repo, where issues live). Never file on the `origin` fork or on
   `tinhtran/*`.
-- **Verify your binary:** confirm `to status` shows port **3001** (see warning above).
+- **Verify your binary:** confirm `maestro status` shows port **3001** (see warning above).
 - **Record source:** chat URL, reporter name, attachments.
 
 ## 2. Gather Context
@@ -66,8 +66,8 @@ one), never a bare PATH lookup.
 | Source                   | How to gather                                                                                                                        |
 | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------ |
 | **Discord/Slack thread** | Read full thread. Extract: reporter name, original description (the thread starter, not whoever tagged you), screenshots, follow-ups |
-| **GitHub issue**         | `gh issue view <number> --repo tinhtran24/thanos --json body,comments`                                                 |
-| **Live observation**     | Pull live state via the daemon: `to status`, `to session ls`, `to session get <id>`                                                  |
+| **GitHub issue**         | `gh issue view <number> --repo AgentWrapper/maestro --json body,comments`                                                            |
+| **Live observation**     | Pull live state via the daemon: `maestro status`, `maestro session ls`, `maestro session get <id>`                                   |
 
 ### 2b. Minimum viable report gate
 
@@ -75,7 +75,7 @@ Before tracing code, verify the report has enough substance:
 
 **Required (ALL):** what happened, where (page/command/feature), when (after upgrade? first time?)
 
-**Required (2 of 4):** OS/shell, Thanos version (`to version`), reproducibility (consistent vs intermittent), reproduction steps
+**Required (2 of 4):** OS/shell, Maestro version (`maestro version`), reproducibility (consistent vs intermittent), reproduction steps
 
 If insufficient, ask:
 
@@ -84,32 +84,32 @@ If insufficient, ask:
 ### 2c. Local diagnostics (if bug is on same machine)
 
 Gather everything yourself before asking the reporter. Use your **verified**
-rewrite binary (`/tmp/to` here) for every `to` call:
+rewrite binary (`/tmp/to` here) for every `maestro` call:
 
 ```bash
 # Environment
 /tmp/to version && go version && echo $SHELL && uname -a
 which -a to                                         # confirm no rogue to shadows the build
-cat ~/.thanos/running.json                              # PID + port handshake (expect port 3001)
+cat ~/.maestro/running.json                              # PID + port handshake (expect port 3001)
 
 # Daemon health
 /tmp/to status                                      # daemon up? port? health/ready probes
 /tmp/to doctor                                      # local health checks
 lsof -i :3001                                       # who's bound to the daemon port
-tail -n 100 ~/.thanos/daemon.log                        # daemon log
+tail -n 100 ~/.maestro/daemon.log                        # daemon log
 
 # Sessions & runtime
 /tmp/to session ls                                  # all sessions and their state
 /tmp/to session get <id>                            # one session: spawn config, runtime, lifecycle
 tmux ls                                             # tmux runtime sessions backing terminals (macOS/Linux)
 
-# Durable state (SQLite at ~/.thanos/data)
-sqlite3 ~/.thanos/data/thanos.db '.tables'                  # inspect schema/rows if state looks wrong
+# Durable state (SQLite at ~/.maestro/data)
+sqlite3 ~/.maestro/data/maestro.db '.tables'                  # inspect schema/rows if state looks wrong
 ```
 
 The daemon owns lifecycle, sessions, storage, and the terminal mux; structured
-state lives in `~/.thanos/data/thanos.db` (WAL: `thanos.db-wal`, `thanos.db-shm`). The PID+port
-handshake is `~/.thanos/running.json`.
+state lives in `~/.maestro/data/maestro.db` (WAL: `maestro.db-wal`, `maestro.db-shm`). The PID+port
+handshake is `~/.maestro/running.json`.
 
 **Try the reproduction steps.** Running the actual command against the daemon on
 :3001 is worth 100 lines of code tracing.
@@ -119,11 +119,11 @@ handshake is `~/.thanos/running.json`.
 ### 3a. Trace the code path
 
 **Always trace the actual code**; do not surface-level diagnose. A symptom that
-looks like a simple `to stop` issue is often a lifecycle/session-manager problem
+looks like a simple `maestro stop` issue is often a lifecycle/session-manager problem
 one layer down. The layers:
 
 - CLI (Cobra, thin client over daemon HTTP): `backend/internal/cli/`, entrypoint
-  `backend/cmd/to/main.go`
+  `backend/cmd/maestro/main.go`
 - Daemon (loopback HTTP on :3001): `backend/internal/daemon/daemon.go`,
   controllers under `backend/internal/httpd/controllers/`
 - Sessions & lifecycle: `backend/internal/session_manager/manager.go`
@@ -147,11 +147,11 @@ git show <sha> -- <file> | grep -B 5 -A 10 'pattern'
 
 **Research dependencies** (tmux, the agent harness binary, Electron, React, the
 SQLite driver): check installed vs latest version, search their issue trackers,
-check changelogs. Root cause is sometimes in a dependency, not Thanos itself.
+check changelogs. Root cause is sometimes in a dependency, not Maestro itself.
 
 ### 3b. Cross-platform check
 
-Thanos targets **macOS, Linux, and Windows**. If env info indicates Windows (or is
+Maestro targets **macOS, Linux, and Windows**. If env info indicates Windows (or is
 unknown), check for these patterns:
 
 - **Path separators**: hardcoded `/` or `\`; use `filepath.Join`, not string concat
@@ -183,16 +183,16 @@ Stop and ask for more info if:
 Search with multiple strategies, always using `--state all` (closed bugs regress):
 
 ```bash
-gh issue list --repo tinhtran24/thanos --state all --search "<symptom>"
-gh issue list --repo tinhtran24/thanos --state all --search "<component-name>"
-gh issue list --repo tinhtran24/thanos --state all --search "<error-message>"
-gh pr list --repo tinhtran24/thanos --state all --search "<keywords>"
+gh issue list --repo AgentWrapper/maestro --state all --search "<symptom>"
+gh issue list --repo AgentWrapper/maestro --state all --search "<component-name>"
+gh issue list --repo AgentWrapper/maestro --state all --search "<error-message>"
+gh pr list --repo AgentWrapper/maestro --state all --search "<keywords>"
 ```
 
 ### Duplicate found → comment on existing issue
 
 ```bash
-gh issue comment <number> --repo tinhtran24/thanos --body "$(cat <<'EOF'
+gh issue comment <number> --repo AgentWrapper/maestro --body "$(cat <<'EOF'
 ## New Report
 **Reported by:** @<reporter> in [chat](<url>)
 **Date:** <YYYY-MM-DD> | **Checkout:** `<commit-hash>`
@@ -209,8 +209,8 @@ EOF
 
 - [ ] Reporter attribution correct (original reporter, not who tagged you)
 - [ ] Commit hash recorded
-- [ ] Thanos version recorded (`to version`)
-- [ ] Reproduced against the rewrite (:3001 / Go code path), not another Thanos install
+- [ ] Maestro version recorded (`maestro version`)
+- [ ] Reproduced against the rewrite (:3001 / Go code path), not another Maestro install
 - [ ] Root cause confidence scored (see 5c)
 - [ ] Related issues cross-linked
 - [ ] Reproduction steps are concrete
@@ -223,23 +223,23 @@ EOF
 ```bash
 SLUG="descriptive-slug"
 # Create asset branch
-gh api -X POST repos/tinhtran24/thanos/git/refs \
+gh api -X POST repos/AgentWrapper/maestro/git/refs \
   -f ref="refs/heads/issue-assets-${SLUG}" \
   -f sha=$(git rev-parse upstream/main)
 
 # Upload (portable base64)
 IMG_B64=$(base64 < /path/to/screenshot.png | tr -d '\n')
-gh api -X PUT "repos/tinhtran24/thanos/contents/.issue-assets/${SLUG}/name.png" \
+gh api -X PUT "repos/AgentWrapper/maestro/contents/.issue-assets/${SLUG}/name.png" \
   -f message="chore: upload screenshot" \
   -f content="$IMG_B64" \
   -f branch="issue-assets-${SLUG}"
-# Use: ![screenshot](https://raw.githubusercontent.com/tinhtran24/thanos/issue-assets-<slug>/.issue-assets/<file>)
+# Use: ![screenshot](https://raw.githubusercontent.com/AgentWrapper/maestro/issue-assets-<slug>/.issue-assets/<file>)
 ```
 
 ### 5c. Create the issue
 
 ```bash
-gh issue create --repo tinhtran24/thanos --title "<title>" --body "$(cat <<'EOF'
+gh issue create --repo AgentWrapper/maestro --title "<title>" --body "$(cat <<'EOF'
 ## Bug
 <summary>
 
@@ -266,14 +266,14 @@ EOF
 **Check which labels actually exist first**, then apply only those:
 
 ```bash
-gh label list --repo tinhtran24/thanos   # source of truth; apply only these
-gh issue edit <number> --repo tinhtran24/thanos --add-label "bug"
+gh label list --repo AgentWrapper/maestro   # source of truth; apply only these
+gh issue edit <number> --repo AgentWrapper/maestro --add-label "bug"
 ```
 
 The repo currently carries `bug`, `enhancement`, `documentation`, `question`,
 `priority: critical/high/medium/low` (plus the hyphen-free `priority:high` /
 `priority:medium` variants), status labels (`todo`, `in-progress`, `review`,
-`blocked`, `verify-if-fixed`, `to-reproduce`, `to-explore`), `sub-issue`,
+`blocked`, `verify-if-fixed`, `maestro-reproduce`, `maestro-explore`), `sub-issue`,
 `ready-for-agent`, `good-first-issue`, `help wanted`, and `upstream complication`
 (for bugs rooted in Claude Code / Codex / tmux etc.). **Do not invent labels**: if
 a priority or confidence label you want doesn't exist, **state it in the issue body
@@ -321,7 +321,7 @@ against upstream. There is no remote-patch script. Branch off `upstream/main`.
 
   Fixes #<n>"
   git push -u origin fix/<slug>
-  gh pr create --repo tinhtran24/thanos --fill \
+  gh pr create --repo AgentWrapper/maestro --fill \
     --title "fix(<scope>): <summary>" \
     --body "Fixes #<n>
 
@@ -337,9 +337,9 @@ against upstream. There is no remote-patch script. Branch off `upstream/main`.
   guess:
 
   ```bash
-  to spawn --project thanos --prompt "Fix #<n>: <one-line problem statement>. \
+  maestro spawn --project maestro --prompt "Fix #<n>: <one-line problem statement>. \
   Root cause: <file:line + mechanism>. Suggested approach: <approach>. Branch off upstream/main. \
-  Build with 'cd backend && go build ./... && go test ./...' before opening a PR against tinhtran24/thanos."
+  Build with 'cd backend && go build ./... && go test ./...' before opening a PR against AgentWrapper/maestro."
   ```
 
   Note the issue with which path you took (PR or spawned worker).
@@ -355,17 +355,17 @@ any priority/confidence stated in the body), root cause summary.
 
 ### A. Subsystem Quick Reference
 
-| Subsystem                       | Collect                                   | Key files                                                                  |
-| ------------------------------- | ----------------------------------------- | -------------------------------------------------------------------------- |
-| **CLI** (`to start/stop/spawn`) | Version, install method, OS, which binary | `backend/internal/cli/`, `backend/cmd/to/main.go`                          |
-| **Daemon / HTTP API**           | `to status`, port, daemon.log             | `backend/internal/daemon/daemon.go`, `backend/internal/httpd/controllers/` |
-| **Sessions / Lifecycle**        | Session ID, spawn config, runtime, state  | `backend/internal/session_manager/manager.go`                              |
-| **Runtime (tmux / ConPTY)**     | tmux version, `tmux ls` (macOS/Linux)     | `backend/internal/adapters/runtime/`                                       |
-| **Terminal mux**                | Runtime type, shell, attach behavior      | `backend/internal/terminal/`                                               |
-| **Agent harness**               | Harness name + version                    | `backend/internal/adapters/agent/<harness>/`                               |
-| **Storage**                     | DB state, migrations                      | `backend/internal/storage/sqlite/`, `~/.thanos/data/thanos.db`                     |
-| **Hooks**                       | Hook event, agent, payload                | `backend/internal/cli/hooks.go`                                            |
-| **Frontend (Electron/React)**   | Screenshot, viewport, daemon connectivity | `frontend/src/`                                                            |
+| Subsystem                            | Collect                                   | Key files                                                                  |
+| ------------------------------------ | ----------------------------------------- | -------------------------------------------------------------------------- |
+| **CLI** (`maestro start/stop/spawn`) | Version, install method, OS, which binary | `backend/internal/cli/`, `backend/cmd/maestro/main.go`                     |
+| **Daemon / HTTP API**                | `maestro status`, port, daemon.log        | `backend/internal/daemon/daemon.go`, `backend/internal/httpd/controllers/` |
+| **Sessions / Lifecycle**             | Session ID, spawn config, runtime, state  | `backend/internal/session_manager/manager.go`                              |
+| **Runtime (tmux / ConPTY)**          | tmux version, `tmux ls` (macOS/Linux)     | `backend/internal/adapters/runtime/`                                       |
+| **Terminal mux**                     | Runtime type, shell, attach behavior      | `backend/internal/terminal/`                                               |
+| **Agent harness**                    | Harness name + version                    | `backend/internal/adapters/agent/<harness>/`                               |
+| **Storage**                          | DB state, migrations                      | `backend/internal/storage/sqlite/`, `~/.maestro/data/maestro.db`           |
+| **Hooks**                            | Hook event, agent, payload                | `backend/internal/cli/hooks.go`                                            |
+| **Frontend (Electron/React)**        | Screenshot, viewport, daemon connectivity | `frontend/src/`                                                            |
 
 **Misrouting patterns:**
 
@@ -374,56 +374,56 @@ any priority/confidence stated in the body), root cause summary.
 - "Session stuck" → lifecycle/session-manager state vs agent harness process vs
   tmux runtime connection.
 - "Config not saving" → config loading (`backend/internal/config/config.go`) vs
-  project registration vs SQLite write (`~/.thanos/data/thanos.db`).
-- "Command does nothing / wrong port" → you're on the wrong `to` binary (:3000 vs
-  :3001). Re-check `which -a to` and `to status`.
+  project registration vs SQLite write (`~/.maestro/data/maestro.db`).
+- "Command does nothing / wrong port" → you're on the wrong `maestro` binary (:3000 vs
+  :3001). Re-check `which -a to` and `maestro status`.
 
 ### B. Remote Code Inspection (no local clone)
 
 ```bash
-gh api repos/tinhtran24/thanos/git/trees/main?recursive=1 --jq '.tree[].path'    # list files
-gh api repos/tinhtran24/thanos/contents/{path} --jq '.content' | python3 -c "import base64,sys; sys.stdout.buffer.write(base64.b64decode(sys.stdin.read()))"  # read file
-gh search code "term" --repo tinhtran24/thanos --json path --jq '.[].path'        # search code
-gh api "repos/tinhtran24/thanos/commits?path={path}&per_page=10" --jq '.[] | "\(.sha[0:8]) \(.commit.message | split("\n")[0])"'  # file history
+gh api repos/AgentWrapper/maestro/git/trees/main?recursive=1 --jq '.tree[].path'    # list files
+gh api repos/AgentWrapper/maestro/contents/{path} --jq '.content' | python3 -c "import base64,sys; sys.stdout.buffer.write(base64.b64decode(sys.stdin.read()))"  # read file
+gh search code "term" --repo AgentWrapper/maestro --json path --jq '.[].path'        # search code
+gh api "repos/AgentWrapper/maestro/commits?path={path}&per_page=10" --jq '.[] | "\(.sha[0:8]) \(.commit.message | split("\n")[0])"'  # file history
 ```
 
 ### C. Build / Version Diagnostics
 
-Thanos is built from source in this rewrite, not published to npm. Pin the binary under
+Maestro is built from source in this rewrite, not published to npm. Pin the binary under
 test and reproduce against a known build:
 
 ```bash
-cd backend && go build -o /tmp/to ./cmd/to    # build the binary under test
+cd backend && go build -o /tmp/to ./cmd/maestro    # build the binary under test
 /tmp/to version                               # record version/commit
 go version                                    # toolchain (build issues are often here)
 git log --oneline upstream/main -1            # the commit you're analyzing against
 ```
 
-To bisect a regression, build `to` at two commits and compare behavior:
+To bisect a regression, build `maestro` at two commits and compare behavior:
 
 ```bash
-git checkout <good-sha>; (cd backend && go build -o /tmp/to-good ./cmd/to)
-git checkout <bad-sha>;  (cd backend && go build -o /tmp/to-bad  ./cmd/to)
+git checkout <good-sha>; (cd backend && go build -o /tmp/to-good ./cmd/maestro)
+git checkout <bad-sha>;  (cd backend && go build -o /tmp/to-bad  ./cmd/maestro)
 git checkout -
 # run the repro against /tmp/to-good vs /tmp/to-bad
 ```
 
 ## Formatting Rules
 
-- **Linkify all issue/PR refs:** `[#123](https://github.com/tinhtran24/thanos/issues/123)`, `[PR #456](url)`. Never bare `#123`.
+- **Linkify all issue/PR refs:** `[#123](https://github.com/AgentWrapper/maestro/issues/123)`, `[PR #456](url)`. Never bare `#123`.
 
 ## Pitfalls
 
-- **Wrong `to` binary.** A bare `to` may be a different Thanos install (old npm build on
-  :3000). Always pin a rewrite binary and confirm `to status` shows port **3001**.
+- **Wrong `maestro` binary.** A bare `maestro` may be a different Maestro install (old npm build on
+  :3000). Always pin a rewrite binary and confirm `maestro status` shows port **3001**.
 - **Verify the bug reproduces against the rewrite (:3001 / Go code path) before
-  filing** (symptoms first seen in another Thanos install may not reproduce here).
-- **File on upstream, not the fork.** Issues go to `tinhtran24/thanos`;
+  filing** (symptoms first seen in another Maestro install may not reproduce here).
+- **File on upstream, not the fork.** Issues go to `AgentWrapper/maestro`;
   `origin` is a personal fork with no issue tracker.
 - **Reporter ≠ person who tagged you.** Always attribute to the original reporter.
 - **Record the commit hash** you analyzed; code changes fast.
 - **GitHub issue is mandatory**: every triaged bug gets one, even if fix is trivial.
-- **Only apply labels that exist** (`gh label list --repo tinhtran24/thanos`).
+- **Only apply labels that exist** (`gh label list --repo AgentWrapper/maestro`).
   State priority/confidence in the body when no matching label exists.
 - **Build before you push.** `cd backend && go build ./... && go test ./...` must
   pass; never open a PR with an unverified Go change.

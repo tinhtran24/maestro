@@ -62,7 +62,7 @@ import {
 } from "./ui/sidebar";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 import { OrchestratorIcon } from "./icons";
-import aoLogo from "../assets/thanos-logo.png";
+import aoLogo from "../assets/maestro-logo.png";
 import { cn } from "../lib/utils";
 import { useUiStore } from "../stores/ui-store";
 import { CreateProjectAgentSheet, type CreateProjectAgentSelection } from "./CreateProjectAgentSheet";
@@ -170,7 +170,7 @@ export function Sidebar({
 	});
 	const isNightly = typeof appVersion === "string" && appVersion.includes("-nightly.");
 
-	// thanos's sidebar resize: drag the right edge (200-420px,
+	// maestro's sidebar resize: drag the right edge (200-420px,
 	// persisted), double-click to reset to 240px. Drives --to-sidebar-w on :root,
 	// which the provider forwards into shadcn's --sidebar-width.
 	const { onPointerDown: onResizePointerDown, onDoubleClick: onResizeDoubleClick } = useResizable({
@@ -216,7 +216,7 @@ export function Sidebar({
 						</TooltipContent>
 					</Tooltip>
 					<span className="min-w-0 flex-1 truncate text-[14px] font-bold tracking-[-0.015em] text-foreground group-data-[collapsible=icon]:hidden">
-						Thanos
+						Maestro
 					</span>
 					{isNightly && (
 						<span
@@ -920,9 +920,7 @@ function CreateProjectModeDialog({
 				<Dialog.Content className="fixed left-1/2 top-1/2 z-50 flex max-h-[min(720px,calc(100svh-24px))] w-[min(680px,calc(100vw-24px))] -translate-x-1/2 -translate-y-1/2 flex-col overflow-hidden rounded-lg border border-border bg-popover p-0 text-popover-foreground shadow-xl data-[state=open]:animate-modal-in">
 					<div className="flex shrink-0 items-start justify-between gap-4 px-4 pb-3 pt-4 sm:px-6 sm:pb-4 sm:pt-5">
 						<div className="min-w-0">
-							<Dialog.Title className="text-[18px] font-semibold text-foreground">
-								Import to Thanos
-							</Dialog.Title>
+							<Dialog.Title className="text-[18px] font-semibold text-foreground">Import to Maestro</Dialog.Title>
 							<Dialog.Description className="mt-1 text-[13px] font-medium text-muted-foreground">
 								What are you importing?
 							</Dialog.Description>

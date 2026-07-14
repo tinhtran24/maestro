@@ -7,9 +7,9 @@ import (
 	"log/slog"
 	"runtime"
 
-	"github.com/tinhtran/thanos/backend/internal/adapters/runtime/conpty"
-	"github.com/tinhtran/thanos/backend/internal/adapters/runtime/tmux"
-	"github.com/tinhtran/thanos/backend/internal/ports"
+	"github.com/tinhtran24/maestro/backend/internal/adapters/runtime/conpty"
+	"github.com/tinhtran24/maestro/backend/internal/adapters/runtime/tmux"
+	"github.com/tinhtran24/maestro/backend/internal/ports"
 )
 
 // Runtime is the union interface that both tmux and conpty satisfy.

@@ -10,11 +10,11 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/tinhtran/thanos/backend/internal/domain"
-	"github.com/tinhtran/thanos/backend/internal/httpd/apierr"
-	"github.com/tinhtran/thanos/backend/internal/ports"
-	"github.com/tinhtran/thanos/backend/internal/service/project"
-	"github.com/tinhtran/thanos/backend/internal/storage/sqlite"
+	"github.com/tinhtran24/maestro/backend/internal/domain"
+	"github.com/tinhtran24/maestro/backend/internal/httpd/apierr"
+	"github.com/tinhtran24/maestro/backend/internal/ports"
+	"github.com/tinhtran24/maestro/backend/internal/service/project"
+	"github.com/tinhtran24/maestro/backend/internal/storage/sqlite"
 )
 
 // newManager builds a Manager over a real, throwaway sqlite store (pure-Go
@@ -121,11 +121,11 @@ func TestManager_AddListGetRemove(t *testing.T) {
 		t.Fatalf("List() = %v, %v; want empty", got, err)
 	}
 
-	proj, err := m.Add(ctx, project.AddInput{Path: repo, ProjectID: ptr("to"), Name: ptr("Thanos")})
+	proj, err := m.Add(ctx, project.AddInput{Path: repo, ProjectID: ptr("to"), Name: ptr("Maestro")})
 	if err != nil {
 		t.Fatalf("Add: %v", err)
 	}
-	if proj.ID != "to" || proj.Name != "Thanos" || proj.Path != repo || proj.DefaultBranch != "main" {
+	if proj.ID != "to" || proj.Name != "Maestro" || proj.Path != repo || proj.DefaultBranch != "main" {
 		t.Fatalf("Add returned %#v", proj)
 	}
 
@@ -577,9 +577,9 @@ func TestManager_GetUpdateRemoveErrors(t *testing.T) {
 
 func configureCommitter(t *testing.T) {
 	t.Helper()
-	t.Setenv("GIT_AUTHOR_NAME", "Thanos Test")
+	t.Setenv("GIT_AUTHOR_NAME", "Maestro Test")
 	t.Setenv("GIT_AUTHOR_EMAIL", "to@example.com")
-	t.Setenv("GIT_COMMITTER_NAME", "Thanos Test")
+	t.Setenv("GIT_COMMITTER_NAME", "Maestro Test")
 	t.Setenv("GIT_COMMITTER_EMAIL", "to@example.com")
 }
 
@@ -745,7 +745,7 @@ func TestManager_AddWorkspaceAdoptsExistingParent(t *testing.T) {
 		t.Fatalf("git log: %v (%s)", err, logOut)
 	}
 	lines := strings.Split(strings.TrimSpace(string(logOut)), "\n")
-	// Expect: Thanos workspace commit + "add gitignore" + "initial" = 3 commits.
+	// Expect: Maestro workspace commit + "add gitignore" + "initial" = 3 commits.
 	if len(lines) != 3 {
 		t.Fatalf("expected 3 commits, got %d:\n%s", len(lines), logOut)
 	}

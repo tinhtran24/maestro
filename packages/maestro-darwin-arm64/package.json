@@ -1,0 +1,15 @@
+{
+	"name": "@tinhtran24/maestro-darwin-arm64",
+	"version": "0.10.0",
+	"description": "Maestro CLI binary for macOS arm64.",
+	"license": "MIT",
+	"os": [
+		"darwin"
+	],
+	"cpu": [
+		"arm64"
+	],
+	"files": [
+		"bin/to"
+	]
+}

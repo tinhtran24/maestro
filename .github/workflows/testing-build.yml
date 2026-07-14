@@ -1,67 +1,45 @@
 name: Testing build (all platforms)
 
-# Unsigned testing builds for Linux + Windows + both macOS architectures. These
-# artifacts are for CI validation only; release signing/notarization remains in
-# the desktop release workflow.
+# Unsigned testing builds for Linux + Windows + macOS in one matrix. Click
+# "Run workflow" in the Actions tab, or push a 0.0.0-testing-* tag. All three jobs
+# publish to a single 0.0.0-testing-<short-sha> prerelease (distinct asset names).
 #
 # Per OS:
-#   Linux       -> AppImage
-#   Windows     -> NSIS installer (.exe)
-#   macOS x64   -> .zip
-#   macOS arm64 -> .zip
+#   Linux   -> .deb
+#   Windows -> NSIS installer (.exe)
+#   macOS   -> .zip (arm64; dmg + signing are follow-ups)
 #
 # Unsigned: macOS is quarantined/Gatekeeper-blocked once downloaded
-# (xattr -dr com.apple.quarantine "Thanos.app"); Windows SmartScreen
+# (xattr -dr com.apple.quarantine "Maestro.app"); Windows SmartScreen
 # warns ("More info" -> "Run anyway"). Each OS builds on its own native runner so
 # build-daemon.mjs compiles the bundled to for that platform (host == target).
 
 on:
   workflow_dispatch:
   push:
-    branches: [main]
     tags:
       - "0.0.0-testing-*"
-  pull_request:
-    paths:
-      - "app/**"
-      - "backend/**"
-      - ".github/workflows/testing-build.yml"
 
 jobs:
   build:
-    name: Build ${{ matrix.platform }} ${{ matrix.arch }}
     strategy:
       fail-fast: false
       matrix:
         include:
           - os: ubuntu-latest
-            platform: linux
-            arch: x64
-            target: "appimage"
-            artifact_name: "thanos-linux-x64"
+            target: "@electron-forge/maker-deb"
           - os: windows-latest
-            platform: windows
-            arch: x64
-            # Our custom NSIS maker's `name` (see makers/maker-nsis.mjs); forge
+            # Our custom NSIS maker's `name` (see makers/maker-nsis.ts); forge
             # `--targets` matches the configured maker instance by this name.
             target: "nsis"
-            artifact_name: "thanos-windows-x64"
           - os: macos-latest
-            platform: macos
-            arch: arm64
             target: "@electron-forge/maker-zip"
-            artifact_name: "thanos-macos-arm64"
-          - os: macos-15-intel
-            platform: macos
-            arch: x64
-            target: "@electron-forge/maker-zip"
-            artifact_name: "thanos-macos-x64"
     runs-on: ${{ matrix.os }}
     permissions:
-      contents: read
+      contents: write
     defaults:
       run:
-        working-directory: app
+        working-directory: frontend
     env:
       # Pure-Go sqlite (modernc) needs no cgo; on Linux this also keeps the daemon
       # static and portable across glibc.
@@ -70,18 +48,18 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 24
+          node-version: 20
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
       - uses: actions/setup-go@v5
         with:
           go-version-file: backend/go.mod
           cache-dependency-path: backend/go.sum
-      - name: Enable pnpm
-        run: npm install --global pnpm@10
-      - run: pnpm install --frozen-lockfile
+      - run: npm ci
       - name: Build (unsigned)
-        # `pnpm run make` keeps the premake daemon build; --targets restricts to this
+        # `npm run make` keeps the premake daemon build; --targets restricts to this
         # platform's maker.
-        run: pnpm run make -- --targets ${{ matrix.target }}
+        run: npm run make -- --targets ${{ matrix.target }}
       # Smoke-install the NSIS installer on a clean, native x64 Windows runner.
       # This is a build-vs-host verdict: if it installs here it proves the artifact
       # is good and a failing user machine is host-side (AV/disk/signing); if it
@@ -106,8 +84,8 @@ jobs:
           # Per-user assisted install lands under %LOCALAPPDATA%\Programs; a
           # per-machine install would land under Program Files.
           $installDir = @(
-            (Join-Path $env:LOCALAPPDATA 'Programs\Thanos'),
-            (Join-Path ${env:ProgramFiles} 'Thanos')
+            (Join-Path $env:LOCALAPPDATA 'Programs\Maestro'),
+            (Join-Path ${env:ProgramFiles} 'Maestro')
           ) | Where-Object { Test-Path $_ } | Select-Object -First 1
           if ($installDir) {
             Write-Host "INSTALL OK: $installDir created"
@@ -115,10 +93,26 @@ jobs:
           } else {
             Write-Host "::warning::INSTALL: no known install dir found (checked LOCALAPPDATA\Programs and Program Files)"
           }
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ matrix.artifact_name }}
-          path: app/out/make/**
-          if-no-files-found: error
-          retention-days: 14
+      - name: Publish to a 0.0.0-testing-<sha> prerelease
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          # Tag push: use the pushed tag. Manual run: mint 0.0.0-testing-<sha>.
+          if [ "${GITHUB_REF_TYPE}" = "tag" ]; then
+            TAG="${GITHUB_REF_NAME}"
+          else
+            TAG="0.0.0-testing-${GITHUB_SHA::7}"
+          fi
+          # Matrix jobs race here; first one creates the release, the rest hit
+          # "already exists" which is fine (|| true). Distinct asset names + --clobber
+          # make uploads idempotent across re-runs.
+          gh release create "$TAG" --prerelease --target "$GITHUB_SHA" --title "$TAG" \
+            --notes "Unsigned testing build (Linux .deb / Windows NSIS .exe / macOS .zip). Not signed; for testing only." \
+            || true
+          # NUL-delimited to survive spaces in the app name ("Maestro-...").
+          find out/make -type f -print0 | while IFS= read -r -d '' f; do
+            echo "uploading: $f"
+            gh release upload "$TAG" "$f" --clobber
+          done

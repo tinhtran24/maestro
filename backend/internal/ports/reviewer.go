@@ -3,7 +3,7 @@ package ports
 import (
 	"context"
 
-	"github.com/tinhtran/thanos/backend/internal/domain"
+	"github.com/tinhtran24/maestro/backend/internal/domain"
 )
 
 // Reviewer is the contract a code-review adapter satisfies. It is deliberately
@@ -12,12 +12,12 @@ import (
 // (claude-code) builds its own prompt internally; a one-shot CLI (greptile)
 // returns its own argv with no prompt at all.
 type Reviewer interface {
-	// ReviewCommand builds the command (and any extra env) Thanos should run to
+	// ReviewCommand builds the command (and any extra env) Maestro should run to
 	// spawn a fresh reviewer over the worker's checkout for a PR.
 	ReviewCommand(ctx context.Context, inv ReviewInvocation) (ReviewCommandSpec, error)
-	// ReviewMessage builds the text Thanos injects into an already-running reviewer
+	// ReviewMessage builds the text Maestro injects into an already-running reviewer
 	// pane to ask it to review a new commit. It must be self-contained (carry
-	// the ids the reviewer needs to submit) since Thanos passes no environment.
+	// the ids the reviewer needs to submit) since Maestro passes no environment.
 	ReviewMessage(ctx context.Context, inv ReviewInvocation) (string, error)
 }
 
@@ -29,7 +29,7 @@ type ReviewInvocation struct {
 	// native session id), derived from the worker session.
 	ReviewerID string
 	// RunID is the review_run this pass completes; the reviewer passes it to
-	// `to review submit`.
+	// `maestro review submit`.
 	RunID string
 	// WorkerSessionID is the worker whose PR is under review.
 	WorkerSessionID domain.SessionID
@@ -44,7 +44,7 @@ type ReviewInvocation struct {
 	ReviewIndex int
 	// WorkspacePath is the worker's checkout the reviewer reads.
 	WorkspacePath string
-	// Prompt and SystemPrompt are the review instructions Thanos authored centrally,
+	// Prompt and SystemPrompt are the review instructions Maestro authored centrally,
 	// mirroring the worker's LaunchConfig.Prompt / SystemPrompt split: SystemPrompt
 	// carries the standing reviewer role, Prompt the per-pass task. A prompt-driven
 	// adapter (claude-code) feeds them to the agent; a one-shot CLI reviewer may
@@ -61,7 +61,7 @@ type ReviewTask struct {
 }
 
 // ReviewCommandSpec is how to launch a reviewer: the argv and any extra env the
-// adapter needs. Thanos supplies the workspace and review-tracking env around it.
+// adapter needs. Maestro supplies the workspace and review-tracking env around it.
 type ReviewCommandSpec struct {
 	Argv []string
 	Env  map[string]string

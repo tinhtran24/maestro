@@ -5,11 +5,11 @@ import (
 	"errors"
 	"time"
 
-	"github.com/tinhtran/thanos/backend/internal/domain"
-	"github.com/tinhtran/thanos/backend/internal/legacyimport"
-	agentsvc "github.com/tinhtran/thanos/backend/internal/service/agent"
-	projectsvc "github.com/tinhtran/thanos/backend/internal/service/project"
-	sessionsvc "github.com/tinhtran/thanos/backend/internal/service/session"
+	"github.com/tinhtran24/maestro/backend/internal/domain"
+	"github.com/tinhtran24/maestro/backend/internal/legacyimport"
+	agentsvc "github.com/tinhtran24/maestro/backend/internal/service/agent"
+	projectsvc "github.com/tinhtran24/maestro/backend/internal/service/project"
+	sessionsvc "github.com/tinhtran24/maestro/backend/internal/service/session"
 )
 
 // HTTP response envelopes for the projects surface — the SINGLE definition of
@@ -137,7 +137,7 @@ type SessionView struct {
 	// session, set via POST /sessions/{sessionId}/preview. Empty (omitted) when
 	// no preview has been requested. Pulled from the json:"-" domain Metadata.
 	PreviewURL string `json:"previewUrl,omitempty"`
-	// PreviewRevision bumps on every `to preview` call (even when previewUrl is
+	// PreviewRevision bumps on every `maestro preview` call (even when previewUrl is
 	// unchanged) so the desktop browser panel can re-navigate / refresh on a
 	// repeated preview of the same target. Pulled from the json:"-" domain
 	// Metadata.
@@ -163,7 +163,7 @@ type SpawnSessionRequest struct {
 	// PRTitle is an optional task-creation suggestion edited by the user.
 	PRTitle string `json:"prTitle,omitempty"`
 	// DisplayName is the sidebar label for the session, capped at 20 characters.
-	// `to spawn --name` always sets it; other clients (e.g. the desktop new-task
+	// `maestro spawn --name` always sets it; other clients (e.g. the desktop new-task
 	// dialog) may omit it and fall back to the session id in the read model.
 	DisplayName string `json:"displayName,omitempty" maxLength:"20"`
 	// Model is reserved for execution-model selection. Native CLI model
@@ -539,7 +539,7 @@ type MarkAllNotificationsReadResponse struct {
 	Notifications []NotificationResponse `json:"notifications"`
 }
 
-// ImportStatusResponse is the body of GET /api/v1/import: whether a legacy Thanos
+// ImportStatusResponse is the body of GET /api/v1/import: whether a legacy Maestro
 // install is available to import, and the root the daemon would read from.
 type ImportStatusResponse struct {
 	Available  bool   `json:"available"`

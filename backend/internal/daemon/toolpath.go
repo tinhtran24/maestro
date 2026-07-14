@@ -19,7 +19,7 @@ var commonToolDirs = []string{
 }
 
 // augmentToolPath appends common tool directories (and, when set, the directory
-// of THANOS_TMUX_BIN) to PATH so runtime prerequisites like tmux resolve even
+// of MAESTRO_TMUX_BIN) to PATH so runtime prerequisites like tmux resolve even
 // when the daemon was launched with a minimal environment — e.g. a packaged app
 // started from Finder/Dock, where PATH lacks Homebrew. It only ever appends
 // missing dirs, so an operator's PATH ordering/overrides win. No-op on Windows.
@@ -32,10 +32,10 @@ func augmentToolPath() {
 	}
 
 	dirs := make([]string, 0, len(commonToolDirs)+1)
-	// THANOS_TMUX_BIN lets an operator point Thanos at a specific tmux binary
+	// MAESTRO_TMUX_BIN lets an operator point Maestro at a specific tmux binary
 	// (custom build, non-standard prefix). Adding its directory keeps LookPath
 	// consistent across the runtime and the prerequisite check.
-	if bin := strings.TrimSpace(os.Getenv("THANOS_TMUX_BIN")); bin != "" {
+	if bin := strings.TrimSpace(os.Getenv("MAESTRO_TMUX_BIN")); bin != "" {
 		dirs = append(dirs, filepath.Dir(bin))
 	}
 	dirs = append(dirs, commonToolDirs...)

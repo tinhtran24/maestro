@@ -1,24 +1,24 @@
-# Running Thanos
+# Running Maestro
 
-How to build and run Thanos locally. Thanos has two parts:
+How to build and run Maestro locally. Maestro has two parts:
 
-- **`backend/`** — the Go daemon and the `to` CLI ("Thanos"). A
+- **`backend/`** — the Go daemon and the `maestro` CLI ("Maestro"). A
   loopback-only HTTP/SSE/WebSocket sidecar that supervises coding-agent sessions.
 - **`app/`** — the Electron + Vite + React desktop app that supervises the daemon
   and renders the UI.
 
-> Module path: `github.com/tinhtran/thanos/backend`. CLI command: `to`.
+> Module path: `github.com/tinhtran24/maestro/backend`. CLI command: `maestro`.
 
 ## Prerequisites
 
-| Tool     | Version           | Notes                                                        |
-| -------- | ----------------- | ------------------------------------------------------------ |
-| Go       | 1.25+             | builds the backend daemon + `to` CLI                         |
-| Node.js  | **^20.19 \|\| >=22.12** | runs the Electron app; Vite 8 needs `require(esm)` (older Node fails to load `forge.config`) |
-| pnpm     | 10 (preferred)    | app package manager (`npm` also works)                       |
-| tmux     | any recent        | **required** runtime — the daemon supervises agent sessions in tmux |
-| Git      | any recent        | worktrees per session                                        |
-| gh       | any recent        | optional — GitHub CLI for PR/SCM features                    |
+| Tool    | Version                 | Notes                                                                                        |
+| ------- | ----------------------- | -------------------------------------------------------------------------------------------- |
+| Go      | 1.25+                   | builds the backend daemon + `maestro` CLI                                                    |
+| Node.js | **^20.19 \|\| >=22.12** | runs the Electron app; Vite 8 needs `require(esm)` (older Node fails to load `forge.config`) |
+| pnpm    | 10 (preferred)          | app package manager (`npm` also works)                                                       |
+| tmux    | any recent              | **required** runtime — the daemon supervises agent sessions in tmux                          |
+| Git     | any recent              | worktrees per session                                                                        |
+| gh      | any recent              | optional — GitHub CLI for PR/SCM features                                                    |
 
 Install the runtime tools on macOS with: `brew install tmux gh`.
 
@@ -49,7 +49,7 @@ pnpm dev              # or: npm run dev  — launches the Electron app
 ```
 
 In dev mode the app builds and spawns the daemon for you (it runs
-`go run ./cmd/to daemon`), so you only need Go on PATH — no separate daemon step.
+`go run ./cmd/maestro daemon`), so you only need Go on PATH — no separate daemon step.
 Vite hot-reloads the renderer.
 
 To run just the renderer in a browser (no Electron shell):
@@ -59,7 +59,7 @@ cd app
 pnpm dev:web          # VITE_NO_ELECTRON=1 vite — UI only, expects a daemon running
 ```
 
-## Backend (daemon + `to` CLI)
+## Backend (daemon + `maestro` CLI)
 
 Build and run directly when you want the daemon/CLI without the desktop app.
 
@@ -67,10 +67,10 @@ Build and run directly when you want the daemon/CLI without the desktop app.
 cd backend
 
 go build ./...                      # compile everything
-go build -o to ./cmd/to             # build the CLI binary
+go build -o to ./cmd/maestro             # build the CLI binary
 
 # Run the daemon in the foreground:
-go run ./cmd/to daemon              # or: ./to daemon
+go run ./cmd/maestro daemon              # or: ./to daemon
 
 # In another shell, drive it with the CLI:
 ./to status                         # daemon status
@@ -81,7 +81,7 @@ go run ./cmd/to daemon              # or: ./to daemon
 ```
 
 `go run .` from `backend/` also starts the daemon (a compatibility wrapper around
-`to daemon`).
+`maestro daemon`).
 
 The daemon binds to `127.0.0.1` only and serves the API under `/api/v1`
 (health at `/api/v1/healthz`).
@@ -135,32 +135,32 @@ pnpm package          # electron-forge package (unpacked app)
 pnpm make             # electron-forge make (installers: zip/deb/rpm)
 ```
 
-`build:daemon` compiles `backend/cmd/to` into `app/daemon/` (gitignored); `package`
+`build:daemon` compiles `backend/cmd/maestro` into `app/daemon/` (gitignored); `package`
 and `make` run it automatically via the `prepackage`/`premake` hooks.
 
 ## App state / data directory
 
-All runtime state lives under **`~/.thanos`** (daemon data, `running.json`, worktrees,
-and the Electron `userData`). Override with `THANOS_DATA_DIR` / `THANOS_RUN_FILE`. Nothing
+All runtime state lives under **`~/.maestro`** (daemon data, `running.json`, worktrees,
+and the Electron `userData`). Override with `MAESTRO_DATA_DIR` / `MAESTRO_RUN_FILE`. Nothing
 is written to OS-default app-data locations.
 
 ## Troubleshooting
 
-- **`to`/daemon can't be built**: ensure Go 1.25+ (`go version`) and run from
+- **`maestro`/daemon can't be built**: ensure Go 1.25+ (`go version`) and run from
   `backend/`.
 - **App starts but shows no data**: confirm the daemon is up —
   `curl http://127.0.0.1:<port>/api/v1/healthz` or `./to status`.
 - **Stale API types**: rerun `pnpm run api` after changing backend controllers/DTOs.
-- **Port/lock conflicts**: a previous daemon may still own `~/.thanos/running.json`;
+- **Port/lock conflicts**: a previous daemon may still own `~/.maestro/running.json`;
   `./to stop` (or remove the run file) and retry.
 - **`Cannot use 'import.meta' outside a module` / `require() of ES Module ... not
-  supported` when starting the app**: your Node is too old for Vite 8. Use Node
+supported` when starting the app**: your Node is too old for Vite 8. Use Node
   `>=22.12` (`nvm use`), or just run via `make dev` (it auto-selects one).
 - **`tmux required ... but not in PATH`** when spawning a session: install tmux
   (`brew install tmux`). It's the session runtime. The daemon augments PATH with
   common tool dirs (`/opt/homebrew/bin`, `/usr/local/bin`, …) so a Finder/Dock-
   launched app finds Homebrew tmux; to use a custom/non-standard tmux, set
-  **`THANOS_TMUX_BIN`** to its path (the runtime and the prerequisite check both
+  **`MAESTRO_TMUX_BIN`** to its path (the runtime and the prerequisite check both
   honor it).
 - **`gh: executable file not found`**: install the GitHub CLI (`brew install gh`)
   for PR/SCM features, or ignore it if you don't need them.

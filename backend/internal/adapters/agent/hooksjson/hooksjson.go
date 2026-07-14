@@ -2,12 +2,12 @@
 // (claude-code, goose, qwen, agy, droid) share byte-for-byte in shape. Each such
 // file is a JSON object with a "hooks" sub-map keyed by native event name, whose
 // values are matcher groups ({matcher?, hooks:[{type,command,timeout}]}). The
-// adapters differed only in the file path, the Thanos command prefix, the per-hook
+// adapters differed only in the file path, the Maestro command prefix, the per-hook
 // timeout, and which events they install, so they describe those with a Manager
 // and share the install/uninstall/detect logic here.
 //
 // The read/write path preserves every top-level key and every user-defined hook
-// Thanos does not own, and writes atomically, so installing Thanos's hooks never clobbers
+// Maestro does not own, and writes atomically, so installing Maestro's hooks never clobbers
 // unrelated settings.
 package hooksjson
 
@@ -20,7 +20,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/tinhtran/thanos/backend/internal/adapters/agent/hookutil"
+	"github.com/tinhtran24/maestro/backend/internal/adapters/agent/hookutil"
 )
 
 // HookEntry is one command hook inside a matcher group.
@@ -38,7 +38,7 @@ type MatcherGroup struct {
 	Hooks   []HookEntry `json:"hooks"`
 }
 
-// HookSpec describes one hook Thanos installs: the native event it attaches to, its
+// HookSpec describes one hook Maestro installs: the native event it attaches to, its
 // optional matcher, and the command to run. Adapters define these in code rather
 // than reading an embedded template.
 type HookSpec struct {
@@ -47,25 +47,25 @@ type HookSpec struct {
 	Command string
 }
 
-// Manager installs, removes, and detects Thanos's hooks in one agent's matcher-group
+// Manager installs, removes, and detects Maestro's hooks in one agent's matcher-group
 // hooks file. Construct one per adapter with its file path, command prefix,
 // per-hook timeout, and managed hook set.
 type Manager struct {
 	// Label prefixes error messages, e.g. "claude-code" or "goose", so the
 	// wrapped error reads "<label>.GetAgentHooks: ...".
 	Label string
-	// CommandPrefix identifies Thanos-owned hook commands, e.g. "to hooks goose ".
+	// CommandPrefix identifies Maestro-owned hook commands, e.g. "maestro hooks goose ".
 	// Install skips commands already present and uninstall/detect match on it.
 	CommandPrefix string
 	// Timeout is written into each installed hook entry.
 	Timeout int
 	// Path returns the hooks file path for a workspace.
 	Path func(workspacePath string) string
-	// Managed is the set of hooks Thanos installs.
+	// Managed is the set of hooks Maestro installs.
 	Managed []HookSpec
 }
 
-// Install merges Thanos's managed hooks into the workspace's hooks file, preserving
+// Install merges Maestro's managed hooks into the workspace's hooks file, preserving
 // user-defined hooks and unrelated settings, and is idempotent (a command
 // already present is not appended). It also writes a self-ignoring .gitignore
 // covering the hooks file so it does not block worktree teardown.
@@ -108,7 +108,7 @@ func (m Manager) Install(ctx context.Context, workspacePath string) error {
 	return nil
 }
 
-// Uninstall removes Thanos's hooks from the workspace's hooks file, leaving
+// Uninstall removes Maestro's hooks from the workspace's hooks file, leaving
 // user-defined hooks and unrelated settings untouched. A missing file is a no-op.
 func (m Manager) Uninstall(ctx context.Context, workspacePath string) error {
 	if err := ctx.Err(); err != nil {
@@ -144,7 +144,7 @@ func (m Manager) Uninstall(ctx context.Context, workspacePath string) error {
 	return nil
 }
 
-// AreInstalled reports whether any Thanos hook is present in the workspace's hooks
+// AreInstalled reports whether any Maestro hook is present in the workspace's hooks
 // file. A missing file means none are installed.
 func (m Manager) AreInstalled(ctx context.Context, workspacePath string) (bool, error) {
 	if err := ctx.Err(); err != nil {
@@ -203,7 +203,7 @@ func (m Manager) managedEvents() []string {
 }
 
 // readHooksFile loads the file into a top-level raw map plus the decoded "hooks"
-// sub-map, preserving every key Thanos doesn't manage. A missing or empty file
+// sub-map, preserving every key Maestro doesn't manage. A missing or empty file
 // yields empty maps.
 func readHooksFile(hooksPath string) (topLevel, rawHooks map[string]json.RawMessage, err error) {
 	topLevel = map[string]json.RawMessage{}
@@ -304,7 +304,7 @@ func addHook(groups []MatcherGroup, hook HookEntry, matcher *string) []MatcherGr
 	return append(groups, MatcherGroup{Matcher: matcher, Hooks: []HookEntry{hook}})
 }
 
-// removeManaged strips Thanos hook entries (matched by command prefix) from every
+// removeManaged strips Maestro hook entries (matched by command prefix) from every
 // group, dropping any group left without hooks so the event array doesn't
 // accumulate empty matcher objects.
 func removeManaged(groups []MatcherGroup, prefix string) []MatcherGroup {

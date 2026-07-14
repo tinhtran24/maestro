@@ -32,10 +32,10 @@ steps, go back, or cancel.
 2. Create a new app, or select an existing app.
 3. Open **Incoming Webhooks** and turn on **Activate Incoming Webhooks**.
 4. Select **Add New Webhook to Workspace**.
-5. Pick the channel Thanos should post to, authorize, and copy the webhook URL.
+5. Pick the channel Maestro should post to, authorize, and copy the webhook URL.
 
-The command sends a test message before writing Thanos config.
-Before saving, Thanos also asks which notification priorities Slack should receive:
+The command sends a test message before writing Maestro config.
+Before saving, Maestro also asks which notification priorities Slack should receive:
 `urgent-only`, `urgent-action`, or `all`. For scriptable setup, pass
 `--routing-preset <preset>`.
 
@@ -46,22 +46,22 @@ to setup slack --status
 to setup slack --refresh
 ```
 
-```yaml title="thanos.yaml"
+```yaml title="maestro.yaml"
 notifiers:
   slack:
     plugin: slack
     webhookUrl: https://hooks.slack.com/services/...
-    username: "Thanos"
+    username: "Maestro"
     channel: "#agents" # optional; should match the webhook's channel
 ```
 
 ## Config
 
-| Key          | Required | Default              | What it does                                                                                        |
-| ------------ | -------- | -------------------- | --------------------------------------------------------------------------------------------------- |
-| `webhookUrl` | ✓        | —                    | Slack incoming webhook URL                                                                          |
-| `channel`    | optional | webhook default      | Informational/compatibility channel name; should match the channel chosen when creating the webhook |
-| `username`   | optional | `Thanos` | Requested display name                                                                              |
+| Key          | Required | Default         | What it does                                                                                        |
+| ------------ | -------- | --------------- | --------------------------------------------------------------------------------------------------- |
+| `webhookUrl` | ✓        | —               | Slack incoming webhook URL                                                                          |
+| `channel`    | optional | webhook default | Informational/compatibility channel name; should match the channel chosen when creating the webhook |
+| `username`   | optional | `Maestro`       | Requested display name                                                                              |
 
 ## Notes
 

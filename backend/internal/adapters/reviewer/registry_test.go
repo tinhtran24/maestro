@@ -3,7 +3,7 @@ package reviewer
 import (
 	"testing"
 
-	"github.com/tinhtran/thanos/backend/internal/domain"
+	"github.com/tinhtran24/maestro/backend/internal/domain"
 )
 
 // TestRegistryMatchesDomainVocabulary enforces that the shipped reviewer

@@ -9,7 +9,7 @@ import { writeFileSync } from "node:fs";
 // with real `import()`, where Vite's import.meta is valid. Keep it .mjs.
 
 // Default GitHub release target (production).
-const DEFAULT_RELEASE_REPO = "tinhtran/thanos";
+const DEFAULT_RELEASE_REPO = "tinhtran24/maestro";
 
 // parseReleaseRepo turns an "owner/repo" string (from TO_RELEASE_REPO) into the
 // publisher-github { owner, name } shape, falling back to the production default
@@ -27,9 +27,9 @@ function parseReleaseRepo(value) {
 const config = {
 	packagerConfig: {
 		asar: true,
-		appBundleId: "dev.thanos.desktop",
-		name: "Thanos",
-		executableName: "thanos",
+		appBundleId: "dev.maestro.desktop",
+		name: "Maestro",
+		executableName: "maestro",
 		appCategoryType: "public.app-category.developer-tools",
 		// App icon. electron-packager appends the per-platform extension
 		// (.icns on macOS, .ico on Windows); Linux menu icons come from the
@@ -68,7 +68,7 @@ const config = {
 				"provider: github",
 				`owner: ${owner}`,
 				`repo: ${name}`,
-				"updaterCacheDirName: thanos-updater",
+				"updaterCacheDirName: maestro-updater",
 				"",
 			].join("\n");
 			writeFileSync("app-update.yml", yml);
@@ -79,8 +79,8 @@ const config = {
 		// Windows installer: NSIS via electron-builder (see makers/maker-nsis.mjs).
 		new MakerNSIS(
 			{
-				appId: "dev.thanos.desktop",
-				productName: "Thanos",
+				appId: "dev.maestro.desktop",
+				productName: "Maestro",
 				icon: "assets/icon.ico",
 			},
 			["win32"],
@@ -92,8 +92,8 @@ const config = {
 		// prefer a system package.
 		new MakerAppImage(
 			{
-				appId: "dev.thanos.desktop",
-				productName: "Thanos",
+				appId: "dev.maestro.desktop",
+				productName: "Maestro",
 				icon: "assets/icon.png",
 			},
 			["linux"],
@@ -104,11 +104,11 @@ const config = {
 				options: {
 					// Must match packagerConfig.executableName, or the deb maker
 					// looks for the package name and fails with "could not find
-					// the Electron app binary". (Both are "thanos".)
-					bin: "thanos",
+					// the Electron app binary". (Both are "maestro".)
+					bin: "maestro",
 					icon: "assets/icon.png",
-					maintainer: "Thanos",
-					homepage: "https://github.com/tinhtran/thanos",
+					maintainer: "Maestro",
+					homepage: "https://github.com/tinhtran24/maestro",
 				},
 			},
 		},
@@ -119,7 +119,7 @@ const config = {
 					icon: "assets/icon.png",
 					// rpmbuild rejects a spec with an empty License field.
 					license: "MIT",
-					homepage: "https://github.com/tinhtran/thanos",
+					homepage: "https://github.com/tinhtran24/maestro",
 				},
 			},
 		},

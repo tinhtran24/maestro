@@ -21,7 +21,7 @@ export interface UpdateStatus {
 	message?: string;
 }
 
-/** File holding the user's auto-update preferences under the ~/.thanos state dir. */
+/** File holding the user's auto-update preferences under the ~/.maestro state dir. */
 export const UPDATE_SETTINGS_FILE_NAME = "update-settings.json";
 
 const DEFAULTS: UpdateSettings = { enabled: false, channel: "latest", nightlyAck: false };

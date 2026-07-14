@@ -135,7 +135,7 @@ export function LandingUseCases() {
 					One orchestrator, many jobs
 				</h2>
 				<p className="text-[var(--landing-muted)] text-[0.9375rem] leading-[1.6] max-w-[34rem] mx-auto mb-12">
-					Point Thanos at the work and walk away — drag to explore what a single run can do.
+					Point Maestro at the work and walk away — drag to explore what a single run can do.
 				</p>
 			</div>
 

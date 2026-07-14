@@ -1,4 +1,4 @@
-// Command gen is the Thanos code-generation entrypoint. It
+// Command gen is the Maestro code-generation entrypoint. It
 // dispatches on a subcommand so more generators can be added later:
 //
 //	gen spec [-out openapi.yaml]   # write the code-first OpenAPI document
@@ -14,7 +14,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/tinhtran/thanos/backend/internal/httpd/apispec/specgen"
+	"github.com/tinhtran24/maestro/backend/internal/httpd/apispec/specgen"
 )
 
 func main() {
@@ -54,7 +54,7 @@ func runSpec(args []string) {
 }
 
 func usage() {
-	fmt.Fprint(os.Stderr, `gen — Thanos code generators
+	fmt.Fprint(os.Stderr, `gen — Maestro code generators
 
 Usage:
   gen <subcommand> [flags]

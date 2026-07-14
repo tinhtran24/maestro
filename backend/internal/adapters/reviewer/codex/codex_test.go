@@ -5,7 +5,7 @@ import (
 	"slices"
 	"testing"
 
-	"github.com/tinhtran/thanos/backend/internal/ports"
+	"github.com/tinhtran24/maestro/backend/internal/ports"
 )
 
 type captureAgent struct {
@@ -31,9 +31,9 @@ func (a *captureAgent) SessionInfo(context.Context, ports.SessionRef) (ports.Ses
 }
 
 func TestReviewCommandUsesReadOnlySandbox(t *testing.T) {
-	t.Setenv("THANOS_PORT", "3103")
-	t.Setenv("THANOS_DATA_DIR", "/tmp/to data")
-	t.Setenv("THANOS_RUN_FILE", "/tmp/to data/running.json")
+	t.Setenv("MAESTRO_PORT", "3103")
+	t.Setenv("MAESTRO_DATA_DIR", "/tmp/to data")
+	t.Setenv("MAESTRO_RUN_FILE", "/tmp/to data/running.json")
 	agent := &captureAgent{}
 	r := &Reviewer{agent: agent}
 
@@ -50,9 +50,9 @@ func TestReviewCommandUsesReadOnlySandbox(t *testing.T) {
 	want := []string{
 		"agent",
 		"--sandbox", "read-only",
-		"-c", `shell_environment_policy.set.THANOS_PORT="3103"`,
-		"-c", `shell_environment_policy.set.THANOS_DATA_DIR="/tmp/to data"`,
-		"-c", `shell_environment_policy.set.THANOS_RUN_FILE="/tmp/to data/running.json"`,
+		"-c", `shell_environment_policy.set.MAESTRO_PORT="3103"`,
+		"-c", `shell_environment_policy.set.MAESTRO_DATA_DIR="/tmp/to data"`,
+		"-c", `shell_environment_policy.set.MAESTRO_RUN_FILE="/tmp/to data/running.json"`,
 		"--", "review it",
 	}
 	if !slices.Equal(got.Argv, want) {

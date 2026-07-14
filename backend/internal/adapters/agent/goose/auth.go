@@ -6,8 +6,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/tinhtran/thanos/backend/internal/adapters/agent/authprobe"
-	"github.com/tinhtran/thanos/backend/internal/ports"
+	"github.com/tinhtran24/maestro/backend/internal/adapters/agent/authprobe"
+	"github.com/tinhtran24/maestro/backend/internal/ports"
 
 	yaml "gopkg.in/yaml.v3"
 )

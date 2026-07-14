@@ -4,7 +4,7 @@
 //
 // Mistral Vibe (binary "vibe", https://github.com/mistralai/mistral-vibe) is a
 // Python CLI installed via `uv tool install mistral-vibe`, pip, or its install
-// script. Thanos drives it in programmatic/headless mode with `-p <prompt>`, which
+// script. Maestro drives it in programmatic/headless mode with `-p <prompt>`, which
 // auto-approves tools, prints the final response, and exits. `--trust` skips
 // the working-directory trust prompt for non-interactive automation, and
 // `--output text` pins the human-readable output format.
@@ -14,7 +14,7 @@
 // ("auto-approves all tool executions"). PermissionModeDefault emits no flag so
 // Vibe resolves its starting agent from the user's `default_agent` config.
 //
-// Vibe has no usable lifecycle-hook surface for Thanos activity: its only hook type
+// Vibe has no usable lifecycle-hook surface for Maestro activity: its only hook type
 // is an experimental, off-by-default POST_AGENT_TURN hook with no
 // session-start/user-prompt-submit/stop/permission-request taxonomy, and it is
 // not Claude-Code compatible. Hook installation and SessionInfo are therefore
@@ -29,10 +29,10 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/tinhtran/thanos/backend/internal/adapters"
-	"github.com/tinhtran/thanos/backend/internal/adapters/agent/agentbase"
-	"github.com/tinhtran/thanos/backend/internal/adapters/agent/binaryutil"
-	"github.com/tinhtran/thanos/backend/internal/ports"
+	"github.com/tinhtran24/maestro/backend/internal/adapters"
+	"github.com/tinhtran24/maestro/backend/internal/adapters/agent/agentbase"
+	"github.com/tinhtran24/maestro/backend/internal/adapters/agent/binaryutil"
+	"github.com/tinhtran24/maestro/backend/internal/ports"
 )
 
 const adapterID = "vibe"
@@ -70,11 +70,11 @@ func (p *Plugin) Manifest() adapters.Manifest {
 //
 //	vibe --trust --output text [--workdir <path>] [--agent <profile>] -p <prompt>
 //
-// The prompt is delivered through `-p` (programmatic mode), so Thanos uses
+// The prompt is delivered through `-p` (programmatic mode), so Maestro uses
 // in-command delivery. `--trust` skips the trust prompt for automation and
 // `--output text` pins the output format. `--workdir` is passed explicitly
 // because Vibe validates its own working directory in addition to the process
-// cwd Thanos sets through the runtime. Vibe exposes no CLI system-prompt flag
+// cwd Maestro sets through the runtime. Vibe exposes no CLI system-prompt flag
 // (system prompts are config-driven), so SystemPrompt is not forwarded.
 func (p *Plugin) GetLaunchCommand(ctx context.Context, cfg ports.LaunchConfig) (cmd []string, err error) {
 	if err := ctx.Err(); err != nil {
@@ -119,14 +119,14 @@ func (p *Plugin) GetRestoreCommand(ctx context.Context, cfg ports.RestoreConfig)
 }
 
 // appendWorkdirFlag adds Vibe's explicit `--workdir` flag. Vibe validates its
-// own working directory in addition to the process cwd Thanos sets.
+// own working directory in addition to the process cwd Maestro sets.
 func appendWorkdirFlag(cmd *[]string, workspacePath string) {
 	if workspacePath != "" {
 		*cmd = append(*cmd, "--workdir", workspacePath)
 	}
 }
 
-// appendAgentFlags maps Thanos permission modes onto Vibe's builtin `--agent`
+// appendAgentFlags maps Maestro permission modes onto Vibe's builtin `--agent`
 // profiles. PermissionModeDefault (and the empty mode) emit no flag so Vibe
 // resolves its starting agent from the user's `default_agent` config.
 func appendAgentFlags(cmd *[]string, mode ports.PermissionMode) {

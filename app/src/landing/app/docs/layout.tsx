@@ -52,7 +52,7 @@ const links: LinkItemType[] = [
 async function GitHubStars() {
 	let stars: string | null = null;
 	try {
-		const res = await fetch("https://api.github.com/repos/ComposioHQ/thanos", {
+		const res = await fetch("https://api.github.com/repos/ComposioHQ/maestro", {
 			next: { revalidate: 3600 },
 		});
 		if (res.ok) {
@@ -84,14 +84,14 @@ export default function Layout({ children }: { children: ReactNode }) {
 					title: (
 						<span className="flex items-center gap-2 font-semibold">
 							<Image
-								src="/thanos-logo.png"
+								src="/maestro-logo.png"
 								alt=""
 								aria-hidden
 								width={22}
 								height={22}
 								className="h-[22px] w-[22px] rounded-[5px] object-cover"
 							/>
-							<span className="text-[var(--color-text-primary)]">Thanos</span>
+							<span className="text-[var(--color-text-primary)]">Maestro</span>
 						</span>
 					),
 				}}
@@ -100,13 +100,13 @@ export default function Layout({ children }: { children: ReactNode }) {
 					collapsible: true,
 					banner: (
 						<a
-							href="https://github.com/ComposioHQ/thanos"
+							href="https://github.com/ComposioHQ/maestro"
 							target="_blank"
 							rel="noreferrer noopener"
 							className="flex items-center gap-2 text-xs text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors py-1"
 						>
 							<GithubIcon />
-							<span>ComposioHQ/thanos</span>
+							<span>ComposioHQ/maestro</span>
 							<GitHubStars />
 						</a>
 					),

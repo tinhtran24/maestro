@@ -11,15 +11,15 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/tinhtran/thanos/backend/internal/adapters"
-	"github.com/tinhtran/thanos/backend/internal/adapters/agent/agentbase"
-	"github.com/tinhtran/thanos/backend/internal/adapters/agent/binaryutil"
-	"github.com/tinhtran/thanos/backend/internal/ports"
+	"github.com/tinhtran24/maestro/backend/internal/adapters"
+	"github.com/tinhtran24/maestro/backend/internal/adapters/agent/agentbase"
+	"github.com/tinhtran24/maestro/backend/internal/adapters/agent/binaryutil"
+	"github.com/tinhtran24/maestro/backend/internal/ports"
 )
 
 const (
 	// adapterID is the registry id and the value users pass to
-	// `to spawn --agent`. It matches domain.HarnessCrush.
+	// `maestro spawn --agent`. It matches domain.HarnessCrush.
 	adapterID = "crush"
 )
 
@@ -63,7 +63,7 @@ func (p *Plugin) Manifest() adapters.Manifest {
 // argument after `--`. The --yolo flag corresponds to bypass-permissions mode.
 //
 // We intentionally do not pass --session on launch: cfg.SessionID is the
-// Thanos-internal id, not a Crush-native session id. Letting Crush mint its own
+// Maestro-internal id, not a Crush-native session id. Letting Crush mint its own
 // native session id (captured by hooks into session metadata) keeps launch
 // consistent with GetRestoreCommand, which resumes using that native id.
 func (p *Plugin) GetLaunchCommand(ctx context.Context, cfg ports.LaunchConfig) (cmd []string, err error) {

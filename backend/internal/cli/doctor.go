@@ -18,8 +18,8 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/tinhtran/thanos/backend/internal/adapters/agent/codex"
-	"github.com/tinhtran/thanos/backend/internal/config"
+	"github.com/tinhtran24/maestro/backend/internal/adapters/agent/codex"
+	"github.com/tinhtran24/maestro/backend/internal/config"
 )
 
 type doctorLevel string
@@ -49,7 +49,7 @@ const (
 	doctorSectionAgents         = "Agent harnesses"
 	doctorSectionGitHub         = "GitHub"
 	minGitVersion               = "2.25.0"
-	githubDoctorUserAgent       = "thanos/doctor"
+	githubDoctorUserAgent       = "maestro/doctor"
 	defaultDoctorGitHubRESTBase = "https://api.github.com"
 )
 
@@ -68,7 +68,7 @@ func newDoctorCommand(ctx *commandContext) *cobra.Command {
 	var asJSON bool
 	cmd := &cobra.Command{
 		Use:   "doctor",
-		Short: "Run local Thanos health checks",
+		Short: "Run local Maestro health checks",
 		Args:  noArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			checks := ctx.runDoctor(cmd.Context())
@@ -185,7 +185,7 @@ func (c *commandContext) runDoctor(ctx context.Context) []doctorCheck {
 // startup and surfaced through /readyz, so doctor only confirms whether the
 // database file exists yet.
 func checkStore(dataDir string) doctorCheck {
-	dbPath := filepath.Join(dataDir, "thanos.db")
+	dbPath := filepath.Join(dataDir, "maestro.db")
 	info, err := os.Stat(dbPath)
 	switch {
 	case err == nil:
@@ -196,7 +196,7 @@ func checkStore(dataDir string) doctorCheck {
 	case errors.Is(err, fs.ErrNotExist):
 		return doctorCheck{
 			Level: doctorWarn, Section: doctorSectionCore, Name: "sqlite",
-			Message: "database not created yet; run `to start` to initialize and migrate it",
+			Message: "database not created yet; run `maestro start` to initialize and migrate it",
 		}
 	default:
 		return doctorCheck{Level: doctorFail, Section: doctorSectionCore, Name: "sqlite", Message: err.Error()}
@@ -204,7 +204,7 @@ func checkStore(dataDir string) doctorCheck {
 }
 
 func checkDataDirWritable(dataDir string) doctorCheck {
-	f, err := os.CreateTemp(dataDir, ".thanos-doctor-write-*")
+	f, err := os.CreateTemp(dataDir, ".maestro-doctor-write-*")
 	if err != nil {
 		return doctorCheck{Level: doctorFail, Section: doctorSectionCore, Name: "data-dir-write", Message: err.Error()}
 	}
@@ -224,9 +224,9 @@ func checkDataDirWritable(dataDir string) doctorCheck {
 	return doctorCheck{Level: doctorPass, Section: doctorSectionCore, Name: "data-dir-write", Message: "write probe succeeded"}
 }
 
-// checkAOBinary verifies the `to` that workspace hooks would invoke. Agent
-// adapters install hook commands as a bare `to hooks <agent> <event>`, so an
-// `to` earlier on PATH that is not this binary (e.g. a legacy CLI without the
+// checkAOBinary verifies the `maestro` that workspace hooks would invoke. Agent
+// adapters install hook commands as a bare `maestro hooks <agent> <event>`, so an
+// `maestro` earlier on PATH that is not this binary (e.g. a legacy CLI without the
 // hooks command) fails every callback and silently kills activity tracking.
 // The daemon pins PATH inside the sessions it spawns, so a mismatch here is a
 // warning about every other context (manual runs, foreign panes), not a hard
@@ -237,19 +237,19 @@ func (c *commandContext) checkAOBinary() doctorCheck {
 	if err != nil {
 		return doctorCheck{Level: doctorWarn, Section: doctorSectionTools, Name: name, Message: fmt.Sprintf("could not resolve the running executable: %v", err)}
 	}
-	onPath, err := c.deps.LookPath("to")
+	onPath, err := c.deps.LookPath("maestro")
 	if err != nil || onPath == "" {
 		return doctorCheck{
 			Level: doctorWarn, Section: doctorSectionTools, Name: name,
-			Message: "to not found in PATH; workspace hooks invoke `to hooks <agent> <event>` (daemon-spawned sessions pin PATH to the daemon binary and are unaffected)",
+			Message: "maestro not found in PATH; workspace hooks invoke `maestro hooks <agent> <event>` (daemon-spawned sessions pin PATH to the daemon binary and are unaffected)",
 		}
 	}
 	if sameBinary(self, onPath) {
-		return doctorCheck{Level: doctorPass, Section: doctorSectionTools, Name: name, Message: fmt.Sprintf("to in PATH is this binary (%s)", onPath)}
+		return doctorCheck{Level: doctorPass, Section: doctorSectionTools, Name: name, Message: fmt.Sprintf("maestro in PATH is this binary (%s)", onPath)}
 	}
 	return doctorCheck{
 		Level: doctorWarn, Section: doctorSectionTools, Name: name,
-		Message: fmt.Sprintf("to in PATH is %s, not this binary (%s); workspace hooks run `to hooks` and a foreign to breaks activity tracking outside daemon-spawned sessions", onPath, self),
+		Message: fmt.Sprintf("maestro in PATH is %s, not this binary (%s); workspace hooks run `maestro hooks` and a foreign maestro breaks activity tracking outside daemon-spawned sessions", onPath, self),
 	}
 }
 
@@ -285,7 +285,7 @@ func (c *commandContext) checkGit(ctx context.Context) doctorCheck {
 		return doctorCheck{Level: doctorWarn, Section: doctorSectionTools, Name: "git", Message: fmt.Sprintf("%s (version unknown: %s)", path, firstOutputLine(out))}
 	}
 	if cmp < 0 {
-		return doctorCheck{Level: doctorWarn, Section: doctorSectionTools, Name: "git", Message: fmt.Sprintf("%s (version %s; Thanos expects >= %s for worktrees)", path, version, minGitVersion)}
+		return doctorCheck{Level: doctorWarn, Section: doctorSectionTools, Name: "git", Message: fmt.Sprintf("%s (version %s; Maestro expects >= %s for worktrees)", path, version, minGitVersion)}
 	}
 	return doctorCheck{Level: doctorPass, Section: doctorSectionTools, Name: "git", Message: fmt.Sprintf("%s (version %s; supports worktrees)", path, version)}
 }
@@ -322,14 +322,14 @@ func (c *commandContext) checkTmux(ctx context.Context) doctorCheck {
 	return doctorCheck{Level: doctorPass, Section: doctorSectionTools, Name: "tmux", Message: fmt.Sprintf("%s (%s)", path, version)}
 }
 
-// checkHooksLog surfaces recent agent hook delivery failures. `to hooks`
+// checkHooksLog surfaces recent agent hook delivery failures. `maestro hooks`
 // callbacks deliberately swallow errors (a hook must never break the user's
-// agent), so $THANOS_DATA_DIR/hooks.log is the only place a dead activity feed
+// agent), so $MAESTRO_DATA_DIR/hooks.log is the only place a dead activity feed
 // becomes visible. Lines start with an RFC3339 timestamp (see appendHooksLog).
 func checkHooksLog(dataDir string, now time.Time) doctorCheck {
 	const name = "hooks-log"
 	path := filepath.Join(dataDir, hooksLogName)
-	data, err := os.ReadFile(path) //nolint:gosec // path rooted in Thanos's own data dir
+	data, err := os.ReadFile(path) //nolint:gosec // path rooted in Maestro's own data dir
 	if errors.Is(err, fs.ErrNotExist) {
 		return doctorCheck{Level: doctorPass, Section: doctorSectionCore, Name: name, Message: "no hook delivery failures recorded"}
 	}
@@ -391,9 +391,9 @@ func (c *commandContext) checkHarness(ctx context.Context, harness harnessProbe)
 	return doctorCheck{Level: doctorPass, Section: doctorSectionAgents, Name: harness.Name, Message: fmt.Sprintf("%s resolves to %s (%s)", harness.BinaryName, path, version)}
 }
 
-// checkCodexLaunchFlags smoke-tests Thanos's codex launch surface against the
+// checkCodexLaunchFlags smoke-tests Maestro's codex launch surface against the
 // installed binary: the hook-trust bypass flag and the `-c` session-flag
-// config Thanos injects at spawn (activity hooks, worktree trust, nudge
+// config Maestro injects at spawn (activity hooks, worktree trust, nudge
 // suppression). Codex has no stable hook-config contract, so a codex upgrade
 // can silently break activity tracking; this canary turns that breakage into
 // a doctor warning. The probes come from the codex adapter itself so they
@@ -411,17 +411,17 @@ func (c *commandContext) checkCodexLaunchFlags(ctx context.Context) doctorCheck 
 		if err != nil {
 			return doctorCheck{
 				Level: doctorWarn, Section: doctorSectionAgents, Name: name,
-				Message: fmt.Sprintf("codex rejected Thanos's launch flags (`codex %s`: %v) — codex sessions may spawn without activity hooks; a codex CLI update likely changed its flag/config surface", strings.Join(probe, " "), err),
+				Message: fmt.Sprintf("codex rejected Maestro's launch flags (`codex %s`: %v) — codex sessions may spawn without activity hooks; a codex CLI update likely changed its flag/config surface", strings.Join(probe, " "), err),
 			}
 		}
 		if strings.Contains(string(out), "unknown configuration field") {
 			return doctorCheck{
 				Level: doctorWarn, Section: doctorSectionAgents, Name: name,
-				Message: fmt.Sprintf("codex no longer recognizes one of Thanos's config overrides (%s) — codex sessions may spawn without activity hooks", firstOutputLine(out)),
+				Message: fmt.Sprintf("codex no longer recognizes one of Maestro's config overrides (%s) — codex sessions may spawn without activity hooks", firstOutputLine(out)),
 			}
 		}
 	}
-	return doctorCheck{Level: doctorPass, Section: doctorSectionAgents, Name: name, Message: "codex accepts Thanos's hook/trust launch flags"}
+	return doctorCheck{Level: doctorPass, Section: doctorSectionAgents, Name: name, Message: "codex accepts Maestro's hook/trust launch flags"}
 }
 
 func (c *commandContext) checkGitHubToken(ctx context.Context) doctorCheck {
@@ -475,14 +475,14 @@ func (c *commandContext) checkGitHubToken(ctx context.Context) doctorCheck {
 }
 
 func (c *commandContext) githubToken(ctx context.Context) (token, source string, err error) {
-	for _, name := range []string{"THANOS_GITHUB_TOKEN", "GITHUB_TOKEN"} {
+	for _, name := range []string{"MAESTRO_GITHUB_TOKEN", "GITHUB_TOKEN"} {
 		if v := strings.TrimSpace(os.Getenv(name)); v != "" {
 			return v, name, nil
 		}
 	}
 	path, lookErr := c.deps.LookPath("gh")
 	if lookErr != nil || path == "" {
-		return "", "", errors.New("no GitHub token found (set THANOS_GITHUB_TOKEN/GITHUB_TOKEN or run `gh auth login`)")
+		return "", "", errors.New("no GitHub token found (set MAESTRO_GITHUB_TOKEN/GITHUB_TOKEN or run `gh auth login`)")
 	}
 	reqCtx, cancel := context.WithTimeout(ctx, probeTimeout)
 	defer cancel()

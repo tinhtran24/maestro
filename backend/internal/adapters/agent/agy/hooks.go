@@ -9,15 +9,15 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/tinhtran/thanos/backend/internal/adapters/agent/hookutil"
-	"github.com/tinhtran/thanos/backend/internal/ports"
+	"github.com/tinhtran24/maestro/backend/internal/adapters/agent/hookutil"
+	"github.com/tinhtran24/maestro/backend/internal/ports"
 )
 
 const (
 	agyHooksDirName  = ".gemini"
 	agyHooksFileName = "hooks.json"
 
-	agyHookCommandPrefix = "to hooks agy "
+	agyHookCommandPrefix = "maestro hooks agy "
 )
 
 type agyHookFile struct {
@@ -47,9 +47,9 @@ var agyManagedHooks = []agyHookSpec{
 	{Event: "AfterTool", Command: agyHookCommandPrefix + "after-tool"},
 }
 
-// GetAgentHooks installs Thanos's Agy hooks into the worktree-local
+// GetAgentHooks installs Maestro's Agy hooks into the worktree-local
 // .gemini/hooks.json file. Existing hook entries are preserved and duplicate
-// Thanos commands are not appended.
+// Maestro commands are not appended.
 func (p *Plugin) GetAgentHooks(ctx context.Context, cfg ports.WorkspaceHookConfig) error {
 	if err := ctx.Err(); err != nil {
 		return err
@@ -90,7 +90,7 @@ func (p *Plugin) GetAgentHooks(ctx context.Context, cfg ports.WorkspaceHookConfi
 	return nil
 }
 
-// UninstallHooks removes Thanos's Agy hooks from the workspace-local
+// UninstallHooks removes Maestro's Agy hooks from the workspace-local
 // .gemini/hooks.json file, leaving user-defined hooks untouched. A missing file
 // is a no-op.
 func (p *Plugin) UninstallHooks(ctx context.Context, workspacePath string) error {
@@ -127,7 +127,7 @@ func (p *Plugin) UninstallHooks(ctx context.Context, workspacePath string) error
 	return nil
 }
 
-// AreHooksInstalled reports whether any Thanos Agy hook is present in the
+// AreHooksInstalled reports whether any Maestro Agy hook is present in the
 // workspace-local hooks file. A missing file means none are installed.
 func (p *Plugin) AreHooksInstalled(ctx context.Context, workspacePath string) (bool, error) {
 	if err := ctx.Err(); err != nil {
@@ -167,7 +167,7 @@ func agyHooksPath(workspacePath string) string {
 }
 
 // readAgyHooks loads the hooks file into a top-level raw map plus the decoded
-// "hooks" sub-map, preserving keys Thanos doesn't manage. A missing or empty
+// "hooks" sub-map, preserving keys Maestro doesn't manage. A missing or empty
 // file yields empty maps.
 func readAgyHooks(hooksPath string) (topLevel, rawHooks map[string]json.RawMessage, err error) {
 	topLevel = map[string]json.RawMessage{}

@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/tinhtran/thanos/backend/internal/ports"
+	"github.com/tinhtran24/maestro/backend/internal/ports"
 )
 
 // DefaultCommands are cheap local auth/status probes common across agent CLIs.

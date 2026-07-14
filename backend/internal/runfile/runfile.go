@@ -13,7 +13,7 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/tinhtran/thanos/backend/internal/processalive"
+	"github.com/tinhtran24/maestro/backend/internal/processalive"
 )
 
 // Info is the on-disk handshake payload.
@@ -25,7 +25,7 @@ type Info struct {
 	// StartedAt is when the daemon came up (RFC 3339).
 	StartedAt time.Time `json:"startedAt"`
 	// Owner is "app" when the desktop Electron app spawned this daemon; empty
-	// for a headless `to start` daemon. Used by the app to decide whether to
+	// for a headless `maestro start` daemon. Used by the app to decide whether to
 	// hold a supervisor link on attach (app-owned: re-link; headless: skip so
 	// the daemon stays persistent across app quit).
 	Owner string `json:"owner,omitempty"`

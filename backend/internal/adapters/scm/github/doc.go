@@ -1,4 +1,4 @@
-// Package github observes GitHub pull requests for Thanos's SCM integrations.
+// Package github observes GitHub pull requests for Maestro's SCM integrations.
 //
 // The compatibility exported surface is:
 //

@@ -5,14 +5,14 @@ import (
 	"testing"
 	"time"
 
-	"github.com/tinhtran/thanos/backend/internal/cdc"
-	"github.com/tinhtran/thanos/backend/internal/domain"
-	"github.com/tinhtran/thanos/backend/internal/lifecycle"
-	"github.com/tinhtran/thanos/backend/internal/ports"
-	prsvc "github.com/tinhtran/thanos/backend/internal/service/pr"
-	sessionsvc "github.com/tinhtran/thanos/backend/internal/service/session"
-	sessionmanager "github.com/tinhtran/thanos/backend/internal/session_manager"
-	"github.com/tinhtran/thanos/backend/internal/storage/sqlite"
+	"github.com/tinhtran24/maestro/backend/internal/cdc"
+	"github.com/tinhtran24/maestro/backend/internal/domain"
+	"github.com/tinhtran24/maestro/backend/internal/lifecycle"
+	"github.com/tinhtran24/maestro/backend/internal/ports"
+	prsvc "github.com/tinhtran24/maestro/backend/internal/service/pr"
+	sessionsvc "github.com/tinhtran24/maestro/backend/internal/service/session"
+	sessionmanager "github.com/tinhtran24/maestro/backend/internal/session_manager"
+	"github.com/tinhtran24/maestro/backend/internal/storage/sqlite"
 )
 
 type stubRuntime struct {

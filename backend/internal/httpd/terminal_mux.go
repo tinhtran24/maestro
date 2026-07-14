@@ -9,7 +9,7 @@ import (
 	"github.com/coder/websocket/wsjson"
 	"github.com/go-chi/chi/v5"
 
-	"github.com/tinhtran/thanos/backend/internal/terminal"
+	"github.com/tinhtran24/maestro/backend/internal/terminal"
 )
 
 // terminalMuxReadLimit caps a single inbound frame. Client→server frames are small

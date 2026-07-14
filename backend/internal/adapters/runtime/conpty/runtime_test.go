@@ -11,9 +11,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/tinhtran/thanos/backend/internal/adapters/runtime/conpty/ptyregistry"
-	"github.com/tinhtran/thanos/backend/internal/domain"
-	"github.com/tinhtran/thanos/backend/internal/ports"
+	"github.com/tinhtran24/maestro/backend/internal/adapters/runtime/conpty/ptyregistry"
+	"github.com/tinhtran24/maestro/backend/internal/domain"
+	"github.com/tinhtran24/maestro/backend/internal/ports"
 )
 
 // livePID returns a PID that is guaranteed to be alive (the current process).
@@ -98,7 +98,7 @@ func fakeSpawnerFor(t *testing.T, hosts map[string]*inProcHost, fakePID int) hos
 }
 
 // ---------------------------------------------------------------------------
-// Redirect ptyregistry to a temp HOME so tests don't pollute ~/.thanos
+// Redirect ptyregistry to a temp HOME so tests don't pollute ~/.maestro
 // ---------------------------------------------------------------------------
 
 func isolateRegistry(t *testing.T) {

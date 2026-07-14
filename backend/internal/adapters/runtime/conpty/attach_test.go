@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/tinhtran/thanos/backend/internal/ports"
+	"github.com/tinhtran24/maestro/backend/internal/ports"
 )
 
 // runtimeForFixture wires a conpty Runtime to a running serveFixture by stuffing

@@ -8,13 +8,13 @@ import (
 	"sync"
 	"time"
 
-	trackergithub "github.com/tinhtran/thanos/backend/internal/adapters/tracker/github"
-	"github.com/tinhtran/thanos/backend/internal/domain"
-	trackerintake "github.com/tinhtran/thanos/backend/internal/observe/trackerintake"
-	"github.com/tinhtran/thanos/backend/internal/ports"
-	aoprocess "github.com/tinhtran/thanos/backend/internal/process"
-	sessionsvc "github.com/tinhtran/thanos/backend/internal/service/session"
-	"github.com/tinhtran/thanos/backend/internal/storage/sqlite"
+	trackergithub "github.com/tinhtran24/maestro/backend/internal/adapters/tracker/github"
+	"github.com/tinhtran24/maestro/backend/internal/domain"
+	trackerintake "github.com/tinhtran24/maestro/backend/internal/observe/trackerintake"
+	"github.com/tinhtran24/maestro/backend/internal/ports"
+	aoprocess "github.com/tinhtran24/maestro/backend/internal/process"
+	sessionsvc "github.com/tinhtran24/maestro/backend/internal/service/session"
+	"github.com/tinhtran24/maestro/backend/internal/storage/sqlite"
 )
 
 // startTrackerIntake wires the opt-in GitHub issue-intake loop. The observer
@@ -103,7 +103,7 @@ type trackerTokenSource struct {
 }
 
 func (s *trackerTokenSource) Token(ctx context.Context) (string, error) {
-	env := trackergithub.EnvTokenSource{EnvVars: []string{"THANOS_GITHUB_TOKEN"}}
+	env := trackergithub.EnvTokenSource{EnvVars: []string{"MAESTRO_GITHUB_TOKEN"}}
 	if tok, err := env.Token(ctx); err == nil {
 		return tok, nil
 	} else if !errors.Is(err, trackergithub.ErrNoToken) {

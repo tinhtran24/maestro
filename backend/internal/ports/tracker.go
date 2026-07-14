@@ -3,7 +3,7 @@ package ports
 import (
 	"context"
 
-	"github.com/tinhtran/thanos/backend/internal/domain"
+	"github.com/tinhtran24/maestro/backend/internal/domain"
 )
 
 // Tracker is the outbound read-only port for issue trackers:

@@ -6,7 +6,7 @@ How to cut a stable desktop release, end to end. Written from the v0.10.2 cut
 ## How releases work
 
 - **Stable** releases are triggered by pushing a `desktop-vX.Y.Z` tag to
-  `tinhtran24/thanos`. `.github/workflows/frontend-release.yml`
+  `AgentWrapper/maestro`. `.github/workflows/frontend-release.yml`
   builds on four runners (macOS arm64, macOS Intel, Windows, Linux), signs and
   notarizes the macOS builds, and publishes a GitHub Release.
 - **Nightly** releases run on a schedule via `frontend-nightly.yml` with no
@@ -23,7 +23,7 @@ How to cut a stable desktop release, end to end. Written from the v0.10.2 cut
 
 ## Prerequisites
 
-- Push access to `tinhtran24/thanos` (the tag push is the trigger).
+- Push access to `AgentWrapper/maestro` (the tag push is the trigger).
 - Authenticated `gh` CLI for the notes/verify steps.
 - A release approver available (see "Who can approve" below); the build jobs
   wait on the `release` environment until someone approves.
@@ -31,7 +31,7 @@ How to cut a stable desktop release, end to end. Written from the v0.10.2 cut
 ## Cutting a stable release
 
 Throughout, `X.Y.Z` is the new version (e.g. `0.10.2`) and `upstream` is the
-`tinhtran24/thanos` remote.
+`AgentWrapper/maestro` remote.
 
 ### 1. Decide the version and review what ships
 
@@ -72,17 +72,17 @@ approver either clicks "Review deployments" > approve in the run page, or from
 the CLI:
 
 ```bash
-run_id=$(gh run list -R tinhtran24/thanos --workflow frontend-release.yml --limit 1 --json databaseId --jq '.[0].databaseId')
-gh api repos/tinhtran24/thanos/actions/runs/$run_id/pending_deployments \
+run_id=$(gh run list -R AgentWrapper/maestro --workflow frontend-release.yml --limit 1 --json databaseId --jq '.[0].databaseId')
+gh api repos/AgentWrapper/maestro/actions/runs/$run_id/pending_deployments \
   --jq '.[] | {env: .environment.id, can_approve: .current_user_can_approve}'
-gh api -X POST repos/tinhtran24/thanos/actions/runs/$run_id/pending_deployments \
+gh api -X POST repos/AgentWrapper/maestro/actions/runs/$run_id/pending_deployments \
   -F 'environment_ids[]=<env id from above>' -f state=approved -f comment='Release X.Y.Z approved'
 ```
 
 Then wait (roughly 30 minutes; macOS notarization dominates):
 
 ```bash
-gh run watch $run_id -R tinhtran24/thanos --exit-status --interval 60
+gh run watch $run_id -R AgentWrapper/maestro --exit-status --interval 60
 ```
 
 The workflow retries transient macOS sign/notary flakes on its own. The
@@ -95,29 +95,29 @@ The publisher creates the release with an empty body. Generate the standard
 What's Changed / New Contributors / Full Changelog body and attach it:
 
 ```bash
-gh api repos/tinhtran24/thanos/releases/generate-notes \
+gh api repos/AgentWrapper/maestro/releases/generate-notes \
   -f tag_name=vX.Y.Z -f previous_tag_name=v<last-stable> --jq '.body' > /tmp/notes.md
-gh release edit vX.Y.Z -R tinhtran24/thanos --notes-file /tmp/notes.md
+gh release edit vX.Y.Z -R AgentWrapper/maestro --notes-file /tmp/notes.md
 ```
 
 ### 6. Verify
 
 ```bash
 # published, not draft/prerelease, 17 assets:
-gh release view vX.Y.Z -R tinhtran24/thanos \
+gh release view vX.Y.Z -R AgentWrapper/maestro \
   --json isDraft,isPrerelease,assets --jq '{isDraft,isPrerelease,count:(.assets|length)}'
 # latest points at the new release:
-gh api repos/tinhtran24/thanos/releases/latest --jq '.tag_name'
+gh api repos/AgentWrapper/maestro/releases/latest --jq '.tag_name'
 # updater feed carries the new version:
-curl -sL https://github.com/tinhtran24/thanos/releases/latest/download/latest-mac.yml | head -3
+curl -sL https://github.com/AgentWrapper/maestro/releases/latest/download/latest-mac.yml | head -3
 ```
 
 Expected assets (17): versioned installers for every platform
 (`Agent.Orchestrator-darwin-{arm64,x64}-X.Y.Z.zip`, `Agent.Orchestrator.Setup.X.Y.Z.exe`,
 `Agent.Orchestrator-X.Y.Z.AppImage`, deb, rpm) plus their `.blockmap` sidecars,
-the five version-free aliases `to start` fetches
-(`thanos-darwin-arm64.zip`, `thanos-darwin-x64.zip`,
-`thanos-win32-x64.exe`, `thanos-linux-x64.AppImage`,
+the five version-free aliases `maestro start` fetches
+(`maestro-darwin-arm64.zip`, `maestro-darwin-x64.zip`,
+`maestro-win32-x64.exe`, `maestro-linux-x64.AppImage`,
 and the deb/rpm published under versioned names), and the electron-updater
 feeds `latest.yml`, `latest-mac.yml`, `latest-linux.yml`.
 
@@ -143,15 +143,15 @@ pusher who is not an approver still needs one of the five. Repo admins can
 bypass the gate. The current list is readable by anyone with repo access:
 
 ```bash
-gh api repos/tinhtran24/thanos/environments/release \
+gh api repos/AgentWrapper/maestro/environments/release \
   --jq '.protection_rules[] | select(.type=="required_reviewers") | .reviewers[].reviewer.login'
 ```
 
 ## Fork test releases (dev loop)
 
-Test releases go to the fork, never to tinhtran24: push a `desktop-v*` tag
+Test releases go to the fork, never to AgentWrapper: push a `desktop-v*` tag
 to the fork or run the workflow via `workflow_dispatch` from the fork's
-Actions tab. `THANOS_RELEASE_REPO` is derived from `github.repository`, so a fork
+Actions tab. `MAESTRO_RELEASE_REPO` is derived from `github.repository`, so a fork
 run publishes to the fork with no source edit. See the header comment in
 `frontend-release.yml`.
 

@@ -1,4 +1,4 @@
-module github.com/tinhtran/thanos/backend
+module github.com/tinhtran24/maestro/backend
 
 go 1.25.7
 

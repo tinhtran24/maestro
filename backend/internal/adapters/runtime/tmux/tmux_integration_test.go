@@ -7,8 +7,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/tinhtran/thanos/backend/internal/domain"
-	"github.com/tinhtran/thanos/backend/internal/ports"
+	"github.com/tinhtran24/maestro/backend/internal/domain"
+	"github.com/tinhtran24/maestro/backend/internal/ports"
 )
 
 func TestRuntimeIntegration(t *testing.T) {
@@ -35,7 +35,7 @@ func TestRuntimeIntegration(t *testing.T) {
 		// exec is added by buildLaunchCommand, but we also verify here that output
 		// appears).
 		Argv: []string{"sh", "-c", "echo hello-from-tmux"},
-		Env:  map[string]string{"THANOS_SESSION_ID": id},
+		Env:  map[string]string{"MAESTRO_SESSION_ID": id},
 	})
 	if err != nil {
 		t.Fatalf("Create: %v", err)

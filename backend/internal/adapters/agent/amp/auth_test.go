@@ -8,8 +8,8 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/tinhtran/thanos/backend/internal/adapters/agent/authprobe"
-	"github.com/tinhtran/thanos/backend/internal/ports"
+	"github.com/tinhtran24/maestro/backend/internal/adapters/agent/authprobe"
+	"github.com/tinhtran24/maestro/backend/internal/ports"
 )
 
 func TestAuthStatusAuthorizedFromEnv(t *testing.T) {

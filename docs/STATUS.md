@@ -1,4 +1,4 @@
-# thanos status
+# maestro status
 
 Current `main` ships a working single-user local loop: the Go daemon and the
 Electron/React frontend both drive a live daemon over HTTP/SSE/WebSocket. The
@@ -47,17 +47,14 @@ surface (`npm run sqlc`, `npm run api`).
   lazy/non-blocking auth, per-PR polling with ETag guards and semantic diffing,
   feeding PR facts into lifecycle, which sends agent nudges for CI failures,
   review feedback, and merge conflicts
-  ([#75](https://github.com/tinhtran/thanos/issues/75),
-  [#108](https://github.com/tinhtran/thanos/issues/108),
-  [#109](https://github.com/tinhtran/thanos/issues/109)).
+  ([#75](https://github.com/tinhtran24/maestro/issues/75),
+  [#108](https://github.com/tinhtran24/maestro/issues/108),
+  [#109](https://github.com/tinhtran24/maestro/issues/109)).
 - Terminal mux over WebSocket (`/mux`): per-client `tmux attach` PTY on
   Darwin/Linux; conpty loopback pty-host on Windows.
 - Lifecycle reducer plus reaper (`internal/observe/reaper`).
 - Agent adapter platform under `internal/adapters/agent/` (23 adapters) with a
-  registry and `to hooks` activity dispatch.
-- Durable orchestrator-owned completion cursor: workers report only `session
-  complete`; live orchestrators checkpoint final git/test/PR/cleanup work and
-  exclusively transition tasks to Review Pending and Done.
+  registry and `maestro hooks` activity dispatch.
 - OpenAPI spec generated from Go DTOs; frontend TS types generated from it and
   drift-checked in CI.
 
@@ -88,15 +85,15 @@ surface (`npm run sqlc`, `npm run api`).
 
 - **Tracker lane**: GitHub tracker adapter exists, but there is no daemon
   observer loop or agent-lifecycle→issue mirroring yet, so the tracker does
-  nothing at runtime ([#112](https://github.com/tinhtran/thanos/issues/112)).
+  nothing at runtime ([#112](https://github.com/tinhtran24/maestro/issues/112)).
 - **Full raw PR/tracker fact surfacing**: the SCM observer writes facts and the
   desktop consumes concise PR summaries, but exposing the full raw `pr_*` /
   `tracker_*` CDC events to live consumers
-  ([#110](https://github.com/tinhtran/thanos/issues/110)) and in
-  `to session get` ([#111](https://github.com/tinhtran/thanos/issues/111))
+  ([#110](https://github.com/tinhtran24/maestro/issues/110)) and in
+  `maestro session get` ([#111](https://github.com/tinhtran24/maestro/issues/111))
   is still open.
 - **CLI parity for PR/review actions**: merge, resolve-comments, and review are
-  HTTP-only (frontend-driven); there are no `to pr` / `to review` commands.
+  HTTP-only (frontend-driven); there are no `maestro pr` / `maestro review` commands.
 
 Tracking milestone:
-[`rewrite`](https://github.com/tinhtran/thanos/milestone/1).
+[`rewrite`](https://github.com/tinhtran24/maestro/milestone/1).

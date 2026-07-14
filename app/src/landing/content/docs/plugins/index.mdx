@@ -1,9 +1,9 @@
 ---
 title: Plugin catalog
-description: Every plugin that ships with Thanos, grouped by slot. Mix and match in your `thanos.yaml`.
+description: Every plugin that ships with Maestro, grouped by slot. Mix and match in your `maestro.yaml`.
 ---
 
-Thanos has **eight plugin slots**. Only one plugin per slot is active at a time, and every slot has a sensible default — you don't have to configure anything unless you want to.
+Maestro has **eight plugin slots**. Only one plugin per slot is active at a time, and every slot has a sensible default — you don't have to configure anything unless you want to.
 
 ## Slots at a glance
 
@@ -134,7 +134,7 @@ Thanos has **eight plugin slots**. Only one plugin per slot is active at a time,
 		name="Dashboard"
 		logo="web"
 		href="/docs/plugins/notifiers/dashboard"
-		description="Retained notifications inside the Thanos dashboard."
+		description="Retained notifications inside the Maestro dashboard."
 	/>
 	<PluginCard
 		name="Desktop"
@@ -190,7 +190,7 @@ Thanos has **eight plugin slots**. Only one plugin per slot is active at a time,
 
 Every plugin is a small Node package that exports a `manifest` + `create()` function. See **[Authoring a plugin](/docs/plugins/authoring)** for the full contract, loading paths, and the core utilities available to plugins.
 
-The fastest path is `to plugin create` — it scaffolds a working starter:
+The fastest path is `maestro plugin create` — it scaffolds a working starter:
 
 ```bash
 to plugin create --slot notifier --name pagerduty

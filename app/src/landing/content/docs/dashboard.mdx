@@ -1,14 +1,14 @@
 ---
 title: Dashboard
-description: Use the Thanos dashboard to monitor agents, respond to sessions, review PRs, manage projects, and open live terminals.
+description: Use the Maestro dashboard to monitor agents, respond to sessions, review PRs, manage projects, and open live terminals.
 ---
 
-The Thanos dashboard is the control room for running agents. It shows what each session is doing, which PRs need review, where agents are blocked, and which projects are active.
+The Maestro dashboard is the control room for running agents. It shows what each session is doing, which PRs need review, where agents are blocked, and which projects are active.
 
 Start it with:
 
 ```bash
-to start
+maestro start
 ```
 
 By default it opens at:
@@ -54,7 +54,7 @@ Keep this change limited to the API route. Do not refactor the shared client.
 
 ## Review PRs
 
-Open `/prs` to see every PR created by Thanos-managed sessions.
+Open `/prs` to see every PR created by Maestro-managed sessions.
 
 The PR page lets you filter by:
 
@@ -71,7 +71,7 @@ Each PR shows its size, CI state, review decision, and unresolved threads. Use t
 
 The sidebar shows registered projects. Use it to move between projects, add another repository, or open a project's settings.
 
-Project settings let you edit behavior fields without changing the repository identity. That means you can change things like agent, runtime, tracker, SCM, and reactions, but Thanos keeps the registered path, storage key, and repository identity stable.
+Project settings let you edit behavior fields without changing the repository identity. That means you can change things like agent, runtime, tracker, SCM, and reactions, but Maestro keeps the registered path, storage key, and repository identity stable.
 
 If a project is degraded because its local config is invalid or still in an older wrapped format, the dashboard shows a repair state instead of hiding the project.
 
@@ -81,7 +81,7 @@ Each session detail page includes a live terminal attached to the agent process.
 
 Use the terminal to inspect what the agent is doing, recover from stuck prompts, or run a quick command in the session context. For normal guidance, prefer the message box; it is easier for the agent to treat as instruction.
 
-Thanos has two terminal backends:
+Maestro has two terminal backends:
 
 | Backend              | Used when          | Default port |
 | -------------------- | ------------------ | ------------ |
@@ -90,7 +90,7 @@ Thanos has two terminal backends:
 
 The terminal reconnects automatically when the WebSocket drops. If terminal output works but input feels awkward on mobile, send messages from the session controls instead.
 
-## Use Thanos On Mobile
+## Use Maestro On Mobile
 
 On smaller screens, the dashboard switches to a mobile layout:
 
@@ -111,7 +111,7 @@ Use the orchestrator view when you care about the whole agent fleet instead of o
 
 ## Freshness And Updates
 
-The dashboard receives live session updates over `/api/events`. Thanos sends snapshots every five seconds. When sessions are added or removed, the dashboard refreshes the full session list from `/api/sessions`.
+The dashboard receives live session updates over `/api/events`. Maestro sends snapshots every five seconds. When sessions are added or removed, the dashboard refreshes the full session list from `/api/sessions`.
 
 If GitHub or GitLab rate limits are hit, PR details can become stale for a short time. The dashboard shows a warning banner and refreshes automatically when data is available again.
 
@@ -141,7 +141,7 @@ The full dashboard experience uses three ports:
 | tmux terminal WebSocket | auto from `14800` | `terminalPort` or `TERMINAL_PORT`              |
 | direct PTY WebSocket    | auto from `14801` | `directTerminalPort` or `DIRECT_TERMINAL_PORT` |
 
-For remote access, prefer Tailscale and keep Thanos off the public internet. See [Remote access](/docs/configuration/remote-access).
+For remote access, prefer Tailscale and keep Maestro off the public internet. See [Remote access](/docs/configuration/remote-access).
 
 ## Troubleshooting
 
@@ -163,7 +163,11 @@ Open the session detail page and send a short, direct instruction. The agent rec
 ## Next Steps
 
 <Cards>
-	<Card title="Quickstart" href="/docs/quickstart" description="Start Thanos, spawn a session, and handle the first PR." />
+	<Card
+		title="Quickstart"
+		href="/docs/quickstart"
+		description="Start Maestro, spawn a session, and handle the first PR."
+	/>
 	<Card
 		title="Configuration"
 		href="/docs/configuration"

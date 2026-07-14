@@ -2,7 +2,7 @@
 // sessions, resuming hook-tracked sessions, installing workspace-local hooks,
 // and reading hook-derived session info.
 //
-// Thanos-managed sessions derive native session identity and display
+// Maestro-managed sessions derive native session identity and display
 // metadata from Cursor hooks instead of transcript/cache scans. The driven
 // binary is `cursor-agent` (not the `cursor` editor binary).
 package cursor
@@ -17,10 +17,10 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/tinhtran/thanos/backend/internal/adapters"
-	"github.com/tinhtran/thanos/backend/internal/adapters/agent/agentbase"
-	"github.com/tinhtran/thanos/backend/internal/adapters/agent/hookutil"
-	"github.com/tinhtran/thanos/backend/internal/ports"
+	"github.com/tinhtran24/maestro/backend/internal/adapters"
+	"github.com/tinhtran24/maestro/backend/internal/adapters/agent/agentbase"
+	"github.com/tinhtran24/maestro/backend/internal/adapters/agent/hookutil"
+	"github.com/tinhtran24/maestro/backend/internal/ports"
 )
 
 // Plugin is the Cursor agent adapter. It is safe for concurrent use; the binary
@@ -57,7 +57,7 @@ func (p *Plugin) Manifest() adapters.Manifest {
 //	cursor-agent -p --output-format stream-json --trust [permission flags] <prompt>
 //
 // `-p` runs print/non-interactive mode, `--output-format stream-json` emits the
-// machine-readable event stream Thanos consumes, and `--trust` skips the
+// machine-readable event stream Maestro consumes, and `--trust` skips the
 // workspace-trust prompt. The prompt is positional and must come last, so a
 // leading "-" is not read as a flag.
 //

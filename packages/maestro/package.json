@@ -1,0 +1,19 @@
+{
+	"name": "@tinhtran24/maestro",
+	"version": "0.10.0",
+	"description": "Maestro CLI. Resolves and runs the prebuilt Go binary for your platform.",
+	"license": "MIT",
+	"bin": {
+		"maestro": "./bin/maestro.js",
+		"to": "./bin/maestro.js"
+	},
+	"files": [
+		"bin/"
+	],
+	"optionalDependencies": {
+		"@tinhtran24/maestro-darwin-arm64": "0.10.0",
+		"@tinhtran24/maestro-darwin-x64": "0.10.0",
+		"@tinhtran24/maestro-linux-x64": "0.10.0",
+		"@tinhtran24/maestro-win32-x64": "0.10.0"
+	}
+}

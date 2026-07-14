@@ -9,8 +9,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/tinhtran/thanos/backend/internal/domain"
-	"github.com/tinhtran/thanos/backend/internal/ports"
+	"github.com/tinhtran24/maestro/backend/internal/domain"
+	"github.com/tinhtran24/maestro/backend/internal/ports"
 )
 
 // -- fakeRunner test seam --
@@ -164,7 +164,7 @@ func TestCreateIssuesNewSessionAndStatusOff(t *testing.T) {
 		SessionID:     "sess-1",
 		WorkspacePath: "/tmp/ws",
 		Argv:          []string{"echo", "hi"},
-		Env:           map[string]string{"THANOS_SESSION_ID": "sess-1"},
+		Env:           map[string]string{"MAESTRO_SESSION_ID": "sess-1"},
 	})
 	if err != nil {
 		t.Fatalf("Create: %v", err)
@@ -251,7 +251,7 @@ func TestCreateLaunchCommandExportsEnvVars(t *testing.T) {
 		WorkspacePath: "/tmp/ws",
 		Argv:          []string{"myagent"},
 		Env: map[string]string{
-			"THANOS_SESSION_ID": "sess-1",
+			"MAESTRO_SESSION_ID": "sess-1",
 			"ODD":           "can't",
 			"PATH":          "/custom/bin:/usr/bin",
 		},
@@ -262,7 +262,7 @@ func TestCreateLaunchCommandExportsEnvVars(t *testing.T) {
 	args := fr.calls[0].args
 	launchCmd := args[len(args)-1]
 	for _, want := range []string{
-		"export THANOS_SESSION_ID='sess-1';",
+		"export MAESTRO_SESSION_ID='sess-1';",
 		"export ODD='can'\\''t';",
 		"export PATH='/custom/bin:/usr/bin';",
 	} {

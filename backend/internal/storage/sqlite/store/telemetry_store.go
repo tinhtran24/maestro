@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/tinhtran/thanos/backend/internal/domain"
-	"github.com/tinhtran/thanos/backend/internal/storage/sqlite/gen"
+	"github.com/tinhtran24/maestro/backend/internal/domain"
+	"github.com/tinhtran24/maestro/backend/internal/storage/sqlite/gen"
 )
 
 // TelemetryEventRecord is the store-facing representation of a telemetry row.

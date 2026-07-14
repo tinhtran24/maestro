@@ -11,8 +11,8 @@ import (
 	"log/slog"
 	"time"
 
-	"github.com/tinhtran/thanos/backend/internal/domain"
-	"github.com/tinhtran/thanos/backend/internal/ports"
+	"github.com/tinhtran24/maestro/backend/internal/domain"
+	"github.com/tinhtran24/maestro/backend/internal/ports"
 )
 
 // DefaultTickInterval is the cadence used when Config.Tick is zero. It mirrors

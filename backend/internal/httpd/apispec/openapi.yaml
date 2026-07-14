@@ -2,7 +2,7 @@ openapi: 3.1.0
 info:
   description: Loopback-only HTTP surface served by the Go daemon. Generated from
     Go (code-first) — do not edit by hand; run `go generate ./...`.
-  title: Thanos HTTP daemon
+  title: Maestro HTTP daemon
   version: 0.1.0-route-shell
 servers:
 - description: Local daemon (loopback only)
@@ -175,7 +175,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/APIError'
           description: Not Implemented
-      summary: Check whether a legacy Thanos install is available to import
+      summary: Check whether a legacy Maestro install is available to import
       tags:
       - import
     post:
@@ -199,7 +199,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/APIError'
           description: Not Implemented
-      summary: Run the legacy Thanos project import through the daemon store
+      summary: Run the legacy Maestro project import through the daemon store
       tags:
       - import
   /api/v1/notifications:
@@ -2907,7 +2907,7 @@ components:
     SubmitReviewInput:
       properties:
         body:
-          description: Review body recorded by Thanos. Required for changes_requested.
+          description: Review body recorded by Maestro. Required for changes_requested.
           type: string
         githubReviewId:
           description: Id of the GitHub PR review the reviewer posted, if any.
@@ -2927,7 +2927,7 @@ components:
     SubmitReviewItem:
       properties:
         body:
-          description: Review body recorded by Thanos. Required for changes_requested.
+          description: Review body recorded by Maestro. Required for changes_requested.
           type: string
         githubReviewId:
           description: Id of the GitHub PR review the reviewer posted, if any.
@@ -2995,7 +2995,7 @@ tags:
   name: notifications
 - description: Server-sent CDC event stream with durable replay
   name: events
-- description: Legacy Thanos project import (availability probe and run)
+- description: Legacy Maestro project import (availability probe and run)
   name: import
 - description: Global GitHub CLI and token diagnostics
   name: github

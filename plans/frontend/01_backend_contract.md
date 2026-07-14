@@ -1,6 +1,6 @@
 # Backend Contract — API the Frontend Consumes
 
-The cloned backend (`thanos/backend`) exposes everything the frontend needs. This
+The cloned backend (`maestro/backend`) exposes everything the frontend needs. This
 doc enumerates the surface so the renderer can be built against it. All routes are
 mounted under `/api/v1` (see `backend/internal/httpd/router.go`). Types come from
 `backend/internal/httpd/apispec/openapi.yaml` via `openapi-typescript`.
@@ -16,91 +16,91 @@ mounted under `/api/v1` (see `backend/internal/httpd/router.go`). Types come fro
 
 ## Health & lifecycle
 
-| Method | Path                | Purpose                          |
-| ------ | ------------------- | -------------------------------- |
-| GET    | `/healthz`          | liveness                         |
-| GET    | `/readyz`           | readiness                        |
-| POST   | `/shutdown`         | graceful daemon shutdown         |
-| GET    | `/openapi.yaml`     | live spec (for codegen/debug)    |
-| GET    | `/panic`            | dev-only recover test            |
+| Method | Path            | Purpose                       |
+| ------ | --------------- | ----------------------------- |
+| GET    | `/healthz`      | liveness                      |
+| GET    | `/readyz`       | readiness                     |
+| POST   | `/shutdown`     | graceful daemon shutdown      |
+| GET    | `/openapi.yaml` | live spec (for codegen/debug) |
+| GET    | `/panic`        | dev-only recover test         |
 
 ## Projects
 
-| Method | Path                          | Purpose                     |
-| ------ | ----------------------------- | --------------------------- |
-| GET    | `/projects`                   | list projects               |
-| POST   | `/projects`                   | create/register project     |
-| GET    | `/projects/{id}`              | project detail              |
-| DELETE | `/projects/{id}`              | remove project              |
-| PUT    | `/projects/{id}/config`       | update project config       |
+| Method | Path                    | Purpose                 |
+| ------ | ----------------------- | ----------------------- |
+| GET    | `/projects`             | list projects           |
+| POST   | `/projects`             | create/register project |
+| GET    | `/projects/{id}`        | project detail          |
+| DELETE | `/projects/{id}`        | remove project          |
+| PUT    | `/projects/{id}/config` | update project config   |
 
 ## Sessions (agent worker sessions)
 
-| Method | Path                                    | Purpose                       |
-| ------ | --------------------------------------- | ----------------------------- |
-| GET    | `/sessions`                             | list (filter: project/status/active) |
-| POST   | `/sessions`                             | spawn session                 |
-| GET    | `/sessions/{sessionId}`                 | session detail                |
-| PATCH  | `/sessions/{sessionId}`                 | rename / mutate               |
-| POST   | `/sessions/{sessionId}/send`            | send message/prompt to agent  |
-| POST   | `/sessions/{sessionId}/activity`        | report activity               |
-| POST   | `/sessions/{sessionId}/kill`            | kill running session          |
-| POST   | `/sessions/{sessionId}/restore`         | restore session               |
-| POST   | `/sessions/{sessionId}/rollback`        | rollback session state        |
-| POST   | `/sessions/cleanup`                     | bulk cleanup                  |
+| Method | Path                             | Purpose                              |
+| ------ | -------------------------------- | ------------------------------------ |
+| GET    | `/sessions`                      | list (filter: project/status/active) |
+| POST   | `/sessions`                      | spawn session                        |
+| GET    | `/sessions/{sessionId}`          | session detail                       |
+| PATCH  | `/sessions/{sessionId}`          | rename / mutate                      |
+| POST   | `/sessions/{sessionId}/send`     | send message/prompt to agent         |
+| POST   | `/sessions/{sessionId}/activity` | report activity                      |
+| POST   | `/sessions/{sessionId}/kill`     | kill running session                 |
+| POST   | `/sessions/{sessionId}/restore`  | restore session                      |
+| POST   | `/sessions/{sessionId}/rollback` | rollback session state               |
+| POST   | `/sessions/cleanup`              | bulk cleanup                         |
 
 ## Preview (embedded browser panel)
 
-| Method | Path                                          | Purpose                    |
-| ------ | --------------------------------------------- | -------------------------- |
-| POST   | `/sessions/{sessionId}/preview`               | start preview server       |
-| GET    | `/sessions/{sessionId}/preview`               | preview status/url         |
-| DELETE | `/sessions/{sessionId}/preview`               | stop preview               |
-| GET    | `/sessions/{sessionId}/preview/files/*`       | serve workspace files      |
+| Method | Path                                    | Purpose               |
+| ------ | --------------------------------------- | --------------------- |
+| POST   | `/sessions/{sessionId}/preview`         | start preview server  |
+| GET    | `/sessions/{sessionId}/preview`         | preview status/url    |
+| DELETE | `/sessions/{sessionId}/preview`         | stop preview          |
+| GET    | `/sessions/{sessionId}/preview/files/*` | serve workspace files |
 
 ## Reviews & Pull Requests
 
-| Method | Path                                          | Purpose                    |
-| ------ | --------------------------------------------- | -------------------------- |
-| GET    | `/sessions/{sessionId}/reviews`               | list reviews               |
-| POST   | `/sessions/{sessionId}/reviews/trigger`       | trigger Thanos review          |
-| POST   | `/sessions/{sessionId}/reviews/submit`        | submit review              |
-| GET    | `/sessions/{sessionId}/pr`                    | PR summary for session     |
-| POST   | `/sessions/{sessionId}/pr/claim`              | claim PR for session       |
-| POST   | `/prs/{id}/merge`                             | merge PR                   |
-| POST   | `/prs/{id}/resolve-comments`                  | resolve PR comments        |
+| Method | Path                                    | Purpose                |
+| ------ | --------------------------------------- | ---------------------- |
+| GET    | `/sessions/{sessionId}/reviews`         | list reviews           |
+| POST   | `/sessions/{sessionId}/reviews/trigger` | trigger Maestro review |
+| POST   | `/sessions/{sessionId}/reviews/submit`  | submit review          |
+| GET    | `/sessions/{sessionId}/pr`              | PR summary for session |
+| POST   | `/sessions/{sessionId}/pr/claim`        | claim PR for session   |
+| POST   | `/prs/{id}/merge`                       | merge PR               |
+| POST   | `/prs/{id}/resolve-comments`            | resolve PR comments    |
 
 ## Orchestrators
 
-| Method | Path                       | Purpose                      |
-| ------ | -------------------------- | ---------------------------- |
-| GET    | `/orchestrators`           | list orchestrator sessions   |
-| POST   | `/orchestrators`           | spawn orchestrator           |
-| GET    | `/orchestrators/{id}`      | orchestrator detail          |
+| Method | Path                  | Purpose                    |
+| ------ | --------------------- | -------------------------- |
+| GET    | `/orchestrators`      | list orchestrator sessions |
+| POST   | `/orchestrators`      | spawn orchestrator         |
+| GET    | `/orchestrators/{id}` | orchestrator detail        |
 
 ## Agents (catalog / readiness)
 
-| Method | Path                        | Purpose                      |
-| ------ | --------------------------- | ---------------------------- |
-| GET    | `/agents`                   | agent catalog + readiness    |
-| POST   | `/agents/refresh`           | refresh catalog              |
-| POST   | `/agents/{agent}/probe`     | probe a specific agent       |
+| Method | Path                    | Purpose                   |
+| ------ | ----------------------- | ------------------------- |
+| GET    | `/agents`               | agent catalog + readiness |
+| POST   | `/agents/refresh`       | refresh catalog           |
+| POST   | `/agents/{agent}/probe` | probe a specific agent    |
 
 ## Notifications
 
-| Method | Path                          | Purpose                    |
-| ------ | ----------------------------- | -------------------------- |
-| GET    | `/notifications`              | list                       |
-| GET    | `/notifications/stream`       | SSE stream                 |
-| PATCH  | `/notifications/{id}`         | mark one read              |
-| POST   | `/notifications/read-all`     | mark all read              |
+| Method | Path                      | Purpose       |
+| ------ | ------------------------- | ------------- |
+| GET    | `/notifications`          | list          |
+| GET    | `/notifications/stream`   | SSE stream    |
+| PATCH  | `/notifications/{id}`     | mark one read |
+| POST   | `/notifications/read-all` | mark all read |
 
 ## Legacy import
 
-| Method | Path          | Purpose                            |
-| ------ | ------------- | ---------------------------------- |
-| GET    | `/import`     | discover legacy Thanos install to import |
-| POST   | `/import`     | run import                         |
+| Method | Path      | Purpose                                   |
+| ------ | --------- | ----------------------------------------- |
+| GET    | `/import` | discover legacy Maestro install to import |
+| POST   | `/import` | run import                                |
 
 ## Streaming & telemetry internals
 

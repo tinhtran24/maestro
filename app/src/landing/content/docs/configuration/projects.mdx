@@ -1,13 +1,13 @@
 ---
 title: Projects
-description: "Configure one Thanos project: agent, runtime, workspace, setup commands, rules, tracker, SCM, and per-role overrides."
+description: "Configure one Maestro project: agent, runtime, workspace, setup commands, rules, tracker, SCM, and per-role overrides."
 ---
 
-A project is one repository that Thanos can run agents against. The global registry remembers the project identity; the local `thanos.yaml` controls how sessions behave inside that repo.
+A project is one repository that Maestro can run agents against. The global registry remembers the project identity; the local `maestro.yaml` controls how sessions behave inside that repo.
 
 Most teams only need these fields:
 
-```yaml title="thanos.yaml"
+```yaml title="maestro.yaml"
 agent: claude-code
 runtime: tmux
 workspace: worktree
@@ -26,7 +26,7 @@ agentRules: |
 
 ## Choose The Agent
 
-`agent` selects the coding agent Thanos launches for worker sessions.
+`agent` selects the coding agent Maestro launches for worker sessions.
 
 ```yaml
 agent: claude-code
@@ -77,7 +77,7 @@ Most users should keep `tmux`.
 
 ## Choose The Workspace
 
-`workspace` controls how Thanos isolates each session's code.
+`workspace` controls how Maestro isolates each session's code.
 
 ```yaml
 workspace: worktree
@@ -110,7 +110,7 @@ postCreate:
   - cp .env.example .env
 ```
 
-If a `postCreate` command fails, Thanos does not start the agent for that session. Keep these commands deterministic.
+If a `postCreate` command fails, Maestro does not start the agent for that session. Keep these commands deterministic.
 
 ## Give Agents Project Rules
 
@@ -129,7 +129,7 @@ Use `agentRulesFile` when the rules are long or already versioned:
 agentRulesFile: AGENTS.md
 ```
 
-If both are set, Thanos includes both.
+If both are set, Maestro includes both.
 
 Use `orchestratorRules` for instructions that only apply to the orchestrator session:
 
@@ -160,7 +160,7 @@ Use this when planning/review needs a stronger model but routine implementation 
 
 ## Tracker And SCM
 
-Thanos usually infers tracker and SCM from the registered repository. Override them only when needed.
+Maestro usually infers tracker and SCM from the registered repository. Override them only when needed.
 
 ```yaml
 tracker:
@@ -275,10 +275,10 @@ Identity fields such as `projectId`, `path`, `storageKey`, `originUrl`, and `ses
 ## Common Problems
 
 **The project does not appear in the dashboard**  
-Run `to start` from the repository root so Thanos can register the project. If the repo moved, remove and re-add or relink the project instead of editing `storageKey` manually.
+Run `maestro start` from the repository root so Maestro can register the project. If the repo moved, remove and re-add or relink the project instead of editing `storageKey` manually.
 
 **The agent starts without environment variables**  
-Add `.env` or the relevant tool config directory to `symlinks`. Thanos does not copy secrets into worktrees by default.
+Add `.env` or the relevant tool config directory to `symlinks`. Maestro does not copy secrets into worktrees by default.
 
 **Setup fails before the agent starts**  
 Check `postCreate`. A failing command stops the session before the agent launches.
@@ -287,7 +287,7 @@ Check `postCreate`. A failing command stops the session before the agent launche
 Set `sessionPrefix` in the global project registry or through project registration/settings. Session prefixes must use letters, numbers, underscores, or hyphens.
 
 **GitHub or GitLab calls fail**  
-Make sure the corresponding CLI or token is authenticated for the plugin you use. Thanos does not store provider tokens in project config.
+Make sure the corresponding CLI or token is authenticated for the plugin you use. Maestro does not store provider tokens in project config.
 
 ## Next Steps
 
@@ -295,7 +295,7 @@ Make sure the corresponding CLI or token is authenticated for the plugin you use
 	<Card
 		title="Reactions"
 		href="/docs/configuration/reactions"
-		description="Configure what Thanos does when CI, reviews, or agent state changes need attention."
+		description="Configure what Maestro does when CI, reviews, or agent state changes need attention."
 	/>
 	<Card
 		title="Remote access"

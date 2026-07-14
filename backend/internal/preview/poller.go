@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/tinhtran/thanos/backend/internal/domain"
+	"github.com/tinhtran24/maestro/backend/internal/domain"
 )
 
 // DefaultPollInterval is the preview poller's scan interval when none is configured.

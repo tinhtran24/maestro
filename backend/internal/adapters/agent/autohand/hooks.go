@@ -9,30 +9,30 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/tinhtran/thanos/backend/internal/adapters/agent/hookutil"
-	"github.com/tinhtran/thanos/backend/internal/ports"
+	"github.com/tinhtran24/maestro/backend/internal/adapters/agent/hookutil"
+	"github.com/tinhtran24/maestro/backend/internal/ports"
 )
 
 const (
 	autohandConfigDirName  = ".autohand"
 	autohandConfigFileName = "config.json"
 
-	// autohandHookCommandPrefix identifies the hook commands Thanos owns, so
-	// install skips duplicates and uninstall recognizes Thanos entries by prefix
+	// autohandHookCommandPrefix identifies the hook commands Maestro owns, so
+	// install skips duplicates and uninstall recognizes Maestro entries by prefix
 	// without an embedded template to diff against.
-	autohandHookCommandPrefix = "to hooks autohand "
+	autohandHookCommandPrefix = "maestro hooks autohand "
 	autohandHookTimeout       = 30
 )
 
-// autohandManagedHookKeys are the entry keys Thanos owns. On marshal they are
+// autohandManagedHookKeys are the entry keys Maestro owns. On marshal they are
 // written from the typed fields below; any other key the user set is preserved
 // from Extra. Keep in sync with the json tags on autohandHookEntry.
 var autohandManagedHookKeys = []string{"event", "command", "description", "enabled", "timeout"}
 
 // autohandHookEntry is the on-disk shape of one entry in the config's
-// hooks.hooks array. Thanos owns the five typed fields; any other key the user set
+// hooks.hooks array. Maestro owns the five typed fields; any other key the user set
 // on an entry (matcher, filter, async, ...) is captured in Extra so a rewrite
-// preserves fields Thanos does not own instead of silently dropping them.
+// preserves fields Maestro does not own instead of silently dropping them.
 type autohandHookEntry struct {
 	Event       string `json:"event"`
 	Command     string `json:"command"`
@@ -40,14 +40,14 @@ type autohandHookEntry struct {
 	Enabled     bool   `json:"enabled"`
 	Timeout     int    `json:"timeout,omitempty"`
 
-	// Extra holds keys Thanos does not manage, captured on unmarshal and written
+	// Extra holds keys Maestro does not manage, captured on unmarshal and written
 	// back on marshal so they round-trip. encoding/json does not support
 	// `json:",inline"`, so the round-trip is implemented via the custom
 	// UnmarshalJSON/MarshalJSON below.
 	Extra map[string]json.RawMessage `json:"-"`
 }
 
-// UnmarshalJSON decodes the entry's typed fields and captures every key Thanos does
+// UnmarshalJSON decodes the entry's typed fields and captures every key Maestro does
 // not manage into Extra, so a later MarshalJSON can write them back verbatim.
 func (e *autohandHookEntry) UnmarshalJSON(data []byte) error {
 	raw := map[string]json.RawMessage{}
@@ -75,8 +75,8 @@ func (e *autohandHookEntry) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-// MarshalJSON writes Thanos's managed fields merged with any preserved unknown keys
-// from Extra. Managed fields win on key collision so Thanos's values stay
+// MarshalJSON writes Maestro's managed fields merged with any preserved unknown keys
+// from Extra. Managed fields win on key collision so Maestro's values stay
 // authoritative.
 func (e autohandHookEntry) MarshalJSON() ([]byte, error) {
 	out := make(map[string]json.RawMessage, len(e.Extra)+len(autohandManagedHookKeys))
@@ -99,16 +99,16 @@ func (e autohandHookEntry) MarshalJSON() ([]byte, error) {
 	return json.Marshal(out)
 }
 
-// autohandHookSpec describes one hook Thanos installs. Event is Autohand's native
-// lifecycle event name; Subcommand is the Thanos hook sub-command appended after the
+// autohandHookSpec describes one hook Maestro installs. Event is Autohand's native
+// lifecycle event name; Subcommand is the Maestro hook sub-command appended after the
 // command prefix (and the value DeriveActivityState switches on).
 type autohandHookSpec struct {
 	Event      string
 	Subcommand string
 }
 
-// autohandManagedHooks is the source of truth for the hooks Thanos installs. Each
-// native Autohand event is routed to the Thanos sub-command DeriveActivityState
+// autohandManagedHooks is the source of truth for the hooks Maestro installs. Each
+// native Autohand event is routed to the Maestro sub-command DeriveActivityState
 // understands. Autohand's pre-prompt event is the user-prompt-submit signal.
 var autohandManagedHooks = []autohandHookSpec{
 	{Event: "session-start", Subcommand: "session-start"},
@@ -117,15 +117,15 @@ var autohandManagedHooks = []autohandHookSpec{
 	{Event: "stop", Subcommand: "stop"},
 }
 
-// GetAgentHooks installs Thanos's Autohand hooks into the Autohand config's
-// hooks.hooks array. Existing user hooks are preserved and duplicate Thanos commands
+// GetAgentHooks installs Maestro's Autohand hooks into the Autohand config's
+// hooks.hooks array. Existing user hooks are preserved and duplicate Maestro commands
 // are not appended. The rest of the config (auth, provider, ...) is preserved
 // byte-for-byte because only the hooks section is decoded and rewritten.
 //
 // Autohand loads hooks from a single config file (default ~/.autohand/config.json,
 // overridable via AUTOHAND_CONFIG); it does not merge a workspace-local file at
-// runtime, so Thanos installs into that config rather than a per-workspace file. The
-// AUTOHAND_CONFIG env var, when set, takes precedence so Thanos and the agent agree
+// runtime, so Maestro installs into that config rather than a per-workspace file. The
+// AUTOHAND_CONFIG env var, when set, takes precedence so Maestro and the agent agree
 // on the target.
 func (p *Plugin) GetAgentHooks(ctx context.Context, cfg ports.WorkspaceHookConfig) error {
 	if err := ctx.Err(); err != nil {
@@ -146,7 +146,7 @@ func (p *Plugin) GetAgentHooks(ctx context.Context, cfg ports.WorkspaceHookConfi
 		entries = append(entries, autohandHookEntry{
 			Event:       spec.Event,
 			Command:     command,
-			Description: "Thanos activity hook",
+			Description: "Maestro activity hook",
 			Enabled:     true,
 			Timeout:     autohandHookTimeout,
 		})
@@ -161,10 +161,10 @@ func (p *Plugin) GetAgentHooks(ctx context.Context, cfg ports.WorkspaceHookConfi
 	return nil
 }
 
-// UninstallHooks removes Thanos's Autohand hooks from the config's hooks.hooks
+// UninstallHooks removes Maestro's Autohand hooks from the config's hooks.hooks
 // array, leaving user-defined hooks and the rest of the config untouched. A
 // missing file is a no-op. The hooks.enabled flag is left in place because it
-// enables every Autohand hook, not just Thanos's.
+// enables every Autohand hook, not just Maestro's.
 func (p *Plugin) UninstallHooks(ctx context.Context, _ string) error {
 	if err := ctx.Err(); err != nil {
 		return err
@@ -192,7 +192,7 @@ func (p *Plugin) UninstallHooks(ctx context.Context, _ string) error {
 	return nil
 }
 
-// AreHooksInstalled reports whether any Thanos Autohand hook is present in the
+// AreHooksInstalled reports whether any Maestro Autohand hook is present in the
 // config. A missing file means none are installed.
 func (p *Plugin) AreHooksInstalled(ctx context.Context, _ string) (bool, error) {
 	if err := ctx.Err(); err != nil {
@@ -230,7 +230,7 @@ func autohandConfigPath() string {
 }
 
 // readAutohandHooks loads the config into a top-level raw map, the decoded
-// "hooks" section (preserving keys Thanos doesn't manage such as "enabled"), and the
+// "hooks" section (preserving keys Maestro doesn't manage such as "enabled"), and the
 // decoded hooks array. A missing or empty file yields empty maps and a nil
 // slice.
 func readAutohandHooks(configPath string) (topLevel, hooksSection map[string]json.RawMessage, entries []autohandHookEntry, err error) {
