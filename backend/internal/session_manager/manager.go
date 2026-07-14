@@ -77,6 +77,14 @@ type runtimeController interface {
 	IsAlive(ctx context.Context, handle ports.RuntimeHandle) (bool, error)
 }
 
+// MemoryRecorder captures project-memory for a session that has just been
+// terminated. It is best-effort by contract: RecordCompletion returns nothing,
+// so a capture failure can never fail or delay a lifecycle transition.
+// Implementations log their own failures. A nil recorder disables capture.
+type MemoryRecorder interface {
+	RecordCompletion(ctx context.Context, rec domain.SessionRecord)
+}
+
 // Store is the persistence surface needed by the internal session Manager.
 type Store interface {
 	// GetProject loads a project row so spawn can resolve its per-project agent
@@ -129,6 +137,9 @@ type Manager struct {
 	// workspace hook commands resolve back to this daemon. Tests inject a stub.
 	executable func() (string, error)
 	logger     *slog.Logger
+	// memory captures completion memory after a session is terminated. Optional;
+	// nil disables capture. Best-effort by contract (see MemoryRecorder).
+	memory MemoryRecorder
 }
 
 // Deps are the collaborators a Session Manager needs; New wires them together.
@@ -154,6 +165,9 @@ type Deps struct {
 	// Logger receives spawn-time diagnostics (e.g. when the session PATH
 	// cannot be pinned to the daemon binary). Nil defaults to slog.Default().
 	Logger *slog.Logger
+	// Memory captures completion memory when a session terminates. Optional; nil
+	// disables project-memory capture.
+	Memory MemoryRecorder
 }
 
 // New builds a Session Manager from its dependencies, defaulting the clock to
@@ -171,6 +185,7 @@ func New(d Deps) *Manager {
 		lookPath:   d.LookPath,
 		executable: d.Executable,
 		logger:     d.Logger,
+		memory:     d.Memory,
 	}
 	if m.clock == nil {
 		// UTC so spawn-stamped CreatedAt/UpdatedAt match every other session
@@ -597,6 +612,13 @@ func (m *Manager) Kill(ctx context.Context, id domain.SessionID) (bool, error) {
 	}
 	if err := m.lcm.MarkTerminated(ctx, id); err != nil {
 		return false, fmt.Errorf("kill %s: %w", id, err)
+	}
+	// Capture completion memory after the session is durably terminated. This is
+	// best-effort and must never affect the kill result: the branch ref still
+	// exists in the primary repo, so the recorder can diff it even though the
+	// worktree was removed above.
+	if m.memory != nil {
+		m.memory.RecordCompletion(ctx, rec)
 	}
 	return freed, nil
 }
