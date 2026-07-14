@@ -6,7 +6,7 @@ import (
 
 	yaml "gopkg.in/yaml.v3"
 
-	"github.com/tinhtran/thanos/backend/internal/domain"
+	"github.com/tinhtran24/maestro/backend/internal/domain"
 )
 
 // nonNilNode returns a non-nil *yaml.Node for struct fields that are captured

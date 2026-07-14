@@ -12,28 +12,28 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/tinhtran/thanos/backend/internal/config"
+	"github.com/tinhtran24/maestro/backend/internal/config"
 )
 
-// releaseRepo is the GitHub "owner/repo" that `to start` fetches the desktop app
+// releaseRepo is the GitHub "owner/repo" that `maestro start` fetches the desktop app
 // from. It defaults to the production target and is overridable at build time so
 // a test binary fetches from the fork without a source edit:
 //
-//	go build -ldflags "-X github.com/tinhtran/thanos/backend/internal/cli.releaseRepo=harshitsinghbhandari/thanos" ./cmd/to
+//	go build -ldflags "-X github.com/tinhtran24/maestro/backend/internal/cli.releaseRepo=harshitsinghbhandari/maestro" ./cmd/maestro
 //
 // Mirrors how version.go's Version var is stamped by release tooling.
-var releaseRepo = "AgentWrapper/thanos"
+var releaseRepo = "AgentWrapper/maestro"
 
 // appBundleName is the macOS bundle directory name produced by electron-forge
 // (spaced, per frontend/forge.config.ts).
-const appBundleName = "Thanos.app"
+const appBundleName = "Maestro.app"
 
-// appStateFileName is the marker the desktop app writes under ~/.thanos on every
-// launch (spec §5). `to start` is a read-only consumer of it.
+// appStateFileName is the marker the desktop app writes under ~/.maestro on every
+// launch (spec §5). `maestro start` is a read-only consumer of it.
 const appStateFileName = "app-state.json"
 
-// appState mirrors the app-written ~/.thanos/app-state.json marker (spec §5). Only
-// the desktop app writes it; `to start` reads it as a fast-path hint and never
+// appState mirrors the app-written ~/.maestro/app-state.json marker (spec §5). Only
+// the desktop app writes it; `maestro start` reads it as a fast-path hint and never
 // trusts appPath without stat-ing it (invariant 2).
 type appState struct {
 	SchemaVersion    int    `json:"schemaVersion"`
@@ -48,7 +48,7 @@ type startOptions struct {
 	json bool
 }
 
-// startResult is the JSON shape emitted with --json: what `to start` resolved,
+// startResult is the JSON shape emitted with --json: what `maestro start` resolved,
 // whether it fetched, whether it opened, and the resulting bundle path.
 type startResult struct {
 	Resolved bool   `json:"resolved"`
@@ -61,9 +61,9 @@ func newStartCommand(ctx *commandContext) *cobra.Command {
 	opts := startOptions{}
 	cmd := &cobra.Command{
 		Use:   "start",
-		Short: "Fetch (if needed) and open the Thanos desktop app",
-		Long: "Fetch (if needed) and open the Thanos desktop app.\n\n" +
-			"The desktop app now owns the daemon, state, and updates. `to start` no\n" +
+		Short: "Fetch (if needed) and open the Maestro desktop app",
+		Long: "Fetch (if needed) and open the Maestro desktop app.\n\n" +
+			"The desktop app now owns the daemon, state, and updates. `maestro start` no\n" +
 			"longer runs a daemon: it resolves the installed app (or downloads the\n" +
 			"latest release), opens it, and exits.",
 		Args: noArgs,
@@ -133,7 +133,7 @@ func (c *commandContext) resolveApp() string {
 // tests can point the scan at a temp bundle instead of real system paths.
 var appScanLocations = knownAppLocations
 
-// markerAppPath reads ~/.thanos/app-state.json and returns its recorded appPath, or
+// markerAppPath reads ~/.maestro/app-state.json and returns its recorded appPath, or
 // "" if the marker is missing/unreadable. It does not stat the path; callers do.
 func (c *commandContext) markerAppPath() string {
 	dir, err := aoStateDir()
@@ -151,14 +151,14 @@ func (c *commandContext) markerAppPath() string {
 	return st.AppPath
 }
 
-// aoStateDir resolves the canonical ~/.thanos home, honoring THANOS_DATA_DIR exactly as
-// the daemon's config does (the marker lives beside running.json under ~/.thanos).
+// aoStateDir resolves the canonical ~/.maestro home, honoring MAESTRO_DATA_DIR exactly as
+// the daemon's config does (the marker lives beside running.json under ~/.maestro).
 func aoStateDir() (string, error) {
 	cfg, err := config.Load()
 	if err != nil {
 		return "", err
 	}
-	// running.json lives directly under ~/.thanos; the marker sits beside it.
+	// running.json lives directly under ~/.maestro; the marker sits beside it.
 	return filepath.Dir(cfg.RunFilePath), nil
 }
 
@@ -180,13 +180,13 @@ func knownAppLocations() []string {
 		}
 		// Per-machine fallback (if a user chose an all-users install).
 		if pf := os.Getenv("ProgramFiles"); pf != "" {
-			paths = append(paths, filepath.Join(pf, "Thanos", "thanos.exe"))
+			paths = append(paths, filepath.Join(pf, "Maestro", "maestro.exe"))
 		}
 		return paths
 	case "linux":
 		paths := []string{linuxAppImagePath()}
 		if home, err := os.UserHomeDir(); err == nil {
-			paths = append(paths, filepath.Join(home, "Applications", "thanos.AppImage"))
+			paths = append(paths, filepath.Join(home, "Applications", "maestro.AppImage"))
 		}
 		return paths
 	default:
@@ -197,10 +197,10 @@ func knownAppLocations() []string {
 // windowsInstalledExe is the default per-user electron-builder NSIS install
 // target for the app exe under %LOCALAPPDATA%.
 func windowsInstalledExe(localAppData string) string {
-	return filepath.Join(localAppData, "Programs", "Thanos", "thanos.exe")
+	return filepath.Join(localAppData, "Programs", "Maestro", "maestro.exe")
 }
 
-// linuxAppImagePath is the stable location `to start` downloads the AppImage to
+// linuxAppImagePath is the stable location `maestro start` downloads the AppImage to
 // and scans for. Keeping it out of the cleared staging dir lets re-runs resolve
 // the existing download instead of re-fetching (spec §6.2/§6.3).
 func linuxAppImagePath() string {
@@ -208,9 +208,9 @@ func linuxAppImagePath() string {
 	if err != nil {
 		// Fall back to a bare filename so a misconfigured state dir surfaces as a
 		// clear "not found" rather than a panic; fetch will re-error on download.
-		return "thanos.AppImage"
+		return "maestro.AppImage"
 	}
-	return filepath.Join(dir, "thanos.AppImage")
+	return filepath.Join(dir, "maestro.AppImage")
 }
 
 // isUsableBundle reports whether p stats as a usable app bundle. On macOS a
@@ -249,7 +249,7 @@ func (c *commandContext) fetchApp(ctx context.Context, w io.Writer) (string, err
 }
 
 // fetchAppDarwin downloads the latest macOS release zip and unpacks it into a
-// staging dir under ~/.thanos/staging, returning the .app bundle path (spec §6.3).
+// staging dir under ~/.maestro/staging, returning the .app bundle path (spec §6.3).
 func (c *commandContext) fetchAppDarwin(ctx context.Context, w io.Writer) (string, error) {
 	asset, err := assetName()
 	if err != nil {
@@ -277,7 +277,7 @@ func (c *commandContext) fetchAppDarwin(ctx context.Context, w io.Writer) (strin
 	}
 
 	// The unpack step is silent and can take seconds on a large bundle; announce
-	// it so a quiet `to start` doesn't look hung after the download finishes.
+	// it so a quiet `maestro start` doesn't look hung after the download finishes.
 	_, _ = fmt.Fprintln(w, "Unpacking...")
 	// ditto preserves the .app code signature; plain unzip corrupts it (spec §6.3).
 	if out, err := c.deps.CommandOutput(ctx, "ditto", "-x", "-k", zipPath, staging); err != nil {
@@ -344,7 +344,7 @@ func (c *commandContext) fetchAppWindows(ctx context.Context, w io.Writer) (stri
 }
 
 // fetchAppLinux downloads the self-contained AppImage to a stable path under
-// ~/.thanos, makes it executable, and returns it. There is no install step (spec
+// ~/.maestro, makes it executable, and returns it. There is no install step (spec
 // §6.3). Re-runs resolve the existing file via knownAppLocations and skip fetch.
 func (c *commandContext) fetchAppLinux(ctx context.Context, w io.Writer) (string, error) {
 	asset, err := assetName()
@@ -409,9 +409,9 @@ func (c *commandContext) download(ctx context.Context, w io.Writer, url, asset, 
 	// percentage is unknown and we report transferred bytes instead.
 	total := resp.ContentLength
 	if total > 0 {
-		_, _ = fmt.Fprintf(w, "Downloading Thanos (%s, ~%s) from %s...\n", asset, humanBytes(total), releaseRepo)
+		_, _ = fmt.Fprintf(w, "Downloading Maestro (%s, ~%s) from %s...\n", asset, humanBytes(total), releaseRepo)
 	} else {
-		_, _ = fmt.Fprintf(w, "Downloading Thanos (%s) from %s...\n", asset, releaseRepo)
+		_, _ = fmt.Fprintf(w, "Downloading Maestro (%s) from %s...\n", asset, releaseRepo)
 	}
 
 	f, err := os.OpenFile(dst, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0o600)
@@ -496,9 +496,9 @@ func humanBytes(n int64) string {
 
 // assetName maps the current GOOS/GOARCH to the stable release asset name the
 // release pipeline publishes (spec §6.3, §8). The pipeline uses "x64" for amd64.
-//   - darwin: thanos-darwin-{arm64,x64}.zip (signed bundle zip)
-//   - windows: thanos-win32-x64.exe (NSIS installer, amd64 only)
-//   - linux: thanos-linux-x64.AppImage (self-contained, amd64 only)
+//   - darwin: maestro-darwin-{arm64,x64}.zip (signed bundle zip)
+//   - windows: maestro-win32-x64.exe (NSIS installer, amd64 only)
+//   - linux: maestro-linux-x64.AppImage (self-contained, amd64 only)
 func assetName() (string, error) {
 	switch runtime.GOOS {
 	case "darwin":
@@ -506,17 +506,17 @@ func assetName() (string, error) {
 		if err != nil {
 			return "", err
 		}
-		return fmt.Sprintf("thanos-darwin-%s.zip", arch), nil
+		return fmt.Sprintf("maestro-darwin-%s.zip", arch), nil
 	case "windows":
 		if _, err := requireAMD64(); err != nil {
 			return "", err
 		}
-		return "thanos-win32-x64.exe", nil
+		return "maestro-win32-x64.exe", nil
 	case "linux":
 		if _, err := requireAMD64(); err != nil {
 			return "", err
 		}
-		return "thanos-linux-x64.AppImage", nil
+		return "maestro-linux-x64.AppImage", nil
 	default:
 		return "", fmt.Errorf("to start: no release asset for %s", runtime.GOOS)
 	}
@@ -563,7 +563,7 @@ func (c *commandContext) openApp(ctx context.Context, appPath string) (bool, err
 		return true, nil
 	case "windows", "linux":
 		// No `open`-style launcher on these platforms; exec the bundle directly,
-		// detached, so `to start` does not block on the app. StartProcess uses
+		// detached, so `maestro start` does not block on the app. StartProcess uses
 		// cmd.Start() + a detached SysProcAttr (see process.go).
 		//
 		// ponytail: on some Linux hosts the AppImage may need --no-sandbox; not
@@ -584,15 +584,15 @@ func (c *commandContext) openApp(ctx context.Context, appPath string) (bool, err
 	}
 }
 
-// printDeprecationNotice explains the new role of the npm `to` binary. Keep it
+// printDeprecationNotice explains the new role of the npm `maestro` binary. Keep it
 // honest: Track B (live auto-update) is not done, so it does not promise it.
 func (c *commandContext) printDeprecationNotice(w io.Writer) {
-	_, _ = fmt.Fprint(w, "Thanos is now a desktop app, and the npm `to` is just its launcher.\n"+
+	_, _ = fmt.Fprint(w, "Maestro is now a desktop app, and the npm `maestro` is just its launcher.\n"+
 		"The app is distributed from the website and GitHub Releases; it owns the daemon and updates itself.\n"+
-		"You can keep running `to start` to fetch (if needed) and open it.\n")
+		"You can keep running `maestro start` to fetch (if needed) and open it.\n")
 }
 
-// printManualOpen tells the user how to open the bundle when `to start` could
+// printManualOpen tells the user how to open the bundle when `maestro start` could
 // not launch it for them (non-darwin, or a failed launch handled upstream).
 func (c *commandContext) printManualOpen(w io.Writer, appPath string) {
 	_, _ = fmt.Fprintf(w, "Could not open the app automatically. Open it manually: %s\n", appPath)

@@ -42,7 +42,7 @@ func (c *commandContext) sendMessage(ctx context.Context, opts sendOptions) erro
 		return usageError{errors.New("usage: --message is required")}
 	}
 	message := opts.message
-	if sender := strings.TrimSpace(os.Getenv("THANOS_SESSION_ID")); sender != "" {
+	if sender := strings.TrimSpace(os.Getenv("MAESTRO_SESSION_ID")); sender != "" {
 		message = "[from " + sender + "] " + message
 	}
 	session := strings.TrimSpace(opts.session)

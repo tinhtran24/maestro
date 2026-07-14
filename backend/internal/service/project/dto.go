@@ -1,6 +1,6 @@
 package project
 
-import "github.com/tinhtran/thanos/backend/internal/domain"
+import "github.com/tinhtran24/maestro/backend/internal/domain"
 
 // GetResult is the discriminated result returned by Service.Get.
 type GetResult struct {

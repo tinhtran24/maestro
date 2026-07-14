@@ -1,21 +1,21 @@
 ---
 title: Multi-project
-description: Run Thanos against several repos from one dashboard, with per-project plugins and configs.
+description: Run Maestro against several repos from one dashboard, with per-project plugins and configs.
 ---
 
 import { Callout } from "fumadocs-ui/components/callout";
 
-One `thanos.yaml` can drive many projects. Each project gets its own repo, tracker, plugin overrides, and — most importantly — its own dashboard lane.
+One `maestro.yaml` can drive many projects. Each project gets its own repo, tracker, plugin overrides, and — most importantly — its own dashboard lane.
 
 ## Config shape
 
-```yaml title="thanos.yaml"
+```yaml title="maestro.yaml"
 runtime: tmux # global default
 agent: claude-code
 
 projects:
   web:
-    repo: ComposioHQ/thanos
+    repo: ComposioHQ/maestro
     agent: claude-code
 
   api:
@@ -37,21 +37,21 @@ Project IDs (`web`, `api`, `marketing`) are what you pass to `--project` / `-p`.
 
 Two ways:
 
-- **By path**: `to start ~/code/new-repo` — Thanos infers a project ID from the directory name and appends it.
-- **By URL**: `to start https://github.com/owner/repo` — Thanos clones it under `~/.thanos/` and registers it.
+- **By path**: `maestro start ~/code/new-repo` — Maestro infers a project ID from the directory name and appends it.
+- **By URL**: `maestro start https://github.com/owner/repo` — Maestro clones it under `~/.maestro/` and registers it.
 
-Both update `thanos.yaml` in place. Diff it if you're curious.
+Both update `maestro.yaml` in place. Diff it if you're curious.
 
 ## Spawning in the right project
 
-`to spawn` auto-detects the project when you're in a worktree belonging to it. Otherwise name it:
+`maestro spawn` auto-detects the project when you're in a worktree belonging to it. Otherwise name it:
 
 ```bash
-to spawn 42 -p api
+maestro spawn 42 -p api
 to batch-spawn 10 11 12 -p web
 ```
 
-Or pass no project and Thanos will prompt.
+Or pass no project and Maestro will prompt.
 
 ## Per-project plugin overrides
 
@@ -77,10 +77,10 @@ The `internal` project uses Linear + Discord. Every other project uses GitHub + 
 ## Status across projects
 
 ```bash
-to status                   # all projects
-to status -p api            # one project
-to status --json | jq       # scripted
-to status --watch           # live-updating table
+maestro status                   # all projects
+maestro status -p api            # one project
+maestro status --json | jq       # scripted
+maestro status --watch           # live-updating table
 ```
 
 The dashboard shows all projects as swim lanes.
@@ -88,8 +88,8 @@ The dashboard shows all projects as swim lanes.
 ## Stopping selectively
 
 ```bash
-to stop api          # stop one project's orchestrator + dashboard
-to stop --all        # stop everything
+maestro stop api          # stop one project's orchestrator + dashboard
+maestro stop --all        # stop everything
 ```
 
 <Callout type="info">

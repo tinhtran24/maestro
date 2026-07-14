@@ -7,7 +7,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/tinhtran/thanos/backend/internal/ports"
+	"github.com/tinhtran24/maestro/backend/internal/ports"
 )
 
 // Source is what the terminal needs from the runtime: open an attach Stream and

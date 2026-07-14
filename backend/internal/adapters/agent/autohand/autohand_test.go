@@ -8,9 +8,9 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/tinhtran/thanos/backend/internal/adapters/agent/activitystate"
-	"github.com/tinhtran/thanos/backend/internal/domain"
-	"github.com/tinhtran/thanos/backend/internal/ports"
+	"github.com/tinhtran24/maestro/backend/internal/adapters/agent/activitystate"
+	"github.com/tinhtran24/maestro/backend/internal/domain"
+	"github.com/tinhtran24/maestro/backend/internal/ports"
 )
 
 func TestManifestIDMatchesHarness(t *testing.T) {
@@ -280,7 +280,7 @@ func TestContextCancellationIsRespected(t *testing.T) {
 }
 
 // TestGetAgentHooksPreservesUnknownEntryFields locks the round-trip behavior:
-// keys Thanos does not model on a user hook entry (here "async") must survive a
+// keys Maestro does not model on a user hook entry (here "async") must survive a
 // GetAgentHooks rewrite instead of being silently dropped.
 func TestGetAgentHooksPreservesUnknownEntryFields(t *testing.T) {
 	plugin := &Plugin{resolvedBinary: "autohand"}
@@ -394,7 +394,7 @@ func TestGetAgentHooksInstallsAndPreservesConfig(t *testing.T) {
 	if err := plugin.GetAgentHooks(context.Background(), cfg); err != nil {
 		t.Fatal(err)
 	}
-	// A second install must not duplicate Thanos hook commands.
+	// A second install must not duplicate Maestro hook commands.
 	if err := plugin.GetAgentHooks(context.Background(), cfg); err != nil {
 		t.Fatal(err)
 	}

@@ -12,13 +12,13 @@ description: Open attached tabs in iTerm2 via AppleScript. macOS only.
 
 <PlatformSupport macos="full" linux="none" windows="none" />
 
-The macOS attach experience. When you run `to open`, it opens each session in a new iTerm2 tab (or window, with `--new-window`).
+The macOS attach experience. When you run `maestro open`, it opens each session in a new iTerm2 tab (or window, with `--new-window`).
 
 ## Setup
 
 Install [iTerm2](https://iterm2.com), then:
 
-```yaml title="thanos.yaml"
+```yaml title="maestro.yaml"
 terminal: iterm2
 ```
 
@@ -31,7 +31,7 @@ Uses `osascript` + AppleScript under the hood. Requires `runtime: tmux` — an i
 ## Troubleshooting
 
 - **iTerm2 won't take focus.** macOS Accessibility permission needed. System Settings → Privacy & Security → Accessibility → iTerm.
-- **"open-iterm-tab: command not found".** Reinstall Thanos (`npm install -g @tinhtran/to`) — the helper binary lives in the to package.
+- **"open-iterm-tab: command not found".** Reinstall Maestro (`npm install -g @tinhtran/to`) — the helper binary lives in the to package.
 
 ## Alternatives
 

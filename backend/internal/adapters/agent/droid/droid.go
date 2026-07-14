@@ -3,7 +3,7 @@
 // workspace-local hooks, and reading hook-derived session info.
 //
 // Droid is Factory's terminal coding agent (binary "droid"). Unlike Grok it has
-// no Claude Code compatibility layer, so Thanos installs its own hooks into the
+// no Claude Code compatibility layer, so Maestro installs its own hooks into the
 // worktree-local .factory/hooks.json (see hooks.go). The hook JSON structure
 // matches Claude Code's, but Droid's Notification payload omits notification_type
 // and its hooks live under .factory/, so the adapter ships its own activity
@@ -11,7 +11,7 @@
 //
 // Launch uses the interactive `droid [prompt]` command (the prompt is a
 // positional argument). Droid's interactive TUI exposes no per-launch permission
-// flag (--auto / --skip-permissions-unsafe live only on `droid exec`), so Thanos's
+// flag (--auto / --skip-permissions-unsafe live only on `droid exec`), so Maestro's
 // graduated permission modes are delivered by writing a process-scoped runtime
 // settings file (sessionDefaultSettings.autonomyLevel) and passing it via the
 // root `--settings <path>` flag. Restore prefers the hook-captured native
@@ -27,11 +27,11 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/tinhtran/thanos/backend/internal/adapters"
-	"github.com/tinhtran/thanos/backend/internal/adapters/agent/agentbase"
-	"github.com/tinhtran/thanos/backend/internal/adapters/agent/binaryutil"
-	"github.com/tinhtran/thanos/backend/internal/adapters/agent/hookutil"
-	"github.com/tinhtran/thanos/backend/internal/ports"
+	"github.com/tinhtran24/maestro/backend/internal/adapters"
+	"github.com/tinhtran24/maestro/backend/internal/adapters/agent/agentbase"
+	"github.com/tinhtran24/maestro/backend/internal/adapters/agent/binaryutil"
+	"github.com/tinhtran24/maestro/backend/internal/adapters/agent/hookutil"
+	"github.com/tinhtran24/maestro/backend/internal/ports"
 )
 
 // Plugin is the Droid agent adapter. It is safe for concurrent use; the binary
@@ -141,7 +141,7 @@ func (p *Plugin) SessionInfo(ctx context.Context, session ports.SessionRef) (por
 	return info, ok, nil
 }
 
-// droidAutonomyLevel maps an Thanos permission mode onto Droid's
+// droidAutonomyLevel maps an Maestro permission mode onto Droid's
 // sessionDefaultSettings.autonomyLevel (off|low|medium|high). The empty string
 // means "no override" — defer to the user's own Droid settings — so the default
 // mode emits no --settings flag and writes no file.

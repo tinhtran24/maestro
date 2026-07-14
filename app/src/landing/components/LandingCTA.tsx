@@ -19,7 +19,7 @@ export function LandingCTA() {
 						Read Docs
 					</a>
 					<a
-						href="https://github.com/ComposioHQ/thanos"
+						href="https://github.com/ComposioHQ/maestro"
 						target="_blank"
 						rel="noopener noreferrer"
 						className="liquid-glass-solid rounded-lg px-6 py-3 text-[0.9375rem] no-underline transition-transform hover:scale-[1.03]"

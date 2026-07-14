@@ -8,9 +8,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/tinhtran/thanos/backend/internal/domain"
-	"github.com/tinhtran/thanos/backend/internal/ports"
-	"github.com/tinhtran/thanos/backend/internal/storage/sqlite"
+	"github.com/tinhtran24/maestro/backend/internal/domain"
+	"github.com/tinhtran24/maestro/backend/internal/ports"
+	"github.com/tinhtran24/maestro/backend/internal/storage/sqlite"
 )
 
 func newTestStore(t *testing.T) *sqlite.Store {
@@ -692,7 +692,7 @@ func TestSetSessionPreviewURLBumpsRevisionAndFiresCDCOnSameURL(t *testing.T) {
 	}
 
 	// Both sets fire session_updated even though the URL never changed — the
-	// revision bump is what trips the trigger, so a same-URL `to preview` re-run
+	// revision bump is what trips the trigger, so a same-URL `maestro preview` re-run
 	// still reaches the browser panel.
 	evs, err := s.EventsAfter(ctx, base, 100)
 	if err != nil {

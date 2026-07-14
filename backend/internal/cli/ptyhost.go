@@ -5,7 +5,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/tinhtran/thanos/backend/internal/adapters/runtime/conpty"
+	"github.com/tinhtran24/maestro/backend/internal/adapters/runtime/conpty"
 )
 
 // newPtyHostCommand registers the "to pty-host" hidden subcommand that the

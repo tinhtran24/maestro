@@ -1,7 +1,7 @@
 package cli
 
-// dto_drift_e2e_test.go is the DTO-drift guard for the `to spawn` and
-// `to project add` commands. The CLI defines its OWN request structs
+// dto_drift_e2e_test.go is the DTO-drift guard for the `maestro spawn` and
+// `maestro project add` commands. The CLI defines its OWN request structs
 // (spawnRequest in spawn.go, addProjectRequest in project.go) that are separate
 // copies of the daemon's canonical request DTOs (controllers.SpawnSessionRequest
 // and project.AddInput). Nothing else verifies the two sides agree on JSON field
@@ -31,15 +31,15 @@ import (
 	"testing"
 	"time"
 
-	"github.com/tinhtran/thanos/backend/internal/config"
-	"github.com/tinhtran/thanos/backend/internal/domain"
-	"github.com/tinhtran/thanos/backend/internal/httpd"
-	"github.com/tinhtran/thanos/backend/internal/httpd/controllers"
-	"github.com/tinhtran/thanos/backend/internal/ports"
-	"github.com/tinhtran/thanos/backend/internal/runfile"
-	agentsvc "github.com/tinhtran/thanos/backend/internal/service/agent"
-	projectsvc "github.com/tinhtran/thanos/backend/internal/service/project"
-	sessionsvc "github.com/tinhtran/thanos/backend/internal/service/session"
+	"github.com/tinhtran24/maestro/backend/internal/config"
+	"github.com/tinhtran24/maestro/backend/internal/domain"
+	"github.com/tinhtran24/maestro/backend/internal/httpd"
+	"github.com/tinhtran24/maestro/backend/internal/httpd/controllers"
+	"github.com/tinhtran24/maestro/backend/internal/ports"
+	"github.com/tinhtran24/maestro/backend/internal/runfile"
+	agentsvc "github.com/tinhtran24/maestro/backend/internal/service/agent"
+	projectsvc "github.com/tinhtran24/maestro/backend/internal/service/project"
+	sessionsvc "github.com/tinhtran24/maestro/backend/internal/service/session"
 )
 
 // fakeSessionService captures the ports.SpawnConfig the controller decodes from
@@ -171,7 +171,7 @@ func (f *fakeProjectManager) Remove(context.Context, domain.ProjectID) (projects
 
 // startDriftTestDaemon stands up the real router+controllers backed by the
 // supplied fakes and points the CLI's run-file at it. The CLI discovers the
-// server purely via THANOS_RUN_FILE + the run-file port, so this is a genuine
+// server purely via MAESTRO_RUN_FILE + the run-file port, so this is a genuine
 // loopback round trip through postJSON.
 func startDriftTestDaemon(t *testing.T, sessions controllers.SessionService, projects projectsvc.Manager) {
 	t.Helper()
@@ -188,7 +188,7 @@ func startDriftTestDaemon(t *testing.T, sessions controllers.SessionService, pro
 	port := srv.Listener.Addr().(*net.TCPAddr).Port
 
 	rfPath := filepath.Join(t.TempDir(), "running.json")
-	t.Setenv("THANOS_RUN_FILE", rfPath)
+	t.Setenv("MAESTRO_RUN_FILE", rfPath)
 	if err := runfile.Write(rfPath, runfile.Info{PID: os.Getpid(), Port: port, StartedAt: time.Now()}); err != nil {
 		t.Fatalf("write run-file: %v", err)
 	}

@@ -23,8 +23,8 @@ COPY backend ./backend
 # now publishes a linux-x64 AppImage, so an unpinned binary would download it and
 # exit 0, defeating the fresh-install assertion below. See install-check.sh.
 RUN cd backend && CGO_ENABLED=0 go build -trimpath \
-      -ldflags "-X github.com/tinhtran/thanos/backend/internal/cli.releaseRepo=AgentWrapper/thanos-fresh-install-fixture" \
-      -o /out/to ./cmd/to
+      -ldflags "-X github.com/tinhtran24/maestro/backend/internal/cli.releaseRepo=AgentWrapper/maestro-fresh-install-fixture" \
+      -o /out/maestro ./cmd/maestro
 
 # ---- stage 2: a clean machine with NO Go toolchain, just like an end user ----
 FROM debian:bookworm-slim AS run
@@ -37,9 +37,9 @@ RUN apt-get update \
  && rm -rf /var/lib/apt/lists/*
 
 # "Install" the CLI the way a user would: drop the binary on PATH.
-COPY --from=build /out/to /usr/local/bin/to
-COPY test/cli/install-check.sh /usr/local/bin/to-install-check.sh
-RUN chmod +x /usr/local/bin/to /usr/local/bin/to-install-check.sh
+COPY --from=build /out/maestro /usr/local/bin/maestro
+COPY test/cli/install-check.sh /usr/local/bin/maestro-install-check.sh
+RUN chmod +x /usr/local/bin/maestro /usr/local/bin/maestro-install-check.sh
 
 # Run as an unprivileged user with a real HOME, like a normal install.
 RUN useradd --create-home --shell /bin/bash to
@@ -49,4 +49,4 @@ WORKDIR /home/to
 # Sanity: prove the install resolved before the check runs.
 RUN to version
 
-ENTRYPOINT ["/usr/local/bin/to-install-check.sh"]
+ENTRYPOINT ["/usr/local/bin/maestro-install-check.sh"]

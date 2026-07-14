@@ -69,23 +69,23 @@ process.stdout.on("error", ignoreStdStreamError);
 process.stderr.on("error", ignoreStdStreamError);
 
 // Must run before app ready so the About panel and default-menu role labels use it.
-app.setName("Thanos");
+app.setName("Maestro");
 
 // Windows shows native toasts only when the app declares an AppUserModelID that
 // matches its installer shortcut (the NSIS maker's appId). Without it,
 // Notification.isSupported() still returns true but show() silently drops the
 // toast, so notifications never appear. No-op on macOS/Linux.
 if (process.platform === "win32") {
-	app.setAppUserModelId("dev.thanos.desktop");
+	app.setAppUserModelId("dev.maestro.desktop");
 }
 
 // Pin ALL Electron-owned state (Chromium cache, cookies, local/session storage,
-// crash dumps) under the canonical Thanos home at ~/.thanos instead of Electron's macOS
+// crash dumps) under the canonical Maestro home at ~/.maestro instead of Electron's macOS
 // default ~/Library/Application Support/<name>. Keeps the app's entire footprint
-// inside ~/.thanos alongside the daemon's data dir and running.json. sessionData and
+// inside ~/.maestro alongside the daemon's data dir and running.json. sessionData and
 // crashDumps derive from userData, so this one override reparents them all.
 // Must run before app ready.
-app.setPath("userData", path.join(os.homedir(), ".thanos", "electron"));
+app.setPath("userData", path.join(os.homedir(), ".maestro", "electron"));
 
 let mainWindow: BrowserWindow | null = null;
 let daemonProcess: ChildProcessWithoutNullStreams | null = null;
@@ -223,7 +223,7 @@ function createWindow(): void {
 		height: 860,
 		minWidth: 960,
 		minHeight: 640,
-		title: "Thanos",
+		title: "Maestro",
 		icon: windowIconPath(),
 		backgroundColor: "#0f1014",
 		titleBarStyle: "hiddenInset",
@@ -267,7 +267,7 @@ function createWindow(): void {
 
 	void mainWindow.loadURL(rendererUrl());
 
-	if (isDev && process.env.THANOS_OPEN_DEVTOOLS === "1") {
+	if (isDev && process.env.MAESTRO_OPEN_DEVTOOLS === "1") {
 		mainWindow.webContents.once("did-frame-finish-load", () => {
 			mainWindow?.webContents.openDevTools({ mode: "detach" });
 		});
@@ -291,7 +291,7 @@ const RUN_FILE_FRESHNESS_SKEW_MS = 2_000;
 const DAEMON_PROBE_TIMEOUT_MS = 2_000;
 
 function runFilePath(): string | null {
-	if (process.env.THANOS_RUN_FILE) return process.env.THANOS_RUN_FILE;
+	if (process.env.MAESTRO_RUN_FILE) return process.env.MAESTRO_RUN_FILE;
 	return defaultRunFilePath(process.platform, process.env, os.homedir());
 }
 
@@ -310,10 +310,10 @@ let shellEnvPromise: Promise<void> | null = null;
 // always wins.
 function telemetryOverrides(): Record<string, string> {
 	return {
-		THANOS_TELEMETRY_EVENTS: process.env.THANOS_TELEMETRY_EVENTS ?? "on",
-		THANOS_TELEMETRY_REMOTE: process.env.THANOS_TELEMETRY_REMOTE ?? "posthog",
-		THANOS_TELEMETRY_POSTHOG_KEY: process.env.THANOS_TELEMETRY_POSTHOG_KEY ?? DEFAULT_POSTHOG_PROJECT_KEY,
-		THANOS_TELEMETRY_POSTHOG_HOST: process.env.THANOS_TELEMETRY_POSTHOG_HOST ?? DEFAULT_POSTHOG_HOST,
+		MAESTRO_TELEMETRY_EVENTS: process.env.MAESTRO_TELEMETRY_EVENTS ?? "on",
+		MAESTRO_TELEMETRY_REMOTE: process.env.MAESTRO_TELEMETRY_REMOTE ?? "posthog",
+		MAESTRO_TELEMETRY_POSTHOG_KEY: process.env.MAESTRO_TELEMETRY_POSTHOG_KEY ?? DEFAULT_POSTHOG_PROJECT_KEY,
+		MAESTRO_TELEMETRY_POSTHOG_HOST: process.env.MAESTRO_TELEMETRY_POSTHOG_HOST ?? DEFAULT_POSTHOG_HOST,
 	};
 }
 
@@ -364,7 +364,7 @@ function ensureShellEnv(): Promise<void> {
 		shellEnvPromise = resolveShellEnv(process.env, runLoginShell).then((resolved) => {
 			cachedShellEnv = resolved;
 			if (!resolved) {
-				console.error("Thanos: could not read the login-shell environment; falling back to a static PATH floor.");
+				console.error("Maestro: could not read the login-shell environment; falling back to a static PATH floor.");
 			}
 		});
 	}
@@ -372,10 +372,10 @@ function ensureShellEnv(): Promise<void> {
 }
 
 function daemonEnv(): NodeJS.ProcessEnv {
-	// THANOS_OWNER=app marks this daemon as app-spawned so the app can re-link the
-	// supervisor on attach (headless `to start` daemons get no THANOS_OWNER and stay
+	// MAESTRO_OWNER=app marks this daemon as app-spawned so the app can re-link the
+	// supervisor on attach (headless `maestro start` daemons get no MAESTRO_OWNER and stay
 	// unlinked, preserving their persistence across app quit).
-	const ownerTag = { THANOS_OWNER: "app" };
+	const ownerTag = { MAESTRO_OWNER: "app" };
 	// Windows keeps the old behavior exactly: no shell probe, no unix PATH floor.
 	if (process.platform === "win32") {
 		return { ...process.env, ...telemetryOverrides(), ...ownerTag };
@@ -427,21 +427,21 @@ function daemonIdentityError(launch: DaemonLaunchSpec, probe: DaemonProbe): stri
 		const cwdMatches = probe.workingDirectory ? samePath(probe.workingDirectory, launch.cwd) : false;
 		const executableMatches = probe.executablePath ? pathInside(probe.executablePath, launch.cwd) : false;
 		if (!probe.workingDirectory && !probe.executablePath) {
-			return "An older Thanos daemon is already running, but it does not report its checkout identity. Stop it and restart this app.";
+			return "An older Maestro daemon is already running, but it does not report its checkout identity. Stop it and restart this app.";
 		}
 		if (!cwdMatches && !executableMatches) {
 			const actual = probe.workingDirectory ?? probe.executablePath ?? "an unknown location";
-			return `Another Thanos daemon is already running from ${actual}; expected this checkout at ${launch.cwd}. Stop the other daemon before using this checkout.`;
+			return `Another Maestro daemon is already running from ${actual}; expected this checkout at ${launch.cwd}. Stop the other daemon before using this checkout.`;
 		}
 		return null;
 	}
 
 	if (launch.source === "bundled") {
 		if (!probe.executablePath) {
-			return "An older Thanos daemon is already running, but it does not report its binary path. Stop it and restart this app.";
+			return "An older Maestro daemon is already running, but it does not report its binary path. Stop it and restart this app.";
 		}
 		if (!samePath(probe.executablePath, launch.command)) {
-			return `Another Thanos daemon is already running from ${probe.executablePath}; expected ${launch.command}. Stop the other daemon before using this app.`;
+			return `Another Maestro daemon is already running from ${probe.executablePath}; expected ${launch.command}. Stop the other daemon before using this app.`;
 		}
 	}
 	return null;
@@ -455,7 +455,7 @@ function daemonIdentityError(launch: DaemonLaunchSpec, probe: DaemonProbe): stri
  *
  * Called unconditionally on the spawn path (we always own that daemon).
  * Called on the attach path only when the daemon is app-owned (owner === "app");
- * headless `to start` daemons stay unlinked so they remain persistent after
+ * headless `maestro start` daemons stay unlinked so they remain persistent after
  * app quit.
  */
 function establishSupervisorLink(): void {
@@ -469,10 +469,10 @@ function establishSupervisorLink(): void {
 	if (addr) {
 		supervisorLink?.dispose();
 		supervisorLink = connectSupervisor(addr, {
-			log: (msg) => console.log(`Thanos: ${msg}`),
+			log: (msg) => console.log(`Maestro: ${msg}`),
 		});
 	} else {
-		console.warn("Thanos: supervisor link skipped; run-file path unavailable");
+		console.warn("Maestro: supervisor link skipped; run-file path unavailable");
 	}
 }
 
@@ -520,7 +520,7 @@ async function refreshDaemonStatus(): Promise<DaemonStatus> {
 	) {
 		setDaemonStatus({
 			state: "stopped",
-			message: "Thanos daemon is no longer reachable.",
+			message: "Maestro daemon is no longer reachable.",
 			code: "daemon_unreachable",
 		});
 	}
@@ -561,7 +561,7 @@ async function startDaemonInner(startEpoch: number): Promise<DaemonStatus> {
 	if (!launch) {
 		setDaemonStatus({
 			state: "stopped",
-			message: "THANOS_DAEMON_COMMAND is not configured; renderer uses loopback REST when available.",
+			message: "MAESTRO_DAEMON_COMMAND is not configured; renderer uses loopback REST when available.",
 			code: "not_configured",
 		});
 		return daemonStatus;
@@ -574,7 +574,7 @@ async function startDaemonInner(startEpoch: number): Promise<DaemonStatus> {
 	if (existing) {
 		setDaemonStatus(existing.status);
 		// Re-link the supervisor only when attaching to an app-owned daemon (one we
-		// previously spawned). Headless `to start` daemons (owner unset) stay unlinked
+		// previously spawned). Headless `maestro start` daemons (owner unset) stay unlinked
 		// so they remain persistent after app quit.
 		if (shouldLinkOnAttach(existing.owner)) {
 			establishSupervisorLink();
@@ -587,9 +587,9 @@ async function startDaemonInner(startEpoch: number): Promise<DaemonStatus> {
 	// health.pid mismatch) makes it return null — yet a daemon may still be serving
 	// the port. Spawning then would just make the Go child refuse and exit 1. Probe
 	// the expected port directly, independent of the run-file, and attach if a
-	// daemon answers. The expected port (THANOS_PORT or the default) is exactly the
+	// daemon answers. The expected port (MAESTRO_PORT or the default) is exactly the
 	// port the Go child would bind and collide on — probing a hardcoded 3001 would
-	// miss an THANOS_PORT override.
+	// miss an MAESTRO_PORT override.
 	const directDaemon = await resolveDaemonFromPort({
 		expectedPort: expectedDaemonPort(process.env),
 		probe: readDaemonProbe,
@@ -626,9 +626,9 @@ async function startDaemonInner(startEpoch: number): Promise<DaemonStatus> {
 	// may still be holding the port. The only reachable case here is a hung/wedged
 	// holder whose run-file PID is still alive but is not answering /healthz (e.g.
 	// our own daemon that bound the port and then deadlocked). Two cases are
-	// intentionally NOT handled: an identity-mismatched but healthy Thanos daemon is
+	// intentionally NOT handled: an identity-mismatched but healthy Maestro daemon is
 	// already surfaced as an error status upstream by resolveDaemonFromPort (not
-	// killed here), and a foreign non-Thanos process holding the port with a dead
+	// killed here), and a foreign non-Maestro process holding the port with a dead
 	// run-file PID is not replaced (out of scope). When no holder is detectable,
 	// skip straight to spawn.
 	const orphanProbe = await readDaemonProbe(expectedDaemonPort(process.env), "healthz");
@@ -684,7 +684,7 @@ async function startDaemonInner(startEpoch: number): Promise<DaemonStatus> {
 	if (launch.source === "bundled" && !existsSync(launch.command)) {
 		setDaemonStatus({
 			state: "error",
-			message: `Bundled Thanos daemon binary was not found at ${launch.command}. Rebuild the desktop package.`,
+			message: `Bundled Maestro daemon binary was not found at ${launch.command}. Rebuild the desktop package.`,
 			code: "binary_missing",
 		});
 		return daemonStatus;
@@ -710,7 +710,7 @@ async function startDaemonInner(startEpoch: number): Promise<DaemonStatus> {
 	});
 	daemonProcess = child;
 
-	// Discover the port the daemon ACTUALLY bound rather than trusting THANOS_PORT:
+	// Discover the port the daemon ACTUALLY bound rather than trusting MAESTRO_PORT:
 	// the daemon may fall back to a different port than the one requested. Two
 	// confirmed sources race — the "daemon listening" slog line (stderr, but both
 	// streams are scanned) and the running.json handshake — first one wins.
@@ -737,7 +737,7 @@ async function startDaemonInner(startEpoch: number): Promise<DaemonStatus> {
 		// the daemon alive; when Electron exits for any reason, the OS closes the fd
 		// and the daemon detects EOF, then self-stops after its ~5s grace period.
 		// The attach paths link only when the daemon is app-owned (see
-		// establishSupervisorLink + shouldLinkOnAttach); headless `to start` daemons
+		// establishSupervisorLink + shouldLinkOnAttach); headless `maestro start` daemons
 		// stay unlinked so they remain persistent across app quit.
 		establishSupervisorLink();
 	};
@@ -781,7 +781,7 @@ async function startDaemonInner(startEpoch: number): Promise<DaemonStatus> {
 		stopDiscovery();
 		setDaemonStatus({
 			state: "ready",
-			port: process.env.THANOS_PORT ? Number(process.env.THANOS_PORT) : undefined,
+			port: process.env.MAESTRO_PORT ? Number(process.env.MAESTRO_PORT) : undefined,
 			message: "Daemon port not confirmed from logs or running.json; assuming the configured port.",
 			code: "port_unconfirmed",
 		});
@@ -972,7 +972,7 @@ function scanRepoValidationReason(
 	isBare: boolean,
 	hasHead: boolean,
 ): string | undefined {
-	if (name === "__root__") return "Repository name is reserved by Thanos.";
+	if (name === "__root__") return "Repository name is reserved by Maestro.";
 	if (isBare) return "Bare repositories cannot be imported.";
 	if (!hasHead) return "Repository must have at least one commit.";
 	if (branch === "HEAD") return "Repository must have a checked-out branch.";
@@ -1093,9 +1093,9 @@ function initAutoUpdates(): void {
 	void ensureUpdatePrefs(stateDir).then(() => startAutoUpdates(stateDir));
 }
 
-// Resolve the bundle path `to start` will later `open` and stat as a usable app.
-// On macOS process.execPath is .../Thanos.app/Contents/MacOS/<exe>;
-// the thing `to start` opens is the enclosing `.app` directory, so walk up three
+// Resolve the bundle path `maestro start` will later `open` and stat as a usable app.
+// On macOS process.execPath is .../Maestro.app/Contents/MacOS/<exe>;
+// the thing `maestro start` opens is the enclosing `.app` directory, so walk up three
 // levels (MacOS -> Contents -> .app). app.getAppPath() is WRONG here: it returns
 // the app.asar archive path inside the bundle, not the bundle itself.
 // On win32/linux there is no .app wrapper, so record execPath; a richer
@@ -1107,7 +1107,7 @@ function resolveBundlePath(): string {
 	return process.execPath;
 }
 
-// `to start` opens the app with `--installed-via=<value>` so the app can record
+// `maestro start` opens the app with `--installed-via=<value>` so the app can record
 // how it arrived on first marker creation. Parse it out of argv; absent => the
 // marker defaults installSource to "unknown".
 function parseInstalledVia(argv: string[]): string | undefined {
@@ -1115,18 +1115,18 @@ function parseInstalledVia(argv: string[]): string | undefined {
 	return flag ? flag.slice("--installed-via=".length) : undefined;
 }
 
-// Write ~/.thanos/app-state.json so `to start`'s resolveApp() can find this bundle
+// Write ~/.maestro/app-state.json so `maestro start`'s resolveApp() can find this bundle
 // (spec §7.1). The app is the sole writer (invariant 3) and writes every launch.
 // A failure here must NOT block startup, so the caller wraps this in try/catch;
 // we still surface it via the log.
 async function writeAppStateOnLaunch(): Promise<void> {
-	// Reuse the same ~/.thanos resolution as running.json; the marker lives beside it
+	// Reuse the same ~/.maestro resolution as running.json; the marker lives beside it
 	// (the Go side computes its dir as dirname(RunFilePath)). runFilePath() returns
 	// null only when the home dir is unresolvable, in which case we cannot place
 	// the marker; the caller's try/catch logs it.
 	const runFile = runFilePath();
 	if (!runFile) {
-		throw new Error("cannot resolve ~/.thanos run-file path; skipping app-state marker");
+		throw new Error("cannot resolve ~/.maestro run-file path; skipping app-state marker");
 	}
 	const stateDir = path.dirname(runFile);
 	await writeAppStateMarker({

@@ -11,7 +11,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/tinhtran/thanos/backend/internal/ports"
+	"github.com/tinhtran24/maestro/backend/internal/ports"
 
 	_ "modernc.org/sqlite" // register sqlite driver for KiloCode auth database probes
 )

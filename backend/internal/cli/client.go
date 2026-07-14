@@ -10,8 +10,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/tinhtran/thanos/backend/internal/config"
-	"github.com/tinhtran/thanos/backend/internal/runfile"
+	"github.com/tinhtran24/maestro/backend/internal/config"
+	"github.com/tinhtran24/maestro/backend/internal/runfile"
 )
 
 // commandTimeout bounds a mutating daemon call. Spawns do real work (git
@@ -104,10 +104,10 @@ func (c *commandContext) doJSONPath(ctx context.Context, method, path string, bo
 		return err
 	}
 	if info == nil {
-		return fmt.Errorf("Thanos daemon is not running — start it with `to start`")
+		return fmt.Errorf("Maestro daemon is not running — start it with `maestro start`")
 	}
 	if !c.deps.ProcessAlive(info.PID) {
-		return fmt.Errorf("Thanos daemon is not running (stale run-file at %s) — start it with `to start`", cfg.RunFilePath)
+		return fmt.Errorf("Maestro daemon is not running (stale run-file at %s) — start it with `maestro start`", cfg.RunFilePath)
 	}
 
 	var reader io.Reader = http.NoBody

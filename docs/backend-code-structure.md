@@ -148,7 +148,7 @@ graph TD
 - sqlc generated rows
 - External system payloads (GitHub, tmux, agent-specific)
 
-**Rule of thumb:** If Thanos would still use the concept after replacing HTTP, CLI, SQLite, GitHub, tmux, and every agent adapter, it belongs in domain.
+**Rule of thumb:** If Maestro would still use the concept after replacing HTTP, CLI, SQLite, GitHub, tmux, and every agent adapter, it belongs in domain.
 
 ---
 
@@ -559,7 +559,7 @@ graph TD
 
 ### `internal/cli`
 
-**Purpose:** User-facing `to` command. Thin client over the daemon HTTP API.
+**Purpose:** User-facing `maestro` command. Thin client over the daemon HTTP API.
 
 ```mermaid
 graph LR
@@ -617,7 +617,7 @@ graph TD
 **Adapter principles:**
 
 - Adapters are leaves in the import graph
-- Adapters translate external behavior into Thanos ports/domain concepts
+- Adapters translate external behavior into Maestro ports/domain concepts
 - Adapters should not own product workflows
 - All adapter-written files must be gitignored
 
@@ -688,22 +688,22 @@ graph LR
 
     Config -->|provides| Settings[Settings]
 
-    Settings --> Port[THANOS_PORT]
-    Settings --> Timeout[THANOS_REQUEST_TIMEOUT]
-    Settings --> DataDir[THANOS_DATA_DIR]
-    Settings --> RunFile[THANOS_RUN_FILE]
-    Settings --> Agent[THANOS_AGENT]
+    Settings --> Port[MAESTRO_PORT]
+    Settings --> Timeout[MAESTRO_REQUEST_TIMEOUT]
+    Settings --> DataDir[MAESTRO_DATA_DIR]
+    Settings --> RunFile[MAESTRO_RUN_FILE]
+    Settings --> Agent[MAESTRO_AGENT]
 
 ```
 
 **Key environment variables:**
 
-- `THANOS_PORT` — HTTP bind port (default: 3001)
-- `THANOS_REQUEST_TIMEOUT` — Per-request timeout (default: 60s)
-- `THANOS_SHUTDOWN_TIMEOUT` — Graceful shutdown cap (default: 10s)
-- `THANOS_RUN_FILE` — PID/port handshake (default: ~/.thanos/running.json)
-- `THANOS_DATA_DIR` — SQLite data directory (default: ~/.thanos/data)
-- `THANOS_AGENT` — Compatibility agent adapter (default: claude-code)
+- `MAESTRO_PORT` — HTTP bind port (default: 3001)
+- `MAESTRO_REQUEST_TIMEOUT` — Per-request timeout (default: 60s)
+- `MAESTRO_SHUTDOWN_TIMEOUT` — Graceful shutdown cap (default: 10s)
+- `MAESTRO_RUN_FILE` — PID/port handshake (default: ~/.maestro/running.json)
+- `MAESTRO_DATA_DIR` — SQLite data directory (default: ~/.maestro/data)
+- `MAESTRO_AGENT` — Compatibility agent adapter (default: claude-code)
 - `GITHUB_TOKEN` — GitHub authentication
 
 ---
@@ -902,7 +902,7 @@ type MyFeature interface {
 // In internal/adapters/myfeature/impl.go
 package impl
 
-import "github.com/tinhtran/thanos/backend/internal/ports"
+import "github.com/tinhtran24/maestro/backend/internal/ports"
 
 type Impl struct { ... }
 

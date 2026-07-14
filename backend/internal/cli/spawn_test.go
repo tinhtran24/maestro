@@ -18,8 +18,8 @@ func authorizedAgentsJSON(agent string) string {
 	return `{"supported":[` + info + `],"installed":[` + info + `],"authorized":[` + info + `]}`
 }
 
-// TestSpawnCommand_MissingProjectContext asserts `to spawn` gives a project
-// setup hint when neither --project, THANOS_PROJECT_ID, nor cwd can resolve one.
+// TestSpawnCommand_MissingProjectContext asserts `maestro spawn` gives a project
+// setup hint when neither --project, MAESTRO_PROJECT_ID, nor cwd can resolve one.
 func TestSpawnCommand_MissingProjectContext(t *testing.T) {
 	cfg := setConfigEnv(t)
 	var requests []string
@@ -39,7 +39,7 @@ func TestSpawnCommand_MissingProjectContext(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected an error when project context is missing")
 	}
-	if !strings.Contains(err.Error(), "to project add --path <repo-path> --worker-agent <agent>") {
+	if !strings.Contains(err.Error(), "maestro project add --path <repo-path> --worker-agent <agent>") {
 		t.Fatalf("error = %v, want project add hint", err)
 	}
 	if want := []string{"GET /api/v1/projects"}; !reflect.DeepEqual(requests, want) {
@@ -47,7 +47,7 @@ func TestSpawnCommand_MissingProjectContext(t *testing.T) {
 	}
 }
 
-// TestProjectAddCommand_RequiresPath asserts `to project add` rejects a missing
+// TestProjectAddCommand_RequiresPath asserts `maestro project add` rejects a missing
 // --path before touching the network.
 func TestProjectAddCommand_RequiresPath(t *testing.T) {
 	var out, errb bytes.Buffer
@@ -70,7 +70,7 @@ func TestSpawnClaimPRWiring(t *testing.T) {
 		w.Header().Set("Content-Type", "application/json")
 		switch {
 		case r.Method == http.MethodGet && r.URL.Path == "/api/v1/projects/demo":
-			_, _ = io.WriteString(w, `{"status":"ok","project":{"id":"demo","name":"Demo","path":"/repo/demo","repo":"https://github.com/tinhtran/thanos","defaultBranch":"main"}}`)
+			_, _ = io.WriteString(w, `{"status":"ok","project":{"id":"demo","name":"Demo","path":"/repo/demo","repo":"https://github.com/tinhtran24/maestro","defaultBranch":"main"}}`)
 		case r.Method == http.MethodPost && r.URL.Path == "/api/v1/agents/refresh":
 			_, _ = io.WriteString(w, authorizedAgentsJSON("codex"))
 		case r.Method == http.MethodPost && r.URL.Path == "/api/v1/sessions":
@@ -78,10 +78,10 @@ func TestSpawnClaimPRWiring(t *testing.T) {
 		case r.Method == http.MethodPost && r.URL.Path == "/api/v1/sessions/demo-9/pr/claim":
 			var req claimPRRequest
 			_ = json.NewDecoder(r.Body).Decode(&req)
-			if req.PR != "https://github.com/tinhtran/thanos/pull/142" || req.AllowTakeover {
+			if req.PR != "https://github.com/tinhtran24/maestro/pull/142" || req.AllowTakeover {
 				t.Fatalf("claim request = %#v", req)
 			}
-			_, _ = io.WriteString(w, `{"ok":true,"sessionId":"demo-9","prs":[{"url":"https://github.com/tinhtran/thanos/pull/142","number":142,"state":"open","ci":"passing","review":"review_required","mergeability":"mergeable","reviewComments":false,"updatedAt":"2026-06-04T12:00:00Z"}],"branchChanged":false,"takenOverFrom":[]}`)
+			_, _ = io.WriteString(w, `{"ok":true,"sessionId":"demo-9","prs":[{"url":"https://github.com/tinhtran24/maestro/pull/142","number":142,"state":"open","ci":"passing","review":"review_required","mergeability":"mergeable","reviewComments":false,"updatedAt":"2026-06-04T12:00:00Z"}],"branchChanged":false,"takenOverFrom":[]}`)
 		default:
 			http.NotFound(w, r)
 		}
@@ -93,7 +93,7 @@ func TestSpawnClaimPRWiring(t *testing.T) {
 	if err != nil {
 		t.Fatalf("spawn claim-pr failed: %v stderr=%s", err, errOut)
 	}
-	if !strings.Contains(out, "claimed https://github.com/tinhtran/thanos/pull/142") {
+	if !strings.Contains(out, "claimed https://github.com/tinhtran24/maestro/pull/142") {
 		t.Fatalf("output missing claimed label: %s", out)
 	}
 	want := []string{"GET /api/v1/projects/demo", "POST /api/v1/agents/refresh", "POST /api/v1/sessions", "POST /api/v1/sessions/demo-9/pr/claim"}
@@ -111,7 +111,7 @@ func TestSpawnClaimPRFailureRollsBackSession(t *testing.T) {
 		w.Header().Set("Content-Type", "application/json")
 		switch {
 		case r.Method == http.MethodGet && r.URL.Path == "/api/v1/projects/demo":
-			_, _ = io.WriteString(w, `{"status":"ok","project":{"id":"demo","name":"Demo","path":"/repo/demo","repo":"https://github.com/tinhtran/thanos","defaultBranch":"main"}}`)
+			_, _ = io.WriteString(w, `{"status":"ok","project":{"id":"demo","name":"Demo","path":"/repo/demo","repo":"https://github.com/tinhtran24/maestro","defaultBranch":"main"}}`)
 		case r.Method == http.MethodPost && r.URL.Path == "/api/v1/agents/refresh":
 			_, _ = io.WriteString(w, authorizedAgentsJSON("codex"))
 		case r.Method == http.MethodPost && r.URL.Path == "/api/v1/sessions":
@@ -157,7 +157,7 @@ func TestSpawnNoTakeoverRequiresClaimPR(t *testing.T) {
 	}
 }
 
-// TestSpawnCommand_RejectsOverlongName asserts `to spawn` rejects a --name
+// TestSpawnCommand_RejectsOverlongName asserts `maestro spawn` rejects a --name
 // longer than 20 characters without contacting the daemon.
 func TestSpawnCommand_RejectsOverlongName(t *testing.T) {
 	_, _, err := executeCLI(t, Deps{}, "spawn", "--project", "demo", "--name", strings.Repeat("x", 21))
@@ -189,7 +189,7 @@ func TestSpawnResolvesProjectFromEnvAndDefaultAgent(t *testing.T) {
 	}))
 	t.Cleanup(srv.Close)
 	writeRunFileFor(t, cfg, srv)
-	t.Setenv("THANOS_PROJECT_ID", "demo")
+	t.Setenv("MAESTRO_PROJECT_ID", "demo")
 
 	out, errOut, err := executeCLI(t, Deps{ProcessAlive: func(int) bool { return true }}, "spawn", "--prompt", "Fix failing tests in auth")
 	if err != nil {
@@ -232,7 +232,7 @@ func TestSpawnResolvesProjectFromAOSessionID(t *testing.T) {
 	}))
 	t.Cleanup(srv.Close)
 	writeRunFileFor(t, cfg, srv)
-	t.Setenv("THANOS_SESSION_ID", "demo-1")
+	t.Setenv("MAESTRO_SESSION_ID", "demo-1")
 
 	_, errOut, err := executeCLI(t, Deps{ProcessAlive: func(int) bool { return true }}, "spawn", "--prompt", "Fix tests")
 	if err != nil {
@@ -263,11 +263,11 @@ func TestSpawnAOSessionIDFailureRequiresProject(t *testing.T) {
 	}))
 	t.Cleanup(srv.Close)
 	writeRunFileFor(t, cfg, srv)
-	t.Setenv("THANOS_SESSION_ID", "missing")
+	t.Setenv("MAESTRO_SESSION_ID", "missing")
 
 	_, _, err := executeCLI(t, Deps{ProcessAlive: func(int) bool { return true }}, "spawn", "--agent", "codex")
-	if err == nil || !strings.Contains(err.Error(), `project could not be resolved from THANOS_SESSION_ID "missing"; pass --project`) {
-		t.Fatalf("err=%v, want THANOS_SESSION_ID project error", err)
+	if err == nil || !strings.Contains(err.Error(), `project could not be resolved from MAESTRO_SESSION_ID "missing"; pass --project`) {
+		t.Fatalf("err=%v, want MAESTRO_SESSION_ID project error", err)
 	}
 	want := []string{"GET /api/v1/sessions/missing"}
 	if !reflect.DeepEqual(requests, want) {

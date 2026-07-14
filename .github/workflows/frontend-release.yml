@@ -10,22 +10,22 @@ name: Desktop release
 # host's platform, so cross-OS packaging (e.g. building the Windows installer on
 # macOS) would ship a non-Windows binary named `to` and the app could not launch
 # the daemon (issues #235/#256). The per-OS matrix keeps host == target, and the
-# Linux daemon is built on the Linux runner (AgentWrapper/thanos#2191).
+# Linux daemon is built on the Linux runner (AgentWrapper/maestro#2191).
 #
 # ⚠️ Until macOS code signing + notarization secrets are configured (see
 # frontend/docs/desktop-release.md), published builds are UNSIGNED and will
 # NOT auto-update on macOS. The workflow still produces installable artifacts.
 #
 # ── Cutting a FORK test release (dev loop) ────────────────────────────────────
-# Test releases go to harshitsinghbhandari/thanos (the fork), never
+# Test releases go to harshitsinghbhandari/maestro (the fork), never
 # to AgentWrapper. To cut one, on the FORK:
 #   - push a `desktop-v*` tag (e.g. `git push fork desktop-v0.0.0-test1`), or
 #   - run this workflow via `workflow_dispatch` from the fork's Actions tab.
-# THANOS_RELEASE_REPO MUST be set to the fork for a test run. It is derived
+# MAESTRO_RELEASE_REPO MUST be set to the fork for a test run. It is derived
 # automatically below from `github.repository`, so a fork run publishes to the
 # fork and a run on AgentWrapper publishes to AgentWrapper, with no edit. The
 # matching test `to` binary is built with
-# `-ldflags -X ...cli.releaseRepo=harshitsinghbhandari/thanos` so it
+# `-ldflags -X ...cli.releaseRepo=harshitsinghbhandari/maestro` so it
 # fetches from the same fork (spec §6.3).
 
 on:
@@ -89,7 +89,7 @@ jobs:
           exit 1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          THANOS_RELEASE_REPO: ${{ github.repository }}
+          MAESTRO_RELEASE_REPO: ${{ github.repository }}
           # macOS signing + notarization env (APPLE_SIGNING_IDENTITY, APPLE_API_KEY,
           # APPLE_API_KEY_ID, APPLE_API_ISSUER) is exported by the "macOS signing
           # setup" step above via $GITHUB_ENV; the Developer ID cert is in the
@@ -118,8 +118,8 @@ jobs:
           tag="v$(node -p "require('./package.json').version")"
           arch="$(uname -m)"
           case "$arch" in
-            arm64) alias_name="thanos-darwin-arm64.zip" ;;
-            x86_64) alias_name="thanos-darwin-x64.zip" ;;
+            arm64) alias_name="maestro-darwin-arm64.zip" ;;
+            x86_64) alias_name="maestro-darwin-x64.zip" ;;
             *) echo "unsupported macOS arch: $arch" >&2; exit 1 ;;
           esac
           # maker-zip output: out/make/zip/darwin/<arch>/<dir-basename>-<version>.zip
@@ -136,7 +136,7 @@ jobs:
         run: |
           # Forge publishes to v<version> (see the macOS step), not the git tag.
           tag="v$(node -p "require('./package.json').version")"
-          alias_name="thanos-win32-x64.exe"
+          alias_name="maestro-win32-x64.exe"
           # NSIS (electron-builder) output: out/make/<productName> Setup <version>.exe
           src="$(ls "out/make/"*Setup*.exe | head -n1)"
           if [ -z "$src" ]; then echo "no NSIS installer found under out/make" >&2; exit 1; fi
@@ -156,7 +156,7 @@ jobs:
         run: |
           # Forge publishes to v<version> (see the macOS step), not the git tag.
           tag="v$(node -p "require('./package.json').version")"
-          alias_name="thanos-linux-x64.AppImage"
+          alias_name="maestro-linux-x64.AppImage"
           # AppImage (electron-builder) output: out/make/<productName>-<version>.AppImage
           src="$(ls out/make/*.AppImage | head -n1)"
           if [ -z "$src" ]; then echo "no AppImage found under out/make" >&2; exit 1; fi
@@ -214,15 +214,15 @@ jobs:
           exit 1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          THANOS_RELEASE_REPO: ${{ github.repository }}
+          MAESTRO_RELEASE_REPO: ${{ github.repository }}
       - name: Upload stable asset aliases (macOS)
         shell: bash
         run: |
           tag="v$(node -p "require('./package.json').version")"
           arch="$(uname -m)"
           case "$arch" in
-            arm64) alias_name="thanos-darwin-arm64.zip" ;;
-            x86_64) alias_name="thanos-darwin-x64.zip" ;;
+            arm64) alias_name="maestro-darwin-arm64.zip" ;;
+            x86_64) alias_name="maestro-darwin-x64.zip" ;;
             *) echo "unsupported macOS arch: $arch" >&2; exit 1 ;;
           esac
           src="$(ls out/make/zip/darwin/*/*.zip | head -n1)"

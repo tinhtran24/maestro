@@ -33,7 +33,7 @@ func (s StaticTokenSource) Token(context.Context) (string, error) {
 
 // EnvTokenSource reads the first non-empty value from the listed env vars,
 // falling back to GITHUB_TOKEN. The order matters: a project-configured
-// token (e.g. THANOS_GITHUB_TOKEN) should be preferred over the global default,
+// token (e.g. MAESTRO_GITHUB_TOKEN) should be preferred over the global default,
 // matching the pattern PR #28 uses on the SCM side so both adapters honor
 // the same precedence.
 type EnvTokenSource struct {

@@ -14,9 +14,9 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/tinhtran/thanos/backend/internal/daemon"
-	aoprocess "github.com/tinhtran/thanos/backend/internal/process"
-	"github.com/tinhtran/thanos/backend/internal/processalive"
+	"github.com/tinhtran24/maestro/backend/internal/daemon"
+	aoprocess "github.com/tinhtran24/maestro/backend/internal/process"
+	"github.com/tinhtran24/maestro/backend/internal/processalive"
 )
 
 // Execute runs the to CLI with process stdio.
@@ -156,9 +156,10 @@ func NewRootCommand(deps Deps) *cobra.Command {
 	ctx := &commandContext{deps: deps}
 
 	root := &cobra.Command{
-		Use:           "to",
-		Short:         "Thanos",
-		Long:          "Thanos (to) manages the local daemon that supervises parallel coding-agent sessions.",
+		Use:           "maestro",
+		Aliases:       []string{"to"}, // deprecated legacy command name; see deprecatedInvocationName
+		Short:         "Maestro",
+		Long:          "Maestro manages the local daemon that supervises parallel coding-agent sessions.",
 		Version:       VersionString(),
 		SilenceUsage:  true,
 		SilenceErrors: true,
@@ -208,7 +209,7 @@ type commandContext struct {
 
 func shouldEmitCLIInvocation(cmd *cobra.Command) bool {
 	switch strings.TrimSpace(cmd.CommandPath()) {
-	case "to daemon", "to start", "to completion", "to help":
+	case "maestro daemon", "maestro start", "maestro completion", "maestro help":
 		return false
 	default:
 		return true
@@ -236,7 +237,7 @@ func (c *commandContext) emitCLIUsageError(ctx context.Context, args []string, e
 }
 
 func usageErrorCommand(args []string) (string, string) {
-	tokens := []string{"to"}
+	tokens := []string{"maestro"}
 	for _, arg := range args {
 		if strings.HasPrefix(arg, "-") {
 			break
@@ -244,7 +245,7 @@ func usageErrorCommand(args []string) (string, string) {
 		tokens = append(tokens, arg)
 	}
 	commandPath := strings.Join(tokens, " ")
-	command := "to"
+	command := "maestro"
 	if len(tokens) > 1 {
 		command = tokens[len(tokens)-1]
 	}
@@ -268,7 +269,7 @@ func atMostOneArg(cmd *cobra.Command, args []string) error {
 func newDaemonCommand() *cobra.Command {
 	return &cobra.Command{
 		Use:    "daemon",
-		Short:  "Run the Thanos backend daemon",
+		Short:  "Run the Maestro backend daemon",
 		Hidden: true,
 		Args:   noArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {

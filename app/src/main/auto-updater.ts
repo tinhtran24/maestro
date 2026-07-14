@@ -60,7 +60,7 @@ export function getUpdateStatus(): UpdateStatus {
 	return lastStatus;
 }
 
-// startAutoUpdates configures electron-updater from the user's ~/.thanos settings.
+// startAutoUpdates configures electron-updater from the user's ~/.maestro settings.
 // It is a thin shell: all policy (channel, opt-in) comes from update-settings.
 // Caller guards on app.isPackaged.
 export async function startAutoUpdates(stateDir: string): Promise<void> {
@@ -133,7 +133,7 @@ export async function ensureUpdatePrefs(stateDir: string): Promise<void> {
 		buttons: ["Enable auto-updates", "Not now"],
 		defaultId: 0,
 		cancelId: 1,
-		message: "Keep Thanos up to date automatically?",
+		message: "Keep Maestro up to date automatically?",
 		detail: "You can change this later in Settings.",
 	});
 	if (optIn.response !== 0) {

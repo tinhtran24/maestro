@@ -9,8 +9,8 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/tinhtran/thanos/backend/internal/ports"
-	sqlitestore "github.com/tinhtran/thanos/backend/internal/storage/sqlite/store"
+	"github.com/tinhtran24/maestro/backend/internal/ports"
+	sqlitestore "github.com/tinhtran24/maestro/backend/internal/storage/sqlite/store"
 )
 
 const (

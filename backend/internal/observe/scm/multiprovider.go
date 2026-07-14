@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/tinhtran/thanos/backend/internal/domain"
-	"github.com/tinhtran/thanos/backend/internal/ports"
+	"github.com/tinhtran24/maestro/backend/internal/domain"
+	"github.com/tinhtran24/maestro/backend/internal/ports"
 )
 
 // RegisteredProvider pairs a provider adapter with the SCM provider name it

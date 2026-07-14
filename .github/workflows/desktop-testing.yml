@@ -72,7 +72,7 @@ jobs:
             --notes "Unsigned desktop testing build (pipeline validation only — not signed or notarized)." \
             || true
           # Upload every maker output. NUL-delimited to survive spaces in the
-          # app name ("Thanos-..."); --clobber makes re-runs idempotent.
+          # app name ("Maestro-..."); --clobber makes re-runs idempotent.
           find out/make -type f -print0 | while IFS= read -r -d '' f; do
             echo "uploading: $f"
             gh release upload "$TAG" "$f" --clobber

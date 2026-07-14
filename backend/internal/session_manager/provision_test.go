@@ -7,29 +7,29 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/tinhtran/thanos/backend/internal/domain"
+	"github.com/tinhtran24/maestro/backend/internal/domain"
 )
 
 func TestSpawnEnvProjectVarsCannotOverrideInternal(t *testing.T) {
 	env := spawnEnv("mer-1", "mer", "issue-9", "/data", map[string]string{
 		"FOO":        "bar",
-		EnvSessionID: "hacked", // a project must not override Thanos-internal vars
+		EnvSessionID: "hacked", // a project must not override Maestro-internal vars
 		EnvProjectID: "hacked",
 	})
 	if env["FOO"] != "bar" {
 		t.Fatalf("FOO = %q, want bar", env["FOO"])
 	}
 	if env[EnvSessionID] != "mer-1" {
-		t.Fatalf("THANOS_SESSION_ID = %q, want mer-1 (internal wins)", env[EnvSessionID])
+		t.Fatalf("MAESTRO_SESSION_ID = %q, want mer-1 (internal wins)", env[EnvSessionID])
 	}
 	if env[EnvProjectID] != "mer" {
-		t.Fatalf("THANOS_PROJECT_ID = %q, want mer (internal wins)", env[EnvProjectID])
+		t.Fatalf("MAESTRO_PROJECT_ID = %q, want mer (internal wins)", env[EnvProjectID])
 	}
 }
 
 func TestHookPATH(t *testing.T) {
 	sep := string(os.PathListSeparator)
-	daemonExe := filepath.Join("/opt", "aod", "to")
+	daemonExe := filepath.Join("/opt", "aod", "maestro")
 	daemonDir := filepath.Dir(daemonExe)
 	exeOK := func() (string, error) { return daemonExe, nil }
 
@@ -66,7 +66,7 @@ func TestHookPATH(t *testing.T) {
 			wantErr:    true,
 		},
 		{
-			// A daemon binary not named "to" cannot anchor `to` resolution by
+			// A daemon binary not named "to" cannot anchor `maestro` resolution by
 			// having its directory prepended, so the pin must be refused.
 			name:       "executable not named to fails",
 			executable: func() (string, error) { return filepath.Join("/opt", "aod", "to-daemon"), nil },

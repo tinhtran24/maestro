@@ -16,7 +16,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 
-	"github.com/tinhtran/thanos/backend/internal/adapters/runtime/tmux"
+	"github.com/tinhtran24/maestro/backend/internal/adapters/runtime/tmux"
 )
 
 // maxDisplayNameLen caps the sidebar label set by `--name`. Mirrored by the
@@ -66,7 +66,7 @@ func newSpawnCommand(ctx *commandContext) *cobra.Command {
 		Short: "Spawn a worker agent session in a registered project",
 		Long: "Spawn a worker agent session in a registered project.\n\n" +
 			"The session runs the chosen agent in a\n" +
-			"fresh git worktree. Register the project first with `to project add`.",
+			"fresh git worktree. Register the project first with `maestro project add`.",
 		Args: noArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if opts.noTakeover && opts.claimPR == "" {
@@ -136,19 +136,19 @@ func newSpawnCommand(ctx *commandContext) *cobra.Command {
 			}
 			// Print a copy-pasteable attach hint for the selected runtime.
 			// On Darwin/Linux: tmux attach-session using the sanitised session name.
-			// On Windows: ConPTY has no user-facing attach CLI; use the Thanos dashboard.
+			// On Windows: ConPTY has no user-facing attach CLI; use the Maestro dashboard.
 			var attach string
 			if runtime.GOOS != "windows" {
 				attach = fmt.Sprintf("tmux attach -t %s", tmux.SessionName(res.Session.ID))
 			} else {
-				attach = "Attach from the Thanos dashboard (ConPTY sessions have no CLI attach command)"
+				attach = "Attach from the Maestro dashboard (ConPTY sessions have no CLI attach command)"
 			}
 			_, err = fmt.Fprintf(out, "attach with: %s\n", attach)
 			return err
 		},
 	}
 	f := cmd.Flags()
-	// --agent is an alias for --harness so the more intuitive `to spawn --agent
+	// --agent is an alias for --harness so the more intuitive `maestro spawn --agent
 	// droid` works identically; both resolve to the same harness flag.
 	f.SetNormalizeFunc(func(_ *pflag.FlagSet, name string) pflag.NormalizedName {
 		if name == "agent" {
@@ -156,7 +156,7 @@ func newSpawnCommand(ctx *commandContext) *cobra.Command {
 		}
 		return pflag.NormalizedName(name)
 	})
-	f.StringVar(&opts.project, "project", "", "Project id to spawn the session in (default: THANOS_PROJECT_ID or current registered repo)")
+	f.StringVar(&opts.project, "project", "", "Project id to spawn the session in (default: MAESTRO_PROJECT_ID or current registered repo)")
 	f.StringVar(&opts.harness, "harness", "", "Agent harness / --agent: claude-code, codex, aider, opencode, grok, droid, amp, agy, crush, cursor, qwen, copilot, goose, auggie, continue, devin, cline, kimi, kiro, kilocode, vibe, pi, autohand (default: project worker.agent; required if the project has none)")
 	f.StringVar(&opts.branch, "branch", "", "Branch for the session worktree (default: to/<session-id>/root)")
 	f.StringVar(&opts.prompt, "prompt", "", "Initial prompt for the agent")
@@ -186,10 +186,10 @@ func (c *commandContext) resolveSpawnProject(ctx context.Context, explicit strin
 	if id := strings.TrimSpace(explicit); id != "" {
 		return c.fetchProjectDetails(ctx, id)
 	}
-	if id := strings.TrimSpace(os.Getenv("THANOS_PROJECT_ID")); id != "" {
+	if id := strings.TrimSpace(os.Getenv("MAESTRO_PROJECT_ID")); id != "" {
 		return c.fetchProjectDetails(ctx, id)
 	}
-	if sessionID := strings.TrimSpace(os.Getenv("THANOS_SESSION_ID")); sessionID != "" {
+	if sessionID := strings.TrimSpace(os.Getenv("MAESTRO_SESSION_ID")); sessionID != "" {
 		project, err := c.resolveProjectFromSession(ctx, sessionID)
 		if err != nil {
 			return projectDetails{}, err
@@ -203,16 +203,16 @@ func (c *commandContext) resolveSpawnProject(ctx context.Context, explicit strin
 	if ok {
 		return project, nil
 	}
-	return projectDetails{}, usageError{fmt.Errorf("project could not be resolved; pass --project or run `to project add --path <repo-path> --worker-agent <agent>`")}
+	return projectDetails{}, usageError{fmt.Errorf("project could not be resolved; pass --project or run `maestro project add --path <repo-path> --worker-agent <agent>`")}
 }
 
 func (c *commandContext) resolveProjectFromSession(ctx context.Context, sessionID string) (projectDetails, error) {
 	sess, err := c.fetchScopedSession(ctx, sessionID, "")
 	if err != nil {
-		return projectDetails{}, usageError{fmt.Errorf("project could not be resolved from THANOS_SESSION_ID %q; pass --project", sessionID)}
+		return projectDetails{}, usageError{fmt.Errorf("project could not be resolved from MAESTRO_SESSION_ID %q; pass --project", sessionID)}
 	}
 	if strings.TrimSpace(sess.ProjectID) == "" {
-		return projectDetails{}, usageError{fmt.Errorf("project could not be resolved from THANOS_SESSION_ID %q; pass --project", sessionID)}
+		return projectDetails{}, usageError{fmt.Errorf("project could not be resolved from MAESTRO_SESSION_ID %q; pass --project", sessionID)}
 	}
 	return c.fetchProjectDetails(ctx, sess.ProjectID)
 }
@@ -303,7 +303,7 @@ func resolveSpawnHarness(explicit string, project projectDetails) (string, error
 			return harness, nil
 		}
 	}
-	return "", usageError{fmt.Errorf("agent could not be resolved; pass --agent or configure `to project set-config %s --worker-agent <agent>`", project.ID)}
+	return "", usageError{fmt.Errorf("agent could not be resolved; pass --agent or configure `maestro project set-config %s --worker-agent <agent>`", project.ID)}
 }
 
 func resolveSpawnDisplayName(explicit, prompt string) string {
@@ -342,7 +342,7 @@ func (c *commandContext) preflightSpawnAgentAuth(ctx context.Context, cmd *cobra
 	}
 	state := agentCatalogStateFor(inv, agentID)
 	if !state.supported {
-		return fmt.Errorf("agent %q is not supported by this daemon; pass a supported --agent or run `to agent ls`", agentID)
+		return fmt.Errorf("agent %q is not supported by this daemon; pass a supported --agent or run `maestro agent ls`", agentID)
 	}
 	if !state.installed || state.authStatus == "unauthorized" {
 		fresh, err := c.probeSpawnAgent(ctx, agentID)
@@ -354,7 +354,7 @@ func (c *commandContext) preflightSpawnAgentAuth(ctx context.Context, cmd *cobra
 			return err
 		}
 		if !fresh.Supported {
-			return fmt.Errorf("agent %q is not supported by this daemon; pass a supported --agent or run `to agent ls`", agentID)
+			return fmt.Errorf("agent %q is not supported by this daemon; pass a supported --agent or run `maestro agent ls`", agentID)
 		}
 		if !fresh.Installed {
 			return fmt.Errorf("agent %q needs install; install the agent CLI or pass --skip-agent-check to let spawn validate it", agentID)

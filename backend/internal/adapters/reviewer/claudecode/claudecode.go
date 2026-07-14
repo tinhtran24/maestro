@@ -1,5 +1,5 @@
 // Package claudecode is the claude-code reviewer adapter. claude-code is a
-// prompt-driven agent, so this reviewer feeds Thanos's review prompt (authored
+// prompt-driven agent, so this reviewer feeds Maestro's review prompt (authored
 // centrally and passed in ReviewInvocation.Prompt) to the worker claude-code
 // adapter's launch-command construction (binary resolution, flags). The reviewer
 // contract stays prompt-agnostic, so a one-shot CLI reviewer (e.g. greptile) can
@@ -9,9 +9,9 @@ package claudecode
 import (
 	"context"
 
-	workeragent "github.com/tinhtran/thanos/backend/internal/adapters/agent/claudecode"
-	"github.com/tinhtran/thanos/backend/internal/domain"
-	"github.com/tinhtran/thanos/backend/internal/ports"
+	workeragent "github.com/tinhtran24/maestro/backend/internal/adapters/agent/claudecode"
+	"github.com/tinhtran24/maestro/backend/internal/domain"
+	"github.com/tinhtran24/maestro/backend/internal/ports"
 )
 
 // Reviewer is the claude-code code-review adapter.
@@ -39,7 +39,7 @@ var _ ports.Reviewer = (*Reviewer)(nil)
 // prompting, so the reviewer can read the checkout and run the few commands it
 // needs (git diff/log/show to inspect the PR, printf to pipe review JSON into
 // the downstream commands without writing a worktree file, gh to post the
-// review, and `to review submit` to record the verdict) without stalling.
+// review, and `maestro review submit` to record the verdict) without stalling.
 var reviewerAllowedTools = []string{
 	"Read",
 	"Grep",
@@ -50,7 +50,7 @@ var reviewerAllowedTools = []string{
 	"Bash(git log:*)",
 	"Bash(git show:*)",
 	"Bash(git status:*)",
-	"Bash(to review submit:*)",
+	"Bash(maestro review submit:*)",
 }
 
 // reviewerDisallowedTools hard-denies the write paths as defense in depth, so a
@@ -101,7 +101,7 @@ func (r *Reviewer) PreLaunch(ctx context.Context, inv ports.ReviewInvocation) er
 }
 
 // ReviewMessage is the text injected into an already-running reviewer pane to
-// review a new commit — Thanos's central review prompt.
+// review a new commit — Maestro's central review prompt.
 func (r *Reviewer) ReviewMessage(_ context.Context, inv ports.ReviewInvocation) (string, error) {
 	return inv.Prompt, nil
 }

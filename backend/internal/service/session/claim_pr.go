@@ -10,9 +10,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/tinhtran/thanos/backend/internal/domain"
-	"github.com/tinhtran/thanos/backend/internal/httpd/apierr"
-	"github.com/tinhtran/thanos/backend/internal/ports"
+	"github.com/tinhtran24/maestro/backend/internal/domain"
+	"github.com/tinhtran24/maestro/backend/internal/httpd/apierr"
+	"github.com/tinhtran24/maestro/backend/internal/ports"
 )
 
 var (
@@ -80,7 +80,7 @@ func (s *Service) ClaimPR(ctx context.Context, id domain.SessionID, ref string, 
 		return ClaimPRResult{}, fmt.Errorf("project %s: %w", rec.ProjectID, err)
 	}
 	if !ok {
-		return ClaimPRResult{}, apierr.Invalid("PROJECT_NOT_RESOLVABLE", "Project is not registered or has no repo — register it with `to project add`", nil)
+		return ClaimPRResult{}, apierr.Invalid("PROJECT_NOT_RESOLVABLE", "Project is not registered or has no repo — register it with `maestro project add`", nil)
 	}
 	prURL, number, err := normalizePRRef(ref, project.RepoOriginURL)
 	if err != nil {

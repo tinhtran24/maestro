@@ -49,7 +49,9 @@ export function CreateTaskWizard({ open, projectId, onCreated, onOpenChange }: P
 		queryKey: ["project", projectId],
 		enabled: open && Boolean(projectId),
 		queryFn: async () => {
-			const { data, error: apiError } = await apiClient.GET("/api/v1/projects/{id}", { params: { path: { id: projectId as string } } });
+			const { data, error: apiError } = await apiClient.GET("/api/v1/projects/{id}", {
+				params: { path: { id: projectId as string } },
+			});
 			if (apiError) throw new Error(apiErrorMessage(apiError));
 			return data?.project as Project;
 		},
@@ -105,7 +107,7 @@ export function CreateTaskWizard({ open, projectId, onCreated, onOpenChange }: P
 		mutationFn: () => extractTask({ input, attachments, agent, projectId }),
 		onMutate: () => {
 			setError(undefined);
-			void captureRendererEvent("thanos.renderer.quick_capture_extract", { project_id: projectId });
+			void captureRendererEvent("maestro.renderer.quick_capture_extract", { project_id: projectId });
 		},
 		onSuccess: ({ draft: d }) => {
 			setDraft({ ...emptyDraft(), ...d });
@@ -133,7 +135,7 @@ export function CreateTaskWizard({ open, projectId, onCreated, onOpenChange }: P
 		},
 		onSuccess: (id) => {
 			setCreatedId(id);
-			void captureRendererEvent("thanos.renderer.quick_capture_created", { project_id: projectId });
+			void captureRendererEvent("maestro.renderer.quick_capture_created", { project_id: projectId });
 		},
 		onError: (e) => setError(e instanceof Error ? e.message : "Unable to create task"),
 	});
@@ -153,17 +155,31 @@ export function CreateTaskWizard({ open, projectId, onCreated, onOpenChange }: P
 							const active = s.id === step;
 							const done = i < stepIndex || Boolean(createdId);
 							return (
-								<div key={s.id} className={cn("flex items-center gap-2.5 rounded-lg px-2 py-2", active && "bg-violet-500/10")}>
+								<div
+									key={s.id}
+									className={cn("flex items-center gap-2.5 rounded-lg px-2 py-2", active && "bg-violet-500/10")}
+								>
 									<span
 										className={cn(
 											"grid size-7 shrink-0 place-items-center rounded-full border text-[11px]",
-											active ? "border-violet-500 bg-violet-500/20 text-violet-200" : done ? "border-emerald-500/40 bg-emerald-500/15 text-emerald-300" : "border-border text-muted-foreground",
+											active
+												? "border-violet-500 bg-violet-500/20 text-violet-200"
+												: done
+													? "border-emerald-500/40 bg-emerald-500/15 text-emerald-300"
+													: "border-border text-muted-foreground",
 										)}
 									>
 										{done ? <Check className="size-3.5" /> : <s.icon className="size-3.5" />}
 									</span>
 									<div className="min-w-0">
-										<div className={cn("truncate text-[12px] font-medium", active ? "text-foreground" : "text-muted-foreground")}>{s.label}</div>
+										<div
+											className={cn(
+												"truncate text-[12px] font-medium",
+												active ? "text-foreground" : "text-muted-foreground",
+											)}
+										>
+											{s.label}
+										</div>
 										<div className="truncate text-[10px] text-passive">{s.sub}</div>
 									</div>
 								</div>
@@ -181,7 +197,11 @@ export function CreateTaskWizard({ open, projectId, onCreated, onOpenChange }: P
 								) : null}
 							</div>
 							<Dialog.Close asChild>
-								<button type="button" aria-label="Close" className="grid size-7 place-items-center rounded-md text-muted-foreground transition hover:bg-surface hover:text-foreground">
+								<button
+									type="button"
+									aria-label="Close"
+									className="grid size-7 place-items-center rounded-md text-muted-foreground transition hover:bg-surface hover:text-foreground"
+								>
 									<X className="size-4" />
 								</button>
 							</Dialog.Close>
@@ -194,7 +214,10 @@ export function CreateTaskWizard({ open, projectId, onCreated, onOpenChange }: P
 										<Check className="size-7" />
 									</span>
 									<div className="text-[15px] font-semibold text-foreground">Task Created</div>
-									<p className="max-w-sm text-[12px] text-muted-foreground">Planning will start shortly — {agent || "the agent"} will analyze the task and ask questions if needed.</p>
+									<p className="max-w-sm text-[12px] text-muted-foreground">
+										Planning will start shortly — {agent || "the agent"} will analyze the task and ask questions if
+										needed.
+									</p>
 								</div>
 							) : step === "capture" ? (
 								<QuickCaptureEditor
@@ -223,7 +246,9 @@ export function CreateTaskWizard({ open, projectId, onCreated, onOpenChange }: P
 							)}
 
 							{error ? (
-								<div className="mt-4 rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-[12px] text-destructive">{error}</div>
+								<div className="mt-4 rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-[12px] text-destructive">
+									{error}
+								</div>
 							) : null}
 						</div>
 
@@ -250,7 +275,11 @@ export function CreateTaskWizard({ open, projectId, onCreated, onOpenChange }: P
 							</div>
 
 							{createdId ? (
-								<Button type="button" onClick={() => (onCreated(createdId), onOpenChange(false))} className="bg-violet-600 hover:bg-violet-500">
+								<Button
+									type="button"
+									onClick={() => (onCreated(createdId), onOpenChange(false))}
+									className="bg-violet-600 hover:bg-violet-500"
+								>
 									Open Task
 								</Button>
 							) : (
@@ -261,22 +290,46 @@ export function CreateTaskWizard({ open, projectId, onCreated, onOpenChange }: P
 										</Button>
 									) : (
 										<Dialog.Close asChild>
-											<Button type="button" variant="ghost">Cancel</Button>
+											<Button type="button" variant="ghost">
+												Cancel
+											</Button>
 										</Dialog.Close>
 									)}
 									{step === "capture" ? (
-										<Button type="button" disabled={!canExtract} onClick={() => extractMutation.mutate()} className="bg-violet-600 hover:bg-violet-500">
-											{extractMutation.isPending ? <Loader2 className="size-3.5 animate-spin" /> : <Sparkles className="size-3.5" />}
+										<Button
+											type="button"
+											disabled={!canExtract}
+											onClick={() => extractMutation.mutate()}
+											className="bg-violet-600 hover:bg-violet-500"
+										>
+											{extractMutation.isPending ? (
+												<Loader2 className="size-3.5 animate-spin" />
+											) : (
+												<Sparkles className="size-3.5" />
+											)}
 											{extractMutation.isPending ? "Structuring…" : "AI Structure"}
 											{!extractMutation.isPending ? <ArrowRight className="size-3.5" /> : null}
 										</Button>
 									) : step === "create" ? (
-										<Button type="button" disabled={createMutation.isPending || !projectId} onClick={() => createMutation.mutate()} className="bg-violet-600 hover:bg-violet-500">
-											{createMutation.isPending ? <Loader2 className="size-3.5 animate-spin" /> : <Check className="size-3.5" />}
+										<Button
+											type="button"
+											disabled={createMutation.isPending || !projectId}
+											onClick={() => createMutation.mutate()}
+											className="bg-violet-600 hover:bg-violet-500"
+										>
+											{createMutation.isPending ? (
+												<Loader2 className="size-3.5 animate-spin" />
+											) : (
+												<Check className="size-3.5" />
+											)}
 											{createMutation.isPending ? "Creating…" : "Create Task"}
 										</Button>
 									) : (
-										<Button type="button" onClick={() => setStep(STEPS[stepIndex + 1].id)} className="bg-violet-600 hover:bg-violet-500">
+										<Button
+											type="button"
+											onClick={() => setStep(STEPS[stepIndex + 1].id)}
+											className="bg-violet-600 hover:bg-violet-500"
+										>
 											Next <ArrowRight className="size-3.5" />
 										</Button>
 									)}
@@ -301,12 +354,15 @@ function CreateSummary({ draft, attachments, agent }: { draft: TaskDraft; attach
 				<div className="mt-1 flex flex-wrap items-center gap-1.5 text-muted-foreground">
 					<span className="rounded border border-border px-1.5 py-0.5">{draft.priority || "P2"}</span>
 					{draft.labels?.slice(0, 6).map((l) => (
-						<span key={l} className="rounded-full border border-border px-1.5 py-0.5">{l}</span>
+						<span key={l} className="rounded-full border border-border px-1.5 py-0.5">
+							{l}
+						</span>
 					))}
 				</div>
 				{draft.description ? <p className="mt-2 line-clamp-3 text-muted-foreground">{draft.description}</p> : null}
 				<div className="mt-2 text-[11px] text-passive">
-					{draft.acceptanceCriteria?.length ?? 0} acceptance criteria · {attachments.length} attachment(s) · agent: {agent || "project default"}
+					{draft.acceptanceCriteria?.length ?? 0} acceptance criteria · {attachments.length} attachment(s) · agent:{" "}
+					{agent || "project default"}
 				</div>
 			</div>
 		</div>

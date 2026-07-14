@@ -11,9 +11,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/tinhtran/thanos/backend/internal/adapters/runtime/tmux"
-	"github.com/tinhtran/thanos/backend/internal/domain"
-	"github.com/tinhtran/thanos/backend/internal/ports"
+	"github.com/tinhtran24/maestro/backend/internal/adapters/runtime/tmux"
+	"github.com/tinhtran24/maestro/backend/internal/domain"
+	"github.com/tinhtran24/maestro/backend/internal/ports"
 )
 
 // TestAttachmentStreamsRealTmuxPane attaches a real PTY to a real tmux session
@@ -31,7 +31,7 @@ func TestAttachmentStreamsRealTmuxPane(t *testing.T) {
 	handle, err := rt.Create(context.Background(), ports.RuntimeConfig{
 		SessionID:     domain.SessionID(name),
 		WorkspacePath: t.TempDir(),
-		Argv:          []string{"sh", "-lc", "printf THANOS_READY\\n; exec sh -i"},
+		Argv:          []string{"sh", "-lc", "printf MAESTRO_READY\\n; exec sh -i"},
 	})
 	if err != nil {
 		t.Fatalf("Create: %v", err)
@@ -45,8 +45,8 @@ func TestAttachmentStreamsRealTmuxPane(t *testing.T) {
 	go a.run(ctx)
 
 	// Type a unique marker and expect it echoed back through the PTY.
-	eventually(t, 3*time.Second, func() bool { return a.write([]byte("echo THANOS_MARKER_42\n")) == nil })
-	eventually(t, 5*time.Second, func() bool { return strings.Contains(got.string(), "THANOS_MARKER_42") })
+	eventually(t, 3*time.Second, func() bool { return a.write([]byte("echo MAESTRO_MARKER_42\n")) == nil })
+	eventually(t, 5*time.Second, func() bool { return strings.Contains(got.string(), "MAESTRO_MARKER_42") })
 
 	// Kill the session: the attachment must observe it as gone and not re-attach.
 	if err := rt.Destroy(context.Background(), handle); err != nil {
@@ -74,7 +74,7 @@ func TestAttachmentReattachAdoptsNewSize(t *testing.T) {
 	handle, err := rt.Create(context.Background(), ports.RuntimeConfig{
 		SessionID:     domain.SessionID(name),
 		WorkspacePath: t.TempDir(),
-		Argv:          []string{"sh", "-lc", "printf THANOS_READY\\n; exec sh -i"},
+		Argv:          []string{"sh", "-lc", "printf MAESTRO_READY\\n; exec sh -i"},
 	})
 	if err != nil {
 		t.Fatalf("Create: %v", err)

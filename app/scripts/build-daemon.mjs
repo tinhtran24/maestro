@@ -8,12 +8,12 @@ const frontendRoot = resolve(scriptsDir, "..");
 const repoRoot = resolve(frontendRoot, "..");
 const backendRoot = join(repoRoot, "backend");
 const outDir = join(frontendRoot, "daemon");
-const outPath = join(outDir, process.platform === "win32" ? "to.exe" : "to");
+const outPath = join(outDir, process.platform === "win32" ? "maestro.exe" : "maestro");
 
 rmSync(outDir, { recursive: true, force: true });
 mkdirSync(outDir, { recursive: true });
 
-const result = spawnSync("go", ["build", "-o", outPath, "./cmd/to"], {
+const result = spawnSync("go", ["build", "-o", outPath, "./cmd/maestro"], {
 	cwd: backendRoot,
 	stdio: "inherit",
 });

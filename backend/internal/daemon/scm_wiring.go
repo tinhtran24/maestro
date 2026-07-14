@@ -9,11 +9,11 @@ import (
 	"errors"
 	"log/slog"
 
-	scmgithub "github.com/tinhtran/thanos/backend/internal/adapters/scm/github"
-	"github.com/tinhtran/thanos/backend/internal/domain"
-	"github.com/tinhtran/thanos/backend/internal/lifecycle"
-	scmobserve "github.com/tinhtran/thanos/backend/internal/observe/scm"
-	"github.com/tinhtran/thanos/backend/internal/storage/sqlite"
+	scmgithub "github.com/tinhtran24/maestro/backend/internal/adapters/scm/github"
+	"github.com/tinhtran24/maestro/backend/internal/domain"
+	"github.com/tinhtran24/maestro/backend/internal/lifecycle"
+	scmobserve "github.com/tinhtran24/maestro/backend/internal/observe/scm"
+	"github.com/tinhtran24/maestro/backend/internal/storage/sqlite"
 )
 
 // startSCMObserver wires the provider-neutral SCM observer with the GitHub
@@ -39,7 +39,7 @@ func startSCMObserver(ctx context.Context, store *sqlite.Store, lcm *lifecycle.M
 
 func newGitHubSCMProvider(logger *slog.Logger) (*scmgithub.Provider, error) {
 	tokens := scmgithub.FallbackTokenSource{
-		scmgithub.EnvTokenSource{EnvVars: []string{"THANOS_GITHUB_TOKEN"}},
+		scmgithub.EnvTokenSource{EnvVars: []string{"MAESTRO_GITHUB_TOKEN"}},
 		&scmgithub.GitCredentialTokenSource{},
 	}
 	// Avoid token preflight on daemon startup and session service construction.

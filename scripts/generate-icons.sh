@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# Generate the desktop app icon set from the Thanos logo.
+# Generate the desktop app icon set from the Maestro logo.
 #
-# Source:  thanos-logo.svg  (repo root)
+# Source:  maestro-logo.svg  (repo root)
 # Outputs: app/assets/icon.png (1024), icon.icns (macOS), icon.ico (Windows)
 #
 # Requirements: rsvg-convert, iconutil (macOS), and ImageMagick (magick/convert).
@@ -9,7 +9,7 @@
 set -euo pipefail
 
 repo_root="$(cd "$(dirname "$0")/.." && pwd)"
-src="$repo_root/thanos-logo.svg"
+src="$repo_root/maestro-logo.svg"
 assets="$repo_root/app/assets"
 mkdir -p "$assets"
 

@@ -8,8 +8,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/tinhtran/thanos/backend/internal/domain"
-	"github.com/tinhtran/thanos/backend/internal/storage/sqlite/gen"
+	"github.com/tinhtran24/maestro/backend/internal/domain"
+	"github.com/tinhtran24/maestro/backend/internal/storage/sqlite/gen"
 )
 
 // UpsertProject inserts or replaces a registered project row.

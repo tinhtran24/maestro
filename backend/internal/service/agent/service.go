@@ -7,8 +7,8 @@ import (
 	"sync"
 	"time"
 
-	agentregistry "github.com/tinhtran/thanos/backend/internal/adapters/agent/registry"
-	"github.com/tinhtran/thanos/backend/internal/ports"
+	agentregistry "github.com/tinhtran24/maestro/backend/internal/adapters/agent/registry"
+	"github.com/tinhtran24/maestro/backend/internal/ports"
 )
 
 var (

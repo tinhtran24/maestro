@@ -1,4 +1,4 @@
-/** Compact relative time — ported from thanos session-detail-utils. */
+/** Compact relative time — ported from maestro session-detail-utils. */
 export function formatTimeCompact(isoDate: string | null | undefined): string {
 	if (!isoDate) return "just now";
 	const ts = new Date(isoDate).getTime();

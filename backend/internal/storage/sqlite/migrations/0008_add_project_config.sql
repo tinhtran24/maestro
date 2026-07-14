@@ -1,6 +1,6 @@
 -- Per-project configuration. A single nullable JSON column on projects holds the
 -- typed ProjectConfig (agent settings, env, symlinks, post-create, rules, role
--- overrides, tracker/scm, …) Thanos resolves at spawn. NULL means unset; a non-NULL
+-- overrides, tracker/scm, …) Maestro resolves at spawn. NULL means unset; a non-NULL
 -- value is a JSON object. One blob per project keeps the registry's "SQLite twin
 -- of the YAML config" shape rather than splitting config into many columns.
 

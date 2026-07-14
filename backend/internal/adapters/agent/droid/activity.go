@@ -3,18 +3,18 @@ package droid
 import (
 	"encoding/json"
 
-	"github.com/tinhtran/thanos/backend/internal/domain"
+	"github.com/tinhtran24/maestro/backend/internal/domain"
 )
 
 // DeriveActivityState maps a Droid hook event (and its native stdin payload)
-// onto an Thanos activity state. The bool is false when the event carries no
+// onto an Maestro activity state. The bool is false when the event carries no
 // activity signal — e.g. SessionStart (metadata only) or a SessionEnd reason
-// that doesn't actually end the Thanos session — in which case the caller reports
+// that doesn't actually end the Maestro session — in which case the caller reports
 // nothing.
 //
-// event is the Thanos hook sub-command name installed in droidManagedHooks
+// event is the Maestro hook sub-command name installed in droidManagedHooks
 // ("user-prompt-submit", "stop", "notification", "session-end", ...), NOT the
-// native Droid event name. Keeping this beside hooks.go means the events Thanos
+// native Droid event name. Keeping this beside hooks.go means the events Maestro
 // installs and what they mean live in one place.
 //
 // Droid's payload shapes differ from Claude Code's in one way that matters here:
@@ -40,7 +40,7 @@ func DeriveActivityState(event string, payload []byte) (domain.ActivityState, bo
 }
 
 // sessionEndState reports exited for reasons that actually end the session.
-// "clear" keeps the same Thanos session alive (a new native session continues in
+// "clear" keeps the same Maestro session alive (a new native session continues in
 // the worktree), so it reports nothing. Any other reason — logout,
 // prompt_input_exit, other, or an absent/unknown reason on a SessionEnd that did
 // fire — is treated as a real exit. SessionEnd is not guaranteed on crash, so

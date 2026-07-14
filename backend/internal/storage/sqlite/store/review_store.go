@@ -7,8 +7,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/tinhtran/thanos/backend/internal/domain"
-	"github.com/tinhtran/thanos/backend/internal/storage/sqlite/gen"
+	"github.com/tinhtran24/maestro/backend/internal/domain"
+	"github.com/tinhtran24/maestro/backend/internal/storage/sqlite/gen"
 )
 
 // UpsertReview inserts the per-worker review row, or reuses the existing one
@@ -113,7 +113,7 @@ func (s *Store) SupersedeStaleRunningReviewRuns(ctx context.Context, sessionID d
 }
 
 // MarkReviewRunDelivered records that lifecycle delivered the worker nudge for
-// a completed Thanos-internal review pass.
+// a completed Maestro-internal review pass.
 func (s *Store) MarkReviewRunDelivered(ctx context.Context, id string, deliveredAt time.Time) (bool, error) {
 	s.writeMu.Lock()
 	defer s.writeMu.Unlock()

@@ -15,9 +15,9 @@ export function defaultDataDir(
 	homeDir: string,
 ): string | null {
 	void platform;
-	if (env.THANOS_DATA_DIR) return env.THANOS_DATA_DIR;
+	if (env.MAESTRO_DATA_DIR) return env.MAESTRO_DATA_DIR;
 	if (!homeDir) return null;
-	return path.join(homeDir, ".thanos", "data");
+	return path.join(homeDir, ".maestro", "data");
 }
 
 export async function loadOrCreateTelemetryInstallId(dataDir: string): Promise<string> {

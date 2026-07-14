@@ -1,5 +1,5 @@
 /*
- * Thanos Warm Terminal theme for Fumadocs
+ * Maestro Warm Terminal theme for Fumadocs
  * ====================================
  * CRITICAL: Fumadocs Tailwind utilities use --color-fd-* variables (NOT --fd-*).
  * We must override --color-fd-* to change colors. These are inside layer(fumadocs),
@@ -8,7 +8,7 @@
 @import "fumadocs-ui/style.css" layer(fumadocs);
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   1. COLOR OVERRIDES — override --color-fd-* with Thanos design tokens
+   1. COLOR OVERRIDES — override --color-fd-* with Maestro design tokens
    ═══════════════════════════════════════════════════════════════════════════ */
 
 :root {

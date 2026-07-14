@@ -1,7 +1,7 @@
-// Package skillassets embeds the using-to skill (the to CLI catalog) and
-// installs it into the Thanos data dir at daemon boot. Worker sessions run in a
+// Package skillassets embeds the using-maestro skill (the to CLI catalog) and
+// installs it into the Maestro data dir at daemon boot. Worker sessions run in a
 // worktree of whatever project they were spawned in, so a repo-relative
-// skills/ path only resolves when that project happens to be the Thanos repo
+// skills/ path only resolves when that project happens to be the Maestro repo
 // itself. Installing under the data dir gives every session, in any project, a
 // stable absolute path to read.
 //
@@ -20,12 +20,12 @@ import (
 	"embed"
 )
 
-//go:embed using-to dev-lifecycle
+//go:embed using-maestro dev-lifecycle
 var files embed.FS
 
-// SkillName is the using-to skill's directory name under <dataDir>/skills. It
+// SkillName is the using-maestro skill's directory name under <dataDir>/skills. It
 // stays the exported default because the to-CLI prompt pointer cites Dir().
-const SkillName = "using-to"
+const SkillName = "using-maestro"
 
 // LifecycleSkillName is the dev-lifecycle skill's directory name. It carries the
 // Analysis+Plan / Development+Testing method and the branch/commit conventions
@@ -35,7 +35,7 @@ const LifecycleSkillName = "dev-lifecycle"
 // skillNames is every embedded skill Install lays down under <dataDir>/skills.
 var skillNames = []string{SkillName, LifecycleSkillName}
 
-// Dir returns the absolute directory the using-to skill installs into for a
+// Dir returns the absolute directory the using-maestro skill installs into for a
 // given data dir. Callers building prompts use this so the path they cite always
 // matches where Install writes.
 func Dir(dataDir string) string {

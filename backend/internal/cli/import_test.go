@@ -8,13 +8,13 @@ import (
 	"testing"
 	"time"
 
-	"github.com/tinhtran/thanos/backend/internal/legacyimport"
-	"github.com/tinhtran/thanos/backend/internal/runfile"
+	"github.com/tinhtran24/maestro/backend/internal/legacyimport"
+	"github.com/tinhtran24/maestro/backend/internal/runfile"
 )
 
 func writeLegacyProject(t *testing.T) string {
 	t.Helper()
-	root := filepath.Join(t.TempDir(), ".thanos")
+	root := filepath.Join(t.TempDir(), ".maestro")
 	if err := os.MkdirAll(filepath.Join(root, "projects", "alpha", "sessions"), 0o750); err != nil {
 		t.Fatal(err)
 	}

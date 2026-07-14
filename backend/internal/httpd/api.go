@@ -6,15 +6,15 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 
-	"github.com/tinhtran/thanos/backend/internal/cdc"
-	"github.com/tinhtran/thanos/backend/internal/config"
-	"github.com/tinhtran/thanos/backend/internal/httpd/apispec"
-	"github.com/tinhtran/thanos/backend/internal/httpd/controllers"
-	"github.com/tinhtran/thanos/backend/internal/httpd/envelope"
-	"github.com/tinhtran/thanos/backend/internal/ports"
-	prsvc "github.com/tinhtran/thanos/backend/internal/service/pr"
-	projectsvc "github.com/tinhtran/thanos/backend/internal/service/project"
-	reviewsvc "github.com/tinhtran/thanos/backend/internal/service/review"
+	"github.com/tinhtran24/maestro/backend/internal/cdc"
+	"github.com/tinhtran24/maestro/backend/internal/config"
+	"github.com/tinhtran24/maestro/backend/internal/httpd/apispec"
+	"github.com/tinhtran24/maestro/backend/internal/httpd/controllers"
+	"github.com/tinhtran24/maestro/backend/internal/httpd/envelope"
+	"github.com/tinhtran24/maestro/backend/internal/ports"
+	prsvc "github.com/tinhtran24/maestro/backend/internal/service/pr"
+	projectsvc "github.com/tinhtran24/maestro/backend/internal/service/project"
+	reviewsvc "github.com/tinhtran24/maestro/backend/internal/service/review"
 )
 
 // APIDeps bundles every service the API layer's controllers depend on.

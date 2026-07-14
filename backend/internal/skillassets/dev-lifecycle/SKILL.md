@@ -1,14 +1,14 @@
 ---
 name: dev-lifecycle
-description: Full-cycle delivery method for Thanos sessions — Analysis and Plan when a task is created, then Development and Testing, then a conventionally-named branch and Conventional Commit. Use when planning a task draft or driving a worker task from start to pull request.
-trigger: Planning a task (Analysis + Plan) or executing one (Development + Testing + branch/commit) inside a Thanos session.
+description: Full-cycle delivery method for Maestro sessions — Analysis and Plan when a task is created, then Development and Testing, then a conventionally-named branch and Conventional Commit. Use when planning a task draft or driving a worker task from start to pull request.
+trigger: Planning a task (Analysis + Plan) or executing one (Development + Testing + branch/commit) inside a Maestro session.
 ---
 
 # Development lifecycle
 
-This is the delivery method every Thanos task follows. It distills a full
+This is the delivery method every Maestro task follows. It distills a full
 software lifecycle (Define → Plan → Build → Verify → Review → Ship) into the two
-moments Thanos cares about: **creating a task** (Analysis + Plan) and **doing the
+moments Maestro cares about: **creating a task** (Analysis + Plan) and **doing the
 task** (Development + Testing, then branch + commit). Method credit:
 [addyosmani/agent-skills](https://github.com/addyosmani/agent-skills).
 

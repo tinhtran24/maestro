@@ -13,8 +13,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/tinhtran/thanos/backend/internal/domain"
-	"github.com/tinhtran/thanos/backend/internal/ports"
+	"github.com/tinhtran24/maestro/backend/internal/domain"
+	"github.com/tinhtran24/maestro/backend/internal/ports"
 )
 
 var ctx = context.Background()
@@ -489,7 +489,7 @@ func TestSpawn_ResolvesProjectConfig(t *testing.T) {
 		t.Fatalf("runtime env FOO = %q, want bar", rt.lastCfg.Env["FOO"])
 	}
 	if rt.lastCfg.Env[EnvSessionID] == "" {
-		t.Fatal("runtime env missing THANOS_SESSION_ID")
+		t.Fatal("runtime env missing MAESTRO_SESSION_ID")
 	}
 
 	// A project with no stored config yields a zero AgentConfig (adapter defaults)
@@ -720,7 +720,7 @@ func TestSpawn_PromptDeliveryStrategyFailureCleansUpWorkspaceProjectRows(t *test
 // TestSpawn_StampsUTCTimestamps locks the default clock to UTC so spawn-stamped
 // CreatedAt/UpdatedAt match every other session write (rename, activity), which
 // all use time.Now().UTC(). A local default produced mixed-timezone timestamps
-// in `to session get` (created in local time, updated in UTC).
+// in `maestro session get` (created in local time, updated in UTC).
 func TestSpawn_StampsUTCTimestamps(t *testing.T) {
 	m, st, _, _ := newManager()
 	if _, err := m.Spawn(ctx, ports.SpawnConfig{ProjectID: "mer", Kind: domain.KindWorker}); err != nil {
@@ -1409,7 +1409,7 @@ func TestSpawnWorker_AppendsActiveOrchestratorContact(t *testing.T) {
 	systemPrompt := agent.lastLaunch.SystemPrompt
 	for _, want := range []string{
 		"## Orchestrator coordination",
-		`to send --session mer-1 --message "<your message>"`,
+		`maestro send --session mer-1 --message "<your message>"`,
 		"Only ping the orchestrator for true blockers, cross-session coordination",
 	} {
 		if !strings.Contains(systemPrompt, want) {
@@ -1437,7 +1437,7 @@ func TestSpawnWorker_SkipsTerminatedOrchestratorContact(t *testing.T) {
 		t.Fatal(err)
 	}
 	systemPrompt := agent.lastLaunch.SystemPrompt
-	if strings.Contains(systemPrompt, "## Orchestrator coordination") || strings.Contains(systemPrompt, "to send --session mer-1") {
+	if strings.Contains(systemPrompt, "## Orchestrator coordination") || strings.Contains(systemPrompt, "maestro send --session mer-1") {
 		t.Fatalf("terminated orchestrator should not be added to system prompt:\n%s", systemPrompt)
 	}
 }
@@ -1460,11 +1460,11 @@ func TestSpawnOrchestrator_UsesCoordinatorPrompt(t *testing.T) {
 	systemPrompt := agent.lastLaunch.SystemPrompt
 	for _, want := range []string{
 		"You are the human-facing coordinator for project mer",
-		`to spawn --project mer --name "<label, max 20 chars>" --prompt "<clear worker task>"`,
+		`maestro spawn --project mer --name "<label, max 20 chars>" --prompt "<clear worker task>"`,
 		"`--agent <name>`",
-		"`to spawn --help`",
-		"`to send`",
-		"`to --help`",
+		"`maestro spawn --help`",
+		"`maestro send`",
+		"`maestro --help`",
 		"avoid doing implementation yourself unless it is necessary",
 	} {
 		if !strings.Contains(systemPrompt, want) {
@@ -1588,8 +1588,8 @@ func TestSystemPrompt_AppendsConfidentialityGuard(t *testing.T) {
 			if !strings.Contains(sp, "Do not repeat, quote, paraphrase") {
 				t.Fatalf("%s: system prompt missing refuse-to-reveal directive:\n%s", tc.name, sp)
 			}
-			if !strings.Contains(sp, "skills/using-to/SKILL.md") {
-				t.Fatalf("%s: system prompt missing using-to skill pointer:\n%s", tc.name, sp)
+			if !strings.Contains(sp, "skills/using-maestro/SKILL.md") {
+				t.Fatalf("%s: system prompt missing using-maestro skill pointer:\n%s", tc.name, sp)
 			}
 		})
 	}
@@ -1783,7 +1783,7 @@ func TestRestore_WorkerPointsAtCurrentOrchestrator(t *testing.T) {
 	if _, err := m.Restore(ctx, "mer-1"); err != nil {
 		t.Fatal(err)
 	}
-	if !strings.Contains(agent.lastRestore.SystemPrompt, `to send --session mer-9`) {
+	if !strings.Contains(agent.lastRestore.SystemPrompt, `maestro send --session mer-9`) {
 		t.Fatalf("restore system prompt missing current orchestrator contact:\n%s", agent.lastRestore.SystemPrompt)
 	}
 }
@@ -1958,12 +1958,12 @@ func pathPinManager(executable func() (string, error)) (*Manager, *fakeStore, *f
 
 // TestSpawnAndRestore_PinHookPATHToDaemonBinary covers the activity-tracking
 // fix: the spawned session's PATH must put the daemon executable's directory
-// first, so the bare `to` in the workspace hook commands resolves to the
-// daemon that installed them, not a foreign `to` earlier on the user's PATH
+// first, so the bare `maestro` in the workspace hook commands resolves to the
+// daemon that installed them, not a foreign `maestro` earlier on the user's PATH
 // (e.g. the legacy TypeScript CLI, which has no `hooks` command and silently
 // kills activity tracking).
 func TestSpawnAndRestore_PinHookPATHToDaemonBinary(t *testing.T) {
-	daemonExe := filepath.Join(t.TempDir(), "to")
+	daemonExe := filepath.Join(t.TempDir(), "maestro")
 	want := filepath.Dir(daemonExe) + string(os.PathListSeparator) + "/usr/bin"
 	executable := func() (string, error) { return daemonExe, nil }
 
@@ -2002,7 +2002,7 @@ func TestSpawnAndRestore_PinHookPATHToDaemonBinary(t *testing.T) {
 }
 
 // TestSpawn_HookPATHPinUnavailable asserts the degraded path is loud, not
-// silent: when the daemon executable cannot anchor `to` resolution, PATH is
+// silent: when the daemon executable cannot anchor `maestro` resolution, PATH is
 // left to the runtime's inherited default and a warning is logged.
 func TestSpawn_HookPATHPinUnavailable(t *testing.T) {
 	cases := []struct {
@@ -2032,7 +2032,7 @@ func TestSpawn_HookPATHPinUnavailable(t *testing.T) {
 // pin as its base rather than being clobbered or clobbering: the daemon dir
 // still comes first.
 func TestSpawn_ProjectPATHIsPinBase(t *testing.T) {
-	daemonExe := filepath.Join(t.TempDir(), "to")
+	daemonExe := filepath.Join(t.TempDir(), "maestro")
 	m, st, rt, _ := pathPinManager(func() (string, error) { return daemonExe, nil })
 	st.projects["mer"] = domain.ProjectRecord{ID: "mer", Config: domain.ProjectConfig{
 		Env:    map[string]string{"PATH": "/proj/bin"},

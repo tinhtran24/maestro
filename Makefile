@@ -1,7 +1,7 @@
-# Thanos — build & run
+# Maestro — build & run
 #
 # Two parts:
-#   backend/  Go daemon + `to` CLI (Thanos)
+#   backend/  Go daemon + `to` CLI (Maestro)
 #   app/      Electron + Vite + React desktop app
 #
 # Override the package manager with `make PM=npm <target>` if you don't use pnpm.
@@ -21,7 +21,7 @@ NODE := ./scripts/with-node.sh
 
 .PHONY: run dev
 run: dev ## Alias for `dev`: launch the desktop app
-dev: app/node_modules ## Run the desktop app (Electron); spawns the daemon via `go run ./cmd/to daemon`
+dev: app/node_modules ## Run the desktop app (Electron); spawns the daemon via `go run ./cmd/maestro daemon`
 	cd app && $(CURDIR)/$(NODE) $(PM) run dev
 
 .PHONY: dev-web
@@ -30,7 +30,7 @@ dev-web: app/node_modules ## Run only the renderer in a browser (no Electron); n
 
 .PHONY: daemon
 daemon: ## Run the backend daemon directly in the foreground
-	cd backend && $(GO) run ./cmd/to daemon
+	cd backend && $(GO) run ./cmd/maestro daemon
 
 ## ----------------------------------------------------------------------------
 ## Build
@@ -40,10 +40,10 @@ daemon: ## Run the backend daemon directly in the foreground
 build: build-backend build-app ## Build the `to` CLI and package the desktop app
 
 .PHONY: build-backend cli
-build-backend cli: ## Build the `to` CLI binary into ./bin/to
+build-backend cli: ## Build the `maestro` CLI binary into ./bin/maestro
 	mkdir -p $(BIN)
-	cd backend && $(GO) build -o ../$(BIN)/to ./cmd/to
-	@echo "built $(BIN)/to"
+	cd backend && $(GO) build -o ../$(BIN)/maestro ./cmd/maestro
+	@echo "built $(BIN)/maestro"
 
 .PHONY: build-daemon
 build-daemon: ## Build the bundled daemon binary into app/daemon/
@@ -70,7 +70,7 @@ sqlc: ## Regenerate backend sqlc code from queries/migrations
 	$(PM) run sqlc
 
 .PHONY: icons
-icons: ## Regenerate app icons from thanos-logo.svg
+icons: ## Regenerate app icons from maestro-logo.svg
 	./scripts/generate-icons.sh
 
 .PHONY: test test-backend test-app

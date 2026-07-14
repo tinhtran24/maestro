@@ -11,17 +11,17 @@ import (
 	"strings"
 )
 
-// GitignoreSentinel marks a workspace .gitignore as Thanos-managed so
+// GitignoreSentinel marks a workspace .gitignore as Maestro-managed so
 // EnsureWorkspaceGitignore can rewrite its own file idempotently while never
 // touching a user- or repo-provided .gitignore at the same path.
-const GitignoreSentinel = "# managed by thanos: Thanos hook files stay out of git status"
+const GitignoreSentinel = "# managed by maestro: Maestro hook files stay out of git status"
 
 // EnsureWorkspaceGitignore writes a self-ignoring .gitignore into dir covering
-// the named Thanos-installed files. Hook files land in fresh session worktrees as
+// the named Maestro-installed files. Hook files land in fresh session worktrees as
 // untracked files, and `git worktree remove` (without --force) refuses on ANY
-// untracked file — without this ignore, Thanos's own hook files would make every
+// untracked file — without this ignore, Maestro's own hook files would make every
 // session workspace permanently undeletable. The patterns are anchored to dir
-// and name only Thanos's files, so anything else an agent drops in the same
+// and name only Maestro's files, so anything else an agent drops in the same
 // directory still counts as dirt and keeps blocking teardown.
 //
 // A .gitignore at the same path that lacks the sentinel is left untouched and

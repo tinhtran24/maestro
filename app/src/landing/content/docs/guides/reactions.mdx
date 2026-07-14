@@ -7,7 +7,7 @@ Reactions are configured under `reactions:` (global) or `projects.*.reactions:` 
 
 ## Recipe: Watch-only mode
 
-Disable all automated agent messages while keeping notifications active. Useful during onboarding or in sensitive projects where you want to observe before letting Thanos act:
+Disable all automated agent messages while keeping notifications active. Useful during onboarding or in sensitive projects where you want to observe before letting Maestro act:
 
 ```yaml
 reactions:
@@ -36,8 +36,8 @@ reactions:
 
 <Callout type="warning">
 	The `auto-merge` action currently calls `notifyHuman()` internally — it does not perform a real merge. Actual merging
-	still depends on your repository's branch protection rules and the "Allow auto-merge" setting on GitHub. Thanos does not
-	bypass these gates. Treat `auto-merge` as an opt-in signal for when the SCM plugin adds real merge support.
+	still depends on your repository's branch protection rules and the "Allow auto-merge" setting on GitHub. Maestro does
+	not bypass these gates. Treat `auto-merge` as an opt-in signal for when the SCM plugin adds real merge support.
 </Callout>
 
 ## Recipe: Custom CI failure message
@@ -51,7 +51,7 @@ reactions:
       CI is failing. Run `pnpm test` locally and fix the failing tests before pushing again. Prioritise type errors first.
 ```
 
-The two-pass CI behavior still applies: Thanos sends your custom `message` on the first pass (transition), then follows up in the next poll cycle with a second message listing every failing check by name and URL. Your `message` override affects only the first pass — the structured check list fires regardless.
+The two-pass CI behavior still applies: Maestro sends your custom `message` on the first pass (transition), then follows up in the next poll cycle with a second message listing every failing check by name and URL. Your `message` override affects only the first pass — the structured check list fires regardless.
 
 ## Recipe: Aggressive escalation
 
@@ -67,7 +67,7 @@ reactions:
     escalateAfter: "5m"
 ```
 
-With `retries: 1` and `escalateAfter: "5m"`, Thanos will escalate after one failed recovery attempt or five minutes — whichever comes first.
+With `retries: 1` and `escalateAfter: "5m"`, Maestro will escalate after one failed recovery attempt or five minutes — whichever comes first.
 
 ## Recipe: Ignore bugbot noise
 
@@ -79,7 +79,7 @@ reactions:
     auto: false
 ```
 
-Thanos identifies bot comments by author login. The current hardcoded bot list in `scm-github` includes `cursor[bot]`, `github-actions[bot]`, `codecov[bot]`, and `sonarcloud[bot]`. Any review comment from these accounts triggers `bugbot-comments` rather than `changes-requested`. Setting `auto: false` here stops Thanos from nudging the agent about bot feedback while leaving human review comments fully active.
+Maestro identifies bot comments by author login. The current hardcoded bot list in `scm-github` includes `cursor[bot]`, `github-actions[bot]`, `codecov[bot]`, and `sonarcloud[bot]`. Any review comment from these accounts triggers `bugbot-comments` rather than `changes-requested`. Setting `auto: false` here stops Maestro from nudging the agent about bot feedback while leaving human review comments fully active.
 
 ## Recipe: Per-project overrides
 
@@ -126,9 +126,9 @@ The `threshold` field is used exclusively by `agent-stuck`. A session must be co
 		Full schema, default values, escalation semantics, and the two-pass CI design.
 	</Card>
 	<Card title="CI recovery guide" href="/docs/guides/ci-recovery">
-		Step-by-step walkthrough of Thanos's CI failure recovery loop.
+		Step-by-step walkthrough of Maestro's CI failure recovery loop.
 	</Card>
 	<Card title="Review loop guide" href="/docs/guides/review-loop">
-		How Thanos handles review comments and the changes-requested reaction.
+		How Maestro handles review comments and the changes-requested reaction.
 	</Card>
 </Cards>

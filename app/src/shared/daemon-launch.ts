@@ -11,7 +11,7 @@ function joinPath(...segments: string[]): string {
 }
 
 export function bundledDaemonBinaryName(platform: NodeJS.Platform): string {
-	return platform === "win32" ? "to.exe" : "to";
+	return platform === "win32" ? "maestro.exe" : "maestro";
 }
 
 export function resolveDaemonLaunch(
@@ -21,7 +21,7 @@ export function resolveDaemonLaunch(
 	appPath: string,
 	platform: NodeJS.Platform,
 ): DaemonLaunchSpec | null {
-	const configuredCommand = env.THANOS_DAEMON_COMMAND?.trim();
+	const configuredCommand = env.MAESTRO_DAEMON_COMMAND?.trim();
 	if (configuredCommand) {
 		return {
 			command: configuredCommand,
@@ -35,7 +35,7 @@ export function resolveDaemonLaunch(
 	if (!isPackaged) {
 		return {
 			command: "go",
-			args: ["run", "./cmd/to", "daemon"],
+			args: ["run", "./cmd/maestro", "daemon"],
 			cwd: joinPath(appPath, "..", "backend"),
 			shell: false,
 			source: "dev",

@@ -8,7 +8,7 @@ package agentbase
 import (
 	"context"
 
-	"github.com/tinhtran/thanos/backend/internal/ports"
+	"github.com/tinhtran24/maestro/backend/internal/ports"
 )
 
 // Base provides no-op defaults for the optional ports.Agent methods. Embed it in

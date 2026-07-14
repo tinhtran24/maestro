@@ -10,7 +10,7 @@ name: Testing build (all platforms)
 #   macOS   -> .zip (arm64; dmg + signing are follow-ups)
 #
 # Unsigned: macOS is quarantined/Gatekeeper-blocked once downloaded
-# (xattr -dr com.apple.quarantine "Thanos.app"); Windows SmartScreen
+# (xattr -dr com.apple.quarantine "Maestro.app"); Windows SmartScreen
 # warns ("More info" -> "Run anyway"). Each OS builds on its own native runner so
 # build-daemon.mjs compiles the bundled to for that platform (host == target).
 
@@ -84,8 +84,8 @@ jobs:
           # Per-user assisted install lands under %LOCALAPPDATA%\Programs; a
           # per-machine install would land under Program Files.
           $installDir = @(
-            (Join-Path $env:LOCALAPPDATA 'Programs\Thanos'),
-            (Join-Path ${env:ProgramFiles} 'Thanos')
+            (Join-Path $env:LOCALAPPDATA 'Programs\Maestro'),
+            (Join-Path ${env:ProgramFiles} 'Maestro')
           ) | Where-Object { Test-Path $_ } | Select-Object -First 1
           if ($installDir) {
             Write-Host "INSTALL OK: $installDir created"
@@ -111,7 +111,7 @@ jobs:
           gh release create "$TAG" --prerelease --target "$GITHUB_SHA" --title "$TAG" \
             --notes "Unsigned testing build (Linux .deb / Windows NSIS .exe / macOS .zip). Not signed; for testing only." \
             || true
-          # NUL-delimited to survive spaces in the app name ("Thanos-...").
+          # NUL-delimited to survive spaces in the app name ("Maestro-...").
           find out/make -type f -print0 | while IFS= read -r -d '' f; do
             echo "uploading: $f"
             gh release upload "$TAG" "$f" --clobber

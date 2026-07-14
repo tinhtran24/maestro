@@ -1,10 +1,10 @@
 //go:build e2e
 
-// Package cli_test holds the end-to-end suite for the `to` CLI. It builds the
+// Package cli_test holds the end-to-end suite for the `maestro` CLI. It builds the
 // real binary and drives it (start/status/doctor/stop + the daemon-control HTTP
 // surface) against fully isolated state — a per-test temp run-file, data dir,
 // and an OS-assigned free loopback port — so it never touches a developer's real
-// Thanos install. Unlike the Linux-only container smoke test, this runs natively on
+// Maestro install. Unlike the Linux-only container smoke test, this runs natively on
 // every OS in CI (ubuntu/macos/windows), which is the only way to exercise the
 // unix setsid vs Windows CREATE_NEW_PROCESS_GROUP detach paths and the per-OS
 // os.UserConfigDir resolution.
@@ -38,11 +38,11 @@ func TestMain(m *testing.M) {
 		fmt.Fprintln(os.Stderr, "e2e: mktemp:", err)
 		os.Exit(1)
 	}
-	aoBin = filepath.Join(dir, "to")
+	aoBin = filepath.Join(dir, "maestro")
 	if runtime.GOOS == "windows" {
 		aoBin += ".exe"
 	}
-	build := exec.Command("go", "build", "-o", aoBin, "github.com/tinhtran/thanos/backend/cmd/to")
+	build := exec.Command("go", "build", "-o", aoBin, "github.com/tinhtran24/maestro/backend/cmd/maestro")
 	build.Stdout, build.Stderr = os.Stderr, os.Stderr
 	if err := build.Run(); err != nil {
 		fmt.Fprintln(os.Stderr, "e2e: build to:", err)
@@ -71,8 +71,8 @@ func newEnv(t *testing.T) env {
 }
 
 // environ builds the child env: the ambient environment with every inherited
-// AO_* var stripped (so a real daemon's THANOS_PORT can't leak in) plus our isolated
-// settings. portOverride, when non-empty, replaces the numeric THANOS_PORT — used to
+// AO_* var stripped (so a real daemon's MAESTRO_PORT can't leak in) plus our isolated
+// settings. portOverride, when non-empty, replaces the numeric MAESTRO_PORT — used to
 // inject an invalid value.
 func (e env) environ(portOverride string) []string {
 	out := make([]string, 0, len(os.Environ())+3)
@@ -89,7 +89,7 @@ func (e env) environ(portOverride string) []string {
 	if portOverride != "" {
 		port = portOverride
 	}
-	return append(out, "THANOS_RUN_FILE="+e.runFile, "THANOS_DATA_DIR="+e.dataDir, "THANOS_PORT="+port, "GH_CONFIG_DIR="+filepath.Join(e.dataDir, "gh-config"))
+	return append(out, "MAESTRO_RUN_FILE="+e.runFile, "MAESTRO_DATA_DIR="+e.dataDir, "MAESTRO_PORT="+port, "GH_CONFIG_DIR="+filepath.Join(e.dataDir, "gh-config"))
 }
 
 func freePort(t *testing.T) int {
@@ -102,7 +102,7 @@ func freePort(t *testing.T) int {
 	return l.Addr().(*net.TCPAddr).Port
 }
 
-// run executes `to args...` in env e and returns combined output + exit code.
+// run executes `maestro args...` in env e and returns combined output + exit code.
 func (e env) run(t *testing.T, args ...string) (string, int) {
 	t.Helper()
 	return e.runEnv(t, e.environ(""), args...)
@@ -123,7 +123,7 @@ func (e env) runEnv(t *testing.T, environ []string, args ...string) (string, int
 			t.Fatalf("run %v: %v\n%s", args, err, out)
 		}
 	}
-	t.Logf("$ to %s\n%s(exit %d)", strings.Join(args, " "), out, code)
+	t.Logf("$ maestro %s\n%s(exit %d)", strings.Join(args, " "), out, code)
 	return out, code
 }
 
@@ -135,9 +135,9 @@ func asExit(err error, target **exec.ExitError) bool {
 	return false
 }
 
-// startDaemon brings the daemon up and registers a stop on cleanup. `to start`
+// startDaemon brings the daemon up and registers a stop on cleanup. `maestro start`
 // no longer spawns the daemon (the desktop app owns it now), so the e2e suite
-// drives the hidden `to daemon` command directly and polls for readiness.
+// drives the hidden `maestro daemon` command directly and polls for readiness.
 func (e env) startDaemon(t *testing.T) {
 	t.Helper()
 	cmd := exec.Command(aoBin, "daemon")
@@ -211,8 +211,8 @@ func TestE2E_DoctorDoesNotTouchTheStore(t *testing.T) {
 	mustContain(t, out, "database not created yet") // sqlite WARN, never migrated
 
 	// doctor must NOT create/migrate the DB — the daemon is the sole writer.
-	if _, err := os.Stat(filepath.Join(e.dataDir, "thanos.db")); err == nil {
-		t.Fatal("doctor created thanos.db; the CLI must not open/migrate the store")
+	if _, err := os.Stat(filepath.Join(e.dataDir, "maestro.db")); err == nil {
+		t.Fatal("doctor created maestro.db; the CLI must not open/migrate the store")
 	}
 
 	if out, code := e.run(t, "doctor", "--json"); code != 0 || !strings.Contains(out, `"ok": true`) {
@@ -243,15 +243,15 @@ func TestE2E_Lifecycle(t *testing.T) {
 	mustContain(t, out, fmt.Sprintf(`"port": %d`, e.port))
 
 	// the daemon (not the CLI) has created + migrated the store
-	if _, err := os.Stat(filepath.Join(e.dataDir, "thanos.db")); err != nil {
-		t.Fatalf("daemon should have created thanos.db: %v", err)
+	if _, err := os.Stat(filepath.Join(e.dataDir, "maestro.db")); err != nil {
+		t.Fatalf("daemon should have created maestro.db: %v", err)
 	}
 	out, _ = e.run(t, "doctor")
 	mustContain(t, out, "migrations are applied by the daemon")
 
 	// /healthz identity
 	body := httpGet(t, e.port, "/healthz")
-	mustContain(t, body, "thanos-daemon")
+	mustContain(t, body, "maestro-daemon")
 
 	if out, code := e.run(t, "stop"); code != 0 || !strings.Contains(out, "stopped") {
 		t.Fatalf("stop: exit %d, out %s", code, out)
@@ -314,7 +314,7 @@ func TestE2E_ExitCodes(t *testing.T) {
 	}
 	// invalid config is a runtime error (1), not a usage error (2).
 	if _, code := e.runEnv(t, e.environ("notaport"), "status"); code != 1 {
-		t.Fatalf("invalid THANOS_PORT exit %d, want 1", code)
+		t.Fatalf("invalid MAESTRO_PORT exit %d, want 1", code)
 	}
 }
 

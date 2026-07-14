@@ -9,10 +9,10 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/tinhtran/thanos/backend/internal/adapters"
-	"github.com/tinhtran/thanos/backend/internal/adapters/agent/authprobe"
-	"github.com/tinhtran/thanos/backend/internal/domain"
-	"github.com/tinhtran/thanos/backend/internal/ports"
+	"github.com/tinhtran24/maestro/backend/internal/adapters"
+	"github.com/tinhtran24/maestro/backend/internal/adapters/agent/authprobe"
+	"github.com/tinhtran24/maestro/backend/internal/domain"
+	"github.com/tinhtran24/maestro/backend/internal/ports"
 )
 
 func TestManifestIDIsKiro(t *testing.T) {
@@ -277,13 +277,13 @@ func TestGetAgentHooksInstallsKiroHooks(t *testing.T) {
 	cfg := ports.WorkspaceHookConfig{
 		DataDir:       t.TempDir(),
 		SessionID:     "sess-1",
-		SystemPrompt:  "standing Thanos instructions",
+		SystemPrompt:  "standing Maestro instructions",
 		WorkspacePath: workspace,
 	}
 	if err := plugin.GetAgentHooks(context.Background(), cfg); err != nil {
 		t.Fatal(err)
 	}
-	// A second install must not duplicate Thanos hook commands.
+	// A second install must not duplicate Maestro hook commands.
 	if err := plugin.GetAgentHooks(context.Background(), cfg); err != nil {
 		t.Fatal(err)
 	}
@@ -307,7 +307,7 @@ func TestGetAgentHooksInstallsKiroHooks(t *testing.T) {
 	if err := json.Unmarshal(topLevel["prompt"], &prompt); err != nil {
 		t.Fatalf("decode prompt from %s: %v", data, err)
 	}
-	if prompt != "standing Thanos instructions" {
+	if prompt != "standing Maestro instructions" {
 		t.Fatalf("prompt = %q, want system prompt", prompt)
 	}
 
@@ -378,7 +378,7 @@ func TestGetAgentHooksWritesConfiguredModel(t *testing.T) {
 		Config:        ports.AgentConfig{Model: "claude-sonnet-4-5"},
 		DataDir:       t.TempDir(),
 		SessionID:     "sess-1",
-		SystemPrompt:  "standing Thanos instructions",
+		SystemPrompt:  "standing Maestro instructions",
 		WorkspacePath: workspace,
 	}
 	if err := plugin.GetAgentHooks(context.Background(), cfg); err != nil {
@@ -418,7 +418,7 @@ func TestGetAgentHooksOverwritesStaleConfiguredModel(t *testing.T) {
 		Config:        ports.AgentConfig{Model: "project-model"},
 		DataDir:       t.TempDir(),
 		SessionID:     "sess-1",
-		SystemPrompt:  "standing Thanos instructions",
+		SystemPrompt:  "standing Maestro instructions",
 		WorkspacePath: workspace,
 	}
 	if err := plugin.GetAgentHooks(context.Background(), cfg); err != nil {
@@ -464,7 +464,7 @@ func TestGetAgentHooksClearsStaleModelWhenConfigRemoved(t *testing.T) {
 	cfg := ports.WorkspaceHookConfig{
 		DataDir:       t.TempDir(),
 		SessionID:     "sess-1",
-		SystemPrompt:  "standing Thanos instructions",
+		SystemPrompt:  "standing Maestro instructions",
 		WorkspacePath: workspace,
 	}
 	if err := plugin.GetAgentHooks(context.Background(), cfg); err != nil {

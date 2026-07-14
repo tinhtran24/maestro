@@ -6,22 +6,22 @@ import (
 	"log/slog"
 	"path/filepath"
 
-	"github.com/tinhtran/thanos/backend/internal/adapters"
-	"github.com/tinhtran/thanos/backend/internal/adapters/agent/activitydispatch"
-	agentregistry "github.com/tinhtran/thanos/backend/internal/adapters/agent/registry"
-	"github.com/tinhtran/thanos/backend/internal/adapters/reviewer"
-	"github.com/tinhtran/thanos/backend/internal/adapters/runtime/runtimeselect"
-	"github.com/tinhtran/thanos/backend/internal/adapters/workspace/gitworktree"
-	"github.com/tinhtran/thanos/backend/internal/config"
-	"github.com/tinhtran/thanos/backend/internal/domain"
-	"github.com/tinhtran/thanos/backend/internal/lifecycle"
-	"github.com/tinhtran/thanos/backend/internal/observe/reaper"
-	"github.com/tinhtran/thanos/backend/internal/ports"
-	reviewcore "github.com/tinhtran/thanos/backend/internal/review"
-	reviewsvc "github.com/tinhtran/thanos/backend/internal/service/review"
-	sessionsvc "github.com/tinhtran/thanos/backend/internal/service/session"
-	sessionmanager "github.com/tinhtran/thanos/backend/internal/session_manager"
-	"github.com/tinhtran/thanos/backend/internal/storage/sqlite"
+	"github.com/tinhtran24/maestro/backend/internal/adapters"
+	"github.com/tinhtran24/maestro/backend/internal/adapters/agent/activitydispatch"
+	agentregistry "github.com/tinhtran24/maestro/backend/internal/adapters/agent/registry"
+	"github.com/tinhtran24/maestro/backend/internal/adapters/reviewer"
+	"github.com/tinhtran24/maestro/backend/internal/adapters/runtime/runtimeselect"
+	"github.com/tinhtran24/maestro/backend/internal/adapters/workspace/gitworktree"
+	"github.com/tinhtran24/maestro/backend/internal/config"
+	"github.com/tinhtran24/maestro/backend/internal/domain"
+	"github.com/tinhtran24/maestro/backend/internal/lifecycle"
+	"github.com/tinhtran24/maestro/backend/internal/observe/reaper"
+	"github.com/tinhtran24/maestro/backend/internal/ports"
+	reviewcore "github.com/tinhtran24/maestro/backend/internal/review"
+	reviewsvc "github.com/tinhtran24/maestro/backend/internal/service/review"
+	sessionsvc "github.com/tinhtran24/maestro/backend/internal/service/session"
+	sessionmanager "github.com/tinhtran24/maestro/backend/internal/session_manager"
+	"github.com/tinhtran24/maestro/backend/internal/storage/sqlite"
 )
 
 type notificationSink interface {
@@ -90,7 +90,7 @@ func startSession(cfg config.Config, runtime runtimeselect.Runtime, store *sqlit
 		return nil, nil, nil, err
 	}
 	ws, err := gitworktree.New(gitworktree.Options{
-		// Per-session worktrees live under the data dir, so a single THANOS_DATA_DIR
+		// Per-session worktrees live under the data dir, so a single MAESTRO_DATA_DIR
 		// override moves all durable per-user state together.
 		ManagedRoot: filepath.Join(cfg.DataDir, "worktrees"),
 		// Resolve each project's source repo from the projects table, so a
@@ -212,7 +212,7 @@ func (a agentRegistry) Agent(harness domain.AgentHarness) (ports.Agent, bool) {
 
 // buildAgentResolver constructs the per-session agent resolver the Session
 // Manager consumes (sessionmanager.Deps.Agents): a registry of the shipped
-// adapters. It still validates THANOS_AGENT at startup for compatibility with the
+// adapters. It still validates MAESTRO_AGENT at startup for compatibility with the
 // config surface, but worker/orchestrator spawns must provide a resolved
 // harness before calling Agent.
 func buildAgentResolver(defaultAgent string, log *slog.Logger) (ports.AgentResolver, error) {
@@ -249,7 +249,7 @@ func (r projectRepoResolver) RepoPath(projectID domain.ProjectID) (string, error
 		return "", fmt.Errorf("look up project %q: %w", projectID, err)
 	}
 	if !ok {
-		return "", fmt.Errorf("no project registered with id %q — add one with `to project add`: %w", projectID, sessionmanager.ErrProjectNotResolvable)
+		return "", fmt.Errorf("no project registered with id %q — add one with `maestro project add`: %w", projectID, sessionmanager.ErrProjectNotResolvable)
 	}
 	if !rec.ArchivedAt.IsZero() {
 		return "", fmt.Errorf("project %q is archived: %w", projectID, sessionmanager.ErrProjectNotResolvable)

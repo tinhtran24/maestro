@@ -9,10 +9,10 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/tinhtran/thanos/backend/internal/domain"
-	"github.com/tinhtran/thanos/backend/internal/lifecycle"
-	"github.com/tinhtran/thanos/backend/internal/ports"
-	reviewcore "github.com/tinhtran/thanos/backend/internal/review"
+	"github.com/tinhtran24/maestro/backend/internal/domain"
+	"github.com/tinhtran24/maestro/backend/internal/lifecycle"
+	"github.com/tinhtran24/maestro/backend/internal/ports"
+	reviewcore "github.com/tinhtran24/maestro/backend/internal/review"
 )
 
 // ErrInvalid and ErrNotFound re-export the engine sentinels so the HTTP

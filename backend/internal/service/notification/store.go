@@ -3,7 +3,7 @@ package notification
 import (
 	"context"
 
-	"github.com/tinhtran/thanos/backend/internal/domain"
+	"github.com/tinhtran24/maestro/backend/internal/domain"
 )
 
 // Store is the notification service's read persistence surface.

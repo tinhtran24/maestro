@@ -1,4 +1,4 @@
-// Package activitystate holds the standard mapping from an Thanos hook sub-command
+// Package activitystate holds the standard mapping from an Maestro hook sub-command
 // name onto an activity state. Most adapters install the same
 // session-start/user-prompt-submit/stop/permission-request callbacks and derive
 // activity identically from the event name alone; they share this deriver rather
@@ -6,9 +6,9 @@
 // grained state (claude-code, codex, droid) keep their own deriver.
 package activitystate
 
-import "github.com/tinhtran/thanos/backend/internal/domain"
+import "github.com/tinhtran24/maestro/backend/internal/domain"
 
-// StandardDeriveActivityState maps a hook sub-command name onto an Thanos activity
+// StandardDeriveActivityState maps a hook sub-command name onto an Maestro activity
 // state. The bool is false when the event carries no activity signal. The
 // payload is ignored: this is the name-only mapping shared by adapters whose
 // hooks report activity purely through which callback fired.

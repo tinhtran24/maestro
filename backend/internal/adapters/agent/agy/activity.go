@@ -1,13 +1,13 @@
 package agy
 
 import (
-	"github.com/tinhtran/thanos/backend/internal/domain"
+	"github.com/tinhtran24/maestro/backend/internal/domain"
 )
 
-// DeriveActivityState maps an Agy hook event onto an Thanos activity state. The
+// DeriveActivityState maps an Agy hook event onto an Maestro activity state. The
 // bool is false when the event carries no activity signal.
 //
-// event is the Thanos hook sub-command name installed in agyManagedHooks:
+// event is the Maestro hook sub-command name installed in agyManagedHooks:
 // "session-start", "session-end", "before-agent", "after-agent", "after-tool".
 func DeriveActivityState(event string, _ []byte) (domain.ActivityState, bool) {
 	switch event {

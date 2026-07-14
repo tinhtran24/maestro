@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/tinhtran/thanos/backend/internal/domain"
+	"github.com/tinhtran24/maestro/backend/internal/domain"
 )
 
 // PRWriter records the PR facts a PR observation carries. The pr table's own DB

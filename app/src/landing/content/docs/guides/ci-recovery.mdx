@@ -1,11 +1,11 @@
 ---
 title: CI recovery
-description: How Thanos detects red CI and nudges the agent to investigate without you babysitting.
+description: How Maestro detects red CI and nudges the agent to investigate without you babysitting.
 ---
 
 import { Callout } from "fumadocs-ui/components/callout";
 
-When your PR's CI goes red, Thanos notices before you do and tells the agent to fix it. You get a notification, the agent pushes a fix, and the cycle repeats until CI is green.
+When your PR's CI goes red, Maestro notices before you do and tells the agent to fix it. You get a notification, the agent pushes a fix, and the cycle repeats until CI is green.
 
 ## How it works
 
@@ -18,7 +18,7 @@ No webhooks, no CI integration to install. The `gh` CLI you already authenticate
 
 ## What the agent sees
 
-When the session transitions to `ci_failed`, Thanos injects a short context block into the agent prompt:
+When the session transitions to `ci_failed`, Maestro injects a short context block into the agent prompt:
 
 - The failing check names
 - A link to the run log (the agent can fetch it with `gh run view` via the PATH wrapper)
@@ -29,7 +29,7 @@ The agent's next response usually inspects the log, reproduces the failure local
 
 ## Configurable behavior
 
-```yaml title="thanos.yaml"
+```yaml title="maestro.yaml"
 reactions:
   ciFailed:
     enabled: true # default
@@ -37,27 +37,27 @@ reactions:
     cooldownSeconds: 30 # wait before nudging the agent again
 ```
 
-If the agent has tried three times and CI is still red, the session transitions to `blocked` and Thanos stops nudging — you take it from there.
+If the agent has tried three times and CI is still red, the session transitions to `blocked` and Maestro stops nudging — you take it from there.
 
 ## Manual retry
 
-Tell Thanos to re-check a specific PR right now:
+Tell Maestro to re-check a specific PR right now:
 
 ```bash
-to review-check         # check every project
-to review-check myproject
-to review-check --dry-run   # show what would happen, don't nudge
+maestro review-check         # check every project
+maestro review-check myproject
+maestro review-check --dry-run   # show what would happen, don't nudge
 ```
 
 ## When it doesn't kick in
 
-- **PR not linked to a session.** If you created the PR manually and didn't run `to session claim-pr`, Thanos doesn't know about it.
-- **Check status is `neutral` or `skipped`.** Thanos only reacts to `failure` and `error`.
-- **PR is in draft.** Thanos waits for ready-for-review before treating CI as binding.
+- **PR not linked to a session.** If you created the PR manually and didn't run `maestro session claim-pr`, Maestro doesn't know about it.
+- **Check status is `neutral` or `skipped`.** Maestro only reacts to `failure` and `error`.
+- **PR is in draft.** Maestro waits for ready-for-review before treating CI as binding.
 - **`reactions.ciFailed.enabled: false`** in your config.
 
 <Callout type="info">
-  Claiming a PR retroactively: `to session claim-pr 123 <sessionId>` — Thanos now tracks its CI.
+  Claiming a PR retroactively: `maestro session claim-pr 123 <sessionId>` — Maestro now tracks its CI.
 </Callout>
 
 ## Linking a manually-opened PR
@@ -65,34 +65,34 @@ to review-check --dry-run   # show what would happen, don't nudge
 Sometimes you want the agent to work on an existing PR instead of an issue:
 
 ```bash
-to spawn --claim-pr 123 --assign-on-github
+maestro spawn --claim-pr 123 --assign-on-github
 ```
 
 This creates a session, points it at PR #123, and (with `--assign-on-github`) assigns the PR to you so it shows up in your GitHub filters. Subsequent CI failures flow into the normal recovery loop.
 
 ## How the CI failure flow works
 
-When CI goes red, Thanos sends two distinct messages to the agent in sequence:
+When CI goes red, Maestro sends two distinct messages to the agent in sequence:
 
-1. **Reaction message (poll cycle N).** The lifecycle manager detects that CI transitioned to `ci_failed` and fires the `ci-failed` reaction. This sends the configured `message` (or the default: _"CI failed on PR #42…"_) to the agent via `to send`.
+1. **Reaction message (poll cycle N).** The lifecycle manager detects that CI transitioned to `ci_failed` and fires the `ci-failed` reaction. This sends the configured `message` (or the default: _"CI failed on PR #42…"_) to the agent via `maestro send`.
 
-2. **Detailed follow-up (poll cycle N+1, ~30 s later).** On the next poll cycle, Thanos calls `formatCIFailureMessage()` with the actual failing checks and sends a second message with each check's name, conclusion status, and a direct link to the run log. This is delivered via `sessionManager.send()` directly — it does **not** go through `executeReaction()`, so it does not consume the `ci-failed` reaction's retry budget.
+2. **Detailed follow-up (poll cycle N+1, ~30 s later).** On the next poll cycle, Maestro calls `formatCIFailureMessage()` with the actual failing checks and sends a second message with each check's name, conclusion status, and a direct link to the run log. This is delivered via `sessionManager.send()` directly — it does **not** go through `executeReaction()`, so it does not consume the `ci-failed` reaction's retry budget.
 
 The follow-up is unconditional. Even if you have set a custom `ci-failed.message`, the detailed check list arrives on the next poll regardless — your custom message is the first nudge; the structured check data is always the second.
 
-Thanos fingerprints the set of failing checks (name + status + conclusion). If the same failure set is still present on a subsequent cycle, Thanos skips re-sending to avoid spamming the agent. When the failure set changes (e.g. one check is fixed and a new one appears), the fingerprint changes and both messages are sent again.
+Maestro fingerprints the set of failing checks (name + status + conclusion). If the same failure set is still present on a subsequent cycle, Maestro skips re-sending to avoid spamming the agent. When the failure set changes (e.g. one check is fixed and a new one appears), the fingerprint changes and both messages are sent again.
 
 ## Escalation
 
-`retries` controls how many reaction attempts Thanos makes before giving up and escalating to a human:
+`retries` controls how many reaction attempts Maestro makes before giving up and escalating to a human:
 
-```yaml title="thanos.yaml"
+```yaml title="maestro.yaml"
 reactions:
   ci-failed:
     retries: 3 # escalate after 3 failed attempts (default: unlimited)
     escalateAfter: "1h" # …or after a wall-clock duration, whichever comes first
 ```
 
-`escalateAfter` accepts either a duration string (e.g. `"30m"`, `"1h"`) or an integer attempt count. When either threshold is crossed, Thanos emits a `reaction.escalated` event and notifies you via the configured notifier instead of sending another message to the agent.
+`escalateAfter` accepts either a duration string (e.g. `"30m"`, `"1h"`) or an integer attempt count. When either threshold is crossed, Maestro emits a `reaction.escalated` event and notifies you via the configured notifier instead of sending another message to the agent.
 
 See [Reactions configuration](/docs/configuration/reactions) for the full set of options.

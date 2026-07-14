@@ -1,7 +1,7 @@
 # Daemon environment: the GUI-launch PATH/credentials problem
 
 Status: proposed
-Scope: desktop (Electron) launch of the Thanos daemon on macOS (and any GUI-launched
+Scope: desktop (Electron) launch of the Maestro daemon on macOS (and any GUI-launched
 desktop platform)
 
 ## Summary
@@ -18,7 +18,7 @@ startup and use it as the base for the daemon's environment.
 
 The Electron supervisor spawns the Go daemon with the environment it forwards in
 `daemonEnv()` (`frontend/src/main.ts`), which is essentially `...process.env`
-plus Thanos's telemetry defaults. The daemon, in turn, is the parent of every agent
+plus Maestro's telemetry defaults. The daemon, in turn, is the parent of every agent
 session (it execs `tmux`, which runs `claude`/`codex`, etc.), and the agent's
 `PATH` is derived from the daemon's own `PATH`
 (`runtimeEnv` -> `HookPATH(m.executable, os.Getenv, ...)` in
@@ -85,7 +85,7 @@ Forwarding the environment is not the bug. The daemon and agents genuinely need:
 - shell-exported credentials (`ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `GH_TOKEN`,
   ...);
 - locale/proxy (`LANG`, `LC_*`, `HTTPS_PROXY`);
-- Thanos's own vars (telemetry, `THANOS_DATA_DIR`, `THANOS_RUN_FILE`, session ids).
+- Maestro's own vars (telemetry, `MAESTRO_DATA_DIR`, `MAESTRO_RUN_FILE`, session ids).
 
 The bug is the _source_ of what we forward: under a GUI launch, `process.env` is
 launchd's minimal env, not the shell's. The fix is to forward a _good_ base env,
@@ -153,7 +153,7 @@ parent that hands env to the daemon.
   honor bash/fish.
 - **Isolate the payload.** Interactive shells can print banners/motd/prompts to
   stdout. Bracket the real output with a sentinel and read only after it:
-  `zsh -ilc 'echo __THANOS_ENV_START__; env -0'`.
+  `zsh -ilc 'echo __MAESTRO_ENV_START__; env -0'`.
 - **No stdin, with a timeout.** Run with `</dev/null` and a ~2-3s timeout so a
   misconfigured rc that waits for input cannot hang startup.
 - **Fallback on any failure.** If the probe fails, times out, or exits nonzero,

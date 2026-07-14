@@ -1,5 +1,5 @@
 // Helpers for discovering the daemon's actually-bound port. The configured
-// THANOS_PORT is only a request — the daemon may bind a different port (port 0,
+// MAESTRO_PORT is only a request — the daemon may bind a different port (port 0,
 // operator overrides), so the supervisor trusts what the daemon reports:
 //   - the slog text line `msg="daemon listening" addr=127.0.0.1:<port>`
 //     (backend/internal/httpd/server.go, written to stderr), and
@@ -68,7 +68,7 @@ export type RunFileInfo = {
 	startedAtMs: number;
 	/**
 	 * Daemon ownership tag. "app" when the desktop app spawned this daemon;
-	 * undefined/empty for a headless `to start` daemon.
+	 * undefined/empty for a headless `maestro start` daemon.
 	 */
 	owner?: string;
 };
@@ -99,8 +99,8 @@ export function parseRunFile(contents: string): RunFileInfo | null {
 }
 
 /**
- * Where the daemon writes running.json when THANOS_RUN_FILE is unset. Matches
- * backend/internal/config's canonical Thanos home default so the supervisor reads
+ * Where the daemon writes running.json when MAESTRO_RUN_FILE is unset. Matches
+ * backend/internal/config's canonical Maestro home default so the supervisor reads
  * the same file the daemon writes. Returns null when the user home directory
  * cannot be resolved.
  */
@@ -111,5 +111,5 @@ export function defaultRunFilePath(
 ): string | null {
 	void platform;
 	if (!homeDir) return null;
-	return joinPath(homeDir, ".thanos", "running.json");
+	return joinPath(homeDir, ".maestro", "running.json");
 }

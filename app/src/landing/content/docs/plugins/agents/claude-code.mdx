@@ -1,6 +1,6 @@
 ---
 title: Claude Code
-description: Anthropic's CLI coding agent. The default agent in Thanos.
+description: Anthropic's CLI coding agent. The default agent in Maestro.
 ---
 
 import { Callout } from "fumadocs-ui/components/callout";
@@ -12,7 +12,7 @@ import { Callout } from "fumadocs-ui/components/callout";
 	</span>
 </div>
 
-[Claude Code](https://docs.anthropic.com/en/docs/claude-code) is Anthropic's CLI coding agent. It's Thanos's default because it has first-class session resume, rich JSONL event logs, and a native hook system Thanos can register against.
+[Claude Code](https://docs.anthropic.com/en/docs/claude-code) is Anthropic's CLI coding agent. It's Maestro's default because it has first-class session resume, rich JSONL event logs, and a native hook system Maestro can register against.
 
 <PlatformSupport macos="full" linux="full" windows="full" />
 
@@ -30,7 +30,7 @@ claude
 
 ## Use
 
-```yaml title="thanos.yaml"
+```yaml title="maestro.yaml"
 agent: claude-code
 ```
 
@@ -38,20 +38,20 @@ That's it — there are no plugin-level config keys.
 
 ## How it works
 
-- **Launch:** `claude` runs inside the worktree. Thanos sets `CLAUDECODE=""`, `THANOS_SESSION_ID`, and `THANOS_ISSUE_ID` in the environment.
-- **Activity tracking:** Thanos registers a PostToolUse hook in `.claude/settings.json` on workspace setup. The hook writes an Thanos activity entry each time Claude calls a tool, so the dashboard's `active/ready/idle` states stay accurate.
-- **Session resume:** `claude --resume <sessionId>` rehydrates the previous chat. Thanos maps its session ID to Claude's via the JSONL at `~/.claude/projects/<project>/...jsonl`.
-- **Cost reporting:** Thanos reads Claude's per-message cost field from the JSONL — visible on the dashboard card.
+- **Launch:** `claude` runs inside the worktree. Maestro sets `CLAUDECODE=""`, `MAESTRO_SESSION_ID`, and `MAESTRO_ISSUE_ID` in the environment.
+- **Activity tracking:** Maestro registers a PostToolUse hook in `.claude/settings.json` on workspace setup. The hook writes an Maestro activity entry each time Claude calls a tool, so the dashboard's `active/ready/idle` states stay accurate.
+- **Session resume:** `claude --resume <sessionId>` rehydrates the previous chat. Maestro maps its session ID to Claude's via the JSONL at `~/.claude/projects/<project>/...jsonl`.
+- **Cost reporting:** Maestro reads Claude's per-message cost field from the JSONL — visible on the dashboard card.
 
 ## Environment variables
 
-| Variable        | Set by Thanos                      | Purpose                                             |
-| --------------- | ------------------------------ | --------------------------------------------------- |
-| `THANOS_SESSION_ID` | ✓                              | Unique Thanos session identifier                        |
-| `THANOS_ISSUE_ID`   | ✓ (when spawned from an issue) | Issue identifier                                    |
-| `CLAUDECODE`    | ✓                              | Signals to Claude that it's running under a harness |
+| Variable             | Set by Maestro                 | Purpose                                             |
+| -------------------- | ------------------------------ | --------------------------------------------------- |
+| `MAESTRO_SESSION_ID` | ✓                              | Unique Maestro session identifier                   |
+| `MAESTRO_ISSUE_ID`   | ✓ (when spawned from an issue) | Issue identifier                                    |
+| `CLAUDECODE`         | ✓                              | Signals to Claude that it's running under a harness |
 
-Your Anthropic API key comes from wherever `claude` normally reads it — `~/.claude/`, env, etc. Thanos doesn't touch it.
+Your Anthropic API key comes from wherever `claude` normally reads it — `~/.claude/`, env, etc. Maestro doesn't touch it.
 
 ## Troubleshooting
 
@@ -60,7 +60,7 @@ Your Anthropic API key comes from wherever `claude` normally reads it — `~/.cl
     `npm install -g @anthropic-ai/claude-code`, then reopen your terminal so the PATH picks it up.
   </Accordion>
   <Accordion title="Dashboard shows no activity state">
-    Thanos registers the PostToolUse hook in `.claude/settings.json` on spawn. If the hook got removed, run `to spawn` again — Thanos re-installs it idempotently.
+    Maestro registers the PostToolUse hook in `.claude/settings.json` on spawn. If the hook got removed, run `maestro spawn` again — Maestro re-installs it idempotently.
   </Accordion>
   <Accordion title="Session won't resume">
     Claude's session JSONL lives at `~/.claude/projects/<project-slug>/<sessionId>.jsonl`. If that file is gone (cleaned up, moved), resume won't work — spawn fresh.

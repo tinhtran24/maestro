@@ -14,7 +14,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/tinhtran/thanos/backend/internal/domain"
+	"github.com/tinhtran24/maestro/backend/internal/domain"
 )
 
 // recordedReq captures one inbound HTTP request so tests can assert against

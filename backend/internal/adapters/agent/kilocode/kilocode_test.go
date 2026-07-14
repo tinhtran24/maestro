@@ -8,9 +8,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/tinhtran/thanos/backend/internal/adapters/agent/activitystate"
-	"github.com/tinhtran/thanos/backend/internal/domain"
-	"github.com/tinhtran/thanos/backend/internal/ports"
+	"github.com/tinhtran24/maestro/backend/internal/adapters/agent/activitystate"
+	"github.com/tinhtran24/maestro/backend/internal/domain"
+	"github.com/tinhtran24/maestro/backend/internal/ports"
 )
 
 func TestManifestIDIsKilocode(t *testing.T) {
@@ -119,7 +119,7 @@ func TestGetAgentHooksInstallsPlugin(t *testing.T) {
 	plugin := &Plugin{resolvedBinary: "kilocode"}
 	workspace := t.TempDir()
 
-	// A user's own plugin in the same dir must survive Thanos's install untouched.
+	// A user's own plugin in the same dir must survive Maestro's install untouched.
 	pluginDir := filepath.Dir(kilocodePluginPath(workspace))
 	if err := os.MkdirAll(pluginDir, 0o755); err != nil {
 		t.Fatal(err)
@@ -150,9 +150,9 @@ func TestGetAgentHooksInstallsPlugin(t *testing.T) {
 	}
 	body := string(data)
 	if !strings.Contains(body, kilocodePluginSentinel) {
-		t.Fatalf("installed plugin missing Thanos sentinel:\n%s", body)
+		t.Fatalf("installed plugin missing Maestro sentinel:\n%s", body)
 	}
-	// Every normalized activity event must be wired via `to hooks kilocode <event>`.
+	// Every normalized activity event must be wired via `maestro hooks kilocode <event>`.
 	for _, event := range kilocodeManagedEvents {
 		want := kilocodeHookCommandPrefix + event
 		if !strings.Contains(body, want) {
@@ -174,7 +174,7 @@ func TestGetAgentHooksInstallsPlugin(t *testing.T) {
 	if strings.Contains(body, `"session.idle"`) {
 		t.Fatalf("plugin subscribes to deprecated session.idle; use session.status(idle):\n%s", body)
 	}
-	// A hung `to hooks` call must not block Kilo forever, so each spawn is
+	// A hung `maestro hooks` call must not block Kilo forever, so each spawn is
 	// time-boxed (parity with the claude/codex 30s hook timeout).
 	if !strings.Contains(body, "timeout:") {
 		t.Fatalf("plugin spawn has no timeout; a hung hook would block Kilo:\n%s", body)
@@ -195,7 +195,7 @@ func TestGetAgentHooksRefusesToClobberForeignFile(t *testing.T) {
 	workspace := t.TempDir()
 	ctx := context.Background()
 
-	// A non-Thanos file occupying Thanos's exact path must NOT be silently overwritten.
+	// A non-Maestro file occupying Maestro's exact path must NOT be silently overwritten.
 	pluginPath := kilocodePluginPath(workspace)
 	if err := os.MkdirAll(filepath.Dir(pluginPath), 0o755); err != nil {
 		t.Fatal(err)
@@ -207,7 +207,7 @@ func TestGetAgentHooksRefusesToClobberForeignFile(t *testing.T) {
 
 	err := plugin.GetAgentHooks(ctx, ports.WorkspaceHookConfig{WorkspacePath: workspace})
 	if err == nil {
-		t.Fatal("GetAgentHooks overwrote a non-Thanos file; want a loud error")
+		t.Fatal("GetAgentHooks overwrote a non-Maestro file; want a loud error")
 	}
 	got, readErr := os.ReadFile(pluginPath)
 	if readErr != nil {
@@ -248,7 +248,7 @@ func TestUninstallHooksRemovesPlugin(t *testing.T) {
 		t.Fatalf("AreHooksInstalled after uninstall = (%v, %v), want (false, nil)", installed, err)
 	}
 	if _, err := os.Stat(kilocodePluginPath(workspace)); !os.IsNotExist(err) {
-		t.Fatalf("Thanos plugin still present after uninstall: err=%v", err)
+		t.Fatalf("Maestro plugin still present after uninstall: err=%v", err)
 	}
 	if _, err := os.Stat(userPlugin); err != nil {
 		t.Fatalf("user plugin removed by uninstall: %v", err)
@@ -260,7 +260,7 @@ func TestUninstallHooksLeavesForeignFile(t *testing.T) {
 	workspace := t.TempDir()
 	ctx := context.Background()
 
-	// A non-Thanos file occupying Thanos's filename must NOT be deleted by uninstall.
+	// A non-Maestro file occupying Maestro's filename must NOT be deleted by uninstall.
 	pluginPath := kilocodePluginPath(workspace)
 	if err := os.MkdirAll(filepath.Dir(pluginPath), 0o755); err != nil {
 		t.Fatal(err)

@@ -7,9 +7,9 @@ import (
 	"fmt"
 	"os"
 
-	workeragent "github.com/tinhtran/thanos/backend/internal/adapters/agent/codex"
-	"github.com/tinhtran/thanos/backend/internal/domain"
-	"github.com/tinhtran/thanos/backend/internal/ports"
+	workeragent "github.com/tinhtran24/maestro/backend/internal/adapters/agent/codex"
+	"github.com/tinhtran24/maestro/backend/internal/domain"
+	"github.com/tinhtran24/maestro/backend/internal/ports"
 )
 
 // Reviewer is the codex code-review adapter.
@@ -45,8 +45,8 @@ func (r *Reviewer) ReviewCommand(ctx context.Context, inv ports.ReviewInvocation
 	}
 	extra := []string{"--sandbox", "read-only"}
 	// Shell commands inherit only Codex's core environment by default. Preserve
-	// the Thanos location overrides the reviewer needs to submit to this daemon.
-	for _, name := range []string{"THANOS_PORT", "THANOS_DATA_DIR", "THANOS_RUN_FILE"} {
+	// the Maestro location overrides the reviewer needs to submit to this daemon.
+	for _, name := range []string{"MAESTRO_PORT", "MAESTRO_DATA_DIR", "MAESTRO_RUN_FILE"} {
 		value := os.Getenv(name)
 		if value == "" {
 			continue

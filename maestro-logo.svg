@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <title>Maestro</title>
+  <defs>
+    <linearGradient id="tile" x1="0" y1="0" x2="1024" y2="1024" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#4F46E5"/>
+      <stop offset="0.55" stop-color="#6D28D9"/>
+      <stop offset="1" stop-color="#7C3AED"/>
+    </linearGradient>
+    <linearGradient id="stroke" x1="512" y1="140" x2="512" y2="884" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFFFFF"/>
+      <stop offset="1" stop-color="#E9E5FF"/>
+    </linearGradient>
+  </defs>
+
+  <!-- App tile -->
+  <rect x="0" y="0" width="1024" height="1024" rx="224" fill="url(#tile)"/>
+
+  <!-- Orchestration orbit: a hub with three orbiting agent nodes -->
+  <circle cx="512" cy="512" r="300" stroke="#FFFFFF" stroke-opacity="0.16" stroke-width="16" fill="none"/>
+  <g fill="#FFFFFF" fill-opacity="0.9">
+    <circle cx="512" cy="212" r="30"/>
+    <circle cx="252" cy="662" r="30"/>
+    <circle cx="772" cy="662" r="30"/>
+  </g>
+
+  <!-- Maestro "T" monogram -->
+  <g fill="url(#stroke)">
+    <rect x="300" y="300" width="424" height="96" rx="20"/>
+    <rect x="464" y="300" width="96" height="424" rx="20"/>
+  </g>
+</svg>

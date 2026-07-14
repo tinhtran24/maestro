@@ -10,9 +10,9 @@ import (
 	"github.com/go-chi/chi/v5"
 	yaml "gopkg.in/yaml.v3"
 
-	"github.com/tinhtran/thanos/backend/internal/config"
-	"github.com/tinhtran/thanos/backend/internal/httpd"
-	"github.com/tinhtran/thanos/backend/internal/httpd/apispec"
+	"github.com/tinhtran24/maestro/backend/internal/config"
+	"github.com/tinhtran24/maestro/backend/internal/httpd"
+	"github.com/tinhtran24/maestro/backend/internal/httpd/apispec"
 )
 
 // TestRouteSpecParity asserts the mounted /api/v1 routes and the OpenAPI

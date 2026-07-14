@@ -12,11 +12,11 @@ description: Dashboard xterm.js terminal. Cross-platform. The only option on Win
 
 <PlatformSupport macos="full" linux="full" windows="full" />
 
-The dashboard already has an xterm.js terminal connected to every session. The `web` plugin just points `to open` at the right dashboard URL.
+The dashboard already has an xterm.js terminal connected to every session. The `web` plugin just points `maestro open` at the right dashboard URL.
 
 ## Use
 
-```yaml title="thanos.yaml"
+```yaml title="maestro.yaml"
 terminal: web
 terminalConfig:
   dashboardUrl: http://localhost:3000 # default
@@ -28,12 +28,12 @@ terminalConfig:
 
 ## How it works
 
-When you run `to open <session>`, the plugin prints the session's dashboard URL. If you're on macOS/Linux, it also tries to open it in your default browser.
+When you run `maestro open <session>`, the plugin prints the session's dashboard URL. If you're on macOS/Linux, it also tries to open it in your default browser.
 
 Since the terminal UI lives in the dashboard itself, there's no per-session state here — this plugin is just routing + convenience.
 
 ## Why this exists
 
 - Windows has no `osascript` and no AppleScript-equivalent that's worth writing a plugin for.
-- You're running Thanos on a remote host — no local terminal to attach to.
+- You're running Maestro on a remote host — no local terminal to attach to.
 - You prefer browser tabs over terminal tabs.

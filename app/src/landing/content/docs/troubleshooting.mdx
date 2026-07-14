@@ -1,16 +1,16 @@
 ---
 title: Troubleshooting
-description: Common Thanos problems and concrete fixes. Most start with `to doctor`.
+description: Common Maestro problems and concrete fixes. Most start with `maestro doctor`.
 ---
 
 import { Accordions, Accordion } from "fumadocs-ui/components/accordion";
 
-## First step: `to doctor`
+## First step: `maestro doctor`
 
 ```bash
-to doctor
-to doctor --fix           # auto-repair safe things
-to doctor --test-notify   # send a test through each notifier
+maestro doctor
+maestro doctor --fix           # auto-repair safe things
+maestro doctor --test-notify   # send a test through each notifier
 ```
 
 Covers: install health, plugin resolution, notifier connectivity, stale temp files.
@@ -18,40 +18,40 @@ Covers: install health, plugin resolution, notifier connectivity, stale temp fil
 ## Install & environment
 
 <Accordions>
-  <Accordion title="`to: command not found`">
+  <Accordion title="`maestro: command not found`">
     The npm global bin isn't on your PATH. Find it with `npm config get prefix` and add `<prefix>/bin` to your shell's PATH.
   </Accordion>
   <Accordion title="`tmux: command not found` (on Windows)">
     Expected. Use `runtime: process` in your config. See [Platforms](/docs/platforms#windows).
   </Accordion>
   <Accordion title="`gh: authentication required`">
-    Run `gh auth login`. Thanos uses `gh` for every GitHub interaction.
+    Run `gh auth login`. Maestro uses `gh` for every GitHub interaction.
   </Accordion>
   <Accordion title="Port 3000 already in use">
-    Thanos auto-picks the next free port. You'll see the actual URL in the `to start` output.
+    Maestro auto-picks the next free port. You'll see the actual URL in the `maestro start` output.
   </Accordion>
   <Accordion title="Dashboard crashes with 'vendor-chunks not found'">
-    Stale Next.js artifacts. Run `to dashboard --rebuild`.
+    Stale Next.js artifacts. Run `maestro dashboard --rebuild`.
   </Accordion>
 </Accordions>
 
 ## Agents & sessions
 
 <Accordions>
-  <Accordion title="`to spawn` hangs at 'waiting for idle'">
-    The agent never reached idle state. Run `to status --watch` to see what's happening — if it's legitimately working (e.g. large install step), wait. Otherwise `to session kill <session>` and spawn again.
+  <Accordion title="`maestro spawn` hangs at 'waiting for idle'">
+    The agent never reached idle state. Run `maestro status --watch` to see what's happening — if it's legitimately working (e.g. large install step), wait. Otherwise `maestro session kill <session>` and spawn again.
   </Accordion>
   <Accordion title="Dashboard activity stuck on 'active' or 'idle'">
-    `getActivityState` reads the agent's JSONL / activity log. If that file is missing or stale, you'll see wrong states. `to doctor` flags this. See the agent's individual plugin page under [Plugins › Agents](/docs/plugins/agents) for recovery.
+    `getActivityState` reads the agent's JSONL / activity log. If that file is missing or stale, you'll see wrong states. `maestro doctor` flags this. See the agent's individual plugin page under [Plugins › Agents](/docs/plugins/agents) for recovery.
   </Accordion>
   <Accordion title="Agent opened a PR but the dashboard doesn't know">
-    The PATH wrapper didn't record it (possible if the agent called `gh` by absolute path). Use `to session claim-pr <pr> <sessionId>` to link retroactively.
+    The PATH wrapper didn't record it (possible if the agent called `gh` by absolute path). Use `maestro session claim-pr <pr> <sessionId>` to link retroactively.
   </Accordion>
   <Accordion title="Session won't restore">
-    `to session restore <sessionId>` relaunches the agent in the same worktree. If restore keeps failing, check the agent plugin's resume docs — some agents don't support resume at all (Cursor, Aider).
+    `maestro session restore <sessionId>` relaunches the agent in the same worktree. If restore keeps failing, check the agent plugin's resume docs — some agents don't support resume at all (Cursor, Aider).
   </Accordion>
   <Accordion title="`Session can't be found` with OpenCode">
-    Run `to session remap <sessionId>` to re-discover the OpenCode mapping. Use `--force` if a stale mapping is stuck.
+    Run `maestro session remap <sessionId>` to re-discover the OpenCode mapping. Use `--force` if a stale mapping is stuck.
   </Accordion>
 </Accordions>
 
@@ -59,9 +59,9 @@ Covers: install health, plugin resolution, notifier connectivity, stale temp fil
 
 <Accordions>
 	<Accordion title="GitHub API rate limit">
-		Thanos paces calls, but heavy projects can still hit limits. The lifecycle manager backs off automatically. If you see
-		sustained rate-limit errors, check that you're logged in as yourself (`gh auth status`) — unauthenticated calls have
-		much lower limits.
+		Maestro paces calls, but heavy projects can still hit limits. The lifecycle manager backs off automatically. If you
+		see sustained rate-limit errors, check that you're logged in as yourself (`gh auth status`) — unauthenticated calls
+		have much lower limits.
 	</Accordion>
 	<Accordion title="CI recovery never fires">
 		`reactions.ciFailed.enabled: false` in your config, or the PR is in draft. See [CI recovery › When it doesn't kick
@@ -94,20 +94,20 @@ Covers: install health, plugin resolution, notifier connectivity, stale temp fil
 ## Windows-specific
 
 <Accordions>
-  <Accordion title="`to open` prints a URL instead of opening a tab">
+  <Accordion title="`maestro open` prints a URL instead of opening a tab">
     Expected on Windows. The iTerm2 helper only runs on macOS. Use the dashboard's built-in terminal (the printed URL takes you there).
   </Accordion>
   <Accordion title="Child process exits immediately">
-    Shell quoting issue. Pass long prompts via `--prompt` with simple ASCII, or via `to send --file <path>`.
+    Shell quoting issue. Pass long prompts via `--prompt` with simple ASCII, or via `maestro send --file <path>`.
   </Accordion>
 </Accordions>
 
 ## Still stuck
 
 - Check the [FAQ](/docs/faq).
-- Open an issue: [`ComposioHQ/thanos`](https://github.com/ComposioHQ/thanos/issues).
+- Open an issue: [`ComposioHQ/maestro`](https://github.com/ComposioHQ/maestro/issues).
   When opening an issue, include:
 
-- Output of `to --version`
-- The contents of `~/.thanos/{hash}-observability/processes/` (one JSON snapshot per process; each contains traces, health, and metrics)
-- Your `thanos.yaml` (redact any secrets)
+- Output of `maestro --version`
+- The contents of `~/.maestro/{hash}-observability/processes/` (one JSON snapshot per process; each contains traces, health, and metrics)
+- Your `maestro.yaml` (redact any secrets)

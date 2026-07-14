@@ -3,7 +3,7 @@ package opencode
 import (
 	"testing"
 
-	"github.com/tinhtran/thanos/backend/internal/domain"
+	"github.com/tinhtran24/maestro/backend/internal/domain"
 )
 
 func TestDeriveActivityState(t *testing.T) {

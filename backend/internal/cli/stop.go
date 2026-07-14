@@ -8,8 +8,8 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/tinhtran/thanos/backend/internal/config"
-	"github.com/tinhtran/thanos/backend/internal/runfile"
+	"github.com/tinhtran24/maestro/backend/internal/config"
+	"github.com/tinhtran24/maestro/backend/internal/runfile"
 )
 
 const defaultStopTimeout = 10 * time.Second
@@ -23,7 +23,7 @@ func newStopCommand(ctx *commandContext) *cobra.Command {
 	opts := stopOptions{timeout: defaultStopTimeout}
 	cmd := &cobra.Command{
 		Use:   "stop",
-		Short: "Stop the Thanos daemon",
+		Short: "Stop the Maestro daemon",
 		Args:  noArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			st, err := ctx.stopDaemon(cmd.Context(), opts)
@@ -34,7 +34,7 @@ func newStopCommand(ctx *commandContext) *cobra.Command {
 				return writeJSON(cmd.OutOrStdout(), st)
 			}
 			if st.State == stateStopped {
-				_, err = fmt.Fprintln(cmd.OutOrStdout(), "Thanos daemon stopped")
+				_, err = fmt.Fprintln(cmd.OutOrStdout(), "Maestro daemon stopped")
 				return err
 			}
 			return writeStatus(cmd, st)
@@ -114,7 +114,7 @@ func (c *commandContext) waitForStopped(ctx context.Context, pid int, runFilePat
 		alive := c.deps.ProcessAlive(pid)
 		if !alive {
 			// Only remove the run-file if it still belongs to the process we
-			// stopped. A concurrent `to start` may have already written a new
+			// stopped. A concurrent `maestro start` may have already written a new
 			// run-file for a different daemon; removing that would corrupt its
 			// handshake and make a live daemon look stopped.
 			if info != nil && info.PID == pid {
@@ -135,7 +135,7 @@ func (c *commandContext) waitForStopped(ctx context.Context, pid int, runFilePat
 			// up the data directory, but exceeding the timeout is NOT an error:
 			// with no desktop client connected the daemon can drain its
 			// background workers slower than the stop timeout, and failing here
-			// made `to stop` spuriously report failure (issue #2214).
+			// made `maestro stop` spuriously report failure (issue #2214).
 			if !c.deps.Now().Before(deadline) {
 				return daemonStatus{State: stateStopped, RunFile: runFilePath, DataDir: dataDir}, nil
 			}

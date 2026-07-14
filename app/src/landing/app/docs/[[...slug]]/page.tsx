@@ -25,7 +25,7 @@ export default async function DocsSlugPage({ params }: PageProps) {
 			}}
 			editOnGithub={{
 				owner: "ComposioHQ",
-				repo: "thanos",
+				repo: "maestro",
 				sha: "main",
 				path: `website/content/docs/${page.file?.path ?? ""}`,
 			}}

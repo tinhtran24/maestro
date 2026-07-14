@@ -10,14 +10,14 @@ import (
 	"sync"
 	"time"
 
-	"github.com/tinhtran/thanos/backend/internal/adapters/runtime/conpty/ptyregistry"
-	"github.com/tinhtran/thanos/backend/internal/ports"
+	"github.com/tinhtran24/maestro/backend/internal/adapters/runtime/conpty/ptyregistry"
+	"github.com/tinhtran24/maestro/backend/internal/ports"
 )
 
 // Ensure Runtime satisfies the port at compile time (Attach in attach.go).
 var _ ports.Runtime = (*Runtime)(nil)
 
-// validSessionID matches thanos's assertValidSessionId.
+// validSessionID matches maestro's assertValidSessionId.
 var validSessionID = regexp.MustCompile(`^[a-zA-Z0-9_-]+$`)
 
 // hostSession is the in-memory state for a live pty-host connection.

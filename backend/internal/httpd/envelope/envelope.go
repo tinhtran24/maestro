@@ -8,7 +8,7 @@ import (
 
 	"github.com/go-chi/chi/v5/middleware"
 
-	"github.com/tinhtran/thanos/backend/internal/httpd/apierr"
+	"github.com/tinhtran24/maestro/backend/internal/httpd/apierr"
 )
 
 // errCapture is a request-scoped slot WriteError records the raw service error

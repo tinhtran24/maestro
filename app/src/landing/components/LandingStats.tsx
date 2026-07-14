@@ -26,7 +26,7 @@ export function LandingStats({ stats }: LandingStatsProps) {
 			</div>
 			<div className="landing-reveal text-center mt-8">
 				<a
-					href="https://github.com/ComposioHQ/thanos"
+					href="https://github.com/ComposioHQ/maestro"
 					target="_blank"
 					rel="noopener noreferrer"
 					className="landing-card inline-flex items-center gap-2 rounded-lg px-4 py-2 text-[0.8125rem] text-[var(--landing-muted)] no-underline transition-all hover:text-white mb-3"
@@ -38,7 +38,7 @@ export function LandingStats({ stats }: LandingStatsProps) {
 				<br />
 				<div className="landing-card inline-flex items-center gap-2 rounded-lg px-4 py-2 text-[0.8125rem] text-[var(--landing-muted)]">
 					<span className="w-2 h-2 rounded-full bg-[rgba(134,239,172,0.7)] animate-pulse" />
-					Built with itself — this repo is managed by Thanos
+					Built with itself — this repo is managed by Maestro
 				</div>
 			</div>
 		</section>

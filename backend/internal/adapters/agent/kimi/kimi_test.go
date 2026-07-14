@@ -6,8 +6,8 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/tinhtran/thanos/backend/internal/adapters"
-	"github.com/tinhtran/thanos/backend/internal/ports"
+	"github.com/tinhtran24/maestro/backend/internal/adapters"
+	"github.com/tinhtran24/maestro/backend/internal/ports"
 )
 
 func TestManifest(t *testing.T) {
@@ -49,7 +49,7 @@ func TestGetPromptDeliveryStrategy(t *testing.T) {
 	}
 }
 
-// Kimi prompt mode is non-interactive, so Thanos launches the TUI and lets the
+// Kimi prompt mode is non-interactive, so Maestro launches the TUI and lets the
 // session manager inject the task after startup. Because the prompt is not
 // carried with `-p`, approval flags remain valid for prompted workers.
 func TestGetLaunchCommandInteractiveMapsPermissionModes(t *testing.T) {
@@ -112,7 +112,7 @@ func TestGetLaunchCommandIgnoresSystemPrompt(t *testing.T) {
 // Kimi docs: `--yolo` and `--auto` cannot be used together with `--continue`
 // or `--session` — resumed sessions inherit the approval settings of the
 // original session — so the restore path must not emit approval flags
-// regardless of the requested Thanos PermissionMode.
+// regardless of the requested Maestro PermissionMode.
 func TestGetRestoreCommand(t *testing.T) {
 	modes := []ports.PermissionMode{
 		ports.PermissionModeDefault,

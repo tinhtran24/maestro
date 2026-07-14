@@ -1,34 +1,34 @@
 <div align="center">
-  <img src="thanos-logo.svg" alt="Thanos" width="160" height="160" />
+  <img src="maestro-logo.svg" alt="Maestro" width="160" height="160" />
 
-# Thanos
+# Maestro
 
-**The orchestration layer for parallel AI coding agents**
+**An AI Engineering Workbench that orchestrates AI coding agents**
 
-[![Stars](https://img.shields.io/github/stars/AgentWrapper/thanos)](https://github.com/AgentWrapper/thanos/stargazers)
-[![Contributors](https://img.shields.io/github/contributors/AgentWrapper/thanos)](https://github.com/AgentWrapper/thanos/graphs/contributors)
+[![Stars](https://img.shields.io/github/stars/tinhtran24/maestro)](https://github.com/tinhtran24/maestro/stargazers)
+[![Contributors](https://img.shields.io/github/contributors/tinhtran24/maestro)](https://github.com/tinhtran24/maestro/graphs/contributors)
 [![Twitter](https://img.shields.io/badge/Twitter-1DA1F2?logo=twitter&logoColor=white)](https://x.com/tinhtran)
 [![Discord](https://img.shields.io/badge/Discord-join%20the%20community-5865F2?logo=discord&logoColor=white)](https://discord.com/invite/UZv7JjxbwG)
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache--2.0-blue.svg)](LICENSE)
 
-An Agentic IDE that supervises parallel AI coding agents in isolated workspaces, with complete control and automatic feedback loops from CI failures, review comments, and merge conflicts.
+Maestro is an AI Engineering Workbench that orchestrates AI agents through a structured, human-controlled software development workflow. You are the **conductor** — Maestro coordinates the workflow while your AI coding agents (Codex, Claude Code, Gemini, local models, and more) are the **musicians** that execute individual tasks in isolated workspaces, with complete human control and automatic feedback loops from CI failures, review comments, and merge conflicts.
 
-<img src="docs/assets/readme/dashboard.png" alt="Thanos dashboard showing parallel coding agent sessions" width="100%" />
+<img src="docs/assets/readme/dashboard.png" alt="Maestro dashboard showing parallel coding agent sessions" width="100%" />
 </div>
 
 ---
 
-## What is Thanos?
+## What is Maestro?
 
-Thanos is a meta-harness agent IDE for running AI coding agents in parallel. It gives terminal-based agents like Claude Code, Codex, Cursor, Aider, Goose, and others a shared workspace where their sessions, terminals, branches, pull requests, and feedback loops can be supervised from one place.
+Maestro is a meta-harness agent IDE for running AI coding agents in parallel. It gives terminal-based agents like Claude Code, Codex, Cursor, Aider, Goose, and others a shared workspace where their sessions, terminals, branches, pull requests, and feedback loops can be supervised from one place.
 
-The agents still do the coding. Thanos provides the harness around them: isolated workspaces, live terminal access, session state, PR awareness, and automatic loops that send CI failures, review comments, and merge conflicts back to the right agent. Instead of manually coordinating a pile of agent terminals, Thanos turns parallel agent work into a managed workflow.
+The agents still do the coding. Maestro provides the harness around them: isolated workspaces, live terminal access, session state, PR awareness, and automatic loops that send CI failures, review comments, and merge conflicts back to the right agent. Instead of manually coordinating a pile of agent terminals, Maestro turns parallel agent work into a managed workflow.
 
-## Why Thanos?
+## Why Maestro?
 
 AI coding agents become much more useful when they can work in parallel, but parallel work gets messy quickly. Branches overlap, terminals get lost, CI failures need follow-up, review comments need replies, and merge conflicts have to reach the right worker.
 
-Thanos is built to keep that loop visible and manageable. It helps you:
+Maestro is built to keep that loop visible and manageable. It helps you:
 
 - Start multiple agents from the same project without mixing their work
 - Keep every session in a separate git worktree
@@ -38,16 +38,16 @@ Thanos is built to keep that loop visible and manageable. It helps you:
 
 ## How it works
 
-At a high level, Thanos follows a simple loop:
+At a high level, Maestro follows a simple loop:
 
 1. Add a project you want agents to work on.
 2. Start one or more sessions from the desktop app or CLI.
-3. Thanos creates an isolated git worktree for each session.
-4. Thanos launches the selected coding agent in that session's terminal runtime.
+3. Maestro creates an isolated git worktree for each session.
+4. Maestro launches the selected coding agent in that session's terminal runtime.
 5. The local daemon watches session state, terminal activity, pull requests, CI, and review feedback.
 6. The desktop app and CLI show the current state and let you send follow-up instructions to the right session.
 
-The result is a local control layer for agentic coding: agents still do the coding, while Thanos keeps their workspaces, status, terminals, and feedback loops organized.
+The result is a local control layer for agentic coding: agents still do the coding, while Maestro keeps their workspaces, status, terminals, and feedback loops organized.
 
 ## Features
 
@@ -60,7 +60,7 @@ The desktop app is the main control surface: projects on the left, active sessio
       <p>Start multiple coding agents from the same project without mixing files, branches, terminals, or pull request state.</p>
     </td>
     <td width="64%">
-      <img src="docs/assets/readme/dashboard.png" alt="Thanos board with multiple parallel sessions" />
+      <img src="docs/assets/readme/dashboard.png" alt="Maestro board with multiple parallel sessions" />
     </td>
   </tr>
   <tr>
@@ -69,7 +69,7 @@ The desktop app is the main control surface: projects on the left, active sessio
       <p>Open any session and attach to the worker terminal while keeping session summary, PR state, and follow-up actions in view.</p>
     </td>
     <td width="64%">
-      <img src="docs/assets/readme/session-terminal.png" alt="Session terminal inside Thanos" />
+      <img src="docs/assets/readme/session-terminal.png" alt="Session terminal inside Maestro" />
     </td>
   </tr>
   <tr>
@@ -94,7 +94,7 @@ The desktop app is the main control surface: projects on the left, active sessio
 
 ## Supported Agents
 
-Thanos ships adapters for 23 worker agent harnesses:
+Maestro ships adapters for 23 worker agent harnesses:
 
 <p>
   <a href="https://to-agents.com/docs/plugins/agents/claude-code"><img src="frontend/src/landing/public/docs/logos/claude-code.svg" alt="" width="16" height="16" valign="middle" /> <code>claude-code</code></a> ·
@@ -130,7 +130,7 @@ Reviewer agents are configured separately. The current reviewer harnesses are:
   <a href="https://to-agents.com/docs/plugins/agents/opencode"><img src="frontend/src/landing/public/docs/logos/opencode.svg" alt="" width="16" height="16" valign="middle" /> <code>opencode</code></a>
 </p>
 
-**If it runs in a terminal, it runs on Thanos.**
+**If it runs in a terminal, it runs on Maestro.**
 
 ## Install
 
@@ -138,31 +138,31 @@ The fastest path is the same flow used by the installation docs:
 
 ```bash
 npm install -g @tinhtran/to
-to start
+maestro start
 ```
 
-Run `to start` from the repository you want Thanos to manage. See the [installation guide](https://to-agents.com/docs/installation) for pnpm, yarn, source installs, agent CLI setup, and troubleshooting.
+Run `maestro start` from the repository you want Maestro to manage. See the [installation guide](https://to-agents.com/docs/installation) for pnpm, yarn, source installs, agent CLI setup, and troubleshooting.
 
 You can also download the latest desktop build for your platform:
 
-| Platform | Download                                                                                          |
-| -------- | ------------------------------------------------------------------------------------------------- |
-| Windows  | [Setup.exe](https://github.com/AgentWrapper/thanos/releases/latest)                   |
-| macOS    | [Thanos.dmg](https://github.com/AgentWrapper/thanos/releases/latest)      |
-| Linux    | [Thanos.AppImage](https://github.com/AgentWrapper/thanos/releases/latest) |
+| Platform | Download                                                                    |
+| -------- | --------------------------------------------------------------------------- |
+| Windows  | [Setup.exe](https://github.com/AgentWrapper/maestro/releases/latest)        |
+| macOS    | [Maestro.dmg](https://github.com/AgentWrapper/maestro/releases/latest)      |
+| Linux    | [Maestro.AppImage](https://github.com/AgentWrapper/maestro/releases/latest) |
 
-## Witness Thanos's Journey on X
+## Witness Maestro's Journey on X
 
 <table>
   <tr>
     <td width="50%" align="center">
       <a href="https://x.com/agent_wrapper/status/2026329204405723180">
-        <img src="screenshots/tweet2.png" height="330" alt="Thanos journey screenshot one" />
+        <img src="screenshots/tweet2.png" height="330" alt="Maestro journey screenshot one" />
       </a>
     </td>
     <td width="50%" align="center">
       <a href="https://x.com/agent_wrapper/status/2025986105485733945">
-        <img src="screenshots/tweet1.png" height="330" alt="Thanos journey screenshot two" />
+        <img src="screenshots/tweet1.png" height="330" alt="Maestro journey screenshot two" />
       </a>
     </td>
   </tr>
@@ -180,7 +180,7 @@ You can also download the latest desktop build for your platform:
 
 ## Telemetry
 
-Thanos's Electron renderer sends anonymous usage events to PostHog for reliability and product understanding, and PostHog session recording is enabled with local paths and local URLs redacted before transmission. Set `VITE_THANOS_POSTHOG_KEY` to an empty string before building to disable transmission. See [docs/telemetry.md](docs/telemetry.md).
+Maestro's Electron renderer sends anonymous usage events to PostHog for reliability and product understanding, and PostHog session recording is enabled with local paths and local URLs redacted before transmission. Set `VITE_MAESTRO_POSTHOG_KEY` to an empty string before building to disable transmission. See [docs/telemetry.md](docs/telemetry.md).
 
 ## License
 

@@ -4,17 +4,17 @@ import (
 	"context"
 	"path/filepath"
 
-	"github.com/tinhtran/thanos/backend/internal/adapters/agent/hooksjson"
-	"github.com/tinhtran/thanos/backend/internal/ports"
+	"github.com/tinhtran24/maestro/backend/internal/adapters/agent/hooksjson"
+	"github.com/tinhtran24/maestro/backend/internal/ports"
 )
 
 const (
 	droidSettingsDirName = ".factory"
 	droidHooksFileName   = "hooks.json"
 
-	// droidHookCommandPrefix identifies the hook commands Thanos owns, so install
-	// skips duplicates and uninstall recognizes Thanos entries by prefix.
-	droidHookCommandPrefix = "to hooks droid "
+	// droidHookCommandPrefix identifies the hook commands Maestro owns, so install
+	// skips duplicates and uninstall recognizes Maestro entries by prefix.
+	droidHookCommandPrefix = "maestro hooks droid "
 	droidHookTimeout       = 30
 )
 
@@ -22,7 +22,7 @@ const (
 // its "startup" source matcher.
 var droidStartupMatcher = "startup"
 
-// droidManagedHooks is the source of truth for the hooks Thanos installs:
+// droidManagedHooks is the source of truth for the hooks Maestro installs:
 // SessionStart (under the "startup" matcher), UserPromptSubmit, Stop,
 // Notification, and SessionEnd.
 var droidManagedHooks = []hooksjson.HookSpec{
@@ -33,7 +33,7 @@ var droidManagedHooks = []hooksjson.HookSpec{
 	{Event: "SessionEnd", Command: droidHookCommandPrefix + "session-end"},
 }
 
-// droidHooks manages Thanos's hooks in the workspace-local .factory/hooks.json file.
+// droidHooks manages Maestro's hooks in the workspace-local .factory/hooks.json file.
 var droidHooks = hooksjson.Manager{
 	Label:         "droid",
 	CommandPrefix: droidHookCommandPrefix,
@@ -46,17 +46,17 @@ func droidHooksPath(workspacePath string) string {
 	return filepath.Join(workspacePath, droidSettingsDirName, droidHooksFileName)
 }
 
-// GetAgentHooks installs Thanos's Droid hooks, preserving user-defined hooks.
+// GetAgentHooks installs Maestro's Droid hooks, preserving user-defined hooks.
 func (p *Plugin) GetAgentHooks(ctx context.Context, cfg ports.WorkspaceHookConfig) error {
 	return droidHooks.Install(ctx, cfg.WorkspacePath)
 }
 
-// UninstallHooks removes Thanos's Droid hooks, leaving user-defined hooks untouched.
+// UninstallHooks removes Maestro's Droid hooks, leaving user-defined hooks untouched.
 func (p *Plugin) UninstallHooks(ctx context.Context, workspacePath string) error {
 	return droidHooks.Uninstall(ctx, workspacePath)
 }
 
-// AreHooksInstalled reports whether any Thanos Droid hook is present.
+// AreHooksInstalled reports whether any Maestro Droid hook is present.
 func (p *Plugin) AreHooksInstalled(ctx context.Context, workspacePath string) (bool, error) {
 	return droidHooks.AreInstalled(ctx, workspacePath)
 }

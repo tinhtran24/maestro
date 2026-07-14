@@ -8,7 +8,7 @@ import (
 )
 
 // ProjectConfig is the typed per-project configuration — the SQLite twin of the
-// legacy thanos.yaml `projects.<id>` block. It is persisted as one
+// legacy maestro.yaml `projects.<id>` block. It is persisted as one
 // JSON blob per project and resolved at spawn. Each field is typed and
 // validated; there is no free-form map.
 //
@@ -23,7 +23,7 @@ type ProjectConfig struct {
 	SessionPrefix string `json:"sessionPrefix,omitempty"`
 
 	// Env are extra environment variables forwarded into worker session
-	// runtimes. Thanos-internal vars (THANOS_SESSION, THANOS_PROJECT_ID, …) always win.
+	// runtimes. Maestro-internal vars (MAESTRO_SESSION, MAESTRO_PROJECT_ID, …) always win.
 	Env map[string]string `json:"env,omitempty"`
 	// Symlinks are repo-relative paths symlinked into each session workspace.
 	Symlinks []string `json:"symlinks,omitempty"`
@@ -58,7 +58,7 @@ type ProjectConfig struct {
 }
 
 // GitWorkflowConfig controls optional Git actions requested of worker agents.
-// It is disabled by default; Thanos never stores a provider token for this —
+// It is disabled by default; Maestro never stores a provider token for this —
 // the agent pushes and opens the PR/MR through the user's own git and provider
 // credentials.
 type GitWorkflowConfig struct {

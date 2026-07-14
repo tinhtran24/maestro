@@ -3,10 +3,10 @@ package daemon
 import (
 	"log/slog"
 
-	telemetryadapter "github.com/tinhtran/thanos/backend/internal/adapters/telemetry"
-	"github.com/tinhtran/thanos/backend/internal/config"
-	"github.com/tinhtran/thanos/backend/internal/ports"
-	"github.com/tinhtran/thanos/backend/internal/storage/sqlite"
+	telemetryadapter "github.com/tinhtran24/maestro/backend/internal/adapters/telemetry"
+	"github.com/tinhtran24/maestro/backend/internal/config"
+	"github.com/tinhtran24/maestro/backend/internal/ports"
+	"github.com/tinhtran24/maestro/backend/internal/storage/sqlite"
 )
 
 func newTelemetrySink(cfg config.Config, store *sqlite.Store, log *slog.Logger) ports.EventSink {

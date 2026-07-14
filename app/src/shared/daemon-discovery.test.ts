@@ -91,20 +91,20 @@ describe("parseRunFile", () => {
 });
 
 describe("defaultRunFilePath", () => {
-	it("matches Go's canonical Thanos home default on macOS", () => {
-		expect(defaultRunFilePath("darwin", {}, "/Users/me")).toBe("/Users/me/.thanos/running.json");
+	it("matches Go's canonical Maestro home default on macOS", () => {
+		expect(defaultRunFilePath("darwin", {}, "/Users/me")).toBe("/Users/me/.maestro/running.json");
 	});
 
 	it("ignores XDG_CONFIG_HOME on linux", () => {
-		expect(defaultRunFilePath("linux", { XDG_CONFIG_HOME: "/xdg" }, "/home/me")).toBe("/home/me/.thanos/running.json");
-		expect(defaultRunFilePath("linux", {}, "/home/me")).toBe("/home/me/.thanos/running.json");
+		expect(defaultRunFilePath("linux", { XDG_CONFIG_HOME: "/xdg" }, "/home/me")).toBe("/home/me/.maestro/running.json");
+		expect(defaultRunFilePath("linux", {}, "/home/me")).toBe("/home/me/.maestro/running.json");
 	});
 
 	it("ignores APPDATA on windows", () => {
 		expect(defaultRunFilePath("win32", { APPDATA: "C:\\Users\\me\\AppData\\Roaming" }, "C:\\Users\\me")).toBe(
-			"C:\\Users\\me/.thanos/running.json",
+			"C:\\Users\\me/.maestro/running.json",
 		);
-		expect(defaultRunFilePath("win32", {}, "C:\\Users\\me")).toBe("C:\\Users\\me/.thanos/running.json");
+		expect(defaultRunFilePath("win32", {}, "C:\\Users\\me")).toBe("C:\\Users\\me/.maestro/running.json");
 	});
 
 	it("returns null when no home directory can be resolved", () => {

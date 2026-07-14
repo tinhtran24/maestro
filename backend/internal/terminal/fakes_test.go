@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/tinhtran/thanos/backend/internal/ports"
+	"github.com/tinhtran24/maestro/backend/internal/ports"
 )
 
 // fakeSource is a scripted terminal Source: Attach hands out fake Streams from

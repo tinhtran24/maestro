@@ -9,8 +9,8 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/tinhtran/thanos/backend/internal/adapters/agent/hooksjson"
-	"github.com/tinhtran/thanos/backend/internal/ports"
+	"github.com/tinhtran24/maestro/backend/internal/adapters/agent/hooksjson"
+	"github.com/tinhtran24/maestro/backend/internal/ports"
 )
 
 func TestManifestIDIsGoose(t *testing.T) {
@@ -274,7 +274,7 @@ func TestGetAgentHooksInstallsGooseHooks(t *testing.T) {
 	if err := plugin.GetAgentHooks(context.Background(), cfg); err != nil {
 		t.Fatal(err)
 	}
-	// A second install must not duplicate Thanos hook commands.
+	// A second install must not duplicate Maestro hook commands.
 	if err := plugin.GetAgentHooks(context.Background(), cfg); err != nil {
 		t.Fatal(err)
 	}
