@@ -6,17 +6,6 @@
   <component name="ChangeListManager">
     <list default="true" id="ab904008-d3c3-488d-a287-421dd9b93abe" name="Changes" comment="feature: git">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/api/schema.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/api/schema.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/renderer/components/quick-capture/PlanPreviewCard.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/renderer/components/quick-capture/PlanPreviewCard.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/renderer/components/quick-capture/TaskReviewFlow.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/renderer/components/quick-capture/TaskReviewFlow.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/renderer/components/quick-capture/types.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/renderer/components/quick-capture/types.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/renderer/lib/planner.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/renderer/lib/planner.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/internal/httpd/apispec/openapi.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/httpd/apispec/openapi.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/internal/service/planner/planner.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/service/planner/planner.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/internal/session_manager/git_prompt_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/session_manager/git_prompt_test.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/internal/session_manager/manager.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/session_manager/manager.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/internal/skillassets/skillassets.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/skillassets/skillassets.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/internal/skillassets/skillassets_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/backend/internal/skillassets/skillassets_test.go" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -69,7 +58,7 @@
     "RunOnceActivity.git.unshallow": "true",
     "RunOnceActivity.typescript.service.memoryLimit.init": "true",
     "codeWithMe.voiceChat.enabledByDefault": "false",
-    "git-widget-placeholder": "feature/lifecycle-task-creation",
+    "git-widget-placeholder": "feature/project-memory-task-graph",
     "javascript.preferred.runtime.type.id": "node",
     "last_opened_file_path": "/Users/trantinh/tool/thanos",
     "node.js.detected.package.eslint": "true",

@@ -9,6 +9,8 @@ import (
 	"github.com/tinhtran24/maestro/backend/internal/adapters"
 	"github.com/tinhtran24/maestro/backend/internal/adapters/agent/activitydispatch"
 	agentregistry "github.com/tinhtran24/maestro/backend/internal/adapters/agent/registry"
+	"github.com/tinhtran24/maestro/backend/internal/adapters/memorydiff"
+	"github.com/tinhtran24/maestro/backend/internal/adapters/memoryevents"
 	"github.com/tinhtran24/maestro/backend/internal/adapters/reviewer"
 	"github.com/tinhtran24/maestro/backend/internal/adapters/runtime/runtimeselect"
 	"github.com/tinhtran24/maestro/backend/internal/adapters/workspace/gitworktree"
@@ -18,6 +20,7 @@ import (
 	"github.com/tinhtran24/maestro/backend/internal/observe/reaper"
 	"github.com/tinhtran24/maestro/backend/internal/ports"
 	reviewcore "github.com/tinhtran24/maestro/backend/internal/review"
+	memorysvc "github.com/tinhtran24/maestro/backend/internal/service/memory"
 	reviewsvc "github.com/tinhtran24/maestro/backend/internal/service/review"
 	sessionsvc "github.com/tinhtran24/maestro/backend/internal/service/session"
 	sessionmanager "github.com/tinhtran24/maestro/backend/internal/session_manager"
@@ -110,6 +113,7 @@ func startSession(cfg config.Config, runtime runtimeselect.Runtime, store *sqlit
 		Lifecycle: lcm,
 		DataDir:   cfg.DataDir,
 		Logger:    log,
+		Memory:    buildMemoryRecorder(cfg, store, log),
 	})
 	scmProvider, err := newGitHubSCMProvider(log)
 	if err != nil {
@@ -142,6 +146,20 @@ func startSession(cfg config.Config, runtime runtimeselect.Runtime, store *sqlit
 	})
 	reviewSvc := reviewsvc.New(reviewEngine, store, reviewsvc.WithLifecycleReducer(lcm))
 	return sessionSvc, reviewSvc, mgr, nil
+}
+
+// buildMemoryRecorder assembles the project-memory capture recorder wired into
+// the session manager as Deps.Memory. Each completed session appends a
+// task.completed event to its project's committed events.jsonl and folds it into
+// the projection database under <DataDir>/memory/<projectID>, keeping all
+// derived memory state beneath the same MAESTRO_DATA_DIR root as worktrees. The
+// store satisfies memorysvc.ProjectLookup via GetProject.
+func buildMemoryRecorder(cfg config.Config, store *sqlite.Store, log *slog.Logger) *memorysvc.Recorder {
+	events := memoryevents.New()
+	builder := memorysvc.NewBuilder(memorydiff.New(), log)
+	projector := memorysvc.NewProjector(events, log)
+	cacheDir := filepath.Join(cfg.DataDir, "memory")
+	return memorysvc.NewRecorder(builder, events, projector, store, cacheDir, log)
 }
 
 // runtimeMessageSender is the narrow part of the concrete runtime needed by
