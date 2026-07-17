@@ -803,6 +803,9 @@ export interface components {
              */
             status: "read";
         };
+        MemoryConfig: {
+            autoCommit?: boolean;
+        };
         MemoryContextResponse: {
             decisions: string[];
             dropped: components["schemas"]["MemoryDroppedDTO"][];
@@ -935,6 +938,7 @@ export interface components {
                 [key: string]: string;
             };
             git?: components["schemas"]["DomainGitWorkflowConfig"];
+            memory?: components["schemas"]["MemoryConfig"];
             orchestrator?: components["schemas"]["RoleOverride"];
             planner?: components["schemas"]["RoleOverride"];
             postCreate?: string[];

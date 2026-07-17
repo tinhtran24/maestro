@@ -36,7 +36,13 @@ func New() *Store { return &Store{} }
 
 // EventsPath returns the absolute events.jsonl path for a project checkout.
 func EventsPath(projectPath string) string {
-	return filepath.Join(projectPath, memoryDirName, memorySubdir, eventsFileName)
+	return filepath.Join(projectPath, RelEventsPath())
+}
+
+// RelEventsPath returns the events.jsonl path relative to the project checkout
+// root, for use as a git pathspec.
+func RelEventsPath() string {
+	return filepath.Join(memoryDirName, memorySubdir, eventsFileName)
 }
 
 // Append writes ev as a single JSON line to the project's events.jsonl, creating

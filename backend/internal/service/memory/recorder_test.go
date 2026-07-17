@@ -25,7 +25,7 @@ func newRecorder(t *testing.T, projectDir, cacheDir string, projects ProjectLook
 	events := memoryevents.New()
 	builder := NewBuilder(diff, nil)
 	projector := NewProjector(events, nil)
-	return NewRecorder(builder, events, projector, projects, cacheDir, nil)
+	return NewRecorder(builder, events, projector, projects, nil, cacheDir, nil)
 }
 
 func countEvents(t *testing.T, projectDir string) []memoryevents.Event {

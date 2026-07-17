@@ -2219,6 +2219,11 @@ components:
       required:
       - status
       type: object
+    MemoryConfig:
+      properties:
+        autoCommit:
+          type: boolean
+      type: object
     MemoryContextResponse:
       properties:
         decisions:
@@ -2601,6 +2606,8 @@ components:
           type: object
         git:
           $ref: '#/components/schemas/DomainGitWorkflowConfig'
+        memory:
+          $ref: '#/components/schemas/MemoryConfig'
         orchestrator:
           $ref: '#/components/schemas/RoleOverride'
         planner:

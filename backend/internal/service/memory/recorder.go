@@ -2,6 +2,7 @@ package memory
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 
 	"github.com/tinhtran24/maestro/backend/internal/adapters/memoryevents"
@@ -19,6 +20,13 @@ type ProjectLookup interface {
 // can supply a store rooted at a temp directory.
 type storeOpener func(projectID string) (*memorydb.Store, error)
 
+// Committer commits the appended events.jsonl into the project repository when a
+// project opts into auto-commit. Implementations must never push and must scope
+// the commit to the given path so the user's other work is untouched.
+type Committer interface {
+	CommitFile(ctx context.Context, repoPath, relPath, message string) error
+}
+
 // Recorder captures completion memory when a session terminates. It is the
 // concrete implementation behind the session manager's MemoryRecorder seam:
 // RecordCompletion never returns an error, and it logs and abandons on any
@@ -29,12 +37,14 @@ type Recorder struct {
 	projector *Projector
 	projects  ProjectLookup
 	openStore storeOpener
+	committer Committer
 	log       *slog.Logger
 }
 
 // NewRecorder wires a Recorder. cacheDir is the app-state cache root under which
-// each project's projection database lives; projects resolves checkout paths.
-func NewRecorder(builder *Builder, events *memoryevents.Store, projector *Projector, projects ProjectLookup, cacheDir string, log *slog.Logger) *Recorder {
+// each project's projection database lives; projects resolves checkout paths;
+// committer performs the opt-in events.jsonl auto-commit (nil disables it).
+func NewRecorder(builder *Builder, events *memoryevents.Store, projector *Projector, projects ProjectLookup, committer Committer, cacheDir string, log *slog.Logger) *Recorder {
 	if log == nil {
 		log = slog.Default()
 	}
@@ -46,7 +56,8 @@ func NewRecorder(builder *Builder, events *memoryevents.Store, projector *Projec
 		openStore: func(projectID string) (*memorydb.Store, error) {
 			return memorydb.Open(cacheDir, projectID)
 		},
-		log: log,
+		committer: committer,
+		log:       log,
 	}
 }
 
@@ -74,6 +85,12 @@ func (r *Recorder) RecordCompletion(ctx context.Context, rec domain.SessionRecor
 	if err := r.events.Append(ctx, project.Path, ev); err != nil {
 		r.log.Warn("memory: append completion event failed", "sessionID", rec.ID, "error", err)
 		return
+	}
+	if project.Config.Memory.AutoCommit && r.committer != nil {
+		msg := fmt.Sprintf("chore(memory): record task %s", ev.Task.ID)
+		if err := r.committer.CommitFile(ctx, project.Path, memoryevents.RelEventsPath(), msg); err != nil {
+			r.log.Warn("memory: auto-commit events.jsonl failed", "sessionID", rec.ID, "error", err)
+		}
 	}
 	store, err := r.openStore(string(rec.ProjectID))
 	if err != nil {

@@ -159,7 +159,7 @@ func buildMemoryRecorder(cfg config.Config, store *sqlite.Store, log *slog.Logge
 	builder := memorysvc.NewBuilder(memorydiff.New(), log)
 	projector := memorysvc.NewProjector(events, log)
 	cacheDir := filepath.Join(cfg.DataDir, "memory")
-	return memorysvc.NewRecorder(builder, events, projector, store, cacheDir, log)
+	return memorysvc.NewRecorder(builder, events, projector, store, memorydiff.NewCommitter(), cacheDir, log)
 }
 
 // buildMemoryService assembles the read/maintenance surface over project memory

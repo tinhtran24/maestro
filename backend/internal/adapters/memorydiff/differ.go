@@ -46,7 +46,12 @@ func (d *Differ) ChangedFiles(ctx context.Context, repoPath, branch string) ([]s
 }
 
 func (d *Differ) run(ctx context.Context, args ...string) (string, error) {
-	cmd := aoprocess.CommandContext(ctx, d.binary, args...)
+	return runGit(ctx, d.binary, args...)
+}
+
+// runGit executes git and returns stdout, wrapping a failure with stderr.
+func runGit(ctx context.Context, binary string, args ...string) (string, error) {
+	cmd := aoprocess.CommandContext(ctx, binary, args...)
 	var stdout, stderr bytes.Buffer
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
