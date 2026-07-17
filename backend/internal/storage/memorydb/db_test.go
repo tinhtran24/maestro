@@ -175,6 +175,79 @@ func TestOpenRejectsUnsafeProjectID(t *testing.T) {
 	}
 }
 
+func TestTasksSharingPathsMergesFilesAndTests(t *testing.T) {
+	s, _ := openTemp(t, "acme")
+	ctx := context.Background()
+	when := time.Date(2026, 7, 17, 8, 0, 0, 0, time.UTC)
+	if err := s.UpsertTask(ctx, Task{ID: "T1", EventID: "e1", SessionID: "s1", ProjectID: "acme", OccurredAt: when}); err != nil {
+		t.Fatalf("seed: %v", err)
+	}
+	if err := s.ReplaceFiles(ctx, "T1", []string{"a.go", "b.go"}); err != nil {
+		t.Fatalf("files: %v", err)
+	}
+	if err := s.ReplaceTests(ctx, "T1", []string{"a_test.go"}); err != nil {
+		t.Fatalf("tests: %v", err)
+	}
+
+	overlaps, err := s.TasksSharingPaths(ctx, []string{"a.go", "b.go", "missing.go"}, []string{"a_test.go"})
+	if err != nil {
+		t.Fatalf("TasksSharingPaths: %v", err)
+	}
+	if len(overlaps) != 1 {
+		t.Fatalf("expected one overlapping task, got %d", len(overlaps))
+	}
+	o := overlaps[0]
+	if o.TaskID != "T1" || o.SharedFiles != 2 || o.SharedTests != 1 {
+		t.Fatalf("overlap = %+v, want T1 files=2 tests=1", o)
+	}
+	if !o.OccurredAt.Equal(when) {
+		t.Fatalf("overlap occurred_at = %v, want %v", o.OccurredAt, when)
+	}
+}
+
+func TestTasksSharingPathsEmptyInputsAreSafe(t *testing.T) {
+	s, _ := openTemp(t, "acme")
+	// Empty path sets must not issue an invalid `IN ()`.
+	overlaps, err := s.TasksSharingPaths(context.Background(), nil, nil)
+	if err != nil {
+		t.Fatalf("empty TasksSharingPaths: %v", err)
+	}
+	if len(overlaps) != 0 {
+		t.Fatalf("expected no overlaps for empty input, got %d", len(overlaps))
+	}
+}
+
+func TestReplaceEdgesFromRoundTrip(t *testing.T) {
+	s, _ := openTemp(t, "acme")
+	ctx := context.Background()
+	mustTask(t, s, "T1")
+	mustTask(t, s, "T2")
+	mustTask(t, s, "T3")
+
+	if err := s.ReplaceEdgesFrom(ctx, "T1", []Edge{
+		{DstTaskID: "T2", Relation: "shared_path", Confidence: 2},
+		{DstTaskID: "T3", Relation: "shared_path", Confidence: 1},
+	}); err != nil {
+		t.Fatalf("ReplaceEdgesFrom: %v", err)
+	}
+	edges, err := s.ListEdgesFrom(ctx, "T1")
+	if err != nil {
+		t.Fatalf("ListEdgesFrom: %v", err)
+	}
+	// Ordered by confidence desc.
+	if len(edges) != 2 || edges[0].DstTaskID != "T2" || edges[1].DstTaskID != "T3" {
+		t.Fatalf("edges = %+v, want [T2, T3]", edges)
+	}
+	// Replacing shrinks the set.
+	if err := s.ReplaceEdgesFrom(ctx, "T1", []Edge{{DstTaskID: "T3", Relation: "shared_path", Confidence: 5}}); err != nil {
+		t.Fatalf("ReplaceEdgesFrom shrink: %v", err)
+	}
+	edges, _ = s.ListEdgesFrom(ctx, "T1")
+	if len(edges) != 1 || edges[0].DstTaskID != "T3" || edges[0].Confidence != 5 {
+		t.Fatalf("after shrink edges = %+v, want [T3@5]", edges)
+	}
+}
+
 func mustTask(t *testing.T, s *Store, id string) {
 	t.Helper()
 	if err := s.UpsertTask(context.Background(), Task{

@@ -53,6 +53,22 @@ type Meta struct {
 	UpdatedAt   time.Time
 }
 
+// PathOverlap reports how many of a queried path set a task shares, split by
+// files vs tests, along with the task's recency for ranking.
+type PathOverlap struct {
+	TaskID      string
+	OccurredAt  time.Time
+	SharedFiles int
+	SharedTests int
+}
+
+// Edge is a directed task-to-task relation emanating from a source task.
+type Edge struct {
+	DstTaskID  string
+	Relation   string
+	Confidence float64
+}
+
 func (s *Store) inTx(ctx context.Context, what string, fn func(*gen.Queries) error) error {
 	tx, err := s.db.BeginTx(ctx, nil)
 	if err != nil {
@@ -259,6 +275,84 @@ func (s *Store) SetMeta(ctx context.Context, lastEventID string, updatedAt time.
 		LastEventID: lastEventID,
 		UpdatedAt:   updatedAt.UTC(),
 	})
+}
+
+// TasksSharingPaths returns every task (including, if present, the querying task
+// itself) that shares at least one of the given file or test paths, with the
+// per-task shared counts. Callers exclude the querying task and rank the results.
+// Empty path sets are skipped rather than issuing an invalid `IN ()`.
+func (s *Store) TasksSharingPaths(ctx context.Context, files, tests []string) ([]PathOverlap, error) {
+	byTask := make(map[string]*PathOverlap)
+	if len(files) > 0 {
+		rows, err := s.q.TasksSharingFiles(ctx, files)
+		if err != nil {
+			return nil, fmt.Errorf("memorydb: tasks sharing files: %w", err)
+		}
+		for _, r := range rows {
+			o := overlapFor(byTask, r.ID, r.OccurredAt)
+			o.SharedFiles = int(r.Shared)
+		}
+	}
+	if len(tests) > 0 {
+		rows, err := s.q.TasksSharingTests(ctx, tests)
+		if err != nil {
+			return nil, fmt.Errorf("memorydb: tasks sharing tests: %w", err)
+		}
+		for _, r := range rows {
+			o := overlapFor(byTask, r.ID, r.OccurredAt)
+			o.SharedTests = int(r.Shared)
+		}
+	}
+	out := make([]PathOverlap, 0, len(byTask))
+	for _, o := range byTask {
+		out = append(out, *o)
+	}
+	return out, nil
+}
+
+func overlapFor(byTask map[string]*PathOverlap, id string, occurredAt time.Time) *PathOverlap {
+	o, ok := byTask[id]
+	if !ok {
+		o = &PathOverlap{TaskID: id, OccurredAt: occurredAt}
+		byTask[id] = o
+	}
+	return o
+}
+
+// ReplaceEdgesFrom sets the exact set of outgoing edges for a source task,
+// discarding any prior edges so re-applying a task's relations is idempotent.
+func (s *Store) ReplaceEdgesFrom(ctx context.Context, srcTaskID string, edges []Edge) error {
+	s.writeMu.Lock()
+	defer s.writeMu.Unlock()
+	return s.inTx(ctx, "replace edges", func(q *gen.Queries) error {
+		if err := q.DeleteEdgesFrom(ctx, srcTaskID); err != nil {
+			return err
+		}
+		for _, e := range edges {
+			if err := q.AddEdge(ctx, gen.AddEdgeParams{
+				SrcTaskID:  srcTaskID,
+				DstTaskID:  e.DstTaskID,
+				Relation:   e.Relation,
+				Confidence: e.Confidence,
+			}); err != nil {
+				return err
+			}
+		}
+		return nil
+	})
+}
+
+// ListEdgesFrom returns the outgoing edges of a task, strongest confidence first.
+func (s *Store) ListEdgesFrom(ctx context.Context, srcTaskID string) ([]Edge, error) {
+	rows, err := s.q.ListEdgesFrom(ctx, srcTaskID)
+	if err != nil {
+		return nil, fmt.Errorf("memorydb: list edges: %w", err)
+	}
+	out := make([]Edge, 0, len(rows))
+	for _, r := range rows {
+		out = append(out, Edge{DstTaskID: r.DstTaskID, Relation: r.Relation, Confidence: r.Confidence})
+	}
+	return out, nil
 }
 
 func taskFromRow(r gen.MemoryTask) Task {

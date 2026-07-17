@@ -50,7 +50,37 @@ func (p *Projector) Apply(ctx context.Context, store *memorydb.Store, ev memorye
 	if err != nil {
 		return err
 	}
-	return store.ApplyTask(ctx, task, files, tests, ev.ID, p.now())
+	if err := store.ApplyTask(ctx, task, files, tests, ev.ID, p.now()); err != nil {
+		return err
+	}
+	return p.updateEdges(ctx, store, task.ID, files, tests)
+}
+
+// relationShared is the edge kind recorded when two tasks changed overlapping
+// files or tests.
+const relationShared = "shared_path"
+
+// updateEdges recomputes the task graph edges emanating from taskID: for every
+// prior task that shares a changed file or test, it writes one edge whose
+// confidence is the number of shared paths. Edges are replaced wholesale so a
+// re-applied task's relations stay consistent with its current file set.
+func (p *Projector) updateEdges(ctx context.Context, store *memorydb.Store, taskID string, files, tests []string) error {
+	overlaps, err := store.TasksSharingPaths(ctx, files, tests)
+	if err != nil {
+		return err
+	}
+	edges := make([]memorydb.Edge, 0, len(overlaps))
+	for _, o := range overlaps {
+		if o.TaskID == taskID {
+			continue
+		}
+		edges = append(edges, memorydb.Edge{
+			DstTaskID:  o.TaskID,
+			Relation:   relationShared,
+			Confidence: float64(o.SharedFiles + o.SharedTests),
+		})
+	}
+	return store.ReplaceEdgesFrom(ctx, taskID, edges)
 }
 
 // CatchUp applies every event appended after the projection's recorded offset,

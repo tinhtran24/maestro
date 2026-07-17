@@ -7,8 +7,32 @@ package gen
 
 import (
 	"context"
+	"strings"
 	"time"
 )
+
+const addEdge = `-- name: AddEdge :exec
+INSERT INTO memory_task_edge (src_task_id, dst_task_id, relation, confidence)
+VALUES (?, ?, ?, ?)
+ON CONFLICT(src_task_id, dst_task_id, relation) DO UPDATE SET confidence = excluded.confidence
+`
+
+type AddEdgeParams struct {
+	SrcTaskID  string
+	DstTaskID  string
+	Relation   string
+	Confidence float64
+}
+
+func (q *Queries) AddEdge(ctx context.Context, arg AddEdgeParams) error {
+	_, err := q.db.ExecContext(ctx, addEdge,
+		arg.SrcTaskID,
+		arg.DstTaskID,
+		arg.Relation,
+		arg.Confidence,
+	)
+	return err
+}
 
 const addMemoryFile = `-- name: AddMemoryFile :exec
 INSERT INTO memory_file (task_id, path) VALUES (?, ?)
@@ -37,6 +61,15 @@ type AddMemoryTestParams struct {
 
 func (q *Queries) AddMemoryTest(ctx context.Context, arg AddMemoryTestParams) error {
 	_, err := q.db.ExecContext(ctx, addMemoryTest, arg.TaskID, arg.Path)
+	return err
+}
+
+const deleteEdgesFrom = `-- name: DeleteEdgesFrom :exec
+DELETE FROM memory_task_edge WHERE src_task_id = ?
+`
+
+func (q *Queries) DeleteEdgesFrom(ctx context.Context, srcTaskID string) error {
+	_, err := q.db.ExecContext(ctx, deleteEdgesFrom, srcTaskID)
 	return err
 }
 
@@ -98,6 +131,42 @@ func (q *Queries) GetMemoryTask(ctx context.Context, id string) (MemoryTask, err
 		&i.DecisionsJson,
 	)
 	return i, err
+}
+
+const listEdgesFrom = `-- name: ListEdgesFrom :many
+SELECT dst_task_id, relation, confidence
+FROM memory_task_edge
+WHERE src_task_id = ?
+ORDER BY confidence DESC, dst_task_id
+`
+
+type ListEdgesFromRow struct {
+	DstTaskID  string
+	Relation   string
+	Confidence float64
+}
+
+func (q *Queries) ListEdgesFrom(ctx context.Context, srcTaskID string) ([]ListEdgesFromRow, error) {
+	rows, err := q.db.QueryContext(ctx, listEdgesFrom, srcTaskID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ListEdgesFromRow{}
+	for rows.Next() {
+		var i ListEdgesFromRow
+		if err := rows.Scan(&i.DstTaskID, &i.Relation, &i.Confidence); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const listMemoryFilesByTask = `-- name: ListMemoryFilesByTask :many
@@ -186,6 +255,102 @@ func (q *Queries) ListMemoryTestsByTask(ctx context.Context, taskID string) ([]s
 			return nil, err
 		}
 		items = append(items, path)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const tasksSharingFiles = `-- name: TasksSharingFiles :many
+SELECT t.id, t.occurred_at, COUNT(f.path) AS shared
+FROM memory_file f
+JOIN memory_task t ON t.id = f.task_id
+WHERE f.path IN (/*SLICE:paths*/?)
+GROUP BY t.id, t.occurred_at
+ORDER BY shared DESC, t.occurred_at DESC
+`
+
+type TasksSharingFilesRow struct {
+	ID         string
+	OccurredAt time.Time
+	Shared     int64
+}
+
+func (q *Queries) TasksSharingFiles(ctx context.Context, paths []string) ([]TasksSharingFilesRow, error) {
+	query := tasksSharingFiles
+	var queryParams []interface{}
+	if len(paths) > 0 {
+		for _, v := range paths {
+			queryParams = append(queryParams, v)
+		}
+		query = strings.Replace(query, "/*SLICE:paths*/?", strings.Repeat(",?", len(paths))[1:], 1)
+	} else {
+		query = strings.Replace(query, "/*SLICE:paths*/?", "NULL", 1)
+	}
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []TasksSharingFilesRow{}
+	for rows.Next() {
+		var i TasksSharingFilesRow
+		if err := rows.Scan(&i.ID, &i.OccurredAt, &i.Shared); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const tasksSharingTests = `-- name: TasksSharingTests :many
+SELECT t.id, t.occurred_at, COUNT(te.path) AS shared
+FROM memory_test te
+JOIN memory_task t ON t.id = te.task_id
+WHERE te.path IN (/*SLICE:paths*/?)
+GROUP BY t.id, t.occurred_at
+ORDER BY shared DESC, t.occurred_at DESC
+`
+
+type TasksSharingTestsRow struct {
+	ID         string
+	OccurredAt time.Time
+	Shared     int64
+}
+
+func (q *Queries) TasksSharingTests(ctx context.Context, paths []string) ([]TasksSharingTestsRow, error) {
+	query := tasksSharingTests
+	var queryParams []interface{}
+	if len(paths) > 0 {
+		for _, v := range paths {
+			queryParams = append(queryParams, v)
+		}
+		query = strings.Replace(query, "/*SLICE:paths*/?", strings.Repeat(",?", len(paths))[1:], 1)
+	} else {
+		query = strings.Replace(query, "/*SLICE:paths*/?", "NULL", 1)
+	}
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []TasksSharingTestsRow{}
+	for rows.Next() {
+		var i TasksSharingTestsRow
+		if err := rows.Scan(&i.ID, &i.OccurredAt, &i.Shared); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
 	}
 	if err := rows.Close(); err != nil {
 		return nil, err

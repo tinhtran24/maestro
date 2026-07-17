@@ -52,3 +52,33 @@ INSERT INTO memory_meta (id, last_event_id, updated_at) VALUES (1, ?, ?)
 ON CONFLICT(id) DO UPDATE SET
     last_event_id = excluded.last_event_id,
     updated_at = excluded.updated_at;
+
+-- name: TasksSharingFiles :many
+SELECT t.id, t.occurred_at, COUNT(f.path) AS shared
+FROM memory_file f
+JOIN memory_task t ON t.id = f.task_id
+WHERE f.path IN (sqlc.slice('paths'))
+GROUP BY t.id, t.occurred_at
+ORDER BY shared DESC, t.occurred_at DESC;
+
+-- name: TasksSharingTests :many
+SELECT t.id, t.occurred_at, COUNT(te.path) AS shared
+FROM memory_test te
+JOIN memory_task t ON t.id = te.task_id
+WHERE te.path IN (sqlc.slice('paths'))
+GROUP BY t.id, t.occurred_at
+ORDER BY shared DESC, t.occurred_at DESC;
+
+-- name: DeleteEdgesFrom :exec
+DELETE FROM memory_task_edge WHERE src_task_id = ?;
+
+-- name: AddEdge :exec
+INSERT INTO memory_task_edge (src_task_id, dst_task_id, relation, confidence)
+VALUES (?, ?, ?, ?)
+ON CONFLICT(src_task_id, dst_task_id, relation) DO UPDATE SET confidence = excluded.confidence;
+
+-- name: ListEdgesFrom :many
+SELECT dst_task_id, relation, confidence
+FROM memory_task_edge
+WHERE src_task_id = ?
+ORDER BY confidence DESC, dst_task_id;
