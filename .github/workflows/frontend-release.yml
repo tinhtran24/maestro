@@ -65,16 +65,6 @@ jobs:
           go-version-file: backend/go.mod
           cache-dependency-path: backend/go.sum
       - run: npm ci
-      - name: macOS signing setup
-        if: startsWith(matrix.os, 'macos')
-        uses: ./.github/actions/macos-signing-setup
-        with:
-          csc-link: ${{ secrets.CSC_LINK }}
-          csc-key-password: ${{ secrets.CSC_KEY_PASSWORD }}
-          apple-api-key-base64: ${{ secrets.APPLE_API_KEY_BASE64 }}
-          apple-api-key-id: ${{ secrets.APPLE_API_KEY_ID }}
-          apple-api-issuer: ${{ secrets.APPLE_API_ISSUER }}
-          apple-signing-identity: ${{ secrets.APPLE_SIGNING_IDENTITY }}
       - name: Publish
         shell: bash
         run: |
@@ -90,10 +80,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           MAESTRO_RELEASE_REPO: ${{ github.repository }}
-          # macOS signing + notarization env (APPLE_SIGNING_IDENTITY, APPLE_API_KEY,
-          # APPLE_API_KEY_ID, APPLE_API_ISSUER) is exported by the "macOS signing
-          # setup" step above via $GITHUB_ENV; the Developer ID cert is in the
-          # keychain. No-op on non-macOS runners.
+          # Builds are UNSIGNED: no macOS signing/notarization is configured.
 
       # Upload stable, version-free asset aliases for this runner's platform so
       # `to start`'s constant releases/latest/download/<name> URL resolves. The
@@ -191,15 +178,6 @@ jobs:
           go-version-file: backend/go.mod
           cache-dependency-path: backend/go.sum
       - run: npm ci
-      - name: macOS signing setup
-        uses: ./.github/actions/macos-signing-setup
-        with:
-          csc-link: ${{ secrets.CSC_LINK }}
-          csc-key-password: ${{ secrets.CSC_KEY_PASSWORD }}
-          apple-api-key-base64: ${{ secrets.APPLE_API_KEY_BASE64 }}
-          apple-api-key-id: ${{ secrets.APPLE_API_KEY_ID }}
-          apple-api-issuer: ${{ secrets.APPLE_API_ISSUER }}
-          apple-signing-identity: ${{ secrets.APPLE_SIGNING_IDENTITY }}
       - name: Publish
         shell: bash
         run: |

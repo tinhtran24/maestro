@@ -178,6 +178,8 @@ describe("ProjectSettingsForm", () => {
 						permissions: "bypass-permissions",
 					},
 					reviewers: [{ harness: "claude-code" }],
+					git: { enabled: false },
+					trackerIntake: undefined,
 				},
 			},
 		});

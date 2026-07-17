@@ -45,7 +45,7 @@ jobs:
           latest_stable="$(git tag --list 'desktop-v[0-9]*.[0-9]*.[0-9]*' --sort=-version:refname | grep -v nightly | head -n1)"
           latest_stable="${latest_stable:-desktop-v0.0.0}"
           short_sha="$(git rev-parse --short HEAD)"
-          version="$(node frontend/scripts/nightly-version.mjs "$latest_stable" "$short_sha")"
+          version="$(node app/scripts/nightly-version.mjs "$latest_stable" "$short_sha")"
           echo "version=$version" >> "$GITHUB_OUTPUT"
 
   release:
@@ -60,14 +60,14 @@ jobs:
       contents: write
     defaults:
       run:
-        working-directory: frontend
+        working-directory: app
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: npm
-          cache-dependency-path: frontend/package-lock.json
+          cache-dependency-path: app/package-lock.json
       - uses: actions/setup-go@v5
         with:
           go-version-file: backend/go.mod
@@ -79,16 +79,6 @@ jobs:
           NIGHTLY_VERSION: ${{ needs.guard.outputs.version }}
         run: |
           node -e "const v=process.env.NIGHTLY_VERSION.split('+')[0]; const fs=require('fs'); const p=require('./package.json'); p.version=v; fs.writeFileSync('./package.json', JSON.stringify(p,null,'\t')+'\n');"
-      - name: macOS signing setup
-        if: startsWith(matrix.os, 'macos')
-        uses: ./.github/actions/macos-signing-setup
-        with:
-          csc-link: ${{ secrets.CSC_LINK }}
-          csc-key-password: ${{ secrets.CSC_KEY_PASSWORD }}
-          apple-api-key-base64: ${{ secrets.APPLE_API_KEY_BASE64 }}
-          apple-api-key-id: ${{ secrets.APPLE_API_KEY_ID }}
-          apple-api-issuer: ${{ secrets.APPLE_API_ISSUER }}
-          apple-signing-identity: ${{ secrets.APPLE_SIGNING_IDENTITY }}
       - name: Publish
         shell: bash
         run: |
@@ -121,14 +111,14 @@ jobs:
       contents: write
     defaults:
       run:
-        working-directory: frontend
+        working-directory: app
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: npm
-          cache-dependency-path: frontend/package-lock.json
+          cache-dependency-path: app/package-lock.json
       - uses: actions/setup-go@v5
         with:
           go-version-file: backend/go.mod
@@ -140,15 +130,6 @@ jobs:
           NIGHTLY_VERSION: ${{ needs.guard.outputs.version }}
         run: |
           node -e "const v=process.env.NIGHTLY_VERSION.split('+')[0]; const fs=require('fs'); const p=require('./package.json'); p.version=v; fs.writeFileSync('./package.json', JSON.stringify(p,null,'\t')+'\n');"
-      - name: macOS signing setup
-        uses: ./.github/actions/macos-signing-setup
-        with:
-          csc-link: ${{ secrets.CSC_LINK }}
-          csc-key-password: ${{ secrets.CSC_KEY_PASSWORD }}
-          apple-api-key-base64: ${{ secrets.APPLE_API_KEY_BASE64 }}
-          apple-api-key-id: ${{ secrets.APPLE_API_KEY_ID }}
-          apple-api-issuer: ${{ secrets.APPLE_API_ISSUER }}
-          apple-signing-identity: ${{ secrets.APPLE_SIGNING_IDENTITY }}
       - name: Publish
         shell: bash
         run: |
@@ -192,14 +173,14 @@ jobs:
       contents: write
     defaults:
       run:
-        working-directory: frontend
+        working-directory: app
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: npm
-          cache-dependency-path: frontend/package-lock.json
+          cache-dependency-path: app/package-lock.json
       - run: npm ci
       - name: Generate and upload the nightly feed
         shell: bash

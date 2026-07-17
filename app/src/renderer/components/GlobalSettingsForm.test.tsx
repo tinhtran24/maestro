@@ -147,7 +147,7 @@ describe("GlobalSettingsForm", () => {
 	it("shows migration status and the available legacy root", async () => {
 		renderForm();
 		expect(await screen.findByText("Not migrated yet")).toBeInTheDocument();
-		expect(await screen.findByText("/home/u/.maestro")).toBeInTheDocument();
+		expect(await screen.findByText("/home/u/.thanos")).toBeInTheDocument();
 	});
 
 	it("Run migration imports and marks completed", async () => {
