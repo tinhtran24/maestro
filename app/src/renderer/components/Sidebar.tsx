@@ -558,6 +558,19 @@ function ProjectItem({
 				<Tooltip>
 					<TooltipTrigger asChild>
 						<button
+							aria-label={`Open ${workspace.name} memory`}
+							className={HOVER_ACTION_CLASS}
+							onClick={() => selection.goMemory(workspace.id)}
+							type="button"
+						>
+							<Brain aria-hidden="true" />
+						</button>
+					</TooltipTrigger>
+					<TooltipContent>Memory</TooltipContent>
+				</Tooltip>
+				<Tooltip>
+					<TooltipTrigger asChild>
+						<button
 							aria-label={orchestrator ? `Open ${workspace.name} orchestrator` : `Spawn ${workspace.name} orchestrator`}
 							className={HOVER_ACTION_CLASS}
 							disabled={isSpawning || isProjectRestarting}
@@ -584,10 +597,6 @@ function ProjectItem({
 						</button>
 					</DropdownMenuTrigger>
 					<DropdownMenuContent side="right" align="start" className="min-w-44">
-						<DropdownMenuItem onSelect={() => selection.goMemory(workspace.id)}>
-							<Brain aria-hidden="true" />
-							Memory
-						</DropdownMenuItem>
 						<DropdownMenuItem onSelect={() => selection.goSettings(workspace.id)}>
 							<Settings aria-hidden="true" />
 							Project settings
