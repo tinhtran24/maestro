@@ -1,11 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
 import { RefreshCw } from "lucide-react";
 import {
-	type MemoryContext,
-	type MemoryContextRole,
 	type MemoryTask,
-	fetchMemoryContext,
 	memoryGraphQueryKey,
 	memoryTasksQueryKey,
 	rebuildMemory,
@@ -16,10 +12,10 @@ import { apiErrorMessage } from "../../lib/api-client";
 import { useWorkspaceQuery } from "../../hooks/useWorkspaceQuery";
 import { DashboardSubhead } from "../DashboardSubhead";
 import { Button } from "../ui/button";
-import { Input } from "../ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import { cn } from "../../lib/utils";
+import { CodeGraph } from "./CodeGraph";
 import { MemoryGraph } from "./MemoryGraph";
 
 const typeColor: Record<string, string> = {
@@ -44,8 +40,6 @@ function TypeTag({ taskType }: { taskType: string }) {
 		</span>
 	);
 }
-
-const ROLES: MemoryContextRole[] = ["planner", "coder", "reviewer", "tester"];
 
 export function MemoryView({ projectId }: { projectId: string }) {
 	const workspaceQuery = useWorkspaceQuery();
@@ -88,8 +82,8 @@ export function MemoryView({ projectId }: { projectId: string }) {
 			<Tabs defaultValue="tasks" className="flex min-h-0 flex-1 flex-col">
 				<TabsList className="mx-[18px] mt-3 self-start">
 					<TabsTrigger value="tasks">Tasks</TabsTrigger>
-					<TabsTrigger value="graph">Graph</TabsTrigger>
-					<TabsTrigger value="context">Context</TabsTrigger>
+					<TabsTrigger value="graph">Task graph</TabsTrigger>
+					<TabsTrigger value="code">Code graph</TabsTrigger>
 				</TabsList>
 
 				<TabsContent value="tasks" className="min-h-0 flex-1 overflow-y-auto p-[18px]">
@@ -106,8 +100,14 @@ export function MemoryView({ projectId }: { projectId: string }) {
 					)}
 				</TabsContent>
 
-				<TabsContent value="context" className="min-h-0 flex-1 overflow-y-auto p-[18px]">
-					<ContextTab projectId={projectId} tasks={tasks} />
+				<TabsContent value="code" className="min-h-0 flex-1 border-t border-border">
+					{tasksQuery.isLoading ? (
+						<CenterNote>Loading code graph…</CenterNote>
+					) : tasks.length === 0 ? (
+						<CenterNote>No changed files recorded yet. The code graph fills in as sessions complete.</CenterNote>
+					) : (
+						<CodeGraph tasks={tasks} />
+					)}
 				</TabsContent>
 			</Tabs>
 		</div>
@@ -155,155 +155,5 @@ function TasksTab({ query, tasks }: { query: ReturnType<typeof useMemoryTasks>; 
 				))}
 			</TableBody>
 		</Table>
-	);
-}
-
-function ContextTab({ projectId, tasks }: { projectId: string; tasks: MemoryTask[] }) {
-	const [role, setRole] = useState<MemoryContextRole>("coder");
-	const [files, setFiles] = useState("");
-	const build = useMutation<MemoryContext, unknown, void>({
-		mutationFn: () =>
-			fetchMemoryContext(
-				projectId,
-				role,
-				files
-					.split(",")
-					.map((f) => f.trim())
-					.filter(Boolean),
-			),
-	});
-
-	const suggestedFiles = Array.from(new Set(tasks.flatMap((t) => t.changedFiles))).slice(0, 6);
-	const pack = build.data;
-
-	return (
-		<div className="mx-auto max-w-3xl space-y-4">
-			<div className="rounded-lg border border-border bg-surface/40 p-4">
-				<div className="mb-3 flex flex-wrap items-center gap-2">
-					<span className="text-[12px] text-passive">Role</span>
-					{ROLES.map((r) => (
-						<button
-							key={r}
-							type="button"
-							onClick={() => setRole(r)}
-							className={cn(
-								"rounded-full border px-3 py-1 text-[12px] capitalize transition-colors",
-								role === r
-									? "border-accent bg-accent/15 text-foreground"
-									: "border-border text-passive hover:text-foreground",
-							)}
-						>
-							{r}
-						</button>
-					))}
-				</div>
-				<div className="flex flex-col gap-2 sm:flex-row">
-					<Input
-						value={files}
-						onChange={(e) => setFiles(e.target.value)}
-						placeholder="Changed files to match, comma-separated (e.g. internal/httpd/router.go)"
-						className="flex-1 text-[12px]"
-					/>
-					<Button size="sm" onClick={() => build.mutate()} disabled={build.isPending}>
-						{build.isPending ? "Building…" : "Build pack"}
-					</Button>
-				</div>
-				{suggestedFiles.length > 0 && (
-					<div className="mt-2 flex flex-wrap items-center gap-1.5">
-						<span className="text-[11px] text-passive">Try:</span>
-						{suggestedFiles.map((f) => (
-							<button
-								key={f}
-								type="button"
-								onClick={() => setFiles((prev) => (prev ? `${prev}, ${f}` : f))}
-								className="rounded border border-border px-1.5 py-0.5 font-mono text-[10.5px] text-passive hover:text-foreground"
-							>
-								{f.split("/").pop()}
-							</button>
-						))}
-					</div>
-				)}
-			</div>
-
-			{build.error ? <CenterNote>{apiErrorMessage(build.error)}</CenterNote> : null}
-
-			{pack ? (
-				<div className="space-y-4">
-					<div className="flex items-center gap-3 text-[12px] text-passive">
-						<span className="capitalize text-foreground">{pack.role} pack</span>
-						<span>~{pack.estimatedTokens} tokens</span>
-						{pack.dropped.length > 0 && <span>{pack.dropped.length} dropped for budget</span>}
-					</div>
-
-					<PackSection title={`Related tasks (${pack.relatedTasks.length})`}>
-						{pack.relatedTasks.length === 0 ? (
-							<p className="text-[12px] text-passive">No related prior tasks for these paths.</p>
-						) : (
-							<ul className="space-y-1.5">
-								{pack.relatedTasks.map((t) => (
-									<li key={t.taskId} className="flex items-center gap-2 text-[12px]">
-										<span className="font-mono">{t.taskId}</span>
-										<TypeTag taskType={t.taskType ?? ""} />
-										<span className="font-mono text-[11px] text-passive">
-											{(t.sharedFiles ?? 0) + (t.sharedTests ?? 0)} shared
-										</span>
-										<span className="truncate text-passive" title={t.intent}>
-											{t.intent}
-										</span>
-									</li>
-								))}
-							</ul>
-						)}
-					</PackSection>
-
-					{pack.relevantFiles.length > 0 && (
-						<PackSection title={`Relevant files (${pack.relevantFiles.length})`}>
-							<FileList paths={pack.relevantFiles} />
-						</PackSection>
-					)}
-					{pack.relevantTests.length > 0 && (
-						<PackSection title={`Relevant tests (${pack.relevantTests.length})`}>
-							<FileList paths={pack.relevantTests} />
-						</PackSection>
-					)}
-					{pack.decisions.length > 0 && (
-						<PackSection title="Protected decisions">
-							<ul className="list-disc space-y-1 pl-5 text-[12px]">
-								{pack.decisions.map((d) => (
-									<li key={d}>{d}</li>
-								))}
-							</ul>
-						</PackSection>
-					)}
-				</div>
-			) : (
-				!build.isPending && (
-					<p className="text-center text-[12px] text-passive">
-						Pick a role and some files, then build the token-budgeted pack an agent stage would receive.
-					</p>
-				)
-			)}
-		</div>
-	);
-}
-
-function PackSection({ title, children }: { title: string; children: React.ReactNode }) {
-	return (
-		<div className="rounded-lg border border-border bg-surface/30 p-3">
-			<h3 className="mb-2 text-[12px] font-semibold text-foreground">{title}</h3>
-			{children}
-		</div>
-	);
-}
-
-function FileList({ paths }: { paths: string[] }) {
-	return (
-		<ul className="space-y-0.5 font-mono text-[11px] text-passive">
-			{paths.map((p) => (
-				<li key={p} className="truncate" title={p}>
-					{p}
-				</li>
-			))}
-		</ul>
 	);
 }

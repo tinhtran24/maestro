@@ -1,7 +1,7 @@
-import { Background, BackgroundVariant, Controls, MiniMap, ReactFlow, type Edge, type Node } from "@xyflow/react";
-import "@xyflow/react/dist/style.css";
+import { type Edge, type Node } from "@xyflow/react";
 import { useMemo } from "react";
 import type { MemoryGraph as MemoryGraphData } from "../../hooks/useProjectMemory";
+import { GraphCanvas, layoutCircle } from "./GraphCanvas";
 
 // taskTypeColor maps a coarse task type to a node accent that reads on the dark
 // canvas. Unknown types fall back to slate.
@@ -17,15 +17,6 @@ const taskTypeColor: Record<string, string> = {
 
 function colorFor(taskType: string): string {
 	return taskTypeColor[taskType] ?? "#6b7688";
-}
-
-// layoutCircle places nodes evenly on a circle so the graph is readable before
-// the user drags anything. A deterministic layout keeps renders stable.
-function layoutCircle(count: number, index: number): { x: number; y: number } {
-	const radius = Math.max(180, count * 34);
-	if (count <= 1) return { x: radius, y: radius };
-	const angle = (2 * Math.PI * index) / count - Math.PI / 2;
-	return { x: Math.cos(angle) * radius + radius, y: Math.sin(angle) * radius + radius };
 }
 
 export function MemoryGraph({ graph }: { graph: MemoryGraphData }) {
@@ -80,22 +71,10 @@ export function MemoryGraph({ graph }: { graph: MemoryGraphData }) {
 	);
 
 	return (
-		<div className="h-full w-full">
-			<ReactFlow
-				colorMode="dark"
-				nodes={nodes}
-				edges={edges}
-				fitView
-				proOptions={{ hideAttribution: true }}
-				nodesConnectable={false}
-				edgesFocusable={false}
-				minZoom={0.2}
-				maxZoom={2}
-			>
-				<Background variant={BackgroundVariant.Dots} gap={20} size={1} color="#2a2f3a" />
-				<MiniMap pannable zoomable nodeColor={(n) => colorFor((n.data as { taskType?: string })?.taskType ?? "")} />
-				<Controls showInteractive={false} />
-			</ReactFlow>
-		</div>
+		<GraphCanvas
+			nodes={nodes}
+			edges={edges}
+			nodeColor={(n) => colorFor((n.data as { taskType?: string })?.taskType ?? "")}
+		/>
 	);
 }
