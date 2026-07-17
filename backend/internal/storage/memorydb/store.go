@@ -351,6 +351,29 @@ func (s *Store) ReplaceEdgesFrom(ctx context.Context, srcTaskID string, edges []
 	})
 }
 
+// FullEdge is a directed task-to-task relation with both endpoints, for graph
+// export.
+type FullEdge struct {
+	SrcTaskID  string
+	DstTaskID  string
+	Relation   string
+	Confidence float64
+}
+
+// ListAllEdges returns every edge in the projection, for rendering the task
+// graph.
+func (s *Store) ListAllEdges(ctx context.Context) ([]FullEdge, error) {
+	rows, err := s.q.ListAllEdges(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("memorydb: list all edges: %w", err)
+	}
+	out := make([]FullEdge, 0, len(rows))
+	for _, r := range rows {
+		out = append(out, FullEdge{SrcTaskID: r.SrcTaskID, DstTaskID: r.DstTaskID, Relation: r.Relation, Confidence: r.Confidence})
+	}
+	return out, nil
+}
+
 // ListEdgesFrom returns the outgoing edges of a task, strongest confidence first.
 func (s *Store) ListEdgesFrom(ctx context.Context, srcTaskID string) ([]Edge, error) {
 	rows, err := s.q.ListEdgesFrom(ctx, srcTaskID)

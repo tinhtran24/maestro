@@ -18,6 +18,7 @@ import (
 type MemoryService interface {
 	ListTasks(ctx context.Context, projectID string, limit int) ([]memorysvc.TaskView, error)
 	Context(ctx context.Context, projectID string, in memorysvc.ContextInput) (memorysvc.ContextPack, error)
+	Graph(ctx context.Context, projectID string) (memorysvc.GraphView, error)
 	Rebuild(ctx context.Context, projectID string) (memorysvc.RebuildResult, error)
 }
 
@@ -30,6 +31,7 @@ type MemoryController struct {
 func (c *MemoryController) Register(r chi.Router) {
 	r.Get("/projects/{id}/memory/tasks", c.listTasks)
 	r.Get("/projects/{id}/memory/context", c.context)
+	r.Get("/projects/{id}/memory/graph", c.graph)
 	r.Post("/projects/{id}/memory/rebuild", c.rebuild)
 }
 
@@ -82,6 +84,35 @@ func (c *MemoryController) context(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	envelope.WriteJSON(w, http.StatusOK, contextResponse(pack))
+}
+
+func (c *MemoryController) graph(w http.ResponseWriter, r *http.Request) {
+	if c.Svc == nil {
+		apispec.NotImplemented(w, r, "GET", "/api/v1/projects/{id}/memory/graph")
+		return
+	}
+	g, err := c.Svc.Graph(r.Context(), chi.URLParam(r, "id"))
+	if err != nil {
+		envelope.WriteError(w, r, err)
+		return
+	}
+	nodes := make([]MemoryGraphNodeDTO, 0, len(g.Nodes))
+	for _, n := range g.Nodes {
+		nodes = append(nodes, MemoryGraphNodeDTO{
+			TaskID:       n.TaskID,
+			Intent:       n.Intent,
+			TaskType:     n.TaskType,
+			Kind:         n.Kind,
+			OccurredAt:   n.OccurredAt,
+			ChangedFiles: n.ChangedFiles,
+			ChangedTests: n.ChangedTests,
+		})
+	}
+	edges := make([]MemoryGraphEdgeDTO, 0, len(g.Edges))
+	for _, e := range g.Edges {
+		edges = append(edges, MemoryGraphEdgeDTO{Source: e.Source, Target: e.Target, Relation: e.Relation, Confidence: e.Confidence})
+	}
+	envelope.WriteJSON(w, http.StatusOK, MemoryGraphResponse{Nodes: nodes, Edges: edges})
 }
 
 func (c *MemoryController) rebuild(w http.ResponseWriter, r *http.Request) {

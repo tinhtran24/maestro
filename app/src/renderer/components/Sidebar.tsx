@@ -2,6 +2,7 @@ import * as Dialog from "@radix-ui/react-dialog";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate, useParams, useRouterState } from "@tanstack/react-router";
 import {
+	Brain,
 	ChevronRight,
 	CheckCircle2,
 	Folder,
@@ -108,6 +109,7 @@ function useSelection() {
 		goPrs: () => void navigate({ to: "/prs" }),
 		goGlobalSettings: () => void navigate({ to: "/settings" }),
 		goSettings: (projectId: string) => void navigate({ to: "/projects/$projectId/settings", params: { projectId } }),
+		goMemory: (projectId: string) => void navigate({ to: "/projects/$projectId/memory", params: { projectId } }),
 		goProject: (projectId: string) => void navigate({ to: "/projects/$projectId", params: { projectId } }),
 		goSession: (projectId: string, sessionId: string) =>
 			void navigate({ to: "/projects/$projectId/sessions/$sessionId", params: { projectId, sessionId } }),
@@ -582,6 +584,10 @@ function ProjectItem({
 						</button>
 					</DropdownMenuTrigger>
 					<DropdownMenuContent side="right" align="start" className="min-w-44">
+						<DropdownMenuItem onSelect={() => selection.goMemory(workspace.id)}>
+							<Brain aria-hidden="true" />
+							Memory
+						</DropdownMenuItem>
 						<DropdownMenuItem onSelect={() => selection.goSettings(workspace.id)}>
 							<Settings aria-hidden="true" />
 							Project settings

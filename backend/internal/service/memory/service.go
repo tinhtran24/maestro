@@ -46,6 +46,31 @@ type RebuildResult struct {
 	Tasks     int
 }
 
+// GraphNode is one task in the task graph.
+type GraphNode struct {
+	TaskID       string
+	Intent       string
+	TaskType     string
+	Kind         string
+	OccurredAt   time.Time
+	ChangedFiles int
+	ChangedTests int
+}
+
+// GraphEdge links two tasks that changed overlapping paths.
+type GraphEdge struct {
+	Source     string
+	Target     string
+	Relation   string
+	Confidence float64
+}
+
+// GraphView is the task graph: nodes (tasks) and edges (shared-path relations).
+type GraphView struct {
+	Nodes []GraphNode
+	Edges []GraphEdge
+}
+
 // Service is the read/maintenance surface over project memory: it lists tasks,
 // builds context packs, and rebuilds projections. It resolves each project's
 // checkout, opens its projection, and catches the projection up to the event log
@@ -118,6 +143,50 @@ func (s *Service) ListTasks(ctx context.Context, projectID string, limit int) ([
 		})
 	}
 	return views, nil
+}
+
+// Graph returns the project's task graph: one node per completed task and one
+// edge per shared-path relation, for visualisation.
+func (s *Service) Graph(ctx context.Context, projectID string) (GraphView, error) {
+	store, err := s.open(ctx, projectID)
+	if err != nil {
+		return GraphView{}, err
+	}
+	defer func() { _ = store.Close() }()
+
+	tasks, err := store.ListTasks(ctx, maxListLimit)
+	if err != nil {
+		return GraphView{}, err
+	}
+	nodes := make([]GraphNode, 0, len(tasks))
+	for _, t := range tasks {
+		files, err := store.ListFiles(ctx, t.ID)
+		if err != nil {
+			return GraphView{}, err
+		}
+		tests, err := store.ListTests(ctx, t.ID)
+		if err != nil {
+			return GraphView{}, err
+		}
+		nodes = append(nodes, GraphNode{
+			TaskID:       t.ID,
+			Intent:       t.Intent,
+			TaskType:     t.TaskType,
+			Kind:         t.Kind,
+			OccurredAt:   t.OccurredAt,
+			ChangedFiles: len(files),
+			ChangedTests: len(tests),
+		})
+	}
+	edges, err := store.ListAllEdges(ctx)
+	if err != nil {
+		return GraphView{}, err
+	}
+	graphEdges := make([]GraphEdge, 0, len(edges))
+	for _, e := range edges {
+		graphEdges = append(graphEdges, GraphEdge{Source: e.SrcTaskID, Target: e.DstTaskID, Relation: e.Relation, Confidence: e.Confidence})
+	}
+	return GraphView{Nodes: nodes, Edges: graphEdges}, nil
 }
 
 // Context builds a role-specific, token-budgeted context pack for the described

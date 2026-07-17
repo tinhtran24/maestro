@@ -769,6 +769,45 @@ paths:
       summary: Build a role-specific, token-budgeted context pack for a task
       tags:
       - memory
+  /api/v1/projects/{id}/memory/graph:
+    get:
+      operationId: getMemoryGraph
+      parameters:
+      - description: Project identifier (registry key).
+        in: path
+        name: id
+        required: true
+        schema:
+          description: Project identifier (registry key).
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MemoryGraphResponse'
+          description: OK
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIError'
+          description: Not Found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIError'
+          description: Internal Server Error
+        "501":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIError'
+          description: Not Implemented
+      summary: 'Return the project''s task graph: task nodes and shared-path edges'
+      tags:
+      - memory
   /api/v1/projects/{id}/memory/rebuild:
     post:
       operationId: rebuildMemory
@@ -2271,6 +2310,60 @@ components:
       - kind
       - ref
       - reason
+      type: object
+    MemoryGraphEdgeDTO:
+      properties:
+        confidence:
+          format: double
+          type: number
+        relation:
+          type: string
+        source:
+          type: string
+        target:
+          type: string
+      required:
+      - source
+      - target
+      - relation
+      - confidence
+      type: object
+    MemoryGraphNodeDTO:
+      properties:
+        changedFiles:
+          type: integer
+        changedTests:
+          type: integer
+        intent:
+          type: string
+        kind:
+          type: string
+        occurredAt:
+          format: date-time
+          type: string
+        taskId:
+          type: string
+        taskType:
+          type: string
+      required:
+      - taskId
+      - occurredAt
+      - changedFiles
+      - changedTests
+      type: object
+    MemoryGraphResponse:
+      properties:
+        edges:
+          items:
+            $ref: '#/components/schemas/MemoryGraphEdgeDTO'
+          type: array
+        nodes:
+          items:
+            $ref: '#/components/schemas/MemoryGraphNodeDTO'
+          type: array
+      required:
+      - nodes
+      - edges
       type: object
     MemoryPackTaskDTO:
       properties:

@@ -144,6 +144,40 @@ func (q *Queries) GetMemoryTask(ctx context.Context, id string) (MemoryTask, err
 	return i, err
 }
 
+const listAllEdges = `-- name: ListAllEdges :many
+SELECT src_task_id, dst_task_id, relation, confidence
+FROM memory_task_edge
+ORDER BY src_task_id, dst_task_id
+`
+
+func (q *Queries) ListAllEdges(ctx context.Context) ([]MemoryTaskEdge, error) {
+	rows, err := q.db.QueryContext(ctx, listAllEdges)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []MemoryTaskEdge{}
+	for rows.Next() {
+		var i MemoryTaskEdge
+		if err := rows.Scan(
+			&i.SrcTaskID,
+			&i.DstTaskID,
+			&i.Relation,
+			&i.Confidence,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listEdgesFrom = `-- name: ListEdgesFrom :many
 SELECT dst_task_id, relation, confidence
 FROM memory_task_edge

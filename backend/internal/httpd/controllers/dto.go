@@ -649,3 +649,29 @@ type RebuildMemoryResponse struct {
 	ProjectID string `json:"projectId"`
 	Tasks     int    `json:"tasks"`
 }
+
+// MemoryGraphNodeDTO is one task node in the memory task graph.
+type MemoryGraphNodeDTO struct {
+	TaskID       string    `json:"taskId"`
+	Intent       string    `json:"intent,omitempty"`
+	TaskType     string    `json:"taskType,omitempty"`
+	Kind         string    `json:"kind,omitempty"`
+	OccurredAt   time.Time `json:"occurredAt"`
+	ChangedFiles int       `json:"changedFiles"`
+	ChangedTests int       `json:"changedTests"`
+}
+
+// MemoryGraphEdgeDTO links two task nodes that changed overlapping paths. Source
+// and target name task ids (React Flow edge convention).
+type MemoryGraphEdgeDTO struct {
+	Source     string  `json:"source"`
+	Target     string  `json:"target"`
+	Relation   string  `json:"relation"`
+	Confidence float64 `json:"confidence"`
+}
+
+// MemoryGraphResponse is the body of GET /projects/{id}/memory/graph (200).
+type MemoryGraphResponse struct {
+	Nodes []MemoryGraphNodeDTO `json:"nodes"`
+	Edges []MemoryGraphEdgeDTO `json:"edges"`
+}

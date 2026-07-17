@@ -1,4 +1,5 @@
 import type { PRState, PullRequestFacts, WorkspaceSummary } from "../types/workspace";
+import type { MemoryGraph, MemoryTask } from "../hooks/useProjectMemory";
 import type { SessionPRSummary } from "../hooks/useSessionScmSummary";
 
 const now = new Date().toISOString();
@@ -397,5 +398,61 @@ export const mockSessionScmSummaries: Record<string, SessionPRSummary[]> = {
 				conflictFiles: [],
 			},
 		}),
+	],
+};
+
+export const mockMemoryTasks: MemoryTask[] = [
+	{
+		id: "acme-9",
+		sessionId: "acme-9",
+		projectId: "acme",
+		kind: "worker",
+		intent: "Add rate limiting to the public API",
+		taskType: "feature",
+		branch: "feat/rate-limit",
+		occurredAt: minutesAgo(20),
+		changedFiles: ["internal/httpd/ratelimit.go", "internal/httpd/router.go"],
+		changedTests: ["internal/httpd/ratelimit_test.go"],
+	},
+	{
+		id: "acme-7",
+		sessionId: "acme-7",
+		projectId: "acme",
+		kind: "worker",
+		intent: "Fix panic when router config is empty",
+		taskType: "bugfix",
+		branch: "fix/router-panic",
+		occurredAt: hoursAgo(3),
+		changedFiles: ["internal/httpd/router.go"],
+		changedTests: ["internal/httpd/router_test.go"],
+	},
+	{
+		id: "acme-4",
+		sessionId: "acme-4",
+		projectId: "acme",
+		kind: "orchestrator",
+		intent: "Split the monolithic handler into controllers",
+		taskType: "refactor",
+		branch: "refactor/controllers",
+		occurredAt: hoursAgo(26),
+		changedFiles: ["internal/httpd/router.go", "internal/httpd/controllers/sessions.go"],
+		changedTests: [],
+	},
+];
+
+export const mockMemoryGraph: MemoryGraph = {
+	nodes: mockMemoryTasks.map((t) => ({
+		taskId: t.id,
+		intent: t.intent,
+		taskType: t.taskType,
+		kind: t.kind,
+		occurredAt: t.occurredAt,
+		changedFiles: t.changedFiles.length,
+		changedTests: t.changedTests.length,
+	})),
+	edges: [
+		{ source: "acme-9", target: "acme-7", relation: "shared_path", confidence: 1 },
+		{ source: "acme-9", target: "acme-4", relation: "shared_path", confidence: 1 },
+		{ source: "acme-7", target: "acme-4", relation: "shared_path", confidence: 1 },
 	],
 };

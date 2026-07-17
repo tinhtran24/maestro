@@ -85,3 +85,8 @@ SELECT dst_task_id, relation, confidence
 FROM memory_task_edge
 WHERE src_task_id = ?
 ORDER BY confidence DESC, dst_task_id;
+
+-- name: ListAllEdges :many
+SELECT src_task_id, dst_task_id, relation, confidence
+FROM memory_task_edge
+ORDER BY src_task_id, dst_task_id;

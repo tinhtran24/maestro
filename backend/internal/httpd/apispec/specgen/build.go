@@ -214,6 +214,9 @@ var schemaNames = map[string]string{
 	"ControllersMemoryDroppedDTO":        "MemoryDroppedDTO",
 	"ControllersMemoryContextResponse":   "MemoryContextResponse",
 	"ControllersRebuildMemoryResponse":   "RebuildMemoryResponse",
+	"ControllersMemoryGraphNodeDTO":      "MemoryGraphNodeDTO",
+	"ControllersMemoryGraphEdgeDTO":      "MemoryGraphEdgeDTO",
+	"ControllersMemoryGraphResponse":     "MemoryGraphResponse",
 	// legacyimport report
 	"LegacyimportReport": "ImportReport",
 	// service/project entities + DTOs
@@ -350,6 +353,17 @@ func memoryOperations() []operation {
 			resps: []respUnit{
 				{http.StatusOK, controllers.MemoryContextResponse{}},
 				{http.StatusBadRequest, envelope.APIError{}},
+				{http.StatusNotFound, envelope.APIError{}},
+				{http.StatusInternalServerError, envelope.APIError{}},
+				{http.StatusNotImplemented, envelope.APIError{}},
+			},
+		},
+		{
+			method: http.MethodGet, path: "/api/v1/projects/{id}/memory/graph", id: "getMemoryGraph", tag: "memory",
+			summary:    "Return the project's task graph: task nodes and shared-path edges",
+			pathParams: []any{controllers.ProjectIDParam{}},
+			resps: []respUnit{
+				{http.StatusOK, controllers.MemoryGraphResponse{}},
 				{http.StatusNotFound, envelope.APIError{}},
 				{http.StatusInternalServerError, envelope.APIError{}},
 				{http.StatusNotImplemented, envelope.APIError{}},

@@ -297,6 +297,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/projects/{id}/memory/graph": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Return the project's task graph: task nodes and shared-path edges */
+        get: operations["getMemoryGraph"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/projects/{id}/memory/rebuild": {
         parameters: {
             query?: never;
@@ -819,6 +836,27 @@ export interface components {
             kind: string;
             reason: string;
             ref: string;
+        };
+        MemoryGraphEdgeDTO: {
+            /** Format: double */
+            confidence: number;
+            relation: string;
+            source: string;
+            target: string;
+        };
+        MemoryGraphNodeDTO: {
+            changedFiles: number;
+            changedTests: number;
+            intent?: string;
+            kind?: string;
+            /** Format: date-time */
+            occurredAt: string;
+            taskId: string;
+            taskType?: string;
+        };
+        MemoryGraphResponse: {
+            edges: components["schemas"]["MemoryGraphEdgeDTO"][];
+            nodes: components["schemas"]["MemoryGraphNodeDTO"][];
         };
         MemoryPackTaskDTO: {
             branch?: string;
@@ -2158,6 +2196,56 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["APIError"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["APIError"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["APIError"];
+                };
+            };
+            /** @description Not Implemented */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["APIError"];
+                };
+            };
+        };
+    };
+    getMemoryGraph: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Project identifier (registry key). */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MemoryGraphResponse"];
                 };
             };
             /** @description Not Found */
