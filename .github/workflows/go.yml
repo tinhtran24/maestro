@@ -6,7 +6,7 @@ on:
   pull_request:
     paths:
       - "backend/**"
-      - "frontend/src/api/schema.ts"
+      - "app/src/api/schema.ts"
       - "package.json"
       - ".github/workflows/go.yml"
 
@@ -94,4 +94,4 @@ jobs:
       # openapi.yaml drift is already caught by TestBuild_MatchesEmbedded in
       # the build-test job (go test -race ./...). Only schema.ts needs checking here.
       - name: Check for schema.ts drift
-        run: git diff --exit-code -- frontend/src/api/schema.ts
+        run: git diff --exit-code -- app/src/api/schema.ts
