@@ -60,7 +60,7 @@ func (c *CLIRunner) Run(ctx context.Context, agent, prompt string) (string, erro
 	var env claudeEnvelope
 	if err := json.Unmarshal(out, &env); err != nil {
 		// Not the envelope we expected — return raw output; parseDraft still tries.
-		return string(out), nil
+		return string(out), nil //nolint:nilerr // raw output is intentional here, not an error
 	}
 	if env.IsError {
 		return "", fmt.Errorf("planner: claude reported an error")

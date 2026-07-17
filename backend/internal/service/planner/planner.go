@@ -79,7 +79,7 @@ func (s *Score) UnmarshalJSON(b []byte) error {
 	var str string
 	if err := json.Unmarshal(b, &str); err != nil {
 		*s = 0
-		return nil
+		return nil //nolint:nilerr // tolerant parse: an unparseable score defaults to 0
 	}
 	str = strings.TrimSpace(strings.ToLower(strings.TrimSuffix(strings.TrimSpace(str), "%")))
 	switch str {
