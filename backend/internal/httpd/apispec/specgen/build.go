@@ -139,6 +139,8 @@ var schemaNames = map[string]string{
 	"ControllersListProjectsResponse":             "ListProjectsResponse",
 	"ControllersProjectResponse":                  "ProjectResponse",
 	"ControllersAgentIDParam":                     "AgentIDParam",
+	"ControllersGitHubAuthStatus":                 "GitHubAuthStatus",
+	"ControllersGitHubAuthStatusResponse":         "GitHubAuthStatusResponse",
 	"ControllersGetProjectResponse":               "ProjectGetResponse",
 	"ControllersProjectOrDegraded":                "ProjectOrDegraded",
 	"ControllersListSessionsQuery":                "ListSessionsQuery",
@@ -202,9 +204,6 @@ var schemaNames = map[string]string{
 	// httpd/controllers: import wire envelopes
 	"ControllersImportStatusResponse": "ImportStatusResponse",
 	"ControllersImportRunResponse":    "ImportRunResponse",
-	// httpd/controllers: github auth diagnostic
-	"ControllersGitHubAuthStatusResponse": "GitHubAuthStatusResponse",
-	"ControllersGitHubAuthStatus":         "GitHubAuthStatus",
 	// httpd/controllers: project memory wire envelopes
 	"ControllersMemoryTasksQuery":        "MemoryTasksQuery",
 	"ControllersMemoryContextQuery":      "MemoryContextQuery",
@@ -309,22 +308,20 @@ func operations() []operation {
 	ops = append(ops, notificationOperations()...)
 	ops = append(ops, importOperations()...)
 	ops = append(ops, plannerOperations()...)
-	ops = append(ops, githubAuthOperations()...)
+	ops = append(ops, githubOperations()...)
 	ops = append(ops, memoryOperations()...)
 	return ops
 }
 
-// githubAuthOperations declares the 1 /github/auth diagnostic operation. Must
-// stay 1:1 with the route GitHubAuthController.Register mounts (enforced by the
-// parity test).
-func githubAuthOperations() []operation {
+// githubOperations declares the 1 /github/auth operation. Must stay 1:1 with the
+// route GitHubAuthController.Register mounts (enforced by the parity test).
+func githubOperations() []operation {
 	return []operation{
 		{
 			method: http.MethodGet, path: "/api/v1/github/auth", id: "getGitHubAuthStatus", tag: "github",
-			summary: "Report local GitHub credential availability (env token or gh CLI)",
+			summary: "Check global GitHub CLI and token readiness",
 			resps: []respUnit{
 				{http.StatusOK, controllers.GitHubAuthStatusResponse{}},
-				{http.StatusInternalServerError, envelope.APIError{}},
 			},
 		},
 	}

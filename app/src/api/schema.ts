@@ -79,7 +79,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Report local GitHub credential availability (env token or gh CLI) */
+        /** Check global GitHub CLI and token readiness */
         get: operations["getGitHubAuthStatus"];
         put?: never;
         post?: never;
@@ -673,6 +673,8 @@ export interface components {
             authStatus?: "authorized" | "unauthorized" | "unknown";
             id: string;
             label: string;
+            /** @description Selectable task-level model overrides supported by this native CLI. */
+            models?: string[];
         };
         ClaimPRRequest: {
             allowTakeover?: null | boolean;
@@ -759,7 +761,7 @@ export interface components {
             loginCommand?: string;
             message?: string;
             /** @enum {string} */
-            source: "none" | "gh" | "THANOS_GITHUB_TOKEN" | "GITHUB_TOKEN";
+            source: "none" | "gh" | "MAESTRO_GITHUB_TOKEN" | "GITHUB_TOKEN";
         };
         GitHubAuthStatusResponse: {
             status: components["schemas"]["GitHubAuthStatus"];
@@ -1441,15 +1443,6 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["GitHubAuthStatusResponse"];
-                };
-            };
-            /** @description Internal Server Error */
-            500: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["APIError"];
                 };
             };
         };

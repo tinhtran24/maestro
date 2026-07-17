@@ -271,6 +271,14 @@ func (m *Manager) Spawn(ctx context.Context, cfg ports.SpawnConfig) (domain.Sess
 		return domain.SessionRecord{}, fmt.Errorf("spawn %s: no agent adapter for harness %q", id, cfg.Harness)
 	}
 	agentConfig := effectiveAgentConfig(cfg.Kind, project.Config)
+	if cfg.Model != "" {
+		if !domain.IsSupportedModel(cfg.Harness, cfg.Model) {
+			m.destroySpawnWorkspace(ctx, ws, workspaceProject)
+			m.rollbackSpawnSeedRow(ctx, id)
+			return domain.SessionRecord{}, fmt.Errorf("spawn %s: unsupported model %q for harness %q", id, cfg.Model, cfg.Harness)
+		}
+		agentConfig.Model = cfg.Model
+	}
 	if err := m.prepareWorkspace(ctx, agent, id, ws.Path, systemPrompt, agentConfig); err != nil {
 		m.destroySpawnWorkspace(ctx, ws, workspaceProject)
 		m.rollbackSpawnSeedRow(ctx, id)

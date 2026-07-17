@@ -150,13 +150,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/GitHubAuthStatusResponse'
           description: OK
-        "500":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/APIError'
-          description: Internal Server Error
-      summary: Report local GitHub credential availability (env token or gh CLI)
+      summary: Check global GitHub CLI and token readiness
       tags:
       - github
   /api/v1/import:
@@ -1860,6 +1854,12 @@ components:
           type: string
         label:
           type: string
+        models:
+          description: Selectable task-level model overrides supported by this native
+            CLI.
+          items:
+            type: string
+          type: array
       required:
       - id
       - label
@@ -2093,7 +2093,7 @@ components:
           enum:
           - none
           - gh
-          - THANOS_GITHUB_TOKEN
+          - MAESTRO_GITHUB_TOKEN
           - GITHUB_TOKEN
           type: string
       required:

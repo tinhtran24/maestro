@@ -61,7 +61,7 @@ func probeGitHubAuth(ctx context.Context, runner GitHubAuthRunner) GitHubAuthSta
 }
 
 func envGitHubTokenSource() string {
-	for _, name := range []string{"THANOS_GITHUB_TOKEN", "GITHUB_TOKEN"} {
+	for _, name := range []string{"MAESTRO_GITHUB_TOKEN", "GITHUB_TOKEN"} {
 		if strings.TrimSpace(os.Getenv(name)) != "" {
 			return name
 		}

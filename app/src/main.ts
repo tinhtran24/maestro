@@ -417,7 +417,12 @@ async function ensureTmuxDependency(): Promise<boolean> {
 	if (!resolution.path) {
 		const message = tmuxInstallGuidance(process.platform);
 		setDaemonStatus({ state: "error", code: "tmux_missing", message });
-		await dialog.showMessageBox({ type: "error", title: "tmux is required", message: "Thanos requires tmux to run agent sessions.", detail: message });
+		await dialog.showMessageBox({
+			type: "error",
+			title: "tmux is required",
+			message: "Thanos requires tmux to run agent sessions.",
+			detail: message,
+		});
 		return false;
 	}
 	resolvedTmuxPath = resolution.path;

@@ -423,7 +423,7 @@ type ClaimPRResponse struct {
 type GitHubAuthStatus struct {
 	Installed      bool   `json:"installed"`
 	Authenticated  bool   `json:"authenticated"`
-	Source         string `json:"source" enum:"none,gh,THANOS_GITHUB_TOKEN,GITHUB_TOKEN"`
+	Source         string `json:"source" enum:"none,gh,MAESTRO_GITHUB_TOKEN,GITHUB_TOKEN"`
 	BinaryPath     string `json:"binaryPath,omitempty"`
 	Message        string `json:"message,omitempty"`
 	InstallCommand string `json:"installCommand,omitempty"`

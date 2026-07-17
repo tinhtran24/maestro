@@ -25,7 +25,7 @@ func (f fakeGitHubAuthRunner) Token(context.Context) (string, string, error) {
 }
 
 func TestProbeGitHubAuth(t *testing.T) {
-	t.Setenv("THANOS_GITHUB_TOKEN", "")
+	t.Setenv("MAESTRO_GITHUB_TOKEN", "")
 	t.Setenv("GITHUB_TOKEN", "")
 
 	cases := []struct {
@@ -72,10 +72,10 @@ func TestProbeGitHubAuth(t *testing.T) {
 }
 
 func TestProbeGitHubAuthUsesEnvToken(t *testing.T) {
-	t.Setenv("THANOS_GITHUB_TOKEN", "token")
+	t.Setenv("MAESTRO_GITHUB_TOKEN", "token")
 	t.Setenv("GITHUB_TOKEN", "")
 	got := probeGitHubAuth(context.Background(), fakeGitHubAuthRunner{})
-	if !got.Authenticated || got.Source != "THANOS_GITHUB_TOKEN" {
+	if !got.Authenticated || got.Source != "MAESTRO_GITHUB_TOKEN" {
 		t.Fatalf("status = %#v", got)
 	}
 }
