@@ -47,6 +47,6 @@ USER to
 WORKDIR /home/to
 
 # Sanity: prove the install resolved before the check runs.
-RUN to version
+RUN maestro version
 
 ENTRYPOINT ["/usr/local/bin/maestro-install-check.sh"]

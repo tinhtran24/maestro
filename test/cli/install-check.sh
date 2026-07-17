@@ -8,7 +8,7 @@
 
 set -euo pipefail
 
-MAESTRO_BIN="${MAESTRO_BIN:-to}"
+MAESTRO_BIN="${MAESTRO_BIN:-maestro}"
 tmp="$(mktemp -d)"
 export MAESTRO_RUN_FILE="$tmp/running.json"
 export MAESTRO_DATA_DIR="$tmp/data"
@@ -16,7 +16,7 @@ trap 'rm -rf "$tmp"' EXIT
 
 fail() { echo "FAIL: $1" >&2; exit 1; }
 
-echo "to binary : $(command -v "$MAESTRO_BIN")"
+echo "maestro binary : $(command -v "$MAESTRO_BIN")"
 "$MAESTRO_BIN" version            >/dev/null || fail "version"
 "$MAESTRO_BIN" doctor             >/dev/null || fail "doctor"
 

@@ -252,8 +252,8 @@ func TestCreateLaunchCommandExportsEnvVars(t *testing.T) {
 		Argv:          []string{"myagent"},
 		Env: map[string]string{
 			"MAESTRO_SESSION_ID": "sess-1",
-			"ODD":           "can't",
-			"PATH":          "/custom/bin:/usr/bin",
+			"ODD":                "can't",
+			"PATH":               "/custom/bin:/usr/bin",
 		},
 	})
 	if err != nil {
