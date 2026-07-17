@@ -194,6 +194,7 @@ func NewRootCommand(deps Deps) *cobra.Command {
 	root.AddCommand(newPtyHostCommand())
 	root.AddCommand(newImportCommand(ctx))
 	root.AddCommand(newProjectCommand(ctx))
+	root.AddCommand(newMemoryCommand(ctx))
 	root.AddCommand(newSessionCommand(ctx))
 	root.AddCommand(newOrchestratorCommand(ctx))
 	root.AddCommand(newReviewCommand(ctx))

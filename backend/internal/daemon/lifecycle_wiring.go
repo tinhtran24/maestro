@@ -162,6 +162,17 @@ func buildMemoryRecorder(cfg config.Config, store *sqlite.Store, log *slog.Logge
 	return memorysvc.NewRecorder(builder, events, projector, store, cacheDir, log)
 }
 
+// buildMemoryService assembles the read/maintenance surface over project memory
+// mounted at APIDeps.Memory. It reads the same per-project event logs and
+// projection databases the recorder writes; the store satisfies
+// memorysvc.ProjectLookup via GetProject.
+func buildMemoryService(cfg config.Config, store *sqlite.Store, log *slog.Logger) *memorysvc.Service {
+	events := memoryevents.New()
+	projector := memorysvc.NewProjector(events, log)
+	cacheDir := filepath.Join(cfg.DataDir, "memory")
+	return memorysvc.NewService(projector, store, cacheDir, log)
+}
+
 // runtimeMessageSender is the narrow part of the concrete runtime needed by
 // to send. Both tmux.Runtime and conpty.Runtime implement this via SendMessage.
 type runtimeMessageSender interface {

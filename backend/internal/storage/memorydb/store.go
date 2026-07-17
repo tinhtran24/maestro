@@ -201,6 +201,15 @@ func (s *Store) ListTasks(ctx context.Context, limit int) ([]Task, error) {
 	return out, nil
 }
 
+// CountTasks returns the number of tasks in the projection.
+func (s *Store) CountTasks(ctx context.Context) (int, error) {
+	n, err := s.q.CountMemoryTasks(ctx)
+	if err != nil {
+		return 0, fmt.Errorf("memorydb: count tasks: %w", err)
+	}
+	return int(n), nil
+}
+
 // ReplaceFiles sets the exact set of changed non-test files for a task,
 // discarding any prior edges so re-applying an event is idempotent.
 func (s *Store) ReplaceFiles(ctx context.Context, taskID string, paths []string) error {

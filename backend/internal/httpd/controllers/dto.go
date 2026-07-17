@@ -574,3 +574,78 @@ type ResolveCommentsResponse struct {
 	OK       bool `json:"ok"`
 	Resolved int  `json:"resolved"`
 }
+
+// --- Project memory (GET/POST /projects/{id}/memory/*) ---
+
+// MemoryTasksQuery is the path+query input for GET /projects/{id}/memory/tasks.
+type MemoryTasksQuery struct {
+	ID    string `path:"id" description:"Project identifier (registry key)."`
+	Limit int    `query:"limit,omitempty" minimum:"1" maximum:"500" description:"Maximum tasks to return. Defaults to 100; capped at 500."`
+}
+
+// MemoryContextQuery is the path+query input for GET /projects/{id}/memory/context.
+type MemoryContextQuery struct {
+	ID        string `path:"id" description:"Project identifier (registry key)."`
+	Role      string `query:"role" enum:"planner,coder,reviewer,tester" description:"Consuming agent stage the pack is shaped for."`
+	Intent    string `query:"intent,omitempty" description:"Free-text description of the work; carried for future semantic matching."`
+	Files     string `query:"files,omitempty" description:"Comma-separated changed file paths to match against prior tasks."`
+	Tests     string `query:"tests,omitempty" description:"Comma-separated changed test paths to match against prior tasks."`
+	MaxTokens int    `query:"maxTokens,omitempty" minimum:"1" description:"Override the pack's token budget."`
+}
+
+// MemoryTaskDTO is one completed task in the memory list.
+type MemoryTaskDTO struct {
+	ID           string    `json:"id"`
+	SessionID    string    `json:"sessionId"`
+	ProjectID    string    `json:"projectId"`
+	Kind         string    `json:"kind"`
+	Harness      string    `json:"harness,omitempty"`
+	Intent       string    `json:"intent,omitempty"`
+	TaskType     string    `json:"taskType,omitempty"`
+	Branch       string    `json:"branch,omitempty"`
+	OccurredAt   time.Time `json:"occurredAt"`
+	ChangedFiles []string  `json:"changedFiles"`
+	ChangedTests []string  `json:"changedTests"`
+}
+
+// ListMemoryTasksResponse is the body of GET /projects/{id}/memory/tasks (200).
+type ListMemoryTasksResponse struct {
+	Tasks []MemoryTaskDTO `json:"tasks"`
+}
+
+// MemoryPackTaskDTO is one related prior task inside a context pack.
+type MemoryPackTaskDTO struct {
+	TaskID      string   `json:"taskId"`
+	Intent      string   `json:"intent,omitempty"`
+	TaskType    string   `json:"taskType,omitempty"`
+	Branch      string   `json:"branch,omitempty"`
+	SharedFiles int      `json:"sharedFiles"`
+	SharedTests int      `json:"sharedTests"`
+	Files       []string `json:"files,omitempty"`
+	Tests       []string `json:"tests,omitempty"`
+	Decisions   []string `json:"decisions,omitempty"`
+}
+
+// MemoryDroppedDTO records a related task omitted from a pack for the token budget.
+type MemoryDroppedDTO struct {
+	Kind   string `json:"kind"`
+	Ref    string `json:"ref"`
+	Reason string `json:"reason"`
+}
+
+// MemoryContextResponse is the body of GET /projects/{id}/memory/context (200).
+type MemoryContextResponse struct {
+	Role            string              `json:"role"`
+	RelatedTasks    []MemoryPackTaskDTO `json:"relatedTasks"`
+	RelevantFiles   []string            `json:"relevantFiles"`
+	RelevantTests   []string            `json:"relevantTests"`
+	Decisions       []string            `json:"decisions"`
+	Dropped         []MemoryDroppedDTO  `json:"dropped"`
+	EstimatedTokens int                 `json:"estimatedTokens"`
+}
+
+// RebuildMemoryResponse is the body of POST /projects/{id}/memory/rebuild (200).
+type RebuildMemoryResponse struct {
+	ProjectID string `json:"projectId"`
+	Tasks     int    `json:"tasks"`
+}

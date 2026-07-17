@@ -47,7 +47,7 @@ func (f *fakeAgentCatalog) Probe(_ context.Context, agentID string) (agentsvc.Pr
 func TestListAgents(t *testing.T) {
 	log := slog.New(slog.NewTextHandler(io.Discard, nil))
 	catalog := &fakeAgentCatalog{inventory: agentsvc.Inventory{
-		Supported:  []agentsvc.Info{{ID: "claude-code", Label: "Claude Code", Models: []string{"claude-opus-4-5"}}, {ID: "codex", Label: "Codex", Models: []string{"gpt-5-codex"}}},
+		Supported:  []agentsvc.Info{{ID: "claude-code", Label: "Claude Code"}, {ID: "codex", Label: "Codex"}},
 		Installed:  []agentsvc.Info{{ID: "codex", Label: "Codex"}},
 		Authorized: []agentsvc.Info{{ID: "codex", Label: "Codex"}},
 	}}
@@ -60,7 +60,7 @@ func TestListAgents(t *testing.T) {
 	if status != http.StatusOK {
 		t.Fatalf("GET /agents = %d, body=%s", status, body)
 	}
-	for _, want := range []string{`"supported"`, `"installed"`, `"authorized"`, `"id":"codex"`, `"models":["gpt-5-codex"]`} {
+	for _, want := range []string{`"supported"`, `"installed"`, `"authorized"`, `"id":"codex"`} {
 		if !strings.Contains(string(body), want) {
 			t.Fatalf("body missing %s: %s", want, body)
 		}

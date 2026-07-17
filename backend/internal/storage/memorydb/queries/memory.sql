@@ -24,6 +24,9 @@ SELECT * FROM memory_task WHERE id = ?;
 -- name: ListMemoryTasks :many
 SELECT * FROM memory_task ORDER BY occurred_at DESC LIMIT ?;
 
+-- name: CountMemoryTasks :one
+SELECT COUNT(*) FROM memory_task;
+
 -- name: AddMemoryFile :exec
 INSERT INTO memory_file (task_id, path) VALUES (?, ?)
 ON CONFLICT(task_id, path) DO NOTHING;

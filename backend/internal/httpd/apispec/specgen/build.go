@@ -201,6 +201,18 @@ var schemaNames = map[string]string{
 	// httpd/controllers: import wire envelopes
 	"ControllersImportStatusResponse": "ImportStatusResponse",
 	"ControllersImportRunResponse":    "ImportRunResponse",
+	// httpd/controllers: github auth diagnostic
+	"ControllersGitHubAuthStatusResponse": "GitHubAuthStatusResponse",
+	"ControllersGitHubAuthStatus":         "GitHubAuthStatus",
+	// httpd/controllers: project memory wire envelopes
+	"ControllersMemoryTasksQuery":        "MemoryTasksQuery",
+	"ControllersMemoryContextQuery":      "MemoryContextQuery",
+	"ControllersMemoryTaskDTO":           "MemoryTaskDTO",
+	"ControllersListMemoryTasksResponse": "ListMemoryTasksResponse",
+	"ControllersMemoryPackTaskDTO":       "MemoryPackTaskDTO",
+	"ControllersMemoryDroppedDTO":        "MemoryDroppedDTO",
+	"ControllersMemoryContextResponse":   "MemoryContextResponse",
+	"ControllersRebuildMemoryResponse":   "RebuildMemoryResponse",
 	// legacyimport report
 	"LegacyimportReport": "ImportReport",
 	// service/project entities + DTOs
@@ -293,7 +305,67 @@ func operations() []operation {
 	ops = append(ops, notificationOperations()...)
 	ops = append(ops, importOperations()...)
 	ops = append(ops, plannerOperations()...)
+	ops = append(ops, githubAuthOperations()...)
+	ops = append(ops, memoryOperations()...)
 	return ops
+}
+
+// githubAuthOperations declares the 1 /github/auth diagnostic operation. Must
+// stay 1:1 with the route GitHubAuthController.Register mounts (enforced by the
+// parity test).
+func githubAuthOperations() []operation {
+	return []operation{
+		{
+			method: http.MethodGet, path: "/api/v1/github/auth", id: "getGitHubAuthStatus", tag: "github",
+			summary: "Report local GitHub credential availability (env token or gh CLI)",
+			resps: []respUnit{
+				{http.StatusOK, controllers.GitHubAuthStatusResponse{}},
+				{http.StatusInternalServerError, envelope.APIError{}},
+			},
+		},
+	}
+}
+
+// memoryOperations declares the 3 /projects/{id}/memory operations. Must stay
+// 1:1 with the routes MemoryController.Register mounts (enforced by the parity
+// test).
+func memoryOperations() []operation {
+	return []operation{
+		{
+			method: http.MethodGet, path: "/api/v1/projects/{id}/memory/tasks", id: "listMemoryTasks", tag: "memory",
+			summary:    "List a project's completed-task memory, most recent first",
+			pathParams: []any{controllers.MemoryTasksQuery{}},
+			resps: []respUnit{
+				{http.StatusOK, controllers.ListMemoryTasksResponse{}},
+				{http.StatusNotFound, envelope.APIError{}},
+				{http.StatusInternalServerError, envelope.APIError{}},
+				{http.StatusNotImplemented, envelope.APIError{}},
+			},
+		},
+		{
+			method: http.MethodGet, path: "/api/v1/projects/{id}/memory/context", id: "getMemoryContext", tag: "memory",
+			summary:    "Build a role-specific, token-budgeted context pack for a task",
+			pathParams: []any{controllers.MemoryContextQuery{}},
+			resps: []respUnit{
+				{http.StatusOK, controllers.MemoryContextResponse{}},
+				{http.StatusBadRequest, envelope.APIError{}},
+				{http.StatusNotFound, envelope.APIError{}},
+				{http.StatusInternalServerError, envelope.APIError{}},
+				{http.StatusNotImplemented, envelope.APIError{}},
+			},
+		},
+		{
+			method: http.MethodPost, path: "/api/v1/projects/{id}/memory/rebuild", id: "rebuildMemory", tag: "memory",
+			summary:    "Rebuild a project's memory projection from its event log",
+			pathParams: []any{controllers.ProjectIDParam{}},
+			resps: []respUnit{
+				{http.StatusOK, controllers.RebuildMemoryResponse{}},
+				{http.StatusNotFound, envelope.APIError{}},
+				{http.StatusInternalServerError, envelope.APIError{}},
+				{http.StatusNotImplemented, envelope.APIError{}},
+			},
+		},
+	}
 }
 
 // plannerOperations declares the 1 /plan operation. Must stay 1:1 with the

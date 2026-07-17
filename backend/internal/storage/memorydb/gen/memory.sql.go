@@ -64,6 +64,17 @@ func (q *Queries) AddMemoryTest(ctx context.Context, arg AddMemoryTestParams) er
 	return err
 }
 
+const countMemoryTasks = `-- name: CountMemoryTasks :one
+SELECT COUNT(*) FROM memory_task
+`
+
+func (q *Queries) CountMemoryTasks(ctx context.Context) (int64, error) {
+	row := q.db.QueryRowContext(ctx, countMemoryTasks)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const deleteEdgesFrom = `-- name: DeleteEdgesFrom :exec
 DELETE FROM memory_task_edge WHERE src_task_id = ?
 `

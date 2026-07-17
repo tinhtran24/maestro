@@ -150,7 +150,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/GitHubAuthStatusResponse'
           description: OK
-      summary: Check global GitHub CLI and token readiness
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIError'
+          description: Internal Server Error
+      summary: Report local GitHub credential availability (env token or gh CLI)
       tags:
       - github
   /api/v1/import:
@@ -680,6 +686,175 @@ paths:
       summary: Replace a project's per-project config
       tags:
       - projects
+  /api/v1/projects/{id}/memory/context:
+    get:
+      operationId: getMemoryContext
+      parameters:
+      - description: Consuming agent stage the pack is shaped for.
+        in: query
+        name: role
+        schema:
+          description: Consuming agent stage the pack is shaped for.
+          enum:
+          - planner
+          - coder
+          - reviewer
+          - tester
+          type: string
+      - description: Free-text description of the work; carried for future semantic
+          matching.
+        in: query
+        name: intent
+        schema:
+          description: Free-text description of the work; carried for future semantic
+            matching.
+          type: string
+      - description: Comma-separated changed file paths to match against prior tasks.
+        in: query
+        name: files
+        schema:
+          description: Comma-separated changed file paths to match against prior tasks.
+          type: string
+      - description: Comma-separated changed test paths to match against prior tasks.
+        in: query
+        name: tests
+        schema:
+          description: Comma-separated changed test paths to match against prior tasks.
+          type: string
+      - description: Override the pack's token budget.
+        in: query
+        name: maxTokens
+        schema:
+          description: Override the pack's token budget.
+          minimum: 1
+          type: integer
+      - description: Project identifier (registry key).
+        in: path
+        name: id
+        required: true
+        schema:
+          description: Project identifier (registry key).
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MemoryContextResponse'
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIError'
+          description: Bad Request
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIError'
+          description: Not Found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIError'
+          description: Internal Server Error
+        "501":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIError'
+          description: Not Implemented
+      summary: Build a role-specific, token-budgeted context pack for a task
+      tags:
+      - memory
+  /api/v1/projects/{id}/memory/rebuild:
+    post:
+      operationId: rebuildMemory
+      parameters:
+      - description: Project identifier (registry key).
+        in: path
+        name: id
+        required: true
+        schema:
+          description: Project identifier (registry key).
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RebuildMemoryResponse'
+          description: OK
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIError'
+          description: Not Found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIError'
+          description: Internal Server Error
+        "501":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIError'
+          description: Not Implemented
+      summary: Rebuild a project's memory projection from its event log
+      tags:
+      - memory
+  /api/v1/projects/{id}/memory/tasks:
+    get:
+      operationId: listMemoryTasks
+      parameters:
+      - description: Maximum tasks to return. Defaults to 100; capped at 500.
+        in: query
+        name: limit
+        schema:
+          description: Maximum tasks to return. Defaults to 100; capped at 500.
+          maximum: 500
+          minimum: 1
+          type: integer
+      - description: Project identifier (registry key).
+        in: path
+        name: id
+        required: true
+        schema:
+          description: Project identifier (registry key).
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListMemoryTasksResponse'
+          description: OK
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIError'
+          description: Not Found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIError'
+          description: Internal Server Error
+        "501":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIError'
+          description: Not Implemented
+      summary: List a project's completed-task memory, most recent first
+      tags:
+      - memory
   /api/v1/prs/{id}/merge:
     post:
       operationId: mergePR
@@ -1646,12 +1821,6 @@ components:
           type: string
         label:
           type: string
-        models:
-          description: Selectable task-level model overrides supported by this native
-            CLI.
-          items:
-            type: string
-          type: array
       required:
       - id
       - label
@@ -1971,6 +2140,15 @@ components:
       - installed
       - authorized
       type: object
+    ListMemoryTasksResponse:
+      properties:
+        tasks:
+          items:
+            $ref: '#/components/schemas/MemoryTaskDTO'
+          type: array
+      required:
+      - tasks
+      type: object
     ListNotificationsResponse:
       properties:
         notifications:
@@ -2040,6 +2218,123 @@ components:
           type: string
       required:
       - status
+      type: object
+    MemoryContextResponse:
+      properties:
+        decisions:
+          items:
+            type: string
+          type: array
+        dropped:
+          items:
+            $ref: '#/components/schemas/MemoryDroppedDTO'
+          type: array
+        estimatedTokens:
+          type: integer
+        relatedTasks:
+          items:
+            $ref: '#/components/schemas/MemoryPackTaskDTO'
+          type: array
+        relevantFiles:
+          items:
+            type: string
+          type: array
+        relevantTests:
+          items:
+            type: string
+          type: array
+        role:
+          type: string
+      required:
+      - role
+      - relatedTasks
+      - relevantFiles
+      - relevantTests
+      - decisions
+      - dropped
+      - estimatedTokens
+      type: object
+    MemoryDroppedDTO:
+      properties:
+        kind:
+          type: string
+        reason:
+          type: string
+        ref:
+          type: string
+      required:
+      - kind
+      - ref
+      - reason
+      type: object
+    MemoryPackTaskDTO:
+      properties:
+        branch:
+          type: string
+        decisions:
+          items:
+            type: string
+          type: array
+        files:
+          items:
+            type: string
+          type: array
+        intent:
+          type: string
+        sharedFiles:
+          type: integer
+        sharedTests:
+          type: integer
+        taskId:
+          type: string
+        taskType:
+          type: string
+        tests:
+          items:
+            type: string
+          type: array
+      required:
+      - taskId
+      - sharedFiles
+      - sharedTests
+      type: object
+    MemoryTaskDTO:
+      properties:
+        branch:
+          type: string
+        changedFiles:
+          items:
+            type: string
+          type: array
+        changedTests:
+          items:
+            type: string
+          type: array
+        harness:
+          type: string
+        id:
+          type: string
+        intent:
+          type: string
+        kind:
+          type: string
+        occurredAt:
+          format: date-time
+          type: string
+        projectId:
+          type: string
+        sessionId:
+          type: string
+        taskType:
+          type: string
+      required:
+      - id
+      - sessionId
+      - projectId
+      - kind
+      - occurredAt
+      - changedFiles
+      - changedTests
       type: object
     MergePRResponse:
       properties:
@@ -2376,6 +2671,16 @@ components:
       - path
       - kind
       - sessionPrefix
+      type: object
+    RebuildMemoryResponse:
+      properties:
+        projectId:
+          type: string
+        tasks:
+          type: integer
+      required:
+      - projectId
+      - tasks
       type: object
     RemoveProjectResult:
       properties:
@@ -2997,5 +3302,3 @@ tags:
   name: events
 - description: Legacy Maestro project import (availability probe and run)
   name: import
-- description: Global GitHub CLI and token diagnostics
-  name: github
