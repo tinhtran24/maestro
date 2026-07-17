@@ -2,6 +2,7 @@ import * as Dialog from "@radix-ui/react-dialog";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate, useParams, useRouterState } from "@tanstack/react-router";
 import {
+	Brain,
 	ChevronRight,
 	CheckCircle2,
 	Folder,
@@ -108,6 +109,7 @@ function useSelection() {
 		goPrs: () => void navigate({ to: "/prs" }),
 		goGlobalSettings: () => void navigate({ to: "/settings" }),
 		goSettings: (projectId: string) => void navigate({ to: "/projects/$projectId/settings", params: { projectId } }),
+		goMemory: (projectId: string) => void navigate({ to: "/projects/$projectId/memory", params: { projectId } }),
 		goProject: (projectId: string) => void navigate({ to: "/projects/$projectId", params: { projectId } }),
 		goSession: (projectId: string, sessionId: string) =>
 			void navigate({ to: "/projects/$projectId/sessions/$sessionId", params: { projectId, sessionId } }),
@@ -552,6 +554,19 @@ function ProjectItem({
 						</button>
 					</TooltipTrigger>
 					<TooltipContent>Dashboard</TooltipContent>
+				</Tooltip>
+				<Tooltip>
+					<TooltipTrigger asChild>
+						<button
+							aria-label={`Open ${workspace.name} memory`}
+							className={HOVER_ACTION_CLASS}
+							onClick={() => selection.goMemory(workspace.id)}
+							type="button"
+						>
+							<Brain aria-hidden="true" />
+						</button>
+					</TooltipTrigger>
+					<TooltipContent>Memory</TooltipContent>
 				</Tooltip>
 				<Tooltip>
 					<TooltipTrigger asChild>

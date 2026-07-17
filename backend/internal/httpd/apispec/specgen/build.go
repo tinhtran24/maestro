@@ -131,6 +131,7 @@ var schemaNames = map[string]string{
 	"DomainIssueID":             "IssueID",
 	"DomainSession":             "Session",
 	"DomainProjectConfig":       "ProjectConfig",
+	"DomainMemoryConfig":        "MemoryConfig",
 	"DomainTrackerIntakeConfig": "TrackerIntakeConfig",
 	"DomainAgentConfig":         "AgentConfig",
 	"DomainRoleOverride":        "RoleOverride",
@@ -203,6 +204,18 @@ var schemaNames = map[string]string{
 	// httpd/controllers: import wire envelopes
 	"ControllersImportStatusResponse": "ImportStatusResponse",
 	"ControllersImportRunResponse":    "ImportRunResponse",
+	// httpd/controllers: project memory wire envelopes
+	"ControllersMemoryTasksQuery":        "MemoryTasksQuery",
+	"ControllersMemoryContextQuery":      "MemoryContextQuery",
+	"ControllersMemoryTaskDTO":           "MemoryTaskDTO",
+	"ControllersListMemoryTasksResponse": "ListMemoryTasksResponse",
+	"ControllersMemoryPackTaskDTO":       "MemoryPackTaskDTO",
+	"ControllersMemoryDroppedDTO":        "MemoryDroppedDTO",
+	"ControllersMemoryContextResponse":   "MemoryContextResponse",
+	"ControllersRebuildMemoryResponse":   "RebuildMemoryResponse",
+	"ControllersMemoryGraphNodeDTO":      "MemoryGraphNodeDTO",
+	"ControllersMemoryGraphEdgeDTO":      "MemoryGraphEdgeDTO",
+	"ControllersMemoryGraphResponse":     "MemoryGraphResponse",
 	// legacyimport report
 	"LegacyimportReport": "ImportReport",
 	// service/project entities + DTOs
@@ -296,6 +309,7 @@ func operations() []operation {
 	ops = append(ops, importOperations()...)
 	ops = append(ops, plannerOperations()...)
 	ops = append(ops, githubOperations()...)
+	ops = append(ops, memoryOperations()...)
 	return ops
 }
 
@@ -308,6 +322,59 @@ func githubOperations() []operation {
 			summary: "Check global GitHub CLI and token readiness",
 			resps: []respUnit{
 				{http.StatusOK, controllers.GitHubAuthStatusResponse{}},
+			},
+		},
+	}
+}
+
+// memoryOperations declares the 3 /projects/{id}/memory operations. Must stay
+// 1:1 with the routes MemoryController.Register mounts (enforced by the parity
+// test).
+func memoryOperations() []operation {
+	return []operation{
+		{
+			method: http.MethodGet, path: "/api/v1/projects/{id}/memory/tasks", id: "listMemoryTasks", tag: "memory",
+			summary:    "List a project's completed-task memory, most recent first",
+			pathParams: []any{controllers.MemoryTasksQuery{}},
+			resps: []respUnit{
+				{http.StatusOK, controllers.ListMemoryTasksResponse{}},
+				{http.StatusNotFound, envelope.APIError{}},
+				{http.StatusInternalServerError, envelope.APIError{}},
+				{http.StatusNotImplemented, envelope.APIError{}},
+			},
+		},
+		{
+			method: http.MethodGet, path: "/api/v1/projects/{id}/memory/context", id: "getMemoryContext", tag: "memory",
+			summary:    "Build a role-specific, token-budgeted context pack for a task",
+			pathParams: []any{controllers.MemoryContextQuery{}},
+			resps: []respUnit{
+				{http.StatusOK, controllers.MemoryContextResponse{}},
+				{http.StatusBadRequest, envelope.APIError{}},
+				{http.StatusNotFound, envelope.APIError{}},
+				{http.StatusInternalServerError, envelope.APIError{}},
+				{http.StatusNotImplemented, envelope.APIError{}},
+			},
+		},
+		{
+			method: http.MethodGet, path: "/api/v1/projects/{id}/memory/graph", id: "getMemoryGraph", tag: "memory",
+			summary:    "Return the project's task graph: task nodes and shared-path edges",
+			pathParams: []any{controllers.ProjectIDParam{}},
+			resps: []respUnit{
+				{http.StatusOK, controllers.MemoryGraphResponse{}},
+				{http.StatusNotFound, envelope.APIError{}},
+				{http.StatusInternalServerError, envelope.APIError{}},
+				{http.StatusNotImplemented, envelope.APIError{}},
+			},
+		},
+		{
+			method: http.MethodPost, path: "/api/v1/projects/{id}/memory/rebuild", id: "rebuildMemory", tag: "memory",
+			summary:    "Rebuild a project's memory projection from its event log",
+			pathParams: []any{controllers.ProjectIDParam{}},
+			resps: []respUnit{
+				{http.StatusOK, controllers.RebuildMemoryResponse{}},
+				{http.StatusNotFound, envelope.APIError{}},
+				{http.StatusInternalServerError, envelope.APIError{}},
+				{http.StatusNotImplemented, envelope.APIError{}},
 			},
 		},
 	}

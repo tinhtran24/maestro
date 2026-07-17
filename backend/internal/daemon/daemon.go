@@ -155,6 +155,7 @@ func Run() error {
 		Import:             importsvc.New(importsvc.Deps{Store: store}),
 		Planner:            planner.New(planner.Options{}),
 		PlannerAgent:       cfg.PlannerAgent,
+		Memory:             buildMemoryService(cfg, store, log),
 		CDC:                store,
 		Events:             cdcPipe.Broadcaster,
 		Activity:           lcStack.LCM,

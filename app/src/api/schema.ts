@@ -280,6 +280,74 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/projects/{id}/memory/context": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Build a role-specific, token-budgeted context pack for a task */
+        get: operations["getMemoryContext"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{id}/memory/graph": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Return the project's task graph: task nodes and shared-path edges */
+        get: operations["getMemoryGraph"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{id}/memory/rebuild": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Rebuild a project's memory projection from its event log */
+        post: operations["rebuildMemory"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{id}/memory/tasks": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List a project's completed-task memory, most recent first */
+        get: operations["listMemoryTasks"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/prs/{id}/merge": {
         parameters: {
             query?: never;
@@ -724,6 +792,9 @@ export interface components {
             /** @description Agents supported by this daemon build. */
             supported: components["schemas"]["AgentInfo"][];
         };
+        ListMemoryTasksResponse: {
+            tasks: components["schemas"]["MemoryTaskDTO"][];
+        };
         ListNotificationsResponse: {
             notifications: components["schemas"]["NotificationResponse"][];
         };
@@ -750,6 +821,69 @@ export interface components {
              * @enum {string}
              */
             status: "read";
+        };
+        MemoryConfig: {
+            autoCommit?: boolean;
+        };
+        MemoryContextResponse: {
+            decisions: string[];
+            dropped: components["schemas"]["MemoryDroppedDTO"][];
+            estimatedTokens: number;
+            relatedTasks: components["schemas"]["MemoryPackTaskDTO"][];
+            relevantFiles: string[];
+            relevantTests: string[];
+            role: string;
+        };
+        MemoryDroppedDTO: {
+            kind: string;
+            reason: string;
+            ref: string;
+        };
+        MemoryGraphEdgeDTO: {
+            /** Format: double */
+            confidence: number;
+            relation: string;
+            source: string;
+            target: string;
+        };
+        MemoryGraphNodeDTO: {
+            changedFiles: number;
+            changedTests: number;
+            intent?: string;
+            kind?: string;
+            /** Format: date-time */
+            occurredAt: string;
+            taskId: string;
+            taskType?: string;
+        };
+        MemoryGraphResponse: {
+            edges: components["schemas"]["MemoryGraphEdgeDTO"][];
+            nodes: components["schemas"]["MemoryGraphNodeDTO"][];
+        };
+        MemoryPackTaskDTO: {
+            branch?: string;
+            decisions?: string[];
+            files?: string[];
+            intent?: string;
+            sharedFiles: number;
+            sharedTests: number;
+            taskId: string;
+            taskType?: string;
+            tests?: string[];
+        };
+        MemoryTaskDTO: {
+            branch?: string;
+            changedFiles: string[];
+            changedTests: string[];
+            harness?: string;
+            id: string;
+            intent?: string;
+            kind: string;
+            /** Format: date-time */
+            occurredAt: string;
+            projectId: string;
+            sessionId: string;
+            taskType?: string;
         };
         MergePRResponse: {
             method: string;
@@ -844,6 +978,7 @@ export interface components {
                 [key: string]: string;
             };
             git?: components["schemas"]["DomainGitWorkflowConfig"];
+            memory?: components["schemas"]["MemoryConfig"];
             orchestrator?: components["schemas"]["RoleOverride"];
             planner?: components["schemas"]["RoleOverride"];
             postCreate?: string[];
@@ -870,6 +1005,10 @@ export interface components {
             path: string;
             resolveError?: string;
             sessionPrefix: string;
+        };
+        RebuildMemoryResponse: {
+            projectId: string;
+            tasks: number;
         };
         RemoveProjectResult: {
             projectId: string;
@@ -2002,6 +2141,229 @@ export interface operations {
             };
             /** @description Internal Server Error */
             500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["APIError"];
+                };
+            };
+        };
+    };
+    getMemoryContext: {
+        parameters: {
+            query?: {
+                /** @description Consuming agent stage the pack is shaped for. */
+                role?: "planner" | "coder" | "reviewer" | "tester";
+                /** @description Free-text description of the work; carried for future semantic matching. */
+                intent?: string;
+                /** @description Comma-separated changed file paths to match against prior tasks. */
+                files?: string;
+                /** @description Comma-separated changed test paths to match against prior tasks. */
+                tests?: string;
+                /** @description Override the pack's token budget. */
+                maxTokens?: number;
+            };
+            header?: never;
+            path: {
+                /** @description Project identifier (registry key). */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MemoryContextResponse"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["APIError"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["APIError"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["APIError"];
+                };
+            };
+            /** @description Not Implemented */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["APIError"];
+                };
+            };
+        };
+    };
+    getMemoryGraph: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Project identifier (registry key). */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MemoryGraphResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["APIError"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["APIError"];
+                };
+            };
+            /** @description Not Implemented */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["APIError"];
+                };
+            };
+        };
+    };
+    rebuildMemory: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Project identifier (registry key). */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RebuildMemoryResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["APIError"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["APIError"];
+                };
+            };
+            /** @description Not Implemented */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["APIError"];
+                };
+            };
+        };
+    };
+    listMemoryTasks: {
+        parameters: {
+            query?: {
+                /** @description Maximum tasks to return. Defaults to 100; capped at 500. */
+                limit?: number;
+            };
+            header?: never;
+            path: {
+                /** @description Project identifier (registry key). */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ListMemoryTasksResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["APIError"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["APIError"];
+                };
+            };
+            /** @description Not Implemented */
+            501: {
                 headers: {
                     [name: string]: unknown;
                 };

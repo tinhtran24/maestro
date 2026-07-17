@@ -55,6 +55,18 @@ type ProjectConfig struct {
 	// read-only toward the tracker in v1: matching issues spawn sessions, but the
 	// tracker is not commented on or transitioned.
 	TrackerIntake TrackerIntakeConfig `json:"trackerIntake,omitempty"`
+
+	// Memory controls project-memory persistence.
+	Memory MemoryConfig `json:"memory,omitempty"`
+}
+
+// MemoryConfig controls how completion memory is persisted. Capturing a task
+// into the project's events.jsonl and the projection is always on; AutoCommit
+// additionally commits the appended events.jsonl to the project repository on
+// its current branch. Maestro never pushes: sharing the memory log across
+// machines is the user's normal git flow.
+type MemoryConfig struct {
+	AutoCommit bool `json:"autoCommit,omitempty"`
 }
 
 // GitWorkflowConfig controls optional Git actions requested of worker agents.
