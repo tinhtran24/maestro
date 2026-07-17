@@ -26,7 +26,7 @@ describe("resolveDaemonLaunch", () => {
 
 	it("uses the bundled daemon binary for packaged macOS/Linux builds", () => {
 		expect(resolveDaemonLaunch({}, true, "/Applications/Maestro.app/Contents/Resources", "/app", "darwin")).toEqual({
-			command: "/Applications/Maestro.app/Contents/Resources/daemon/to",
+			command: "/Applications/Maestro.app/Contents/Resources/daemon/maestro",
 			args: ["daemon"],
 			cwd: "/Applications/Maestro.app/Contents/Resources",
 			shell: false,
@@ -44,7 +44,7 @@ describe("resolveDaemonLaunch", () => {
 				"win32",
 			),
 		).toEqual({
-			command: "C:\\Program Files\\Maestro\\resources/daemon/to.exe",
+			command: "C:\\Program Files\\Maestro\\resources/daemon/maestro.exe",
 			args: ["daemon"],
 			cwd: "C:\\Program Files\\Maestro\\resources",
 			shell: false,
