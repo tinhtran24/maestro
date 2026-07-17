@@ -30,6 +30,7 @@ type APIDeps struct {
 	Import             controllers.ImportService
 	Planner            controllers.PlanService
 	PlannerAgent       string
+	Memory             controllers.MemoryService
 	CDC                cdc.Source
 	Events             cdcSubscriber
 	Telemetry          ports.EventSink
@@ -48,6 +49,7 @@ type API struct {
 	imports       *controllers.ImportController
 	plan          *controllers.PlanController
 	githubAuth    *controllers.GitHubAuthController
+	memory        *controllers.MemoryController
 	events        *EventsController
 }
 
@@ -73,6 +75,7 @@ func NewAPI(cfg config.Config, deps APIDeps) *API {
 		imports:       &controllers.ImportController{Svc: deps.Import},
 		plan:          &controllers.PlanController{Svc: deps.Planner, DefaultAgent: deps.PlannerAgent},
 		githubAuth:    &controllers.GitHubAuthController{},
+		memory:        &controllers.MemoryController{Svc: deps.Memory},
 		events:        &EventsController{Source: deps.CDC, Live: deps.Events},
 	}
 }
@@ -99,6 +102,7 @@ func (a *API) Register(root chi.Router) {
 			a.notifications.Register(r)
 			a.imports.Register(r)
 			a.githubAuth.Register(r)
+			a.memory.Register(r)
 			// Sibling REST controllers plug in here.
 		})
 		// The planner shells out to an agent CLI that can take tens of seconds, so

@@ -1,5 +1,25 @@
 version: "2"
 sql:
+  # Derived project-memory projection. A separate, disposable SQLite database
+  # from the app DB above: its own migrations, queries, and generated package,
+  # decoupled from domain types (plain string columns) since it is rebuilt from
+  # events.jsonl and never shares a connection or migration numbering.
+  - engine: "sqlite"
+    schema: "internal/storage/memorydb/migrations"
+    queries: "internal/storage/memorydb/queries"
+    gen:
+      go:
+        package: "gen"
+        out: "internal/storage/memorydb/gen"
+        emit_json_tags: false
+        emit_prepared_queries: false
+        emit_interface: false
+        emit_empty_slices: true
+        initialisms:
+          - id
+          - url
+          - pr
+          - sha
   - engine: "sqlite"
     schema: "internal/storage/sqlite/migrations"
     queries: "internal/storage/sqlite/queries"
