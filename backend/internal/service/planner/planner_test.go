@@ -95,6 +95,36 @@ func TestPlan_ParsesFirstJSONObjectFromNativeCLIOutput(t *testing.T) {
 	}
 }
 
+func TestPlan_RepairsBareObjectKeys(t *testing.T) {
+	fr := &fakeRunner{available: true, reply: `{
+Title: "Fix planner parsing",
+priority: "P1",
+labels: ["backend"],
+confidence: {overall: 92, title: 95, priority: 88, acceptanceCriteria: 80}
+}`}
+	s := New(Options{Runner: fr})
+
+	draft, err := s.Plan(context.Background(), "fix planner parsing", nil, "codex")
+	if err != nil {
+		t.Fatalf("Plan: %v", err)
+	}
+	if draft.Title != "Fix planner parsing" || draft.Priority != "P1" {
+		t.Fatalf("draft = %#v", draft)
+	}
+	if draft.Confidence.Overall != 92 {
+		t.Fatalf("confidence = %#v", draft.Confidence)
+	}
+}
+
+func TestQuoteBareObjectKeys_DoesNotChangeQuotedContent(t *testing.T) {
+	raw := `{"description":"Keep this, Title: unchanged",labels:["api"],confidence:{overall:90}}`
+	got := quoteBareObjectKeys(raw)
+	want := `{"description":"Keep this, Title: unchanged","labels":["api"],"confidence":{"overall":90}}`
+	if got != want {
+		t.Fatalf("quoteBareObjectKeys() = %q, want %q", got, want)
+	}
+}
+
 func TestCommandArgs_UsesHeadlessAgentSpecificInvocation(t *testing.T) {
 	tests := []struct {
 		name       string

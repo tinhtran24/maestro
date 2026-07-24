@@ -206,9 +206,103 @@ func parseDraft(reply string) (TaskDraft, error) {
 	}
 	var d TaskDraft
 	if err := json.Unmarshal([]byte(raw), &d); err != nil {
-		return TaskDraft{}, fmt.Errorf("planner: parse draft: %w", err)
+		// Agent models occasionally return a JavaScript-style object literal
+		// despite the strict-JSON instruction (for example, `{Title: "..."}`).
+		// Repair only bare object keys; values and quoted content remain
+		// untouched so malformed replies still fail instead of being guessed at.
+		repaired := quoteBareObjectKeys(raw)
+		if repaired == raw {
+			return TaskDraft{}, fmt.Errorf("planner: parse draft: %w", err)
+		}
+		if repairErr := json.Unmarshal([]byte(repaired), &d); repairErr != nil {
+			return TaskDraft{}, fmt.Errorf("planner: parse draft: %w", err)
+		}
 	}
 	return d, nil
+}
+
+// quoteBareObjectKeys converts JavaScript-style object keys to JSON keys while
+// leaving strings and array values unchanged.
+func quoteBareObjectKeys(raw string) string {
+	var out strings.Builder
+	out.Grow(len(raw) + 16)
+
+	var containers []byte
+	inString := false
+	escaped := false
+	expectKey := false
+
+	for i := 0; i < len(raw); {
+		ch := raw[i]
+		if inString {
+			out.WriteByte(ch)
+			i++
+			if escaped {
+				escaped = false
+			} else if ch == '\\' {
+				escaped = true
+			} else if ch == '"' {
+				inString = false
+			}
+			continue
+		}
+
+		switch ch {
+		case '"':
+			inString = true
+			expectKey = false
+			out.WriteByte(ch)
+			i++
+		case '{', '[':
+			containers = append(containers, ch)
+			expectKey = ch == '{'
+			out.WriteByte(ch)
+			i++
+		case '}', ']':
+			if len(containers) > 0 {
+				containers = containers[:len(containers)-1]
+			}
+			expectKey = false
+			out.WriteByte(ch)
+			i++
+		case ',':
+			expectKey = len(containers) > 0 && containers[len(containers)-1] == '{'
+			out.WriteByte(ch)
+			i++
+		default:
+			if expectKey && isBareKeyStart(ch) {
+				end := i + 1
+				for end < len(raw) && isBareKeyPart(raw[end]) {
+					end++
+				}
+				colon := end
+				for colon < len(raw) && (raw[colon] == ' ' || raw[colon] == '\t' || raw[colon] == '\r' || raw[colon] == '\n') {
+					colon++
+				}
+				if colon < len(raw) && raw[colon] == ':' {
+					out.WriteByte('"')
+					out.WriteString(raw[i:end])
+					out.WriteByte('"')
+					out.WriteString(raw[end:colon])
+					out.WriteByte(':')
+					i = colon + 1
+					expectKey = false
+					continue
+				}
+			}
+			out.WriteByte(ch)
+			i++
+		}
+	}
+	return out.String()
+}
+
+func isBareKeyStart(ch byte) bool {
+	return ch == '_' || ch >= 'A' && ch <= 'Z' || ch >= 'a' && ch <= 'z'
+}
+
+func isBareKeyPart(ch byte) bool {
+	return isBareKeyStart(ch) || ch >= '0' && ch <= '9'
 }
 
 // extractJSONObject returns the first complete JSON object, stripping markdown
