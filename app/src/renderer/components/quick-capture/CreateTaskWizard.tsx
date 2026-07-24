@@ -9,8 +9,6 @@ import { composeSessionPrompt, extractTask } from "../../lib/planner";
 import { agentsQueryOptions } from "../../hooks/useAgentsQuery";
 import type { AgentProvider } from "../../types/workspace";
 import { Button } from "../ui/button";
-import { Input } from "../ui/input";
-import { Label } from "../ui/label";
 import { RequiredAgentField } from "../CreateProjectAgentSheet";
 import { cn } from "../../lib/utils";
 import { AIExtractionCard } from "./AIExtractionCard";
@@ -45,49 +43,12 @@ function withTaskCompletionFooter(prompt: string): string {
 	return `${cleanPrompt}\n\n${TASK_COMPLETION_FOOTER}`;
 }
 
-export function suggestTaskMetadata(title: string): TaskSuggestions {
-	const cleaned = cleanTaskTitle(title) || "update task";
-	const isFix = /\b(bug|fix|defect|regression|crash|error|fail|failure|broken|missing|credential)\b/i.test(cleaned);
-	const branchPrefix = isFix ? "bugfix" : "feature";
-	const commitType = isFix ? "fix" : "feat";
-	const scope = inferScope(cleaned);
-	const summary = lowerFirst(cleaned.replace(/[.\s]+$/g, ""));
-	const commitMessage = `${commitType}${scope ? `(${scope})` : ""}: ${summary || "update task"}`;
+export function reviewedTaskMetadata(draft: TaskDraft): TaskSuggestions {
 	return {
-		branch: `${branchPrefix}/${slugify(cleaned) || "update-task"}`,
-		commitMessage,
-		prTitle: commitMessage,
+		branch: draft.suggestedBranch,
+		commitMessage: draft.suggestedCommit,
+		prTitle: draft.suggestedCommit,
 	};
-}
-
-function cleanTaskTitle(title: string): string {
-	return title
-		.trim()
-		.replace(/^(fix issue|issue|task|github):\s*/i, "")
-		.replace(/^#/, "")
-		.trim();
-}
-
-function slugify(value: string): string {
-	return value
-		.toLowerCase()
-		.replace(/[^a-z0-9]+/g, "-")
-		.replace(/^-+|-+$/g, "")
-		.slice(0, 64)
-		.replace(/-+$/g, "");
-}
-
-function lowerFirst(value: string): string {
-	if (/^[A-Z]{2}/.test(value)) return value;
-	return value ? value.charAt(0).toLowerCase() + value.slice(1) : value;
-}
-
-function inferScope(value: string): string {
-	const low = value.toLowerCase();
-	for (const scope of ["tracker", "orchestrator", "session", "cli", "github", "auth", "app", "api", "docs"]) {
-		if (low.includes(scope)) return scope;
-	}
-	return "";
 }
 
 export function taskCreationBody({
@@ -132,7 +93,6 @@ export function CreateTaskWizard({ open, projectId, onCreated, onOpenChange }: P
 	const [extraContext, setExtraContext] = useState("");
 	const [agent, setAgent] = useState("");
 	const [agentTouched, setAgentTouched] = useState(false);
-	const [suggestions, setSuggestions] = useState<TaskSuggestions>(suggestTaskMetadata(""));
 	const [error, setError] = useState<string | undefined>();
 	const [createdId, setCreatedId] = useState<string | undefined>();
 
@@ -171,7 +131,6 @@ export function CreateTaskWizard({ open, projectId, onCreated, onOpenChange }: P
 			setExtraContext("");
 			setAgent("");
 			setAgentTouched(false);
-			setSuggestions(suggestTaskMetadata(""));
 			setError(undefined);
 			setCreatedId(undefined);
 		}
@@ -193,10 +152,6 @@ export function CreateTaskWizard({ open, projectId, onCreated, onOpenChange }: P
 			return next;
 		});
 	const patchDraft = (patch: Partial<TaskDraft>) => setDraft((d) => ({ ...d, ...patch }));
-	useEffect(() => {
-		if (!open) return;
-		setSuggestions(suggestTaskMetadata(draft.title));
-	}, [draft.title, open]);
 
 	// Step 1 → 2: run the planner.
 	const extractMutation = useMutation({
@@ -224,7 +179,7 @@ export function CreateTaskWizard({ open, projectId, onCreated, onOpenChange }: P
 					agentTouched,
 					issueId: draft.title.trim() || "Untitled task",
 					prompt: composeSessionPrompt(draft, extraContext) || draft.title,
-					suggestions,
+					suggestions: reviewedTaskMetadata(draft),
 				}),
 			});
 			if (apiError) throw new Error(apiErrorMessage(apiError, "Unable to create task"));
@@ -342,13 +297,7 @@ export function CreateTaskWizard({ open, projectId, onCreated, onOpenChange }: P
 									onExtraContext={setExtraContext}
 								/>
 							) : (
-								<CreateSummary
-									draft={draft}
-									attachments={attachments}
-									agent={agent}
-									suggestions={suggestions}
-									onSuggestions={setSuggestions}
-								/>
+								<CreateSummary draft={draft} attachments={attachments} agent={agent} />
 							)}
 
 							{error ? (
@@ -449,20 +398,7 @@ export function CreateTaskWizard({ open, projectId, onCreated, onOpenChange }: P
 	);
 }
 
-function CreateSummary({
-	draft,
-	attachments,
-	agent,
-	suggestions,
-	onSuggestions,
-}: {
-	draft: TaskDraft;
-	attachments: Attachment[];
-	agent: string;
-	suggestions: TaskSuggestions;
-	onSuggestions: (next: TaskSuggestions) => void;
-}) {
-	const patch = (key: keyof TaskSuggestions, value: string) => onSuggestions({ ...suggestions, [key]: value });
+function CreateSummary({ draft, attachments, agent }: { draft: TaskDraft; attachments: Attachment[]; agent: string }) {
 	return (
 		<div className="space-y-3">
 			<div className="flex items-center gap-2 text-[13px] text-foreground">
@@ -482,40 +418,6 @@ function CreateSummary({
 				<div className="mt-2 text-[11px] text-passive">
 					{draft.acceptanceCriteria?.length ?? 0} acceptance criteria · {attachments.length} attachment(s) · agent:{" "}
 					{agent || "project default"}
-				</div>
-			</div>
-			<div className="rounded-lg border border-border bg-surface/50 p-3">
-				<div className="grid gap-3">
-					<div className="grid gap-1.5">
-						<Label htmlFor="task-suggested-branch" className="text-[12px] text-muted-foreground">
-							Branch
-						</Label>
-						<Input
-							id="task-suggested-branch"
-							value={suggestions.branch}
-							onChange={(e) => patch("branch", e.target.value)}
-						/>
-					</div>
-					<div className="grid gap-1.5">
-						<Label htmlFor="task-suggested-commit" className="text-[12px] text-muted-foreground">
-							Commit
-						</Label>
-						<Input
-							id="task-suggested-commit"
-							value={suggestions.commitMessage}
-							onChange={(e) => patch("commitMessage", e.target.value)}
-						/>
-					</div>
-					<div className="grid gap-1.5">
-						<Label htmlFor="task-suggested-pr-title" className="text-[12px] text-muted-foreground">
-							PR title
-						</Label>
-						<Input
-							id="task-suggested-pr-title"
-							value={suggestions.prTitle}
-							onChange={(e) => patch("prTitle", e.target.value)}
-						/>
-					</div>
 				</div>
 			</div>
 		</div>

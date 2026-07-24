@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { TASK_COMPLETION_FOOTER, suggestTaskMetadata, taskCreationBody } from "./CreateTaskWizard";
+import { TASK_COMPLETION_FOOTER, reviewedTaskMetadata, taskCreationBody } from "./CreateTaskWizard";
+import { emptyDraft } from "./types";
 
 describe("taskCreationBody", () => {
 	it("omits native CLI model overrides while preserving the selected execution agent", () => {
@@ -40,11 +41,18 @@ describe("taskCreationBody", () => {
 		expect(body.prompt).toBe(`Implement task creation\n\n${TASK_COMPLETION_FOOTER}`);
 	});
 
-	it("suggests branch and PR metadata when the task is created", () => {
-		expect(suggestTaskMetadata("Fix issue: tracker intake credential diagnostics")).toEqual({
-			branch: "bugfix/tracker-intake-credential-diagnostics",
-			commitMessage: "fix(tracker): tracker intake credential diagnostics",
-			prTitle: "fix(tracker): tracker intake credential diagnostics",
+	it("uses the metadata edited during Review & Edit when the task is created", () => {
+		expect(
+			reviewedTaskMetadata({
+				...emptyDraft(),
+				title: "A title that would generate different metadata",
+				suggestedBranch: "bugfix/custom-reviewed-branch",
+				suggestedCommit: "fix(planner): preserve reviewed metadata",
+			}),
+		).toEqual({
+			branch: "bugfix/custom-reviewed-branch",
+			commitMessage: "fix(planner): preserve reviewed metadata",
+			prTitle: "fix(planner): preserve reviewed metadata",
 		});
 	});
 });
